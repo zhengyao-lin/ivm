@@ -30,3 +30,14 @@
 
 # Debug files
 *.dSYM/
+
+# CMake cache files
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# update scripts
+upload.sh
+upload.log
+date.log
