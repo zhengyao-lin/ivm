@@ -9,6 +9,9 @@ ADD_EXECUTABLE(test test.c)
 SET(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
+# set compiler flags
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -pedantic -Wno-variadic-macros")
+
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
