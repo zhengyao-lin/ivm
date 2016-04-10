@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_GC_GC_H_
-#define _IVM_VM_GC_GC_H_
+#ifndef _IVM_VM_GC_CELL_H_
+#define _IVM_VM_GC_CELL_H_
 
 #include "../obj.h"
 
@@ -17,12 +17,6 @@ typedef struct {
 	ivm_cell_t *tail;
 } ivm_cell_set_t;
 
-typedef struct {
-	ivm_cell_set_t *white;
-	ivm_cell_set_t *grey;
-	ivm_cell_set_t *black;
-} ivm_heap_t;
-
 /* cell */
 ivm_cell_t *
 ivm_new_cell();
@@ -33,6 +27,9 @@ ivm_free_cell(ivm_cell_t *cell);
 /* dispose cell: dispose both the container and the object it contains */
 void
 ivm_dispose_cell(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
+/* dump cell: dump the data the object contains, but not free it */
+void
+ivm_dump_cell(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
 
 /* notice: use ivm_cell_move_to_set() to move cell BETWEEN SETS
  * because there will be a problem in deleting origin log if the set
@@ -40,7 +37,7 @@ ivm_dispose_cell(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
  */
 void
 ivm_cell_move_between(ivm_cell_t *cell, ivm_cell_t *prev, ivm_cell_t *next);
-void
+ivm_cell_t *
 ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to);
 
 /* cell set */
@@ -52,8 +49,15 @@ void
 ivm_free_cell_set(ivm_cell_set_t *set);
 void
 ivm_dispose_cell_set(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
+void
+ivm_dump_cell_set(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
 
 void
 ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell);
+ivm_cell_t *
+ivm_cell_set_add_object(ivm_cell_set_t *set, ivm_object_t *obj);
+/* just remove, no free */
+ivm_cell_t *
+ivm_cell_set_remove_tail(ivm_cell_set_t *set);
 
 #endif

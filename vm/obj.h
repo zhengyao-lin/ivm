@@ -26,14 +26,18 @@ typedef struct ivm_object_t_tag {
 } ivm_object_t;
 
 ivm_object_t *ivm_new_object(struct ivm_vmstate_t_tag *state);
-#define ivm_free_object(state, obj) \
+void ivm_init_object(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
+
+/* dump: clean the data the object contains, but not free itself */
+#define ivm_dump_object(state, obj) \
 	if (obj) { \
 		if (obj->des) { \
 			obj->des(state, obj); \
 		} \
 		ivm_free_slot_table(state, obj->slots); \
-		MEM_FREE(obj); \
 	}
+	
+void ivm_free_object(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
 
 ivm_slot_t *
 ivm_obj_set_slot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key, ivm_object_t *value);

@@ -3,10 +3,12 @@
 #include "err.h"
 #include "slot.h"
 #include "vm.h"
-#include "gc/gc.h"
+#include "gc/heap.h"
 
-ivm_object_t *ivm_new_object(ivm_vmstate_t *state)
+ivm_object_t *
+ivm_new_object(ivm_vmstate_t *state)
 {
+#if 0
 	ivm_object_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("object"));
@@ -16,6 +18,28 @@ ivm_object_t *ivm_new_object(ivm_vmstate_t *state)
 	ret->des = IVM_NULL;
 
 	return ret;
+#endif
+	return ivm_state_new_object(state);
+}
+
+void
+ivm_init_object(ivm_vmstate_t *state, ivm_object_t *obj)
+{
+	if (obj) {
+		obj->type = IVM_OBJECT_T;
+		obj->slots = IVM_NULL;
+		obj->des = IVM_NULL;
+	}
+
+	return;
+}
+
+void
+ivm_free_object(ivm_vmstate_t *state,
+				ivm_object_t *obj)
+{
+	ivm_state_free_object(state, obj);
+	return;
 }
 
 ivm_slot_t *

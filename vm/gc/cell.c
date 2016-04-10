@@ -1,7 +1,5 @@
 #include "pub/mem.h"
-#include "gc.h"
-#include "type.h"
-#include "obj.h"
+#include "cell.h"
 #include "err.h"
 #include "vm.h"
 
@@ -40,6 +38,16 @@ ivm_dispose_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
 	return;
 }
 
+void
+ivm_dump_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
+{
+	if (cell) {
+		ivm_dump_object(state, cell->obj);
+	}
+
+	return;
+}
+
 #define IS_SUC_CELL(prev, next) \
 	((!(prev) || (prev)->next == (next)) \
 	 && (!(next) || (next)->prev == (prev)))
@@ -71,7 +79,7 @@ ivm_cell_move_between(ivm_cell_t *cell,
 	return;
 }
 
-void
+ivm_cell_t *
 ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
 {
 	if (cell && from) {
@@ -83,7 +91,7 @@ ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
 	}
 	ivm_cell_set_add_cell(to, cell);
 
-	return;
+	return cell;
 }
 
 ivm_cell_set_t *
@@ -134,6 +142,23 @@ ivm_dispose_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
 }
 
 void
+ivm_dump_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
+{
+	ivm_cell_t *i, *tmp;
+
+	if (set) {
+		for (i = set->head; i;) {
+			tmp = i;
+			i = i->next;
+			ivm_dump_cell(state, tmp);
+		}
+		MEM_FREE(set);
+	}
+
+	return;
+}
+
+void
 ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell)
 {
 	if (set) {
@@ -145,4 +170,45 @@ ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell)
 	}
 
 	return;
+}
+
+ivm_cell_t *
+ivm_cell_set_add_object(ivm_cell_set_t *set, ivm_object_t *obj)
+{
+	ivm_cell_t *n_cell;
+
+	if (set) {
+		n_cell = ivm_new_cell(obj);
+		if (!set->tail) {
+			set->head
+			= set->tail
+			= n_cell;
+		} else {
+			set->tail->next = n_cell;
+			n_cell->prev = set->tail;
+
+			set->tail = n_cell;
+		}
+		return n_cell;
+	}
+
+	return IVM_NULL;
+}
+
+ivm_cell_t *
+ivm_cell_set_remove_tail(ivm_cell_set_t *set)
+{
+	ivm_cell_t *ret = IVM_NULL;
+
+	if (set && set->tail) {
+		ret = set->tail;
+		if (set->tail->prev) {
+			set->tail->prev->next = IVM_NULL;
+		} else {
+			set->head = IVM_NULL;
+		}
+		set->tail = set->tail->prev;
+	}
+
+	return ret;
 }
