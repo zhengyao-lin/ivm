@@ -71,6 +71,21 @@ ivm_cell_move_between(ivm_cell_t *cell,
 	return;
 }
 
+void
+ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
+{
+	if (cell && from) {
+		if (from->head == cell)
+			from->head = cell->next;
+
+		if (from->tail == cell)
+			from->tail = cell->prev;
+	}
+	ivm_cell_set_add_cell(to, cell);
+
+	return;
+}
+
 ivm_cell_set_t *
 ivm_new_cell_set()
 {
