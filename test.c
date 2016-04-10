@@ -1,22 +1,29 @@
 #include <stdio.h>
 #include "vm/vm.h"
+#include "vm/gc/gc.h"
 
 int main()
 {
-	ivm_object_t *obj1 = ivm_new_obj();
-	ivm_object_t *obj2 = ivm_new_obj();
+	ivm_vmstate_t *state = ivm_new_state();
+	ivm_cell_set_t *set = ivm_new_cell_set();
 
-	ivm_obj_set_slot(obj1, "a", obj2);
-	ivm_obj_set_slot(obj2, "b", obj1);
+	ivm_object_t *obj1 = ivm_new_object(state);
+	ivm_object_t *obj2 = ivm_new_object(state);
+
+	ivm_cell_set_add_cell(set, ivm_new_cell(obj1));
+	ivm_cell_set_add_cell(set, ivm_new_cell(obj2));
+
+	ivm_obj_set_slot(state, obj1, "a", obj2);
+	ivm_obj_set_slot(state, obj2, "b", obj1);
 
 	printf("obj1: %p\n", (void *)obj1);
 	printf("obj2: %p\n", (void *)obj2);
 
-	printf("obj1.a: %p\n", (void *)ivm_slot_get_value(ivm_obj_get_slot(obj1, "a")));
-	printf("obj2.b: %p\n", (void *)ivm_slot_get_value(ivm_obj_get_slot(obj2, "b")));
+	printf("obj1.a: %p\n", (void *)ivm_obj_get_slot_value(state, obj1, "a"));
+	printf("obj2.b: %p\n", (void *)ivm_obj_get_slot_value(state, obj2, "b"));
 
-	ivm_free_obj(obj1);
-	ivm_free_obj(obj2);
+	ivm_dispose_cell_set(state, set);
+	ivm_free_state(state);
 
 	return 0;
 }

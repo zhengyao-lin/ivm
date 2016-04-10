@@ -13,8 +13,9 @@
 #define IVM_TYPE_OF(obj) ((obj)->type)
 
 struct ivm_object_t_tag;
+struct ivm_vmstate_t_tag;
 
-typedef void (*ivm_destructor_t)(struct ivm_object_t_tag *);
+typedef void (*ivm_destructor_t)(struct ivm_vmstate_t_tag *, struct ivm_object_t_tag *);
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
@@ -24,19 +25,21 @@ typedef struct ivm_object_t_tag {
 	} u;
 } ivm_object_t;
 
-ivm_object_t *ivm_new_obj();
-#define ivm_free_obj(obj) \
+ivm_object_t *ivm_new_object(struct ivm_vmstate_t_tag *state);
+#define ivm_free_object(state, obj) \
 	if (obj) { \
 		if (obj->des) { \
-			obj->des(obj); \
+			obj->des(state, obj); \
 		} \
-		ivm_free_slot_table(obj->slots); \
+		ivm_free_slot_table(state, obj->slots); \
 		MEM_FREE(obj); \
 	}
 
 ivm_slot_t *
-ivm_obj_set_slot(ivm_object_t *obj, const ivm_char_t *key, ivm_object_t *value);
+ivm_obj_set_slot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key, ivm_object_t *value);
 ivm_slot_t *
-ivm_obj_get_slot(ivm_object_t *obj, const ivm_char_t *key);
+ivm_obj_get_slot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key);
+
+#define ivm_obj_get_slot_value(state, obj, key) (ivm_slot_get_value((state), ivm_obj_get_slot((state), (obj), (key))))
 
 #endif
