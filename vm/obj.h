@@ -25,25 +25,25 @@ typedef struct ivm_object_t_tag {
 	} u;
 } ivm_object_t;
 
-ivm_object_t *ivm_new_object(struct ivm_vmstate_t_tag *state);
-void ivm_init_object(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
+ivm_object_t *ivm_object_new(struct ivm_vmstate_t_tag *state);
+void ivm_object_init(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
 
 /* dump: clean the data the object contains, but not free itself */
-#define ivm_dump_object(state, obj) \
+#define ivm_object_dump(state, obj) \
 	if (obj) { \
 		if (obj->des) { \
 			obj->des(state, obj); \
 		} \
-		ivm_free_slot_table(state, obj->slots); \
+		ivm_slot_table_free(state, obj->slots); \
 	}
 	
-void ivm_free_object(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
+void ivm_object_free(struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
 
 ivm_slot_t *
-ivm_obj_set_slot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key, ivm_object_t *value);
+ivm_object_setSlot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key, ivm_object_t *value);
 ivm_slot_t *
-ivm_obj_get_slot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key);
+ivm_object_getSlot(struct ivm_vmstate_t_tag *state, ivm_object_t *obj, const ivm_char_t *key);
 
-#define ivm_obj_get_slot_value(state, obj, key) (ivm_slot_get_value((state), ivm_obj_get_slot((state), (obj), (key))))
+#define ivm_object_getSlotValue(state, obj, key) (ivm_slot_getValue((state), ivm_object_getSlot((state), (obj), (key))))
 
 #endif

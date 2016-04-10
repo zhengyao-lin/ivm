@@ -6,7 +6,7 @@
 #include "gc/heap.h"
 
 ivm_object_t *
-ivm_new_object(ivm_vmstate_t *state)
+ivm_object_new(ivm_vmstate_t *state)
 {
 #if 0
 	ivm_object_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
@@ -19,11 +19,11 @@ ivm_new_object(ivm_vmstate_t *state)
 
 	return ret;
 #endif
-	return ivm_state_new_object(state);
+	return ivm_state_newObject(state);
 }
 
 void
-ivm_init_object(ivm_vmstate_t *state, ivm_object_t *obj)
+ivm_object_init(ivm_vmstate_t *state, ivm_object_t *obj)
 {
 	if (obj) {
 		obj->type = IVM_OBJECT_T;
@@ -35,42 +35,42 @@ ivm_init_object(ivm_vmstate_t *state, ivm_object_t *obj)
 }
 
 void
-ivm_free_object(ivm_vmstate_t *state,
+ivm_object_free(ivm_vmstate_t *state,
 				ivm_object_t *obj)
 {
-	ivm_state_free_object(state, obj);
+	ivm_state_freeObject(state, obj);
 	return;
 }
 
 ivm_slot_t *
-ivm_obj_set_slot(ivm_vmstate_t *state,
-				 ivm_object_t *obj,
-				 const ivm_char_t *key,
-				 ivm_object_t *value)
+ivm_object_setSlot(ivm_vmstate_t *state,
+				   ivm_object_t *obj,
+				   const ivm_char_t *key,
+				   ivm_object_t *value)
 {
 	ivm_slot_t *found;
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (!(found = ivm_slot_table_find_slot(state, obj->slots, key))) {
+	if (!(found = ivm_slot_table_findSlot(state, obj->slots, key))) {
 		/* not found */
 		if (!obj->slots) {
-			obj->slots = ivm_new_slot_table(state);
+			obj->slots = ivm_slot_table_new(state);
 		}
-		found = ivm_slot_table_add_slot(state, obj->slots, key, value, obj);
+		found = ivm_slot_table_addSlot(state, obj->slots, key, value, obj);
 	} else {
-		ivm_slot_set_value(state, found, value);
+		ivm_slot_setValue(state, found, value);
 	}
 
 	return found;
 }
 
 ivm_slot_t *
-ivm_obj_get_slot(ivm_vmstate_t *state,
-				 ivm_object_t *obj,
-				 const ivm_char_t *key)
+ivm_object_getSlot(ivm_vmstate_t *state,
+				   ivm_object_t *obj,
+				   const ivm_char_t *key)
 {
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	return ivm_slot_table_find_slot(state, obj->slots, key);
+	return ivm_slot_table_findSlot(state, obj->slots, key);
 }

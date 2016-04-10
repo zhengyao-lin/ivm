@@ -16,14 +16,14 @@ typedef struct {
 
 /* heap */
 ivm_heap_t *
-ivm_new_heap(ivm_size_t obj_count);
+ivm_heap_new(ivm_size_t obj_count);
 void
-ivm_free_heap(ivm_heap_t *heap);
+ivm_heap_free(ivm_heap_t *heap);
 ivm_object_t *
 ivm_heap_alloc(ivm_heap_t *heap);
 ivm_object_t *
-ivm_heap_new_object(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap);
+ivm_heap_newObject(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap);
 void
-ivm_heap_free_object(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap, ivm_object_t *obj);
+ivm_heap_freeObject(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap, ivm_object_t *obj);
 
 #endif

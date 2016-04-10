@@ -4,7 +4,7 @@
 #include "vm.h"
 
 ivm_cell_t *
-ivm_new_cell(ivm_object_t *obj)
+ivm_cell_new(ivm_object_t *obj)
 {
 	ivm_cell_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
 
@@ -18,7 +18,7 @@ ivm_new_cell(ivm_object_t *obj)
 }
 
 void
-ivm_free_cell(ivm_cell_t *cell)
+ivm_cell_free(ivm_cell_t *cell)
 {
 	if (cell) {
 		MEM_FREE(cell);
@@ -28,10 +28,10 @@ ivm_free_cell(ivm_cell_t *cell)
 }
 
 void
-ivm_dispose_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
+ivm_cell_dispose(ivm_vmstate_t *state, ivm_cell_t *cell)
 {
 	if (cell) {
-		ivm_free_object(state, cell->obj);
+		ivm_object_free(state, cell->obj);
 		MEM_FREE(cell);
 	}
 
@@ -39,10 +39,10 @@ ivm_dispose_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
 }
 
 void
-ivm_dump_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
+ivm_cell_dump(ivm_vmstate_t *state, ivm_cell_t *cell)
 {
 	if (cell) {
-		ivm_dump_object(state, cell->obj);
+		ivm_object_dump(state, cell->obj);
 	}
 
 	return;
@@ -53,7 +53,7 @@ ivm_dump_cell(ivm_vmstate_t *state, ivm_cell_t *cell)
 	 && (!(next) || (next)->prev == (prev)))
 
 void
-ivm_cell_move_between(ivm_cell_t *cell,
+ivm_cell_moveBetween(ivm_cell_t *cell,
 					  ivm_cell_t *prev,
 					  ivm_cell_t *next)
 {
@@ -80,7 +80,7 @@ ivm_cell_move_between(ivm_cell_t *cell,
 }
 
 ivm_cell_t *
-ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
+ivm_cell_moveToSet(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
 {
 	if (cell && from) {
 		if (from->head == cell)
@@ -89,13 +89,13 @@ ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
 		if (from->tail == cell)
 			from->tail = cell->prev;
 	}
-	ivm_cell_set_add_cell(to, cell);
+	ivm_cell_set_addCell(to, cell);
 
 	return cell;
 }
 
 ivm_cell_set_t *
-ivm_new_cell_set()
+ivm_cell_set_new()
 {
 	ivm_cell_set_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
 
@@ -108,7 +108,7 @@ ivm_new_cell_set()
 }
 
 void
-ivm_free_cell_set(ivm_cell_set_t *set)
+ivm_cell_set_free(ivm_cell_set_t *set)
 {
 	ivm_cell_t *i, *tmp;
 
@@ -116,7 +116,7 @@ ivm_free_cell_set(ivm_cell_set_t *set)
 		for (i = set->head; i;) {
 			tmp = i;
 			i = i->next;
-			ivm_free_cell(tmp);
+			ivm_cell_free(tmp);
 		}
 		MEM_FREE(set);
 	}
@@ -125,7 +125,7 @@ ivm_free_cell_set(ivm_cell_set_t *set)
 }
 
 void
-ivm_dispose_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
+ivm_cell_set_dispose(ivm_vmstate_t *state, ivm_cell_set_t *set)
 {
 	ivm_cell_t *i, *tmp;
 
@@ -133,7 +133,7 @@ ivm_dispose_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
 		for (i = set->head; i;) {
 			tmp = i;
 			i = i->next;
-			ivm_dispose_cell(state, tmp);
+			ivm_cell_dispose(state, tmp);
 		}
 		MEM_FREE(set);
 	}
@@ -142,7 +142,7 @@ ivm_dispose_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
 }
 
 void
-ivm_dump_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
+ivm_cell_set_dump(ivm_vmstate_t *state, ivm_cell_set_t *set)
 {
 	ivm_cell_t *i, *tmp;
 
@@ -150,7 +150,7 @@ ivm_dump_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
 		for (i = set->head; i;) {
 			tmp = i;
 			i = i->next;
-			ivm_dump_cell(state, tmp);
+			ivm_cell_dispose(state, tmp);
 		}
 		MEM_FREE(set);
 	}
@@ -159,10 +159,10 @@ ivm_dump_cell_set(ivm_vmstate_t *state, ivm_cell_set_t *set)
 }
 
 void
-ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell)
+ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell)
 {
 	if (set) {
-		ivm_cell_move_between(cell, set->tail, NULL);
+		ivm_cell_moveBetween(cell, set->tail, NULL);
 		set->tail = cell;
 		if (!set->head) {
 			set->head = cell;
@@ -173,12 +173,12 @@ ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell)
 }
 
 ivm_cell_t *
-ivm_cell_set_add_object(ivm_cell_set_t *set, ivm_object_t *obj)
+ivm_cell_set_addObject(ivm_cell_set_t *set, ivm_object_t *obj)
 {
 	ivm_cell_t *n_cell;
 
 	if (set) {
-		n_cell = ivm_new_cell(obj);
+		n_cell = ivm_cell_new(obj);
 		if (!set->tail) {
 			set->head
 			= set->tail
@@ -196,7 +196,7 @@ ivm_cell_set_add_object(ivm_cell_set_t *set, ivm_object_t *obj)
 }
 
 ivm_cell_t *
-ivm_cell_set_remove_tail(ivm_cell_set_t *set)
+ivm_cell_set_removeTail(ivm_cell_set_t *set)
 {
 	ivm_cell_t *ret = IVM_NULL;
 

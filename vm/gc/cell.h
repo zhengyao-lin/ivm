@@ -19,45 +19,45 @@ typedef struct {
 
 /* cell */
 ivm_cell_t *
-ivm_new_cell();
+ivm_cell_new();
 
 /* free cell: just dispose the container */
 void
-ivm_free_cell(ivm_cell_t *cell);
+ivm_cell_free(ivm_cell_t *cell);
 /* dispose cell: dispose both the container and the object it contains */
 void
-ivm_dispose_cell(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
+ivm_cell_dispose(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
 /* dump cell: dump the data the object contains, but not free it */
 void
-ivm_dump_cell(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
+ivm_cell_dump(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
 
 /* notice: use ivm_cell_move_to_set() to move cell BETWEEN SETS
  * because there will be a problem in deleting origin log if the set
  * only has one cell
  */
 void
-ivm_cell_move_between(ivm_cell_t *cell, ivm_cell_t *prev, ivm_cell_t *next);
+ivm_cell_moveBetween(ivm_cell_t *cell, ivm_cell_t *prev, ivm_cell_t *next);
 ivm_cell_t *
-ivm_cell_move_to_set(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to);
+ivm_cell_moveToSet(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to);
 
 /* cell set */
 ivm_cell_set_t *
-ivm_new_cell_set();
+ivm_cell_set_new();
 
 /* similar to the interface of free/dispose cell */
 void
-ivm_free_cell_set(ivm_cell_set_t *set);
+ivm_cell_set_free(ivm_cell_set_t *set);
 void
-ivm_dispose_cell_set(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
+ivm_cell_set_dispose(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
 void
-ivm_dump_cell_set(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
+ivm_cell_set_dump(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
 
 void
-ivm_cell_set_add_cell(ivm_cell_set_t *set, ivm_cell_t *cell);
+ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell);
 ivm_cell_t *
-ivm_cell_set_add_object(ivm_cell_set_t *set, ivm_object_t *obj);
+ivm_cell_set_addObject(ivm_cell_set_t *set, ivm_object_t *obj);
 /* just remove, no free */
 ivm_cell_t *
-ivm_cell_set_remove_tail(ivm_cell_set_t *set);
+ivm_cell_set_removeTail(ivm_cell_set_t *set);
 
 #endif

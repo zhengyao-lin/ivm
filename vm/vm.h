@@ -13,15 +13,15 @@ typedef struct ivm_vmstate_t_tag {
 } ivm_vmstate_t;
 
 ivm_vmstate_t *
-ivm_new_state();
+ivm_state_new();
 void
-ivm_free_state(ivm_vmstate_t *state);
+ivm_state_free(ivm_vmstate_t *state);
 
 #define ivm_state_alloc(state) ((state) ? ivm_heap_alloc((state)->heap) : IVM_NULL)
-#define ivm_state_new_object(state) ((state) ? ivm_heap_new_object((state), (state)->heap) : IVM_NULL)
-#define ivm_state_free_object(state, obj) \
+#define ivm_state_newObject(state) ((state) ? ivm_heap_newObject((state), (state)->heap) : IVM_NULL)
+#define ivm_state_freeObject(state, obj) \
 	if (state) { \
-		ivm_heap_free_object((state), (state)->heap, (obj)); \
+		ivm_heap_freeObject((state), (state)->heap, (obj)); \
 	}
 
 #endif

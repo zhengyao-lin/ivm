@@ -21,6 +21,6 @@ struct ivm_vmstate_t_tag;
 #define IVM_NUM_XOR(a, b) ((a) ^ (b))
 #define IVM_NUM_INV(a) (~(a))
 
-ivm_object_t *ivm_new_numeric(struct ivm_vmstate_t_tag *state, ivm_numeric_t val);
+ivm_object_t *ivm_numeric_new(struct ivm_vmstate_t_tag *state, ivm_numeric_t val);
 
 #endif
