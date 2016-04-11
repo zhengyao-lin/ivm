@@ -13,6 +13,10 @@ ivm_vmstate_new()
 	ret->gc_flag = IVM_FALSE;
 	ret->heap_count = 0;
 	ret->heaps = IVM_NULL;
+
+	ret->coro_count = 0;
+	ret->cur_coro = 0;
+	ret->coros = IVM_NULL;
 	
 	return ret;
 }

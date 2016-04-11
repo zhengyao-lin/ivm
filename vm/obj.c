@@ -19,6 +19,7 @@ ivm_object_new(ivm_vmstate_t *state)
 
 	return ret;
 #endif
+	
 	return ivm_vmstate_newObject(state);
 }
 

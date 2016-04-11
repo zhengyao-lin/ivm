@@ -5,6 +5,7 @@
 #include "obj.h"
 #include "num.h"
 #include "op.h"
+#include "coro.h"
 #include "gc/heap.h"
 
 #define IVM_DEFAULT_INIT_HEAP_SIZE (512)
@@ -12,8 +13,13 @@
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_bool_t gc_flag;
+	
 	ivm_size_t heap_count;
 	ivm_heap_t **heaps;
+
+	ivm_size_t coro_count;
+	ivm_size_t cur_coro;
+	ivm_coro_t **coros;
 } ivm_vmstate_t;
 
 #define VMSTATE_GC_FLAG(state) ((state)->gc_flag)
