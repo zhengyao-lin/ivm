@@ -10,7 +10,7 @@ typedef struct {
 	ivm_vmstack_t stack;
 
 	ivm_size_t pc;
-	ivm_exec_t exec;
+	ivm_exec_t *exec;
 } ivm_coro_t;
 
 #endif
