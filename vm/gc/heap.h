@@ -21,9 +21,10 @@ void
 ivm_heap_free(ivm_heap_t *heap);
 ivm_object_t *
 ivm_heap_alloc(ivm_heap_t *heap);
-ivm_object_t *
-ivm_heap_newObject(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap);
+
 void
-ivm_heap_freeObject(struct ivm_vmstate_t_tag *state, ivm_heap_t *heap, ivm_object_t *obj);
+ivm_heap_freeObject(ivm_heap_t *heap, struct ivm_vmstate_t_tag *state, ivm_object_t *obj);
+ivm_bool_t
+ivm_heap_isInHeap(ivm_heap_t *heap, ivm_object_t *obj);
 
 #endif

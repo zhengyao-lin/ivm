@@ -19,7 +19,7 @@ ivm_object_new(ivm_vmstate_t *state)
 
 	return ret;
 #endif
-	return ivm_state_newObject(state);
+	return ivm_vmstate_newObject(state);
 }
 
 void
@@ -38,7 +38,7 @@ void
 ivm_object_free(ivm_vmstate_t *state,
 				ivm_object_t *obj)
 {
-	ivm_state_freeObject(state, obj);
+	ivm_vmstate_freeObject(state, obj);
 	return;
 }
 

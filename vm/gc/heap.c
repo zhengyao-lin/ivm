@@ -7,7 +7,8 @@
 
 #define CELL_SET_OBJ(c, o) ((c)->obj = (o))
 
-#pragma GCC diagnostic ignored "-Wpedantic"
+/* #pragma GCC diagnostic ignored "-Wpedantic" */
+#pragma GCC diagnostic ignored "-Wpointer-arith"
 
 ivm_heap_t *
 ivm_heap_new(ivm_size_t obj_count)
@@ -60,7 +61,8 @@ ivm_heap_alloc(ivm_heap_t *heap)
 
 	if (heap && heap->empty->tail) {
 		cell = ivm_cell_set_removeTail(heap->empty);
-		IVM_ASSERT(cell, IVM_ERROR_MSG_NO_SPARE_MEM);
+		/* IVM_ASSERT(cell, IVM_ERROR_MSG_NO_SPARE_MEM); */
+		if (!cell) return ret;
 		ret = cell->obj;
 		heap->empty_size--;
 	}
@@ -68,22 +70,10 @@ ivm_heap_alloc(ivm_heap_t *heap)
 	return ret;
 }
 
-ivm_object_t *
-ivm_heap_newObject(ivm_vmstate_t *state, ivm_heap_t *heap)
-{
-	ivm_object_t *ret = ivm_heap_alloc(heap);
-
-	if (ret) {
-		ivm_object_init(state, ret);
-	}
-
-	return ret;
-}
-
 void
-ivm_heap_freeObject(ivm_vmstate_t *state,
-					 ivm_heap_t *heap,
-					 ivm_object_t *obj)
+ivm_heap_freeObject(ivm_heap_t *heap,
+					ivm_vmstate_t *state,
+					ivm_object_t *obj)
 {
 	ivm_cell_t *cell;
 
@@ -97,4 +87,16 @@ ivm_heap_freeObject(ivm_vmstate_t *state,
 	}
 
 	return;
+}
+
+ivm_bool_t
+ivm_heap_isInHeap(ivm_heap_t *heap, ivm_object_t *obj)
+{
+	if (heap) {
+		return heap->pre <= (void *)obj
+			   && (void *)obj <= (heap->pre + sizeof(ivm_object_t)
+			   								  * (heap->size - 1));
+	}
+
+	return IVM_FALSE;
 }

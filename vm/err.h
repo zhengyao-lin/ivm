@@ -17,5 +17,6 @@
 #define IVM_ERROR_MSG_INSERT_CELL_TO_NON_SUC_CELL	("insert cell into non-successive cells")
 #define IVM_ERROR_MSG_WRONG_FREE_HEAP				("free object with wrong heap")
 #define IVM_ERROR_MSG_NO_SPARE_MEM					("no spare memory left in heap")
+#define IVM_ERROR_MSG_CANNOT_FIND_OBJECT_IN_HEAP	("cannot find object in heap")
 
 #endif

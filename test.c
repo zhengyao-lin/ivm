@@ -4,7 +4,7 @@
 
 int main()
 {
-	ivm_vmstate_t *state = ivm_state_new();
+	ivm_vmstate_t *state = ivm_vmstate_new();
 
 	ivm_object_t *obj1 = ivm_object_new(state);
 	ivm_object_t *obj2 = ivm_object_new(state);
@@ -27,7 +27,7 @@ int main()
 
 	ivm_object_free(state, obj1);
 	ivm_object_free(state, obj2);
-	ivm_state_free(state);
+	ivm_vmstate_free(state);
 
 	return 0;
 }

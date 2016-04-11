@@ -44,3 +44,6 @@ build
 upload.sh
 upload.log
 date.log
+
+# clean script that may be created on Ubuntu
+clean
