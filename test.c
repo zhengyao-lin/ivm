@@ -8,6 +8,8 @@ int main()
 
 	ivm_object_t *obj1 = ivm_object_new(state);
 	ivm_object_t *obj2 = ivm_object_new(state);
+
+	ivm_exec_t *exec = ivm_exec_new();
 	
 	/*
 	ivm_new_object(state);
@@ -15,6 +17,9 @@ int main()
 	ivm_new_object(state);
 	ivm_new_object(state);
 	*/
+
+	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
+	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
 
 	ivm_object_setSlot(state, obj1, "a", obj2);
 	ivm_object_setSlot(state, obj2, "b", obj1);
@@ -24,6 +29,8 @@ int main()
 
 	printf("obj1.a: %p\n", (void *)ivm_object_getSlotValue(state, obj1, "a"));
 	printf("obj2.b: %p\n", (void *)ivm_object_getSlotValue(state, obj2, "b"));
+
+	ivm_exec_free(exec);
 
 	ivm_object_free(state, obj1);
 	ivm_object_free(state, obj2);

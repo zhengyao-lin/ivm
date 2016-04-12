@@ -68,6 +68,7 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_size_t arg_count, ...)
 	while (exec->length < n_cur)
 		ivm_exec_addBuffer(exec);
 
+	printf("%p, %ld, %ld\n", exec->code, exec->cur, exec->length);
 	exec->code[exec->cur] = op;
 	for (i = exec->cur + 1;
 		 i < n_cur; i++) {
