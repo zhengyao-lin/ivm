@@ -6,6 +6,7 @@
 #include "num.h"
 #include "op.h"
 #include "coro.h"
+#include "context.h"
 #include "gc/heap.h"
 
 #define IVM_DEFAULT_INIT_HEAP_SIZE (512)

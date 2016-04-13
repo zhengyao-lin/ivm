@@ -101,9 +101,10 @@ ivm_vmstate_alloc(ivm_vmstate_t *state)
 	if (!ret) {
 		ivm_vmstate_addHeap(state);
 		ivm_vmstate_markForGC(state);
+
+		ret = ivm_heap_alloc(ivm_vmstate_curHeap(state));
+		IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("object in heap"));
 	}
-	ret = ivm_heap_alloc(ivm_vmstate_curHeap(state));
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("object in heap"));
 
 #if IVM_CHECK_STATE_NULL
 	}
@@ -122,7 +123,7 @@ ivm_vmstate_newObject(ivm_vmstate_t *state)
 #endif
 
 	ret = ivm_vmstate_alloc(state);
-	ivm_object_init(state, ret);
+	ivm_object_init(ret, state);
 
 #if IVM_CHECK_STATE_NULL
 	}

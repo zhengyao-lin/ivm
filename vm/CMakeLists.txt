@@ -7,7 +7,8 @@ ADD_LIBRARY(vm SHARED
 			slot.c
 			vm.c
 			exec.c
-			stack.c)
+			stack.c
+			context.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

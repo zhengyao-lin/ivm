@@ -26,10 +26,10 @@ void
 ivm_cell_free(ivm_cell_t *cell);
 /* dispose cell: dispose both the container and the object it contains */
 void
-ivm_cell_dispose(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
+ivm_cell_dispose(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
 /* dump cell: dump the data the object contains, but not free it */
 void
-ivm_cell_dump(struct ivm_vmstate_t_tag *state, ivm_cell_t *cell);
+ivm_cell_dump(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
 
 /* notice: use ivm_cell_move_to_set() to move cell BETWEEN SETS
  * because there will be a problem in deleting origin log if the set
@@ -48,9 +48,9 @@ ivm_cell_set_new();
 void
 ivm_cell_set_free(ivm_cell_set_t *set);
 void
-ivm_cell_set_dispose(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
+ivm_cell_set_dispose(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
 void
-ivm_cell_set_dump(struct ivm_vmstate_t_tag *state, ivm_cell_set_t *set);
+ivm_cell_set_dump(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
 
 void
 ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell);

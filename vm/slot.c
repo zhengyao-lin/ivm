@@ -25,7 +25,7 @@ ivm_slot_new(ivm_vmstate_t *state,
 }
 
 static void
-ivm_slot_free(ivm_vmstate_t *state, ivm_slot_t *slot)
+ivm_slot_free(ivm_slot_t *slot, ivm_vmstate_t *state)
 {
 	if (slot) {
 		MEM_FREE(slot->k);
@@ -49,15 +49,15 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 }
 
 void
-ivm_slot_table_free(ivm_vmstate_t *state, ivm_slot_table_t *table)
+ivm_slot_table_free(ivm_slot_table_t *table, ivm_vmstate_t *state)
 {
 	ivm_slot_t *i, *tmp;
 
 	if (table) {
-		for (i = ivm_slot_table_getHead(state, table); i;) {
+		for (i = ivm_slot_table_getHead(table, state); i;) {
 			tmp = i;
 			i = i->next;
-			ivm_slot_free(state, tmp);
+			ivm_slot_free(tmp, state);
 		}
 
 		MEM_FREE(table);
@@ -67,15 +67,15 @@ ivm_slot_table_free(ivm_vmstate_t *state, ivm_slot_table_t *table)
 }
 
 ivm_slot_t *
-ivm_slot_table_findSlot(ivm_vmstate_t *state,
-						ivm_slot_table_t *table,
+ivm_slot_table_findSlot(ivm_slot_table_t *table,
+						ivm_vmstate_t *state,
 						const ivm_char_t *key)
 {
 	ivm_slot_t *i;
 
 	if (table) {
-		for (i = ivm_slot_table_getHead(state, table); i; i = i->next) {
-			if (!IVM_STRCMP(key, ivm_slot_getKey(state, i))) {
+		for (i = ivm_slot_table_getHead(table, state); i; i = i->next) {
+			if (!IVM_STRCMP(key, ivm_slot_getKey(i, state))) {
 				return i;
 			}
 		}
@@ -85,8 +85,8 @@ ivm_slot_table_findSlot(ivm_vmstate_t *state,
 }
 
 ivm_slot_t *
-ivm_slot_table_addSlot(ivm_vmstate_t *state,
-					   ivm_slot_table_t *table,
+ivm_slot_table_addSlot(ivm_slot_table_t *table,
+					   ivm_vmstate_t *state,
 					   const ivm_char_t *key,
 					   ivm_object_t *obj,
 					   ivm_object_t *parent)

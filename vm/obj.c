@@ -24,7 +24,7 @@ ivm_object_new(ivm_vmstate_t *state)
 }
 
 void
-ivm_object_init(ivm_vmstate_t *state, ivm_object_t *obj)
+ivm_object_init(ivm_object_t *obj, ivm_vmstate_t *state)
 {
 	if (obj) {
 		obj->type = IVM_OBJECT_T;
@@ -36,16 +36,16 @@ ivm_object_init(ivm_vmstate_t *state, ivm_object_t *obj)
 }
 
 void
-ivm_object_free(ivm_vmstate_t *state,
-				ivm_object_t *obj)
+ivm_object_free(ivm_object_t *obj,
+				ivm_vmstate_t *state)
 {
 	ivm_vmstate_freeObject(state, obj);
 	return;
 }
 
 ivm_slot_t *
-ivm_object_setSlot(ivm_vmstate_t *state,
-				   ivm_object_t *obj,
+ivm_object_setSlot(ivm_object_t *obj,
+				   ivm_vmstate_t *state,
 				   const ivm_char_t *key,
 				   ivm_object_t *value)
 {
@@ -53,25 +53,25 @@ ivm_object_setSlot(ivm_vmstate_t *state,
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (!(found = ivm_slot_table_findSlot(state, obj->slots, key))) {
+	if (!(found = ivm_slot_table_findSlot(obj->slots, state, key))) {
 		/* not found */
 		if (!obj->slots) {
 			obj->slots = ivm_slot_table_new(state);
 		}
-		found = ivm_slot_table_addSlot(state, obj->slots, key, value, obj);
+		found = ivm_slot_table_addSlot(obj->slots, state, key, value, obj);
 	} else {
-		ivm_slot_setValue(state, found, value);
+		ivm_slot_setValue(found, state, value);
 	}
 
 	return found;
 }
 
 ivm_slot_t *
-ivm_object_getSlot(ivm_vmstate_t *state,
-				   ivm_object_t *obj,
+ivm_object_getSlot(ivm_object_t *obj,
+				   ivm_vmstate_t *state,
 				   const ivm_char_t *key)
 {
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	return ivm_slot_table_findSlot(state, obj->slots, key);
+	return ivm_slot_table_findSlot(obj->slots, state, key);
 }
