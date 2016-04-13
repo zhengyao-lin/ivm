@@ -12,7 +12,8 @@ ivm_exec_new()
 
 	ret->length = IVM_DEFAULT_PREALLOC_EXEC_SIZE;
 	ret->cur = 0;
-	ret->code = MEM_ALLOC_INIT(sizeof(*(ret->code)));
+	ret->code = MEM_ALLOC_INIT(sizeof(*(ret->code))
+							   * IVM_DEFAULT_PREALLOC_EXEC_SIZE);
 
 	IVM_ASSERT(ret->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("code buffer in executable"));
 
@@ -68,7 +69,6 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_size_t arg_count, ...)
 	while (exec->length < n_cur)
 		ivm_exec_addBuffer(exec);
 
-	printf("%p, %ld, %ld\n", exec->code, exec->cur, exec->length);
 	exec->code[exec->cur] = op;
 	for (i = exec->cur + 1;
 		 i < n_cur; i++) {
