@@ -12,7 +12,7 @@ ivm_exec_new()
 
 	ret->length = IVM_DEFAULT_PREALLOC_EXEC_SIZE;
 	ret->cur = 0;
-	ret->code = MEM_ALLOC_INIT(sizeof(*(ret->code))
+	ret->code = MEM_ALLOC_INIT(sizeof(*ret->code)
 							   * IVM_DEFAULT_PREALLOC_EXEC_SIZE);
 
 	IVM_ASSERT(ret->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("code buffer in executable"));
@@ -36,7 +36,7 @@ ivm_exec_compact(ivm_exec_t *exec)
 {
 	if (exec && exec->length > exec->cur) {
 		exec->code = MEM_REALLOC(exec->code,
-								 sizeof(ivm_byte_t)
+								 sizeof(*exec->code)
 								 * exec->cur);
 		IVM_ASSERT(exec->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted code in executable"));
 		exec->length = exec->cur;
@@ -49,7 +49,7 @@ void
 ivm_exec_addBuffer(ivm_exec_t *exec)
 {
 	exec->code = MEM_REALLOC(exec->code,
-							 sizeof(ivm_byte_t)
+							 sizeof(*exec->code)
 							 * (exec->length + IVM_DEFAULT_PREALLOC_EXEC_SIZE));
 	IVM_ASSERT(exec->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new code buffer in executable"));
 	exec->length += IVM_DEFAULT_PREALLOC_EXEC_SIZE;

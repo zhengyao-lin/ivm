@@ -7,8 +7,12 @@
 
 #define CELL_SET_OBJ(c, o) ((c)->obj = (o))
 
-/* #pragma GCC diagnostic ignored "-Wpedantic" */
+#define OFFSET_AS(p, i, type) (((type *)p)[i])
+
+/*
+#pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
+*/
 
 ivm_heap_t *
 ivm_heap_new(ivm_size_t obj_count)
@@ -29,11 +33,11 @@ ivm_heap_new(ivm_size_t obj_count)
 			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("empty set in heap"));
 
 	/* preallocated cell start address */
-	pre_cell = pre + (sizeof(ivm_object_t) * obj_count);
+	pre_cell = &OFFSET_AS(pre, obj_count, ivm_object_t);
 
 	for (i = 0; i < obj_count; i++) {
-		tmp = (ivm_cell_t *)(pre_cell + (i * sizeof(ivm_cell_t)));
-		CELL_SET_OBJ(tmp, pre + (i * sizeof(ivm_object_t)));
+		tmp = &(OFFSET_AS(pre_cell, i, ivm_cell_t));
+		CELL_SET_OBJ(tmp, &OFFSET_AS(pre, i, ivm_object_t));
 		ivm_cell_set_addCell(ret->empty, tmp);
 	}
 	ret->size = ret->empty_size = obj_count;
@@ -76,11 +80,14 @@ ivm_heap_freeObject(ivm_heap_t *heap,
 					ivm_object_t *obj)
 {
 	ivm_cell_t *cell;
+	void *pre_cell;
 
 	if (heap) {
 		IVM_ASSERT(heap->empty_size < heap->size, IVM_ERROR_MSG_WRONG_FREE_HEAP);
-		cell = (ivm_cell_t *)(heap->pre + (sizeof(ivm_object_t) * heap->size)
-							  + (sizeof(ivm_cell_t) * heap->empty_size));
+		
+		pre_cell = &OFFSET_AS(heap->pre, heap->size, ivm_object_t);
+		cell = &OFFSET_AS(pre_cell, heap->empty_size, ivm_cell_t);
+
 		ivm_object_dump(state, obj);
 		CELL_SET_OBJ(cell, obj);
 		ivm_cell_set_addCell(heap->empty, cell);
@@ -94,8 +101,9 @@ ivm_heap_isInHeap(ivm_heap_t *heap, ivm_object_t *obj)
 {
 	if (heap) {
 		return heap->pre <= (void *)obj
-			   && (void *)obj <= (heap->pre + sizeof(ivm_object_t)
-			   								  * (heap->size - 1));
+			   && (void *)obj <= (void *)(&OFFSET_AS(heap->pre,
+			   										 heap->size - 1,
+			   										 ivm_object_t));
 	}
 
 	return IVM_FALSE;

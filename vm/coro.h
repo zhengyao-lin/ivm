@@ -7,7 +7,7 @@
 #include "exec.h"
 
 typedef struct {
-	ivm_vmstack_t stack;
+	ivm_vmstack_t *stack;
 
 	ivm_size_t pc;
 	ivm_exec_t *exec;
