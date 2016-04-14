@@ -20,6 +20,7 @@ int main()
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);
+	ivm_object_setSlot(obj2, state, "c", obj1);
 
 	printf("obj1: %p\n", (void *)obj1);
 	printf("obj2: %p\n", (void *)obj2);
@@ -31,6 +32,8 @@ int main()
 
 	printf("slot a in context chain: %p\n",
 		   (void *)ivm_ctchain_search(chain, state, "a"));
+	printf("slot c in context chain: %p\n",
+		   (void *)ivm_ctchain_search(chain, state, "c"));
 
 	ivm_vmstack_push(stack, obj1);
 	ivm_vmstack_push(stack, obj2);
