@@ -32,5 +32,7 @@ ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_char_t *key);
+ivm_ctchain_t *
+ivm_ctchain_clone(ivm_ctchain_t *chain);
 
 #endif

@@ -4,7 +4,7 @@
 #include "type.h"
 #include "obj.h"
 #include "stack.h"
-#include "exec.h"
+#include "func.h"
 
 typedef struct {
 	ivm_vmstack_t *stack;

@@ -15,6 +15,8 @@ int main()
 
 	ivm_ctchain_t *chain = ivm_ctchain_new();
 
+	ivm_function_t *func;
+
 	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
 	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
 
@@ -35,6 +37,8 @@ int main()
 	printf("slot c in context chain: %p\n",
 		   (void *)ivm_ctchain_search(chain, state, "c"));
 
+	func = ivm_function_new(chain, exec, IVM_INTSIG_NONE);
+
 	ivm_vmstack_push(stack, obj1);
 	ivm_vmstack_push(stack, obj2);
 	printf("obj at stack top: %p\n", (void *)ivm_vmstack_top(stack));
@@ -44,6 +48,7 @@ int main()
 	printf("obj1.a: %p\n", (void *)ivm_object_getSlotValue(obj1, state, "a"));
 	printf("obj2.b: %p\n", (void *)ivm_object_getSlotValue(obj2, state, "b"));
 
+	ivm_function_free(func);
 	ivm_ctchain_free(chain);
 	ivm_exec_free(exec);
 	ivm_vmstack_free(stack);

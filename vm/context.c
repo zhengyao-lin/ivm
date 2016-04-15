@@ -28,6 +28,9 @@ ivm_ctchain_sub_free(ivm_ctchain_sub_t *chain_sub)
 	return;
 }
 
+#define FOREACH(i, chain) for ((i) = (chain)->head; (i); (i) = (i)->inner)
+#define RFOREACH(i, chain) for ((i) = (chain)->tail; (i); (i) = (i)->outer)
+
 ivm_ctchain_t *
 ivm_ctchain_new()
 {
@@ -80,7 +83,7 @@ ivm_ctchain_removeContext(ivm_ctchain_t *chain,
 {
 	ivm_ctchain_sub_t *i;
 
-	for (i = chain->tail; i; i = i->outer) {
+	RFOREACH (i, chain) {
 		if (i->ct == ct) {
 			if (i->outer)
 				i->outer->inner = i->inner;
@@ -111,10 +114,23 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 	ivm_object_t *ret = IVM_NULL;
 	ivm_ctchain_sub_t *i;
 
-	for (i = chain->tail; i; i = i->outer) {
+	RFOREACH (i, chain) {
 		if ((ret = ivm_object_getSlotValue(GET_CONTEXT(i), state, key))
 			!= IVM_NULL)
 			break;
+	}
+
+	return ret;
+}
+
+ivm_ctchain_t *
+ivm_ctchain_clone(ivm_ctchain_t *chain)
+{
+	ivm_ctchain_t *ret = ivm_ctchain_new();
+	ivm_ctchain_sub_t *i;
+
+	FOREACH (i, chain) {
+		ivm_ctchain_addContext(ret, GET_CONTEXT(i));
 	}
 
 	return ret;
