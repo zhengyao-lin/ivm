@@ -21,8 +21,9 @@ int main()
 	ivm_function_t *func1, *func2;
 	ivm_coro_t *coro;
 
-	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
-	ivm_exec_addCode(exec, IVM_OP_PRINT, 0);
+	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), 0);
+	ivm_exec_addCode(exec, IVM_OP(PRINT), 0);
+	ivm_exec_addCode(exec, IVM_OP(TEST1), 0);
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);

@@ -10,7 +10,7 @@ static
 ivm_ctchain_sub_t *
 ivm_ctchain_sub_new(ivm_context_t *ct)
 {
-	ivm_ctchain_sub_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_ctchain_sub_t *ret = MEM_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("sub context chain"));
 
@@ -34,7 +34,7 @@ ivm_ctchain_sub_free(ivm_ctchain_sub_t *chain_sub)
 ivm_ctchain_t *
 ivm_ctchain_new()
 {
-	ivm_ctchain_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_ctchain_t *ret = MEM_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("context chain"));
 

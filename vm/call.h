@@ -3,7 +3,7 @@
 
 #include "type.h"
 #include "exec.h"
-#include "stack.h"
+#include "std/stack.h"
 
 struct ivm_ctchain_t_tag;
 
@@ -35,7 +35,6 @@ typedef ivm_stack_t ivm_call_stack_t;
 #define ivm_call_stack_inc ivm_stack_inc
 #define ivm_call_stack_push ivm_stack_push
 #define ivm_call_stack_top(stack) ((ivm_caller_info_t *)ivm_stack_top(stack))
-#define ivm_call_stack_topIndex ivm_stack_topIndex
 #define ivm_call_stack_size ivm_stack_size
 #define ivm_call_stack_pop(stack) ((ivm_caller_info_t *)ivm_stack_pop(stack))
 #define ivm_call_stack_setTop ivm_stack_setTop

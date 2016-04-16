@@ -1,6 +1,6 @@
 #include "pub/mem.h"
 #include "coro.h"
-#include "stack.h"
+#include "vmstack.h"
 #include "call.h"
 #include "vm.h"
 #include "context.h"
@@ -76,13 +76,14 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 			while (coro->runtime->pc < ivm_exec_length(coro->runtime->exec)) {
 				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(coro->runtime->exec,
 															  coro->runtime->pc));
-				tmp_proc(state, coro);
+				if (tmp_proc(state, coro) == IVM_ACTION_BREAK) break;
 			}
 
 			tmp_info = ivm_call_stack_pop(coro->call_st);
-			if (tmp_info)
+			if (tmp_info) {
+				ivm_runtime_restore(coro->runtime, coro, tmp_info);
 				ivm_caller_info_free(tmp_info);
-			else break; /* no more callee to restore, end executing */
+			} else break; /* no more callee to restore, end executing */
 		}
 
 		ret = ivm_vmstack_top(coro->stack);

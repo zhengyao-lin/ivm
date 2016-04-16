@@ -7,7 +7,6 @@ ADD_LIBRARY(vm SHARED
 			slot.c
 			vm.c
 			exec.c
-			stack.c
 			context.c
 			func.c
 			call.c
@@ -24,9 +23,10 @@ INCLUDE_DIRECTORIES(${IVM_PUB_HEAD_DIR})
 
 # subdirs
 ADD_SUBDIRECTORY(gc)
+ADD_SUBDIRECTORY(std)
 
 # dependencies
-ADD_DEPENDENCIES(vm vm_gc)
+ADD_DEPENDENCIES(vm vm_gc vm_std)
 
 # link libraries
-TARGET_LINK_LIBRARIES(vm vm_gc)
+TARGET_LINK_LIBRARIES(vm vm_gc vm_std)

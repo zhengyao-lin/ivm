@@ -6,16 +6,21 @@
 struct ivm_coro_t_tag;
 struct ivm_vmstate_t_tag;
 
+#define IVM_OP(name) IVM_OP_##name
+
 typedef enum {
-	IVM_OP_NONE = 0,
-	IVM_OP_NEW_OBJ,
-	IVM_OP_GET_SLOT,
-	IVM_OP_SET_SLOT,
-	IVM_OP_GET_CONTEXT_SLOT,
-	IVM_OP_SET_CONTEXT_SLOT,
-	IVM_OP_PRINT,
-	IVM_OP_INVOKE,
-	IVM_OP_LAST
+	IVM_OP(NONE) = 0,
+	IVM_OP(NEW_OBJ),
+	IVM_OP(GET_SLOT),
+	IVM_OP(SET_SLOT),
+	IVM_OP(GET_CONTEXT_SLOT),
+	IVM_OP(SET_CONTEXT_SLOT),
+	IVM_OP(PRINT),
+	IVM_OP(INVOKE),
+	IVM_OP(TEST1),
+	IVM_OP(TEST2),
+	IVM_OP(TEST3),
+	IVM_OP(LAST)
 } ivm_opcode_t;
 
 typedef enum {

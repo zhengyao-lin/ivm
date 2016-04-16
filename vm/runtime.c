@@ -51,6 +51,8 @@ void
 ivm_runtime_restore(ivm_runtime_t *runtime, ivm_coro_t *coro,
 					struct ivm_caller_info_t_tag *info)
 {
+	ivm_ctchain_free(runtime->context);
+
 	runtime->pc = info->pc;
 	runtime->exec = info->exec;
 	runtime->context = info->context;

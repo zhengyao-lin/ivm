@@ -17,7 +17,9 @@ ivm_function_new(ivm_ctchain_t *context,
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
 
 	ret->is_native = IVM_FALSE;
-	ret->u.f.closure = ivm_ctchain_clone(context);
+	ret->u.f.closure = context
+					   ? ivm_ctchain_clone(context)
+					   : ivm_ctchain_new();
 	ret->u.f.body = body;
 	ret->intsig = intsig;
 
