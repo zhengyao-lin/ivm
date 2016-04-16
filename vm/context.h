@@ -12,7 +12,7 @@ struct ivm_ctchain_sub_t_tag {
 	struct ivm_ctchain_sub_t_tag *inner;
 };
 
-typedef struct {
+typedef struct ivm_ctchain_t_tag {
 	struct ivm_ctchain_sub_t_tag *head;
 	struct ivm_ctchain_sub_t_tag *tail;
 } ivm_ctchain_t;

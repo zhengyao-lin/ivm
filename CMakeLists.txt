@@ -10,7 +10,7 @@ SET(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set compiler flags
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wpedantic -Wno-variadic-macros -fPIC")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ansi -Wall -Wpedantic -Wno-variadic-macros -fPIC")
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

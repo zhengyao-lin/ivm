@@ -40,4 +40,6 @@ typedef ivm_double_t	ivm_numeric_t;
 #define IVM_OBJECT_T	2
 #define IVM_NUMERIC_T	3
 
+typedef ivm_size_t		ivm_pc_t;
+
 #endif

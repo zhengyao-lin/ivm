@@ -2,27 +2,39 @@
 #define _IVM_VM_STACK_H_
 
 #include "type.h"
-#include "obj.h"
 
 #define IVM_DEFAULT_PREALLOC_STACK_SIZE 50
+
+struct ivm_object_t_tag;
 
 typedef struct {
 	ivm_size_t size;
 	ivm_size_t top;
-	ivm_object_t **st;
-} ivm_vmstack_t;
+	void **st;
+} ivm_stack_t;
 
-ivm_vmstack_t *
-ivm_vmstack_new();
+ivm_stack_t *
+ivm_stack_new();
 void
-ivm_vmstack_free(ivm_vmstack_t *stack);
+ivm_stack_free(ivm_stack_t *stack);
 void
-ivm_vmstack_inc(ivm_vmstack_t *stack);
+ivm_stack_inc(ivm_stack_t *stack);
 
 void
-ivm_vmstack_push(ivm_vmstack_t *stack, ivm_object_t *obj);
-#define ivm_vmstack_top(stack) (stack->top > 0 ? stack->st[stack->top - 1] : IVM_NULL)
-ivm_object_t *
-ivm_vmstack_pop(ivm_vmstack_t *stack);
+ivm_stack_push(ivm_stack_t *stack, void *p);
+#define ivm_stack_top(stack) ((stack)->top > 0 ? (stack)->st[(stack)->top - 1] : IVM_NULL)
+void *
+ivm_stack_pop(ivm_stack_t *stack);
+#define ivm_stack_setTop(stack, t) ((stack)->top = t)
+
+typedef ivm_stack_t ivm_vmstack_t;
+
+#define ivm_vmstack_new ivm_stack_new
+#define ivm_vmstack_free ivm_stack_free
+#define ivm_vmstack_inc ivm_stack_inc
+#define ivm_vmstack_push ivm_stack_push
+#define ivm_vmstack_top ivm_stack_top
+#define ivm_vmstack_pop(stack) ((struct ivm_object_t_tag *)ivm_stack_pop(stack))
+#define ivm_vmstack_setTop ivm_stack_setTop
 
 #endif

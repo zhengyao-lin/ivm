@@ -47,6 +47,11 @@ void
 ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 /*
+ivm_object_t *
+ivm_vmstate_execute();
+*/
+
+/*
 #define ivm_vmstate_alloc(state) ((state) ? ivm_heap_alloc((state)->heaps) : IVM_NULL)
 #define ivm_vmstate_freeObject(state, obj) \
 	if (state) { \

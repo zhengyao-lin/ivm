@@ -9,7 +9,9 @@ ADD_LIBRARY(vm SHARED
 			exec.c
 			stack.c
 			context.c
-			func.c)
+			func.c
+			call.c
+			coro.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

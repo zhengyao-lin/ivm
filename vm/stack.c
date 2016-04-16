@@ -2,10 +2,10 @@
 #include "stack.h"
 #include "err.h"
 
-ivm_vmstack_t *
-ivm_vmstack_new()
+ivm_stack_t *
+ivm_stack_new()
 {
-	ivm_vmstack_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_stack_t *ret = MEM_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("stack structure"));
 
@@ -20,7 +20,7 @@ ivm_vmstack_new()
 }
 
 void
-ivm_vmstack_free(ivm_vmstack_t *stack)
+ivm_stack_free(ivm_stack_t *stack)
 {
 	if (stack) {
 		MEM_FREE(stack->st);
@@ -31,7 +31,7 @@ ivm_vmstack_free(ivm_vmstack_t *stack)
 }
 
 void
-ivm_vmstack_inc(ivm_vmstack_t *stack)
+ivm_stack_inc(ivm_stack_t *stack)
 {
 	stack->st = MEM_REALLOC(stack->st,
 							sizeof(*stack->st)
@@ -43,18 +43,18 @@ ivm_vmstack_inc(ivm_vmstack_t *stack)
 }
 
 void
-ivm_vmstack_push(ivm_vmstack_t *stack, ivm_object_t *obj)
+ivm_stack_push(ivm_stack_t *stack, void *p)
 {
 	if (stack->top >= stack->size)
-		ivm_vmstack_inc(stack);
+		ivm_stack_inc(stack);
 
-	stack->st[stack->top++] = obj;
+	stack->st[stack->top++] = p;
 
 	return;
 }
 
-ivm_object_t *
-ivm_vmstack_pop(ivm_vmstack_t *stack)
+void *
+ivm_stack_pop(ivm_stack_t *stack)
 {
 	if (stack->top > 0)
 		return stack->st[--stack->top];
