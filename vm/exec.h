@@ -27,5 +27,6 @@ ivm_exec_addCode(ivm_exec_t *exec,
 				 ivm_size_t arg_count, ...);
 
 #define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)exec->code[pc])
+#define ivm_exec_length(exec) (exec->cur)
 
 #endif

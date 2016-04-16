@@ -7,6 +7,8 @@
 #include "runtime.h"
 
 struct ivm_vmstate_t_tag;
+struct ivm_caller_info_t_tag;
+struct ivm_coro_t_tag;
 
 typedef ivm_uint16_t ivm_argc_t;
 typedef ivm_uint16_t ivm_signal_mask_t;
@@ -14,7 +16,7 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											   ivm_ctchain_t *context, ivm_object_t *base,
 											   ivm_argc_t argc, ivm_object_t **argv);
 
-#define IVM_NATIVE_FUNC(name) ivm_object_t *ivm_native_function_##name(\
+#define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)(\
 											struct ivm_vmstate_t_tag *state, \
 											ivm_ctchain_t *context, ivm_object_t *base, \
 											ivm_argc_t argc, ivm_object_t **argv)
@@ -49,6 +51,8 @@ ivm_function_free(ivm_function_t *func);
 #define ivm_function_isNative(func) (func->is_native)
 ivm_runtime_t *
 ivm_function_createRuntime(ivm_function_t *func);
+struct ivm_caller_info_t_tag *
+ivm_function_invoke(ivm_function_t *func, struct ivm_coro_t_tag *coro);
 ivm_object_t *
 ivm_function_callNative(ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,

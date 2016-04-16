@@ -3,6 +3,8 @@
 #include "context.h"
 #include "runtime.h"
 #include "vm.h"
+#include "call.h"
+#include "coro.h"
 #include "err.h"
 
 ivm_function_t *
@@ -58,6 +60,15 @@ ivm_function_createRuntime(ivm_function_t *func)
 		return ivm_runtime_new(IVM_NULL, IVM_NULL);
 
 	return ivm_runtime_new(func->u.f.body, func->u.f.closure);
+}
+
+ivm_caller_info_t *
+ivm_function_invoke(ivm_function_t *func, ivm_coro_t *coro)
+{
+	if (func->is_native)
+		return IVM_NULL;
+
+	return ivm_runtime_invoke(coro->runtime, coro, func->u.f.body, func->u.f.closure);
 }
 
 ivm_object_t *

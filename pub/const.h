@@ -4,4 +4,6 @@
 #define IVM_CHECK_OBJECT_NULL 1
 #define IVM_CHECK_BASE_NULL 1
 
+#define IVM_DEBUG 1
+
 #endif

@@ -1,6 +1,8 @@
 #include "pub/mem.h"
 #include "runtime.h"
 #include "context.h"
+#include "call.h"
+#include "coro.h"
 #include "err.h"
 
 ivm_runtime_t *
@@ -25,5 +27,33 @@ ivm_runtime_free(ivm_runtime_t *runtime)
 		MEM_FREE(runtime);
 	}
 	
+	return;
+}
+
+ivm_caller_info_t *
+ivm_runtime_invoke(ivm_runtime_t *runtime, ivm_coro_t *coro,
+				   ivm_exec_t *exec, ivm_ctchain_t *context)
+{
+	ivm_pc_t cur_pc = runtime->pc;
+	ivm_exec_t *cur_exec = runtime->exec;
+	ivm_ctchain_t *cur_ct = runtime->context;
+
+	runtime->pc = 0;
+	runtime->exec = exec;
+	runtime->context = ivm_ctchain_clone(context);
+
+	return ivm_caller_info_new(cur_exec,
+							   ivm_coro_stackTop(coro),
+							   cur_pc, cur_ct);
+}
+
+void
+ivm_runtime_restore(ivm_runtime_t *runtime, ivm_coro_t *coro,
+					struct ivm_caller_info_t_tag *info)
+{
+	runtime->pc = info->pc;
+	runtime->exec = info->exec;
+	runtime->context = info->context;
+
 	return;
 }

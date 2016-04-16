@@ -18,5 +18,9 @@
 #define IVM_ERROR_MSG_WRONG_FREE_HEAP				("free object with wrong heap")
 #define IVM_ERROR_MSG_NO_SPARE_MEM					("no spare memory left in heap")
 #define IVM_ERROR_MSG_CANNOT_FIND_OBJECT_IN_HEAP	("cannot find object in heap")
+#define IVM_ERROR_MSG_BAD_OP_TABLE					("bad opcode table")
+#define IVM_ERROR_MSG_BAD_OP						("bad opcode")
+#define IVM_ERROT_MSG_RESET_CORO_ROOT				("cannot reset root of sleeping coroutine")
+#define IVM_ERROR_MSG_INSUFFICIENT_STACK			("insufficient stack")
 
 #endif
