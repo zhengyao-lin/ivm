@@ -2,6 +2,12 @@
 #include "vm/vm.h"
 #include "vm/gc/heap.h"
 
+IVM_NATIVE_FUNC(test)
+{
+	printf("from native!!\n");
+	return IVM_NULL;
+}
+
 int main()
 {
 	ivm_vmstate_t *state = ivm_vmstate_new();
@@ -39,11 +45,11 @@ int main()
 	printf("slot c in context chain: %p\n",
 		   (void *)ivm_ctchain_search(chain, state, "c"));
 
-	func = ivm_function_new(chain, exec, IVM_INTSIG_NONE);
+	func = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 
 	coro = ivm_coro_new();
 
-	ivm_coro_start(coro, func);
+	ivm_coro_start(coro, state, func);
 
 	ivm_vmstack_push(stack, obj1);
 	ivm_vmstack_push(stack, obj2);

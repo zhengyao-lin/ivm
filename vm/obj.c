@@ -23,6 +23,15 @@ ivm_object_new(ivm_vmstate_t *state)
 	return ivm_vmstate_newObject(state);
 }
 
+ivm_object_t *ivm_object_newNull(struct ivm_vmstate_t_tag *state)
+{
+	ivm_object_t *ret = ivm_vmstate_newObject(state);
+	
+	ret->type = IVM_NULL_T;
+
+	return ret;
+}
+
 void
 ivm_object_init(ivm_object_t *obj, ivm_vmstate_t *state)
 {

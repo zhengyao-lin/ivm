@@ -2,6 +2,7 @@
 #include "func.h"
 #include "context.h"
 #include "runtime.h"
+#include "vm.h"
 #include "err.h"
 
 ivm_function_t *
@@ -54,7 +55,16 @@ ivm_runtime_t *
 ivm_function_createRuntime(ivm_function_t *func)
 {
 	if (func->is_native)
-		return IVM_NULL;
+		return ivm_runtime_new(IVM_NULL, IVM_NULL);
 
 	return ivm_runtime_new(func->u.f.body, func->u.f.closure);
+}
+
+ivm_object_t *
+ivm_function_callNative(ivm_function_t *func,
+						ivm_vmstate_t *state,
+						ivm_ctchain_t *context, ivm_object_t *base,
+						ivm_argc_t argc, ivm_object_t **argv)
+{
+	return func->u.native(state, context, base, argc, argv);
 }

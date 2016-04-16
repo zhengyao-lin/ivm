@@ -2,6 +2,7 @@
 #include "coro.h"
 #include "stack.h"
 #include "call.h"
+#include "vm.h"
 #include "err.h"
 
 ivm_coro_t *
@@ -33,10 +34,16 @@ ivm_coro_free(ivm_coro_t *coro)
 }
 
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro, ivm_function_t *root)
+ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 {
+	ivm_object_t *ret = IVM_NULL;
+
 	if (!coro->runtime)
 		coro->runtime = ivm_function_createRuntime(root);
 
-	return IVM_NULL;
+	if (ivm_function_isNative(root)) {
+		ret = ivm_function_callNative(root, state, coro->runtime->context, NULL, 0, NULL);
+	}
+
+	return ret ? ret : IVM_NULL_OBJ(state);
 }

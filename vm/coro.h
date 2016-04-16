@@ -8,6 +8,8 @@
 #include "call.h"
 #include "runtime.h"
 
+struct ivm_vmstate_t_tag;
+
 typedef struct {
 	ivm_vmstack_t *stack;
 	ivm_call_stack_t *call_st;
@@ -20,6 +22,6 @@ void
 ivm_coro_free(ivm_coro_t *coro);
 
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro, ivm_function_t *root);
+ivm_coro_start(ivm_coro_t *coro, struct ivm_vmstate_t_tag *state, ivm_function_t *root);
 
 #endif

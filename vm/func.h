@@ -14,6 +14,12 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											   ivm_ctchain_t *context, ivm_object_t *base,
 											   ivm_argc_t argc, ivm_object_t **argv);
 
+#define IVM_NATIVE_FUNC(name) ivm_object_t *ivm_native_function_##name(\
+											struct ivm_vmstate_t_tag *state, \
+											ivm_ctchain_t *context, ivm_object_t *base, \
+											ivm_argc_t argc, ivm_object_t **argv)
+#define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+
 enum {
 	IVM_INTSIG_NONE			= 0,
 	IVM_INTSIG_RETN			= 1 << 0,
@@ -40,7 +46,13 @@ ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
 void
 ivm_function_free(ivm_function_t *func);
 
+#define ivm_function_isNative(func) (func->is_native)
 ivm_runtime_t *
 ivm_function_createRuntime(ivm_function_t *func);
+ivm_object_t *
+ivm_function_callNative(ivm_function_t *func,
+						struct ivm_vmstate_t_tag *state,
+						ivm_ctchain_t *context, ivm_object_t *base,
+						ivm_argc_t argc, ivm_object_t **argv);
 
 #endif
