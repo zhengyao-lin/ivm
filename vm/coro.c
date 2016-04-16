@@ -94,7 +94,7 @@ ACTION_BREAK:
 		}
 
 ACTION_YIELD:
-		ret = ivm_vmstack_top(coro->stack);
+		ret = ivm_vmstack_pop(coro->stack);
 	}
 
 	return ret ? ret : IVM_NULL_OBJ(state);

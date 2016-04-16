@@ -24,11 +24,13 @@ int main()
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), 0);
 	ivm_exec_addCode(exec1, IVM_OP(PRINT), 0);
+	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), 0);
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), 0);
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), 0);
 
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), 0);
 	ivm_exec_addCode(exec2, IVM_OP(PRINT), 0);
+	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), 0);
 	ivm_exec_addCode(exec2, IVM_OP(YIELD), 0);
 	ivm_exec_addCode(exec2, IVM_OP(TEST3), 0);
 
