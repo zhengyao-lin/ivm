@@ -14,9 +14,10 @@ ivm_vmstate_new()
 	ret->heap_count = 0;
 	ret->heaps = IVM_NULL;
 
-	ret->coro_count = 0;
 	ret->cur_coro = 0;
-	ret->coros = IVM_NULL;
+	ret->coro_list = ivm_coro_list_new();
+
+	ret->exec_list = ivm_exec_list_new();
 	
 	return ret;
 }
@@ -26,19 +27,15 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	ivm_size_t i;
 
-#if IVM_CHECK_STATE_NULL
 	if (state) {
-#endif
-	
-	for (i = 0; i < state->heap_count; i++) {
-		ivm_heap_free(state->heaps[i]);
+		for (i = 0; i < state->heap_count; i++) {
+			ivm_heap_free(state->heaps[i]);
+		}
+		MEM_FREE(state->heaps);
+		ivm_coro_list_free(state->coro_list);
+		ivm_exec_list_free(state->exec_list);
+		MEM_FREE(state);
 	}
-	MEM_FREE(state->heaps);
-	MEM_FREE(state);
-
-#if IVM_CHECK_STATE_NULL
-	}
-#endif
 
 	return;
 }

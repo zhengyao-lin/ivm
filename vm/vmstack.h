@@ -3,11 +3,13 @@
 
 #include "std/stack.h"
 
+#define IVM_DEFAULT_VMSTACK_BUFFER_SIZE 64
+
 struct ivm_object_t_tag;
 
 typedef ivm_stack_t ivm_vmstack_t;
 
-#define ivm_vmstack_new ivm_stack_new
+#define ivm_vmstack_new() (ivm_stack_new_c(IVM_DEFAULT_VMSTACK_BUFFER_SIZE))
 #define ivm_vmstack_free ivm_stack_free
 #define ivm_vmstack_inc ivm_stack_inc
 #define ivm_vmstack_push ivm_stack_push

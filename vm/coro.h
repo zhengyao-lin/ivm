@@ -25,4 +25,13 @@ ivm_coro_free(ivm_coro_t *coro);
 ivm_object_t *
 ivm_coro_start(ivm_coro_t *coro, struct ivm_vmstate_t_tag *state, ivm_function_t *root);
 
+typedef ivm_ptlist_t ivm_coro_list_t;
+
+#define ivm_coro_list_new ivm_ptlist_new
+#define ivm_coro_list_free ivm_ptlist_free
+#define ivm_coro_list_add ivm_ptlist_push
+#define ivm_coro_list_size ivm_ptlist_size
+#define ivm_coro_list_at ivm_ptlist_at
+#define ivm_coro_list_foreach ivm_ptlist_foreach
+
 #endif

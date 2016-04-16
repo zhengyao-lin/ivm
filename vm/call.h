@@ -5,6 +5,8 @@
 #include "exec.h"
 #include "std/stack.h"
 
+#define IVM_DEFAULT_CALLER_INFO_BUFFER_SIZE 32
+
 struct ivm_ctchain_t_tag;
 
 typedef struct ivm_caller_info_t_tag {
@@ -30,7 +32,7 @@ ivm_caller_info_free(ivm_caller_info_t *info);
 
 typedef ivm_stack_t ivm_call_stack_t;
 
-#define ivm_call_stack_new ivm_stack_new
+#define ivm_call_stack_new() (ivm_stack_new_c(IVM_DEFAULT_CALLER_INFO_BUFFER_SIZE))
 #define ivm_call_stack_free ivm_stack_free
 #define ivm_call_stack_inc ivm_stack_inc
 #define ivm_call_stack_push ivm_stack_push

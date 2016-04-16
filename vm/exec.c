@@ -10,10 +10,10 @@ ivm_exec_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
-	ret->length = IVM_DEFAULT_PREALLOC_EXEC_SIZE;
+	ret->length = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	ret->cur = 0;
 	ret->code = MEM_ALLOC_INIT(sizeof(*ret->code)
-							   * IVM_DEFAULT_PREALLOC_EXEC_SIZE);
+							   * IVM_DEFAULT_EXEC_BUFFER_SIZE);
 
 	IVM_ASSERT(ret->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("code buffer in executable"));
 
@@ -50,9 +50,9 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 {
 	exec->code = MEM_REALLOC(exec->code,
 							 sizeof(*exec->code)
-							 * (exec->length + IVM_DEFAULT_PREALLOC_EXEC_SIZE));
+							 * (exec->length + IVM_DEFAULT_EXEC_BUFFER_SIZE));
 	IVM_ASSERT(exec->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new code buffer in executable"));
-	exec->length += IVM_DEFAULT_PREALLOC_EXEC_SIZE;
+	exec->length += IVM_DEFAULT_EXEC_BUFFER_SIZE;
 
 	return;
 }

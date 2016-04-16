@@ -18,9 +18,11 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_size_t heap_count;
 	ivm_heap_t **heaps;
 
-	ivm_size_t coro_count;
 	ivm_size_t cur_coro;
-	ivm_coro_t **coros;
+	ivm_coro_list_t *coro_list;
+
+	/* executable list: used for function object creating */
+	ivm_exec_list_t *exec_list;
 } ivm_vmstate_t;
 
 #define VMSTATE_GC_FLAG(state) ((state)->gc_flag)
@@ -45,6 +47,9 @@ ivm_object_t *
 ivm_vmstate_newObject(ivm_vmstate_t *state);
 void
 ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
+
+#define ivm_vmstate_registerExec(state, exec) (ivm_exec_list_register((state)->exec_list, (exec)))
+#define ivm_vmstate_getExec(state, id) (ivm_exec_list_at((state)->exec_list, (id)))
 
 /*
 ivm_object_t *

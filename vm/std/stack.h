@@ -4,10 +4,13 @@
 #include "list.h"
 #include "../type.h"
 
+#define IVM_DEFAULT_STACK_BUFFER_SIZE 32
+
 typedef ivm_ptlist_t ivm_stack_t;
 typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 
-#define ivm_stack_new ivm_ptlist_new
+#define ivm_stack_new_c ivm_ptlist_new_c
+#define ivm_stack_new() (ivm_stack_new_c(IVM_DEFAULT_STACK_BUFFER_SIZE))
 #define ivm_stack_free ivm_ptlist_free
 #define ivm_stack_inc ivm_ptlist_inc
 

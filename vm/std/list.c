@@ -3,7 +3,7 @@
 #include "err.h"
 
 ivm_ptlist_t *
-ivm_ptlist_new()
+ivm_ptlist_new_c(ivm_size_t buf_size)
 {
 	ivm_ptlist_t *ret = MEM_ALLOC(sizeof(*ret));
 
@@ -11,7 +11,7 @@ ivm_ptlist_new()
 
 	ret->alloc
 	= ret->buf_size
-	= IVM_DEFAULT_LIST_BUFFER_SIZE;
+	= buf_size;
 
 	ret->cur = 0;
 	ret->lst = MEM_ALLOC_INIT(sizeof(*ret->lst)
@@ -45,15 +45,15 @@ ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 	return;
 }
 
-void
+ivm_size_t
 ivm_ptlist_push(ivm_ptlist_t *ptlist, void *p)
 {
 	if (ptlist->cur >= ptlist->alloc)
 		ivm_ptlist_inc(ptlist);
 
-	ptlist->lst[ptlist->cur++] = p;
+	ptlist->lst[ptlist->cur] = p;
 
-	return;
+	return ptlist->cur++;
 }
 
 void *
@@ -73,6 +73,17 @@ ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc)
 
 	for (i = 0; i < ptlist->cur; i++)
 		proc(VALUE_AT(ptlist, i));
+
+	return;
+}
+
+void
+ivm_ptlist_compact(ivm_ptlist_t *ptlist)
+{
+	ptlist->lst = MEM_REALLOC(ptlist->lst,
+							  sizeof(*ptlist->lst) * ptlist->cur);
+	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted pointer list"));
+	ptlist->alloc = ptlist->cur;
 
 	return;
 }
