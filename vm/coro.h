@@ -6,13 +6,7 @@
 #include "stack.h"
 #include "func.h"
 #include "call.h"
-#include "context.h"
-
-typedef struct {
-	ivm_pc_t pc;
-	ivm_exec_t *exec;
-	ivm_ctchain_t *context;
-} ivm_runtime_t;
+#include "runtime.h"
 
 typedef struct {
 	ivm_vmstack_t *stack;
@@ -20,7 +14,12 @@ typedef struct {
 	ivm_runtime_t *runtime;
 } ivm_coro_t;
 
+ivm_coro_t *
+ivm_coro_new();
+void
+ivm_coro_free(ivm_coro_t *coro);
+
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro);
+ivm_coro_start(ivm_coro_t *coro, ivm_function_t *root);
 
 #endif

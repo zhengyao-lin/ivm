@@ -11,7 +11,8 @@ ADD_LIBRARY(vm SHARED
 			context.c
 			func.c
 			call.c
-			coro.c)
+			coro.c
+			runtime.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

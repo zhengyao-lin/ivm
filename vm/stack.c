@@ -60,3 +60,16 @@ ivm_stack_pop(ivm_stack_t *stack)
 		return stack->st[--stack->top];
 	return IVM_NULL;
 }
+
+#define VALUE_AT(stack, i) ((stack)->st[i])
+
+void
+ivm_stack_foreach(ivm_stack_t *stack, ivm_stack_foreach_proc_t proc)
+{
+	ivm_size_t i;
+
+	for (i = 0; i < stack->top; i++)
+		proc(VALUE_AT(stack, i));
+
+	return;
+}

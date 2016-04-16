@@ -17,6 +17,8 @@ int main()
 
 	ivm_function_t *func;
 
+	ivm_coro_t *coro;
+
 	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
 	ivm_exec_addCode(exec, IVM_OP_NEW_OBJ, 0);
 
@@ -39,6 +41,10 @@ int main()
 
 	func = ivm_function_new(chain, exec, IVM_INTSIG_NONE);
 
+	coro = ivm_coro_new();
+
+	ivm_coro_start(coro, func);
+
 	ivm_vmstack_push(stack, obj1);
 	ivm_vmstack_push(stack, obj2);
 	printf("obj at stack top: %p\n", (void *)ivm_vmstack_top(stack));
@@ -48,6 +54,7 @@ int main()
 	printf("obj1.a: %p\n", (void *)ivm_object_getSlotValue(obj1, state, "a"));
 	printf("obj2.b: %p\n", (void *)ivm_object_getSlotValue(obj2, state, "b"));
 
+	ivm_coro_free(coro);
 	ivm_function_free(func);
 	ivm_ctchain_free(chain);
 	ivm_exec_free(exec);

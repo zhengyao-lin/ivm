@@ -21,3 +21,10 @@ ivm_caller_info_new(ivm_function_t *caller,
 
 	return ret;
 }
+
+void
+ivm_caller_info_free(ivm_caller_info_t *info)
+{
+	MEM_FREE(info);
+	return;
+}

@@ -1,9 +1,10 @@
 #ifndef _IVM_VM_FUNC_H_
 #define _IVM_VM_FUNC_H_
 
+#include "type.h"
 #include "context.h"
 #include "exec.h"
-#include "type.h"
+#include "runtime.h"
 
 struct ivm_vmstate_t_tag;
 
@@ -38,5 +39,8 @@ ivm_function_t *
 ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
 void
 ivm_function_free(ivm_function_t *func);
+
+ivm_runtime_t *
+ivm_function_createRuntime(ivm_function_t *func);
 
 #endif

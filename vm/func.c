@@ -1,6 +1,7 @@
 #include "pub/mem.h"
 #include "func.h"
 #include "context.h"
+#include "runtime.h"
 #include "err.h"
 
 ivm_function_t *
@@ -47,4 +48,13 @@ ivm_function_free(ivm_function_t *func)
 	}
 
 	return;
+}
+
+ivm_runtime_t *
+ivm_function_createRuntime(ivm_function_t *func)
+{
+	if (func->is_native)
+		return IVM_NULL;
+
+	return ivm_runtime_new(func->u.f.body, func->u.f.closure);
 }

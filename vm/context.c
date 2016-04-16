@@ -126,8 +126,13 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain)
 {
-	ivm_ctchain_t *ret = ivm_ctchain_new();
+	ivm_ctchain_t *ret;
 	ivm_ctchain_sub_t *i;
+
+	if (!chain)
+		return IVM_NULL;
+
+	ret = ivm_ctchain_new();
 
 	FOREACH (i, chain) {
 		ivm_ctchain_addContext(ret, GET_CONTEXT(i));

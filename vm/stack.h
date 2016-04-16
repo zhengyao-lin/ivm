@@ -7,6 +7,8 @@
 
 struct ivm_object_t_tag;
 
+typedef void (*ivm_stack_foreach_proc_t)(void *p);
+
 typedef struct {
 	ivm_size_t size;
 	ivm_size_t top;
@@ -26,6 +28,8 @@ ivm_stack_push(ivm_stack_t *stack, void *p);
 void *
 ivm_stack_pop(ivm_stack_t *stack);
 #define ivm_stack_setTop(stack, t) ((stack)->top = t)
+void
+ivm_stack_foreach(ivm_stack_t *stack, ivm_stack_foreach_proc_t proc);
 
 typedef ivm_stack_t ivm_vmstack_t;
 
@@ -36,5 +40,6 @@ typedef ivm_stack_t ivm_vmstack_t;
 #define ivm_vmstack_top ivm_stack_top
 #define ivm_vmstack_pop(stack) ((struct ivm_object_t_tag *)ivm_stack_pop(stack))
 #define ivm_vmstack_setTop ivm_stack_setTop
+#define ivm_vmstack_foreach ivm_stack_foreach
 
 #endif
