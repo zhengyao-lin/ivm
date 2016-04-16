@@ -29,7 +29,7 @@ enum {
 	IVM_INTSIG_CONTINUE		= 1 << 2
 };
 
-typedef struct {
+typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
 	union {
 		struct {
@@ -48,7 +48,7 @@ ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
 void
 ivm_function_free(ivm_function_t *func);
 
-#define ivm_function_isNative(func) (func->is_native)
+#define ivm_function_isNative(func) ((func) && (func)->is_native)
 ivm_runtime_t *
 ivm_function_createRuntime(ivm_function_t *func);
 struct ivm_caller_info_t_tag *

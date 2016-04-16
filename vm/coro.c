@@ -76,8 +76,15 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 			while (coro->runtime->pc < ivm_exec_length(coro->runtime->exec)) {
 				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(coro->runtime->exec,
 															  coro->runtime->pc));
-				if (tmp_proc(state, coro) == IVM_ACTION_BREAK) break;
+				switch (tmp_proc(state, coro)) {
+					case IVM_ACTION_BREAK:
+						goto ACTION_BREAK;
+					case IVM_ACTION_YIELD:
+						goto ACTION_YIELD;
+					default:;
+				}
 			}
+ACTION_BREAK:
 
 			tmp_info = ivm_call_stack_pop(coro->call_st);
 			if (tmp_info) {
@@ -86,6 +93,7 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 			} else break; /* no more callee to restore, end executing */
 		}
 
+ACTION_YIELD:
 		ret = ivm_vmstack_top(coro->stack);
 	}
 

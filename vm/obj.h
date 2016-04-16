@@ -14,6 +14,7 @@
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
+struct ivm_function_t_tag;
 
 typedef void (*ivm_destructor_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
 
@@ -21,6 +22,7 @@ typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
 	union {
 		ivm_numeric_t num;
+		struct ivm_function_t_tag *func;
 		void *p;
 	} u;
 } ivm_object_t;

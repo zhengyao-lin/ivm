@@ -11,12 +11,14 @@ struct ivm_vmstate_t_tag;
 typedef enum {
 	IVM_OP(NONE) = 0,
 	IVM_OP(NEW_OBJ),
+	IVM_OP(NEW_FUNC),
 	IVM_OP(GET_SLOT),
 	IVM_OP(SET_SLOT),
 	IVM_OP(GET_CONTEXT_SLOT),
 	IVM_OP(SET_CONTEXT_SLOT),
 	IVM_OP(PRINT),
 	IVM_OP(INVOKE),
+	IVM_OP(YIELD),
 	IVM_OP(TEST1),
 	IVM_OP(TEST2),
 	IVM_OP(TEST3),
@@ -25,7 +27,8 @@ typedef enum {
 
 typedef enum {
 	IVM_ACTION_NONE = 0,
-	IVM_ACTION_BREAK
+	IVM_ACTION_BREAK,
+	IVM_ACTION_YIELD
 } ivm_action_t;
 
 typedef ivm_action_t (*ivm_op_proc_t)(struct ivm_vmstate_t_tag *state, struct ivm_coro_t_tag *coro);

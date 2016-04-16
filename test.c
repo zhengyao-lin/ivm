@@ -15,15 +15,22 @@ int main()
 	ivm_object_t *obj1 = ivm_object_new(state);
 	ivm_object_t *obj2 = ivm_object_new(state);
 
-	ivm_exec_t *exec = ivm_exec_new();
+	ivm_exec_t *exec1 = ivm_exec_new(),
+			   *exec2 = ivm_exec_new();
 	ivm_vmstack_t *stack = ivm_vmstack_new();
 	ivm_ctchain_t *chain = ivm_ctchain_new();
-	ivm_function_t *func1, *func2;
-	ivm_coro_t *coro;
+	ivm_function_t *func1, *func2, *func3;
+	ivm_coro_t *coro1, *coro2;
 
-	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), 0);
-	ivm_exec_addCode(exec, IVM_OP(PRINT), 0);
-	ivm_exec_addCode(exec, IVM_OP(TEST1), 0);
+	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), 0);
+	ivm_exec_addCode(exec1, IVM_OP(PRINT), 0);
+	ivm_exec_addCode(exec1, IVM_OP(YIELD), 0);
+	ivm_exec_addCode(exec1, IVM_OP(TEST1), 0);
+
+	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), 0);
+	ivm_exec_addCode(exec2, IVM_OP(PRINT), 0);
+	ivm_exec_addCode(exec2, IVM_OP(YIELD), 0);
+	ivm_exec_addCode(exec2, IVM_OP(TEST3), 0);
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);
@@ -43,11 +50,24 @@ int main()
 		   (void *)ivm_ctchain_search(chain, state, "c"));
 
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
-	func2 = ivm_function_new(chain, exec, IVM_INTSIG_NONE);
+	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
 
-	coro = ivm_coro_new();
+	coro1 = ivm_coro_new();
+	coro2 = ivm_coro_new();
 
-	ivm_coro_start(coro, state, func2);
+	printf("***start***\n\n");
+
+	printf("***starting coro1***\n");
+	ivm_coro_start(coro1, state, func2);
+	printf("***starting coro2***\n");
+	ivm_coro_start(coro2, state, func3);
+	printf("***resume coro1***\n");
+	ivm_coro_start(coro1, state, IVM_NULL);
+	printf("***resume coro2***\n");
+	ivm_coro_start(coro2, state, IVM_NULL);
+
+	printf("\n***all end***\n");
 
 	ivm_vmstack_push(stack, obj1);
 	ivm_vmstack_push(stack, obj2);
@@ -58,11 +78,10 @@ int main()
 	printf("obj1.a: %p\n", (void *)ivm_object_getSlotValue(obj1, state, "a"));
 	printf("obj2.b: %p\n", (void *)ivm_object_getSlotValue(obj2, state, "b"));
 
-	ivm_coro_free(coro);
-	ivm_function_free(func1);
-	ivm_function_free(func2);
+	ivm_coro_free(coro1); ivm_coro_free(coro2);
+	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
 	ivm_ctchain_free(chain);
-	ivm_exec_free(exec);
+	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_vmstack_free(stack);
 	ivm_object_free(obj1, state);
 	ivm_object_free(obj2, state);

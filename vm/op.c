@@ -43,6 +43,13 @@ OP_PROC(NEW_OBJ)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(NEW_FUNC)
+{
+	printf("NEW_FUNC: no implementation\n");
+	PC++;
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(GET_SLOT)
 {
 	printf("GET_SLOT: no implementation\n");
@@ -93,6 +100,12 @@ OP_PROC(INVOKE)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(YIELD)
+{
+	PC++;
+	return IVM_ACTION_YIELD;
+}
+
 OP_PROC(TEST1)
 {
 #if 0
@@ -106,9 +119,9 @@ OP_PROC(TEST1)
 	PC++;
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
 #endif
+	printf("test1\n");
 
 	PC++;
-
 	return IVM_ACTION_NONE;
 }
 
@@ -120,7 +133,7 @@ OP_PROC(TEST2)
 	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), 0);
 	ivm_exec_addCode(exec, IVM_OP(PRINT), 0);
 	ivm_exec_addCode(exec, IVM_OP(TEST3), 0);
-	printf("this is a test string\n");
+	printf("this is a test string in test2\n");
 	
 	PC++;
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
@@ -130,7 +143,7 @@ OP_PROC(TEST2)
 
 OP_PROC(TEST3)
 {
-	printf("morning!\n");
+	printf("morning! this is test3\n");
 	PC++;
 	return IVM_ACTION_NONE;
 }
@@ -147,12 +160,14 @@ ivm_op_table_t
 ivm_global_op_table[] = {
 	OP_MAPPING(NONE),
 	OP_MAPPING(NEW_OBJ),
+	OP_MAPPING(NEW_FUNC),
 	OP_MAPPING(GET_SLOT),
 	OP_MAPPING(SET_SLOT),
 	OP_MAPPING(GET_CONTEXT_SLOT),
 	OP_MAPPING(SET_CONTEXT_SLOT),
 	OP_MAPPING(PRINT),
 	OP_MAPPING(INVOKE),
+	OP_MAPPING(YIELD),
 	OP_MAPPING(TEST1),
 	OP_MAPPING(TEST2),
 	OP_MAPPING(TEST3),
