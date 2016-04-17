@@ -4,6 +4,7 @@
 #include "cell.h"
 
 typedef struct {
+	ivm_cell_set_t *all_set;
 	ivm_cell_set_t *grey_set;
 } ivm_collector_t;
 

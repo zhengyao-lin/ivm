@@ -23,6 +23,9 @@
 	ivm_mark_t mark;
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
+#define IVM_TYPE_TAG_OF(obj) ((obj)->type->tag)
+#define IVM_TYPE_DES_OF(obj) ((obj)->type->des)
+#define IVM_TYPE_MARKER_OF(obj) ((obj)->type->marker)
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
@@ -71,8 +74,8 @@ void ivm_object_init(ivm_object_t *obj, struct ivm_vmstate_t_tag *state);
 /* dump: clean the data the object contains, but not free itself */
 #define ivm_object_dump(obj, state) \
 	if (obj) { \
-		if (obj->type && obj->type->des) { \
-			obj->type->des(obj, state); \
+		if (IVM_TYPE_OF(obj) && IVM_TYPE_DES_OF(obj)) { \
+			IVM_TYPE_DES_OF(obj)(obj, state); \
 		} \
 		ivm_slot_table_free(obj->slots, state); \
 	}
