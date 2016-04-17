@@ -56,7 +56,7 @@ typedef ivm_ptlist_t ivm_exec_list_t;
 #define ivm_exec_list_free ivm_ptlist_free
 #define ivm_exec_list_register ivm_ptlist_push
 #define ivm_exec_list_size ivm_ptlist_size
-#define ivm_exec_list_at ivm_ptlist_at
-#define ivm_exec_list_foreach ivm_ptlist_foreach
+#define ivm_exec_list_at(list, i) ((ivm_exec_t *)ivm_ptlist_at((list), (i)))
+#define ivm_exec_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
 
 #endif

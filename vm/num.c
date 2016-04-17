@@ -9,7 +9,7 @@ ivm_object_t *ivm_numeric_new(ivm_vmstate_t *state, ivm_numeric_t val)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("numeric object"));
 
-	ret->type = IVM_NUMERIC_T;
+	ret->type = ivm_vmstate_getType(state, IVM_NUMERIC_T);
 	ret->slots = IVM_NULL;
 
 	ret->u.num = val;

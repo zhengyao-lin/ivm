@@ -31,7 +31,7 @@ typedef char			ivm_char_t;
 typedef ivm_uint64_t	ivm_size_t;
 typedef ivm_uint8_t		ivm_byte_t;
 
-typedef ivm_sint32_t	ivm_type_t;
+typedef ivm_sint32_t	ivm_type_tag_t;
 
 typedef ivm_double_t	ivm_numeric_t;
 
@@ -42,5 +42,6 @@ typedef ivm_double_t	ivm_numeric_t;
 #define IVM_FUNCTION_T	4
 
 typedef ivm_size_t		ivm_pc_t;
+typedef ivm_byte_t		ivm_mark_t;
 
 #endif
