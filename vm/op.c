@@ -56,15 +56,38 @@ OP_PROC(NEW_FUNC)
 
 OP_PROC(GET_SLOT)
 {
-	printf("GET_SLOT: no implementation\n");
-	PC++;
+	ivm_size_t size;
+	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	ivm_object_t *obj;
+
+	CHECK_STACK(1);
+
+	obj = STACK_POP();
+	if (obj) {
+		STACK_PUSH(ivm_object_getSlotValue(obj, STATE, key));
+	}
+
+	PC += size + 1;
+
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(SET_SLOT)
 {
-	printf("SET_SLOT: no implementation\n");
-	PC++;
+	ivm_size_t size;
+	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	ivm_object_t *obj, *val;
+
+	CHECK_STACK(2);
+
+	val = STACK_POP();
+	obj = STACK_TOP();
+	if (obj) {
+		ivm_object_setSlot(obj, STATE, key, val);
+	}
+
+	PC += size + 1;
+
 	return IVM_ACTION_NONE;
 }
 

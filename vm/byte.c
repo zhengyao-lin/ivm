@@ -7,9 +7,8 @@ const ivm_char_t *
 ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size)
 {
 	if (size)
-		*size = sizeof(const ivm_char_t *)
-				* (IVM_STRLEN((const ivm_char_t *)bytes) + 1)
-				/ sizeof(*bytes);
+		*size = (IVM_STRLEN((const ivm_char_t *)bytes) + 1)
+				/ sizeof(*bytes) * sizeof(const ivm_char_t);
 	return (const ivm_char_t *)bytes;
 }
 
