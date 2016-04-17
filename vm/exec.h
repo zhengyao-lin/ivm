@@ -1,12 +1,22 @@
 #ifndef _IVM_VM_EXEC_H_
 #define _IVM_VM_EXEC_H_
 
+#include "pub/const.h"
 #include "std/list.h"
 #include "type.h"
 #include "op.h"
 
+#if IVM_DEBUG
+
+#define IVM_DEFAULT_EXEC_BUFFER_SIZE 1
+#define IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE 1
+
+#else
+
 #define IVM_DEFAULT_EXEC_BUFFER_SIZE 32
 #define IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE 32
+
+#endif
 
 typedef struct {
 	ivm_size_t length;
@@ -23,10 +33,18 @@ ivm_exec_compact(ivm_exec_t *exec);
 
 void
 ivm_exec_addBuffer(ivm_exec_t *exec);
+
+/**
+ * format:
+ *    %i8, %i16, %i32, %i64: write integer of size 8-16
+ *    %s: write string
+ *    %%: write a character '%'
+ *    other: write exactly what it is
+ */
 void
 ivm_exec_addCode(ivm_exec_t *exec,
 				 ivm_opcode_t op,
-				 ivm_size_t arg_count, ...);
+				 ivm_char_t *format, ...);
 
 #define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)exec->code[pc])
 #define ivm_exec_length(exec) (exec->cur)

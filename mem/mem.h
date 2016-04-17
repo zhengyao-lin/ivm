@@ -2,6 +2,7 @@
 #define _IVM_MEM_MEM_H_
 
 #include <stdlib.h>
+#include <string.h>
 #include "pub/type.h"
 
 #define MEM_ALLOC(size)					(malloc(size))
@@ -9,5 +10,6 @@
 #define MEM_REALLOC(origin, size)		(realloc((origin), (size)))
 #define MEM_INIT(p)						(memset((p), 0x0, sizeof(p)))
 #define MEM_FREE(p)						(free(p))
+#define MEM_COPY(dest, src, size)		(memcpy((dest), (src), (size)))
 
 #endif

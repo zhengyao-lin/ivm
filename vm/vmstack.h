@@ -1,9 +1,18 @@
 #ifndef _IVM_VM_VMSTACK_H_
 #define _IVM_VM_VMSTACK_H_
 
+#include "pub/const.h"
 #include "std/stack.h"
 
+#if IVM_DEBUG
+
+#define IVM_DEFAULT_VMSTACK_BUFFER_SIZE 1
+
+#else
+
 #define IVM_DEFAULT_VMSTACK_BUFFER_SIZE 64
+
+#endif
 
 struct ivm_object_t_tag;
 

@@ -1,11 +1,20 @@
 #ifndef _IVM_VM_CALL_H_
 #define _IVM_VM_CALL_H_
 
+#include "pub/const.h"
 #include "type.h"
 #include "exec.h"
 #include "std/stack.h"
 
+#if IVM_DEBUG
+
+#define IVM_DEFAULT_CALLER_INFO_BUFFER_SIZE 1
+
+#else
+
 #define IVM_DEFAULT_CALLER_INFO_BUFFER_SIZE 32
+
+#endif
 
 struct ivm_ctchain_t_tag;
 

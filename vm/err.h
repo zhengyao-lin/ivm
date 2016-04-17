@@ -22,5 +22,6 @@
 #define IVM_ERROR_MSG_BAD_OP						("bad opcode")
 #define IVM_ERROT_MSG_RESET_CORO_ROOT				("cannot reset root of sleeping coroutine")
 #define IVM_ERROR_MSG_INSUFFICIENT_STACK			("insufficient stack")
+#define IVM_ERROR_MSG_BYTE_NOT_EQUAL_TO_CHAR		("size of byte is not equal to char")
 
 #endif

@@ -1,7 +1,17 @@
 #ifndef _IVM_VM_STD_LIST_H_
 #define _IVM_VM_STD_LIST_H_
 
+#include "pub/const.h"
+
+#if IVM_DEBUG
+
+#define IVM_DEFAULT_LIST_BUFFER_SIZE 1
+
+#else
+
 #define IVM_DEFAULT_LIST_BUFFER_SIZE 32
+
+#endif
 
 typedef void (*ivm_ptlist_foreach_proc_t)(void *p);
 

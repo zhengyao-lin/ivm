@@ -1,6 +1,8 @@
 #include <stdarg.h>
 #include "pub/mem.h"
 #include "exec.h"
+#include "str.h"
+#include "byte.h"
 #include "err.h"
 
 ivm_exec_t *
@@ -57,14 +59,84 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 	return;
 }
 
+#define CUR_EXEC (&exec->code[n_cur])
+#define REM_LEN (exec->length - n_cur)
+
+#define WRITE_ARG(arg_type, val) \
+	while (exec->length <= n_cur || \
+		   !(tmp = ivm_byte_write##arg_type(CUR_EXEC, \
+											REM_LEN, \
+											(val)))) { \
+		ivm_exec_addBuffer(exec); \
+	}
+
+#define IF_INT_N_THEN_CALL_1(str, n, type) \
+	if ((str)[n] == (#type)[4]) { \
+		tmp_int = va_arg(args, ivm_int_t); \
+		WRITE_ARG(type, tmp_int); \
+		n_cur += tmp; \
+		i += 2; \
+		break; \
+	}
+
+#define IF_INT_N_THEN_CALL_2(str, n, type) \
+	if ((str)[n] == (#type)[4] \
+		&& (str)[(n) + 1] == (#type)[5]) { \
+		tmp_int = va_arg(args, ivm_int_t); \
+		WRITE_ARG(type, tmp_int); \
+		n_cur += tmp; \
+		i += 3; \
+		break; \
+	}
+
 void
-ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_size_t arg_count, ...)
+ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
 {
 	va_list args;
-	ivm_size_t i, n_cur;
+	ivm_size_t i, n_cur, tmp;
+	const char *tmp_str;
+	ivm_int_t tmp_int;
 
-	va_start(args, arg_count);
+	va_start(args, format);
 
+	n_cur = exec->cur + 1;
+	while (exec->length <= n_cur)
+		ivm_exec_addBuffer(exec);
+	exec->code[exec->cur] = op;
+
+	for (i = 0; format[i] != '\0'; i++) {
+		switch (format[i]) {
+			case '%':
+				if (format[i + 1] != '\0') {
+					if (format[i + 1] == 'i') {
+						IF_INT_N_THEN_CALL_1(format, i + 2, SInt8)
+						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt16)
+						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt32)
+						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt64)
+						/* fallthrough */
+					} else if (format[i + 1] == 's') {
+						tmp_str = va_arg(args, const ivm_char_t *);
+						WRITE_ARG(String, tmp_str);
+						n_cur += tmp;
+						i += 1;
+						break;
+					} else if (format[i + 1] == '%') {
+						i++;
+						/* fallthrough */
+					}
+				}
+			default: {
+				while (exec->length <= n_cur)
+					ivm_exec_addBuffer(exec);
+				exec->code[n_cur++] = format[i];
+			}
+
+		}
+	}
+
+	exec->cur = n_cur;
+
+#if 0
 	n_cur = exec->cur + arg_count + 1;
 	while (exec->length < n_cur)
 		ivm_exec_addBuffer(exec);
@@ -75,6 +147,7 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_size_t arg_count, ...)
 		exec->code[i] = va_arg(args, ivm_int_t);
 	}
 	exec->cur = n_cur;
+#endif
 
 	va_end(args);
 

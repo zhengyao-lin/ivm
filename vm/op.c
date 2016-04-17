@@ -4,6 +4,7 @@
 #include "vmstack.h"
 #include "vm.h"
 #include "call.h"
+#include "byte.h"
 #include "err.h"
 
 #define OP_PROC_NAME(op) ivm_op_proc_##op
@@ -15,6 +16,9 @@
 #define PC (__ivm_coro__->runtime->pc)
 #define STATE (__ivm_state__)
 #define CALL_STACK (__ivm_coro__->call_st)
+
+/* use this before increase pc */
+#define ARG_START (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1])
 
 #define STACK (__ivm_coro__->stack)
 #define STACK_SIZE() (ivm_vmstack_size(__ivm_coro__->stack))
@@ -78,7 +82,7 @@ OP_PROC(SET_CONTEXT_SLOT)
 	return IVM_ACTION_NONE;
 }
 
-OP_PROC(PRINT)
+OP_PROC(PRINT_OBJ)
 {
 	ivm_object_t *obj;
 
@@ -113,9 +117,9 @@ OP_PROC(TEST1)
 	ivm_exec_t *exec = ivm_exec_new();
 	ivm_function_t *func = ivm_function_new(IVM_NULL, exec, IVM_INTSIG_NONE);
 
-	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), 0);
-	ivm_exec_addCode(exec, IVM_OP(PRINT), 0);
-	ivm_exec_addCode(exec, IVM_OP(TEST2), 0);
+	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec, IVM_OP(PRINT), "");
+	ivm_exec_addCode(exec, IVM_OP(TEST2), "");
 	
 	PC++;
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
@@ -131,9 +135,9 @@ OP_PROC(TEST2)
 	ivm_exec_t *exec = ivm_exec_new();
 	ivm_function_t *func = ivm_function_new(IVM_NULL, exec, IVM_INTSIG_NONE);
 
-	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), 0);
-	ivm_exec_addCode(exec, IVM_OP(PRINT), 0);
-	ivm_exec_addCode(exec, IVM_OP(TEST3), 0);
+	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec, IVM_OP(PRINT_OBJ), "");
+	ivm_exec_addCode(exec, IVM_OP(TEST3), "");
 	printf("this is a test string in test2\n");
 	
 	PC++;
@@ -144,8 +148,13 @@ OP_PROC(TEST2)
 
 OP_PROC(TEST3)
 {
+	ivm_size_t size;
+
 	printf("morning! this is test3\n");
-	PC++;
+	printf("string argument: %s\n", ivm_byte_readString(ARG_START, &size));
+
+	PC += size + 1;
+
 	return IVM_ACTION_NONE;
 }
 
@@ -166,7 +175,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(SET_SLOT),
 	OP_MAPPING(GET_CONTEXT_SLOT),
 	OP_MAPPING(SET_CONTEXT_SLOT),
-	OP_MAPPING(PRINT),
+	OP_MAPPING(PRINT_OBJ),
 	OP_MAPPING(INVOKE),
 	OP_MAPPING(YIELD),
 	OP_MAPPING(TEST1),

@@ -1,10 +1,19 @@
 #ifndef _IVM_VM_STD_STACK_H_
 #define _IVM_VM_STD_STACK_H_
 
+#include "pub/const.h"
 #include "list.h"
 #include "../type.h"
 
+#if IVM_DEBUG
+
+#define IVM_DEFAULT_STACK_BUFFER_SIZE 1
+
+#else
+
 #define IVM_DEFAULT_STACK_BUFFER_SIZE 32
+
+#endif
 
 typedef ivm_ptlist_t ivm_stack_t;
 typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
