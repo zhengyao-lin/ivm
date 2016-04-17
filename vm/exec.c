@@ -59,6 +59,8 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 	return;
 }
 
+#define ESC_CHAR '$'
+
 #define CUR_EXEC (&exec->code[n_cur])
 #define REM_LEN (exec->length - n_cur)
 
@@ -106,31 +108,30 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
 
 	for (i = 0; format[i] != '\0'; i++) {
 		switch (format[i]) {
-			case '%':
-				if (format[i + 1] != '\0') {
-					if (format[i + 1] == 'i') {
-						IF_INT_N_THEN_CALL_1(format, i + 2, SInt8)
-						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt16)
-						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt32)
-						else IF_INT_N_THEN_CALL_2(format, i + 2, SInt64)
-						/* fallthrough */
-					} else if (format[i + 1] == 's') {
-						tmp_str = va_arg(args, const ivm_char_t *);
-						WRITE_ARG(String, tmp_str);
-						n_cur += tmp;
-						i += 1;
-						break;
-					} else if (format[i + 1] == '%') {
-						i++;
-						/* fallthrough */
-					}
+			case ESC_CHAR:
+				if (format[i + 1] == 'i') {
+					IF_INT_N_THEN_CALL_1(format, i + 2, SInt8)
+					else IF_INT_N_THEN_CALL_2(format, i + 2, SInt16)
+					else IF_INT_N_THEN_CALL_2(format, i + 2, SInt32)
+					else IF_INT_N_THEN_CALL_2(format, i + 2, SInt64)
+					/* if any of the branches is triggered, the loop is continue */
+					/* else fallthrough */
+				} else if (format[i + 1] == 's') {
+					tmp_str = va_arg(args, const ivm_char_t *);
+					WRITE_ARG(String, tmp_str);
+					n_cur += tmp;
+					i += 1;
+					break;
+				} else if (format[i + 1] == ESC_CHAR) {
+					i++;
+					/* two successive escape characters -- only write 1 */
+					/* fallthrough */
 				}
-			default: {
+				/* fallthrough */
+			default:
 				while (exec->length <= n_cur)
 					ivm_exec_addBuffer(exec);
 				exec->code[n_cur++] = format[i];
-			}
-
 		}
 	}
 

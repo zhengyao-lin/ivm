@@ -23,19 +23,19 @@ int main()
 	ivm_coro_t *coro1, *coro2;
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "%i64", 0);
+	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "$i64", 0);
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "%i8%i8", IVM_OP(PRINT_OBJ), IVM_OP(PRINT_OBJ));
+	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "$i8$i8", IVM_OP(PRINT_OBJ), IVM_OP(PRINT_OBJ));
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), "");
 
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(PRINT_OBJ), "");
-	ivm_exec_addCode(exec2, IVM_OP(TEST3), "%s", "yes, I am");
+	ivm_exec_addCode(exec2, IVM_OP(TEST3), "$s", "yes, I am");
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(YIELD), "");
-	ivm_exec_addCode(exec2, IVM_OP(TEST3), "%s", "hello?");
+	ivm_exec_addCode(exec2, IVM_OP(TEST3), "$s", "hello?");
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);
