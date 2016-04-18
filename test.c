@@ -33,11 +33,15 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "$i8$i8", IVM_OP(PRINT_OBJ), IVM_OP(PRINT_OBJ));
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
+	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), "");
 
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(TEST3), "$s", "yes, I am");
+	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec2, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec2, IVM_OP(TEST3), "$s", "hello?");
@@ -72,6 +76,10 @@ int main()
 	ivm_coro_start(coro1, state, func2);
 	printf("***starting coro2***\n");
 	ivm_coro_start(coro2, state, func3);
+	printf("***resume coro1***\n");
+	ivm_coro_start(coro1, state, IVM_NULL);
+	printf("***resume coro2***\n");
+	ivm_coro_start(coro2, state, IVM_NULL);
 	printf("***resume coro1***\n");
 	ivm_coro_start(coro1, state, IVM_NULL);
 	printf("***resume coro2***\n");
