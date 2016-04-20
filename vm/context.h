@@ -35,4 +35,7 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain);
 
+#define ivm_ctchain_getLocal(chain) ((chain)->tail ? (chain)->tail->ct : IVM_NULL)
+#define ivm_ctchain_getGlobal(chain) ((chain)->head ? (chain)->head->ct : IVM_NULL)
+
 #endif
