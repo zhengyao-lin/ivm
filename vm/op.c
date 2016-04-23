@@ -80,11 +80,12 @@ OP_PROC(SET_SLOT)
 
 	CHECK_STACK(2);
 
+	obj = STACK_POP();
 	val = STACK_POP();
-	obj = STACK_TOP();
 	if (obj) {
 		ivm_object_setSlot(obj, STATE, key, val);
 	}
+	STACK_PUSH(obj);
 
 	PC += size + 1;
 
