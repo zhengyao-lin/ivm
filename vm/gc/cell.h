@@ -4,6 +4,10 @@
 #include "../obj.h"
 
 struct ivm_vmstate_t_tag;
+struct ivm_cell_t_tag;
+struct ivm_cell_set_t_tag;
+
+typedef void (*ivm_cell_set_foreach_proc_t)(struct ivm_cell_t_tag *, struct ivm_cell_set_t_tag *, void *, void *);
 
 typedef struct ivm_cell_t_tag {
 	ivm_object_t *obj;
@@ -12,10 +16,12 @@ typedef struct ivm_cell_t_tag {
 	struct ivm_cell_t_tag *next;
 } ivm_cell_t;
 
-typedef struct {
+typedef struct ivm_cell_set_t_tag {
 	ivm_cell_t *head;
 	ivm_cell_t *tail;
 } ivm_cell_set_t;
+
+#define IVM_CELL_OBJ(cell) ((cell)->obj)
 
 /* cell */
 ivm_cell_t *
@@ -30,15 +36,19 @@ ivm_cell_dispose(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
 /* dump cell: dump the data the object contains, but not free it */
 void
 ivm_cell_dump(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
+#define ivm_cell_init(cell, o) ((cell)->next = (cell)->prev = IVM_NULL, (cell)->obj = (o))
 
 /* notice: use ivm_cell_move_to_set() to move cell BETWEEN SETS
  * because there will be a problem in deleting origin log if the set
  * only has one cell
  */
+
 void
 ivm_cell_moveBetween(ivm_cell_t *cell, ivm_cell_t *prev, ivm_cell_t *next);
+#define ivm_cell_isolate(cell) (ivm_cell_moveBetween((cell), IVM_NULL, IVM_NULL))
 ivm_cell_t *
 ivm_cell_moveToSet(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to);
+#define ivm_cell_removeFrom(cell, set) (ivm_cell_moveToSet((cell), (set), IVM_NULL), ivm_cell_isolate(cell))
 
 /* cell set */
 ivm_cell_set_t *
@@ -59,5 +69,8 @@ ivm_cell_set_addObject(ivm_cell_set_t *set, ivm_object_t *obj);
 /* just remove, no free */
 ivm_cell_t *
 ivm_cell_set_removeTail(ivm_cell_set_t *set);
+void
+ivm_cell_set_foreach(ivm_cell_set_t *set, ivm_cell_set_foreach_proc_t proc,
+					 void *arg1, void *arg2);
 
 #endif

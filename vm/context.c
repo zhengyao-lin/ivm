@@ -140,3 +140,17 @@ ivm_ctchain_clone(ivm_ctchain_t *chain)
 
 	return ret;
 }
+
+void
+ivm_ctchain_foreach(ivm_ctchain_t *chain,
+					ivm_ctchain_foreach_proc_t proc,
+					void *arg)
+{
+	ivm_ctchain_sub_t *i;
+
+	FOREACH (i, chain) {
+		proc(GET_CONTEXT(i), arg);
+	}
+
+	return;
+}

@@ -3,6 +3,7 @@
 #include "err.h"
 #include "obj.h"
 #include "gc/heap.h"
+#include "gc/gc.h"
 
 ivm_vmstate_t *
 ivm_vmstate_new()
@@ -34,6 +35,8 @@ ivm_vmstate_new()
 	tmp_type = ivm_type_new(IVM_FUNCTION_T, IVM_NULL, IVM_NULL);
 	ivm_type_list_register(ret->type_list, tmp_type);
 
+	ret->gc = ivm_collector_new(ret);
+
 	return ret;
 }
 
@@ -43,12 +46,16 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	ivm_size_t i;
 
 	if (state) {
+		ivm_coro_list_free(state->coro_list);
+		
+		ivm_collector_dispose(state->gc, state);
 		for (i = 0; i < state->heap_count; i++) {
 			ivm_heap_free(state->heaps[i]);
 		}
 		MEM_FREE(state->heaps);
-		ivm_coro_list_free(state->coro_list);
+
 		ivm_exec_list_free(state->exec_list);
+
 		ivm_type_list_foreach(state->type_list, ivm_type_free);
 		ivm_type_list_free(state->type_list);
 		MEM_FREE(state);
@@ -110,6 +117,7 @@ ivm_vmstate_newObject(ivm_vmstate_t *state)
 
 	ret = ivm_vmstate_alloc(state);
 	ivm_object_init(ret, state);
+	ivm_collector_addObject(state->gc, ret);
 
 	return ret;
 }

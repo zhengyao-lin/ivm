@@ -1,6 +1,6 @@
 # lib vm.gc
 
-ADD_LIBRARY(vm_gc STATIC cell.c heap.c)
+ADD_LIBRARY(vm_gc STATIC cell.c heap.c gc.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

@@ -16,6 +16,10 @@ typedef struct ivm_coro_t_tag {
 	ivm_runtime_t *runtime;
 } ivm_coro_t;
 
+#define IVM_CORO_STACK(coro) ((coro)->stack)
+#define IVM_CORO_CALL_STACK(coro) ((coro)->call_st)
+#define IVM_CORO_RUNTIME(coro) ((coro)->runtime)
+
 ivm_coro_t *
 ivm_coro_new();
 void
@@ -33,5 +37,6 @@ typedef ivm_ptlist_t ivm_coro_list_t;
 #define ivm_coro_list_size ivm_ptlist_size
 #define ivm_coro_list_at ivm_ptlist_at
 #define ivm_coro_list_foreach ivm_ptlist_foreach
+#define ivm_coro_list_foreach_arg ivm_ptlist_foreach_arg
 
 #endif

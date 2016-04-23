@@ -48,9 +48,9 @@ ivm_cell_dump(ivm_cell_t *cell, ivm_vmstate_t *state)
 	return;
 }
 
-#define IS_SUC_CELL(prev, next) \
-	((!(prev) || (prev)->next == (next)) \
-	 && (!(next) || (next)->prev == (prev)))
+#define IS_SUC_CELL(p, n) \
+	((!(p) || (p)->next == (n)) \
+	 && (!(n) || (n)->prev == (p)))
 
 void
 ivm_cell_moveBetween(ivm_cell_t *cell,
@@ -162,7 +162,7 @@ void
 ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell)
 {
 	if (set) {
-		ivm_cell_moveBetween(cell, set->tail, NULL);
+		ivm_cell_moveBetween(cell, set->tail, IVM_NULL);
 		set->tail = cell;
 		if (!set->head) {
 			set->head = cell;
@@ -211,4 +211,19 @@ ivm_cell_set_removeTail(ivm_cell_set_t *set)
 	}
 
 	return ret;
+}
+
+void
+ivm_cell_set_foreach(ivm_cell_set_t *set, ivm_cell_set_foreach_proc_t proc,
+					 void *arg1, void *arg2)
+{
+	ivm_cell_t *i, *tmp;
+
+	for (i = set->head; i;) {
+		tmp = i;
+		i = i->next;
+		proc(tmp, set, arg1, arg2);
+	}
+
+	return;
 }

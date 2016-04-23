@@ -35,6 +35,8 @@ ivm_slot_free(ivm_slot_t *slot, ivm_vmstate_t *state)
 	return;
 }
 
+#define FOREACH(i, table) for ((i) = IVM_SLOT_TABLE_HEAD(table); (i); (i) = (i)->next)
+
 ivm_slot_table_t *
 ivm_slot_table_new(ivm_vmstate_t *state)
 {
@@ -54,7 +56,7 @@ ivm_slot_table_free(ivm_slot_table_t *table, ivm_vmstate_t *state)
 	ivm_slot_t *i, *tmp;
 
 	if (table) {
-		for (i = ivm_slot_table_getHead(table, state); i;) {
+		for (i = IVM_SLOT_TABLE_HEAD(table); i;) {
 			tmp = i;
 			i = i->next;
 			ivm_slot_free(tmp, state);
@@ -74,7 +76,7 @@ ivm_slot_table_findSlot(ivm_slot_table_t *table,
 	ivm_slot_t *i;
 
 	if (table) {
-		for (i = ivm_slot_table_getHead(table, state); i; i = i->next) {
+		FOREACH (i, table) {
 			if (!IVM_STRCMP(key, ivm_slot_getKey(i, state))) {
 				return i;
 			}
@@ -106,4 +108,18 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 	}
 
 	return IVM_NULL;
+}
+
+void
+ivm_slot_table_foreach(ivm_slot_table_t *table,
+					   ivm_slot_table_foreach_proc_t proc,
+					   void *arg)
+{
+	ivm_slot_t *i;
+
+	FOREACH (i, table) {
+		proc(i, arg);
+	}
+
+	return;
 }

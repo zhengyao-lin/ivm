@@ -8,6 +8,7 @@
 #include "coro.h"
 #include "context.h"
 #include "gc/heap.h"
+#include "gc/gc.h"
 
 #define IVM_DEFAULT_INIT_HEAP_SIZE (512)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
@@ -21,15 +22,16 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
 
-	/* executable list: used for function object creating */
-	ivm_exec_list_t *exec_list;
-
+	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
+
+	ivm_collector_t *gc;
 } ivm_vmstate_t;
 
-#define VMSTATE_GC_FLAG(state) ((state)->gc_flag)
-#define VMSTATE_HEAP_COUNT(state) ((state)->heap_count)
-#define VMSTATE_HEAP(state) ((state)->heaps)
+#define IVM_VMSTATE_GC_FLAG(state) ((state)->gc_flag)
+#define IVM_VMSTATE_HEAP_COUNT(state) ((state)->heap_count)
+#define IVM_VMSTATE_HEAP(state) ((state)->heaps)
+#define IVM_VMSTATE_CORO_LIST(state) ((state)->coro_list)
 
 ivm_vmstate_t *
 ivm_vmstate_new();
@@ -55,6 +57,10 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #define ivm_vmstate_registerType(state, type) (ivm_type_list_register((state)->type_list, (type)))
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
+
+#define ivm_vmstate_collectGarbage(state) (ivm_collector_collect((state)->gc))
+
+#define ivm_vmstate_addCoro(state, coro) (ivm_coro_list_add((state)->coro_list, (coro)))
 
 /*
 ivm_object_t *

@@ -27,12 +27,16 @@
 #define IVM_TYPE_DES_OF(obj) ((obj)->type->des)
 #define IVM_TYPE_MARKER_OF(obj) ((obj)->type->marker)
 
+#define IVM_OBJECT_SLOTS(obj) ((obj)->slots)
+#define IVM_OBJECT_MARK(obj) ((obj)->mark)
+
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
 struct ivm_function_t_tag;
+struct ivm_collector_t_tag;
 
 typedef void (*ivm_destructor_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
-typedef void (*ivm_marker_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
+typedef void (*ivm_marker_t)(struct ivm_object_t_tag *, struct ivm_collector_t_tag *);
 
 typedef struct ivm_type_t_tag {
 	ivm_type_tag_t tag;
