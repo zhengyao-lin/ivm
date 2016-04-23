@@ -73,6 +73,12 @@ int main()
 	ivm_vmstate_addCoro(state, coro1);
 	ivm_vmstate_addCoro(state, coro2);
 
+#if 1
+	ivm_coro_setRoot(coro1, func2);
+	ivm_coro_setRoot(coro2, func3);
+	ivm_vmstate_schedule(state);
+
+#else
 	printf("***start***\n\n");
 
 	printf("***starting coro1***\n");
@@ -80,15 +86,18 @@ int main()
 	printf("***starting coro2***\n");
 	ivm_coro_start(coro2, state, func3);
 	printf("***resume coro1***\n");
-	ivm_coro_start(coro1, state, IVM_NULL);
+	ivm_coro_resume(coro1, state);
 	printf("***resume coro2***\n");
-	ivm_coro_start(coro2, state, IVM_NULL);
+	ivm_coro_resume(coro2, state);
 	printf("***resume coro1***\n");
-	ivm_coro_start(coro1, state, IVM_NULL);
+	ivm_coro_resume(coro1, state);
 	printf("***resume coro2***\n");
-	ivm_coro_start(coro2, state, IVM_NULL);
+	ivm_coro_resume(coro2, state);
 
 	printf("\n***all end***\n");
+
+	ivm_coro_start(coro1, state, IVM_NULL);
+#endif
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);

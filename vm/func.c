@@ -58,6 +58,8 @@ ivm_function_free(ivm_function_t *func)
 ivm_runtime_t *
 ivm_function_createRuntime(ivm_function_t *func)
 {
+	if (!func) return IVM_NULL;
+	
 	if (func->is_native)
 		return ivm_runtime_new(IVM_NULL, IVM_NULL);
 
