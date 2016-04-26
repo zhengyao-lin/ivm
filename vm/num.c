@@ -1,18 +1,19 @@
+#include "pub/mem.h"
 #include "num.h"
 #include "obj.h"
-#include "err.h"
 #include "vm.h"
+#include "err.h"
 
-ivm_object_t *ivm_numeric_new(ivm_vmstate_t *state, ivm_numeric_t val)
+ivm_object_t *ivm_numeric_new(ivm_vmstate_t *state, ivm_number_t val)
 {
-	ivm_object_t *ret = ivm_object_new(state);
+	ivm_numeric_t *ret = MEM_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("numeric object"));
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("numeric"));
+
+	ivm_object_init(IVM_AS_OBJ(ret), state);
 
 	ret->type = ivm_vmstate_getType(state, IVM_NUMERIC_T);
-	ret->slots = IVM_NULL;
+	ret->val = val;
 
-	ret->u.num = val;
-
-	return ret;
+	return IVM_AS_OBJ(ret);
 }

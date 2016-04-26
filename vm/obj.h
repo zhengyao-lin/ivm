@@ -61,11 +61,6 @@ typedef ivm_ptlist_t ivm_type_list_t;
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
-	union {
-		ivm_numeric_t num;
-		struct ivm_function_t_tag *func;
-		void *p;
-	} u;
 } ivm_object_t;
 
 ivm_object_t *ivm_object_new(struct ivm_vmstate_t_tag *state);
@@ -92,5 +87,8 @@ ivm_slot_t *
 ivm_object_getSlot(ivm_object_t *obj, struct ivm_vmstate_t_tag *state, const ivm_char_t *key);
 
 #define ivm_object_getSlotValue(obj, state, key) (ivm_slot_getValue(ivm_object_getSlot((obj), (state), (key)), (state)))
+
+#define IVM_AS(obj, type) ((type)(obj))
+#define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))
 
 #endif
