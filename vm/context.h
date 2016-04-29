@@ -4,7 +4,9 @@
 #include "obj.h"
 
 struct ivm_vmstate_t_tag;
+
 typedef ivm_object_t ivm_context_t;
+typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
 
 struct ivm_ctchain_sub_t_tag {
 	ivm_context_t *ct;
@@ -37,5 +39,10 @@ ivm_ctchain_clone(ivm_ctchain_t *chain);
 
 #define ivm_ctchain_getLocal(chain) ((chain)->tail ? (chain)->tail->ct : IVM_NULL)
 #define ivm_ctchain_getGlobal(chain) ((chain)->head ? (chain)->head->ct : IVM_NULL)
+
+void
+ivm_ctchain_foreach(ivm_ctchain_t *chain,
+					ivm_ctchain_foreach_proc_t proc,
+					void *arg);
 
 #endif

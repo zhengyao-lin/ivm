@@ -26,10 +26,10 @@ typedef struct ivm_caller_info_t_tag {
 	struct ivm_ctchain_t_tag *context;
 } ivm_caller_info_t;
 
-#define ivm_caller_info_exec(info) ((info) ? (info)->exec : IVM_NULL)
-#define ivm_caller_info_stackTop(info) ((info) ? (info)->st_top : 0)
-#define ivm_caller_info_pc(info) ((info) ? (info)->pc : 0)
-#define ivm_caller_info_context(info) ((info) ? (info)->context : IVM_NULL)
+#define IVM_CALLER_INFO_EXEC(info) ((info) ? (info)->exec : IVM_NULL)
+#define IVM_CALLER_INFO_STACK_TOP(info) ((info) ? (info)->st_top : 0)
+#define IVM_CALLER_INFO_PC(info) ((info) ? (info)->pc : 0)
+#define IVM_CALLER_INFO_CONTEXT(info) ((info) ? (info)->context : IVM_NULL)
 
 ivm_caller_info_t *
 ivm_caller_info_new(ivm_exec_t *exec,
@@ -50,5 +50,6 @@ typedef ivm_stack_t ivm_call_stack_t;
 #define ivm_call_stack_pop(stack) ((ivm_caller_info_t *)ivm_stack_pop(stack))
 #define ivm_call_stack_setTop ivm_stack_setTop
 #define ivm_call_stack_foreach ivm_stack_foreach
+#define ivm_call_stack_foreach_arg ivm_stack_foreach_arg
 
 #endif

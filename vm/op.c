@@ -27,7 +27,7 @@
 #define STACK_PUSH(obj) (ivm_vmstack_push(__ivm_coro__->stack, (obj)))
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
-#define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - ivm_caller_info_stackTop(CALL_STACK_TOP())) \
+#define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_STACK_TOP(CALL_STACK_TOP())) \
 									 >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
@@ -80,11 +80,12 @@ OP_PROC(SET_SLOT)
 
 	CHECK_STACK(2);
 
+	obj = STACK_POP();
 	val = STACK_POP();
-	obj = STACK_TOP();
 	if (obj) {
 		ivm_object_setSlot(obj, STATE, key, val);
 	}
+	STACK_PUSH(obj);
 
 	PC += size + 1;
 

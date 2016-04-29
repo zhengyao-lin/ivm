@@ -89,7 +89,8 @@ ivm_heap_freeObject(ivm_heap_t *heap,
 		cell = &OFFSET_AS(pre_cell, heap->empty_size, ivm_cell_t);
 
 		ivm_object_dump(obj, state);
-		CELL_SET_OBJ(cell, obj);
+		ivm_cell_init(cell, obj);
+
 		ivm_cell_set_addCell(heap->empty, cell);
 	}
 

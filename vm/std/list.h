@@ -14,6 +14,7 @@
 #endif
 
 typedef void (*ivm_ptlist_foreach_proc_t)(void *p);
+typedef void (*ivm_ptlist_foreach_proc_arg_t)(void *p, void *arg);
 
 typedef struct {
 	ivm_size_t buf_size;
@@ -45,6 +46,8 @@ ivm_ptlist_pop(ivm_ptlist_t *ptlist);
 
 void
 ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc);
+void
+ivm_ptlist_foreach_arg(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_arg_t proc, void *arg);
 
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);

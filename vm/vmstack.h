@@ -27,5 +27,6 @@ typedef ivm_stack_t ivm_vmstack_t;
 #define ivm_vmstack_pop(stack) ((struct ivm_object_t_tag *)ivm_stack_pop(stack))
 #define ivm_vmstack_setTop ivm_stack_setTop
 #define ivm_vmstack_foreach ivm_stack_foreach
+#define ivm_vmstack_foreach_arg ivm_stack_foreach_arg
 
 #endif

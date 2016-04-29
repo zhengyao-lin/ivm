@@ -5,6 +5,9 @@
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
+struct ivm_slot_t_tag;
+
+typedef void (*ivm_slot_table_foreach_proc_t)(struct ivm_slot_t_tag *, void *);
 
 typedef struct ivm_slot_t_tag {
 	struct ivm_object_t_tag *p;
@@ -15,6 +18,10 @@ typedef struct ivm_slot_t_tag {
 	struct ivm_slot_t_tag *next;
 } ivm_slot_t;
 
+#define ivm_slot_setValue(slot, state, obj) (slot ? slot->v = obj : IVM_NULL)
+#define ivm_slot_getValue(slot, state) (slot ? slot->v : IVM_NULL)
+#define ivm_slot_getKey(slot, state) (slot->k)
+
 typedef struct ivm_slot_table_t_tag {
 	ivm_slot_t *head;
 	ivm_slot_t *tail;
@@ -23,8 +30,8 @@ typedef struct ivm_slot_table_t_tag {
 ivm_slot_table_t * ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
 void ivm_slot_table_free(ivm_slot_table_t *table, struct ivm_vmstate_t_tag *state);
 
-#define ivm_slot_table_getHead(table, state) ((table) ? (table)->head : IVM_NULL)
-#define ivm_slot_table_getTail(table, state) ((table) ? (table)->tail : IVM_NULL)
+#define IVM_SLOT_TABLE_HEAD(table) ((table) ? (table)->head : IVM_NULL)
+#define IVM_SLOT_TABLE_TAIL(table) ((table) ? (table)->tail : IVM_NULL)
 
 ivm_slot_t *
 ivm_slot_table_findSlot(ivm_slot_table_t *table,
@@ -37,8 +44,9 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 					   struct ivm_object_t_tag *obj,
 					   struct ivm_object_t_tag *parent);
 
-#define ivm_slot_setValue(slot, state, obj) (slot ? slot->v = obj : IVM_NULL)
-#define ivm_slot_getValue(slot, state) (slot ? slot->v : IVM_NULL)
-#define ivm_slot_getKey(slot, state) (slot->k)
+void
+ivm_slot_table_foreach(ivm_slot_table_t *table,
+					   ivm_slot_table_foreach_proc_t proc,
+					   void *arg);
 
 #endif
