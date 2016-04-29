@@ -30,7 +30,7 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(SET_SLOT), "$s", "slot_a");
 	ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "slot_a");
 	*/
-	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "$i8$i8", IVM_OP(PRINT_OBJ), IVM_OP(PRINT_OBJ));
+	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
