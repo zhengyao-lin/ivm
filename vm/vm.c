@@ -11,6 +11,7 @@
 
 static
 ivm_type_t static_type_list[] = {
+	{ IVM_UNDEFINED_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
 	{ IVM_NULL_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
 	{ IVM_OBJECT_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
 	{ IVM_NUMERIC_T, sizeof(ivm_numeric_t), IVM_NULL, IVM_NULL }

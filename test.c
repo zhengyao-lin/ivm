@@ -14,13 +14,15 @@ int main()
 	ivm_vmstate_t *state = ivm_vmstate_new();
 
 	ivm_object_t *obj1 = ivm_object_new(state);
-	ivm_object_t *obj2 = ivm_object_new(state);
+	ivm_object_t *obj2 = ivm_numeric_new(state, 110);
 
 	ivm_exec_t *exec1 = ivm_exec_new(),
 			   *exec2 = ivm_exec_new();
 	ivm_ctchain_t *chain = ivm_ctchain_new();
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
+
+	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);

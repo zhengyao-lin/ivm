@@ -69,6 +69,7 @@ ivm_object_init(ivm_object_t *obj,
 	obj->type = ivm_vmstate_getType(state, type);
 	obj->slots = IVM_NULL;
 	obj->mark = IVM_MARK_WHITE;
+	obj->copy = IVM_NULL;
 
 	return;
 }
