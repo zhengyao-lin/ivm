@@ -10,7 +10,7 @@
 #include "gc/heap.h"
 #include "gc/gc.h"
 
-#define IVM_DEFAULT_INIT_HEAP_SIZE (512)
+#define IVM_DEFAULT_INIT_HEAP_SIZE (1024)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
 
 typedef struct ivm_vmstate_t_tag {
@@ -33,6 +33,8 @@ void
 ivm_vmstate_free(ivm_vmstate_t *state);
 #define ivm_vmstate_openGCFlag(state) ((state)->gc_flag = IVM_TRUE)
 #define ivm_vmstate_closeGCFlag(state) ((state)->gc_flag = IVM_FALSE)
+
+#define ivm_vmstate_resetHeap(state, hp) (ivm_heap_free((state)->heap), (state)->heap = (hp))
 
 #if 0
 

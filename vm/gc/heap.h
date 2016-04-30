@@ -35,8 +35,10 @@ typedef struct ivm_heap_t_tag {
 	ivm_size_t bcount;
 	ivm_size_t bsize;
 	ivm_size_t *curs;
-	void **blocks;
+	ivm_byte_t **blocks;
 } ivm_heap_t;
+
+#define IVM_HEAP_BSIZE(heap) ((heap)->bsize)
 
 ivm_heap_t *
 ivm_heap_new(ivm_size_t bsize);

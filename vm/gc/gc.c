@@ -249,7 +249,7 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	= IVM_COLLECTOR_PERIOD(arg->collector);
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_TYPE_SIZE_OF(obj));
-	obj->copy = ret;
+	ret->copy = obj->copy = ret;
 
 	IVM_OBJECT_SLOTS(ret) = ivm_slot_table_copy(IVM_OBJECT_SLOTS(ret), arg->heap);
 
@@ -348,11 +348,13 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_traverser_arg_t arg;
 
 	arg.state = root;
-	arg.heap = heap;
+	arg.heap = ivm_heap_new(IVM_HEAP_BSIZE(heap));
 	arg.collector = collector;
 
-	ivm_heap_reset(heap);
+	printf("collecting\n");
+
 	ivm_collector_travState(collector, &arg);
+	ivm_vmstate_resetHeap(root, arg.heap);
 	INC_PERIOD(collector);
 
 	return;

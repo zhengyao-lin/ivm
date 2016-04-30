@@ -32,7 +32,7 @@ ivm_slot_copy(ivm_slot_t *slot, ivm_heap_t *heap)
 
 	if (slot) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
-		ret->k = IVM_STRLEN_HEAP(ret->k, heap);
+		ret->k = IVM_STRLEN_HEAP(slot->k, heap);
 		ret->v = slot->v;
 		ret->next = IVM_NULL;
 	}
