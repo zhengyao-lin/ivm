@@ -1,16 +1,15 @@
 #ifndef _IVM_VM_GC_CELL_H_
 #define _IVM_VM_GC_CELL_H_
 
-#include "../obj.h"
-
 struct ivm_vmstate_t_tag;
 struct ivm_cell_t_tag;
 struct ivm_cell_set_t_tag;
+struct ivm_object_t_tag;
 
 typedef void (*ivm_cell_set_foreach_proc_t)(struct ivm_cell_t_tag *, struct ivm_cell_set_t_tag *, void *, void *);
 
 typedef struct ivm_cell_t_tag {
-	ivm_object_t *obj;
+	struct ivm_object_t_tag *obj;
 
 	struct ivm_cell_t_tag *prev;
 	struct ivm_cell_t_tag *next;
@@ -65,7 +64,7 @@ ivm_cell_set_dump(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
 void
 ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell);
 ivm_cell_t *
-ivm_cell_set_addObject(ivm_cell_set_t *set, ivm_object_t *obj);
+ivm_cell_set_addObject(ivm_cell_set_t *set, struct ivm_object_t_tag *obj);
 /* just remove, no free */
 ivm_cell_t *
 ivm_cell_set_removeTail(ivm_cell_set_t *set);

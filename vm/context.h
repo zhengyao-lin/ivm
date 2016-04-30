@@ -14,6 +14,8 @@ struct ivm_ctchain_sub_t_tag {
 	struct ivm_ctchain_sub_t_tag *inner;
 };
 
+typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_iterator_t;
+
 typedef struct ivm_ctchain_t_tag {
 	struct ivm_ctchain_sub_t_tag *head;
 	struct ivm_ctchain_sub_t_tag *tail;
@@ -44,5 +46,9 @@ void
 ivm_ctchain_foreach(ivm_ctchain_t *chain,
 					ivm_ctchain_foreach_proc_t proc,
 					void *arg);
+
+#define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->ct = val)
+#define IVM_CTCHAIN_ITER_GET(iter) ((iter)->ct)
+#define IVM_CTCHAIN_EACHPTR(chain, ptr) for ((ptr) = (chain)->head; (ptr); (ptr) = (ptr)->inner)
 
 #endif

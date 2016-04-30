@@ -66,7 +66,7 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 						goto ACTION_YIELD;
 					default:;
 				}
-				ivm_vmstate_checkGC(state);
+				/* ivm_vmstate_checkGC(state); */
 			}
 ACTION_BREAK:
 

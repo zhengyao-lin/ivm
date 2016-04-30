@@ -29,4 +29,6 @@ typedef ivm_stack_t ivm_vmstack_t;
 #define ivm_vmstack_foreach ivm_stack_foreach
 #define ivm_vmstack_foreach_arg ivm_stack_foreach_arg
 
+#define IVM_VMSTACK_EACHPTR(ptlist, ptr) IVM_STACK_EACHPTR((ptlist), (ptr), ivm_object_t *)
+
 #endif

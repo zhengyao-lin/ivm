@@ -31,7 +31,7 @@ void
 ivm_cell_dispose(ivm_cell_t *cell, ivm_vmstate_t *state)
 {
 	if (cell) {
-		ivm_object_free(cell->obj, state);
+		/* ivm_object_free(cell->obj, state); */
 		MEM_FREE(cell);
 	}
 

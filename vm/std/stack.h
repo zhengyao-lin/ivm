@@ -33,4 +33,6 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_foreach ivm_ptlist_foreach
 #define ivm_stack_foreach_arg ivm_ptlist_foreach_arg
 
+#define IVM_STACK_EACHPTR IVM_PTLIST_EACHPTR
+
 #endif

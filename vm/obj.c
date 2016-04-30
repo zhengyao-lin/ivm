@@ -5,6 +5,8 @@
 #include "err.h"
 #include "gc/gc.h"
 
+#if 0
+
 ivm_type_t *
 ivm_type_new(ivm_type_tag_t tag, ivm_destructor_t des, ivm_marker_t marker)
 {
@@ -19,6 +21,20 @@ ivm_type_new(ivm_type_tag_t tag, ivm_destructor_t des, ivm_marker_t marker)
 	return ret;
 }
 
+#endif
+
+ivm_type_t *
+ivm_type_new(ivm_type_t type)
+{
+	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret));
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
+
+	MEM_COPY(ret, &type, sizeof(*ret));
+
+	return ret;
+}
+
 void
 ivm_type_free(ivm_type_t *type)
 {
@@ -29,45 +45,31 @@ ivm_type_free(ivm_type_t *type)
 ivm_object_t *
 ivm_object_new(ivm_vmstate_t *state)
 {
-#if 0
-	ivm_object_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("object"));
-
-	ret->type = IVM_OBJECT_T;
-	ret->slots = IVM_NULL;
-	ret->des = IVM_NULL;
+	ivm_object_init(ret, state, IVM_OBJECT_T);
 
 	return ret;
-#endif
-	
-	return ivm_vmstate_newObject(state);
 }
 
-ivm_object_t *ivm_object_newNull(struct ivm_vmstate_t_tag *state)
+ivm_object_t *ivm_object_newNull(ivm_vmstate_t *state)
 {
-	ivm_object_t *ret = ivm_vmstate_newObject(state);
-	
-	ret->type = ivm_vmstate_getType(state, IVM_NULL_T);
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_NULL_T);
 
 	return ret;
 }
 
 void
-ivm_object_init(ivm_object_t *obj, ivm_vmstate_t *state)
+ivm_object_init(ivm_object_t *obj,
+				ivm_vmstate_t *state,
+				ivm_type_tag_t type)
 {
-	obj->type = ivm_vmstate_getType(state, IVM_OBJECT_T);
+	obj->type = ivm_vmstate_getType(state, type);
 	obj->slots = IVM_NULL;
 	obj->mark = IVM_MARK_WHITE;
 
-	return;
-}
-
-void
-ivm_object_free(ivm_object_t *obj,
-				ivm_vmstate_t *state)
-{
-	ivm_vmstate_freeObject(state, obj);
 	return;
 }
 
@@ -86,7 +88,7 @@ ivm_object_setSlot(ivm_object_t *obj,
 		if (!obj->slots) {
 			obj->slots = ivm_slot_table_new(state);
 		}
-		found = ivm_slot_table_addSlot(obj->slots, state, key, value, obj);
+		found = ivm_slot_table_addSlot(obj->slots, state, key, value);
 	} else {
 		ivm_slot_setValue(found, state, value);
 	}

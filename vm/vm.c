@@ -6,16 +6,26 @@
 #include "gc/heap.h"
 #include "gc/gc.h"
 
+#define GC(state) ((state)->gc)
+#define HEAP(state) ((state)->heap)
+
+static
+ivm_type_t static_type_list[] = {
+	{ IVM_NULL_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
+	{ IVM_OBJECT_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
+	{ IVM_NUMERIC_T, sizeof(ivm_numeric_t), IVM_NULL, IVM_NULL }
+};
+
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
 	ivm_vmstate_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
 	ivm_type_t *tmp_type;
+	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
-	ret->heap_count = 0;
-	ret->heaps = IVM_NULL;
+	ret->heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
 
 	ret->cur_coro = 0;
 	ret->coro_list = ivm_coro_list_new();
@@ -23,19 +33,12 @@ ivm_vmstate_new()
 	ret->exec_list = ivm_exec_list_new();
 	ret->type_list = ivm_type_list_new();
 
-	tmp_type = ivm_type_new(IVM_NULL_T, IVM_NULL, IVM_NULL);
-	ivm_type_list_register(ret->type_list, tmp_type);
-	
-	tmp_type = ivm_type_new(IVM_OBJECT_T, IVM_NULL, IVM_NULL);
-	ivm_type_list_register(ret->type_list, tmp_type);
-	
-	tmp_type = ivm_type_new(IVM_NUMERIC_T, IVM_NULL, IVM_NULL);
-	ivm_type_list_register(ret->type_list, tmp_type);
+	for (i = 0; i < type_count; i++) {
+		tmp_type = ivm_type_new(static_type_list[i]);
+		ivm_type_list_register(ret->type_list, tmp_type);
+	}
 
-	tmp_type = ivm_type_new(IVM_FUNCTION_T, IVM_NULL, IVM_NULL);
-	ivm_type_list_register(ret->type_list, tmp_type);
-
-	ret->gc_flag = IVM_FALSE;
+	/* ret->gc_flag = IVM_FALSE; */
 	ret->gc = ivm_collector_new(ret);
 
 	return ret;
@@ -44,26 +47,24 @@ ivm_vmstate_new()
 void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
-	ivm_size_t i;
-
 	if (state) {
-		ivm_coro_list_free(state->coro_list);
-		
-		ivm_collector_dispose(state->gc, state);
-		for (i = 0; i < state->heap_count; i++) {
-			ivm_heap_free(state->heaps[i]);
-		}
-		MEM_FREE(state->heaps);
+		ivm_collector_free(GC(state));
 
+		ivm_heap_free(HEAP(state));
+
+		ivm_coro_list_free(state->coro_list);
 		ivm_exec_list_free(state->exec_list);
 
 		ivm_type_list_foreach(state->type_list, ivm_type_free);
 		ivm_type_list_free(state->type_list);
+
 		MEM_FREE(state);
 	}
 
 	return;
 }
+
+#if 0
 
 void
 ivm_vmstate_addHeap(ivm_vmstate_t *state)
@@ -94,45 +95,16 @@ ivm_vmstate_findHeap(ivm_vmstate_t *state,
 	return ret;
 }
 
-ivm_object_t *
-ivm_vmstate_alloc(ivm_vmstate_t *state)
+#endif
+
+void *
+ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
-	ivm_object_t *ret = IVM_NULL;
-
-	ret = ivm_heap_alloc(ivm_vmstate_curHeap(state));
-	if (!ret) {
-		ivm_vmstate_addHeap(state);
-		ivm_vmstate_openGCFlag(state);
-
-		ret = ivm_heap_alloc(ivm_vmstate_curHeap(state));
-		IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("object in heap"));
+	if (!ivm_heap_hasSize(HEAP(state), size)) {
+		ivm_collector_collect(GC(state), state, HEAP(state));
 	}
 
-	return ret;
-}
-
-ivm_object_t *
-ivm_vmstate_newObject(ivm_vmstate_t *state)
-{
-	ivm_object_t *ret = IVM_NULL;
-
-	ret = ivm_vmstate_alloc(state);
-	ivm_object_init(ret, state);
-	ivm_collector_addObject(state->gc, ret);
-
-	return ret;
-}
-
-void
-ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj)
-{
-	ivm_heap_t *heap;
-
-	heap = ivm_vmstate_findHeap(state, obj);
-	IVM_ASSERT(heap, IVM_ERROR_MSG_CANNOT_FIND_OBJECT_IN_HEAP);
-	ivm_heap_freeObject(heap, state, obj);
-
-	return;
+	return ivm_heap_alloc(HEAP(state), size);
 }
 
 #define IS_AVAILABLE(state, i) (ivm_coro_isAsleep(ivm_coro_list_at((state)->coro_list, (i))))

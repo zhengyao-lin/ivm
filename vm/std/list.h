@@ -52,4 +52,6 @@ ivm_ptlist_foreach_arg(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_arg_t proc,
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 
+#define IVM_PTLIST_EACHPTR(ptlist, ptr, type) for ((ptr) = (type *)((ptlist)->lst); (ptr) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); (ptr)++)
+
 #endif
