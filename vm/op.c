@@ -5,6 +5,7 @@
 #include "vm.h"
 #include "call.h"
 #include "byte.h"
+#include "num.h"
 #include "err.h"
 
 #define OP_PROC_NAME(op) ivm_op_proc_##op
@@ -43,6 +44,20 @@ OP_PROC(NONE)
 OP_PROC(NEW_OBJ)
 {
 	STACK_PUSH(ivm_object_new(STATE));
+	PC++;
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(NEW_NUM_i)
+{
+	ivm_sint32_t val = ivm_byte_readSInt32(ARG_START);
+	STACK_PUSH(ivm_numeric_new(STATE, val));
+	PC += sizeof(val) / sizeof(ivm_byte_t) + 1;
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(NEW_NUM_s)
+{
 	PC++;
 	return IVM_ACTION_NONE;
 }
@@ -121,6 +136,19 @@ OP_PROC(PRINT_OBJ)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(PRINT_NUM)
+{
+	ivm_object_t *obj;
+
+	CHECK_STACK(1);
+
+	obj = STACK_POP();
+	printf("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	PC++;
+
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(INVOKE)
 {
 	printf("INVOKE: no implementation\n");
@@ -194,12 +222,15 @@ ivm_op_table_t
 ivm_global_op_table[] = {
 	OP_MAPPING(NONE),
 	OP_MAPPING(NEW_OBJ),
+	OP_MAPPING(NEW_NUM_i),
+	OP_MAPPING(NEW_NUM_s),
 	OP_MAPPING(NEW_FUNC),
 	OP_MAPPING(GET_SLOT),
 	OP_MAPPING(SET_SLOT),
 	OP_MAPPING(GET_CONTEXT_SLOT),
 	OP_MAPPING(SET_CONTEXT_SLOT),
 	OP_MAPPING(PRINT_OBJ),
+	OP_MAPPING(PRINT_NUM),
 	OP_MAPPING(INVOKE),
 	OP_MAPPING(YIELD),
 	OP_MAPPING(TEST1),

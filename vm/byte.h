@@ -9,23 +9,23 @@ ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size);
 
 #define ivm_byte_readSInt8(bytes) (*bytes)
 #define ivm_byte_readSInt16(bytes) \
-	(((ivm_sint16)(bytes)[0] << 8) + \
+	(((ivm_sint16_t)(bytes)[0] << 8) + \
 	 ((bytes)[1]))
 
 #define ivm_byte_readSInt32(bytes) \
-	(((ivm_sint32)(bytes)[0] << 24) + \
-	 ((ivm_sint32)(bytes)[1] << 16) + \
-	 ((ivm_sint32)(bytes)[2] << 8) + \
+	(((ivm_sint32_t)(bytes)[0] << 24) + \
+	 ((ivm_sint32_t)(bytes)[1] << 16) + \
+	 ((ivm_sint32_t)(bytes)[2] << 8) + \
 	 ((bytes)[3]))
 
 #define ivm_byte_readSInt64(bytes) \
-	(((ivm_sint64)(bytes)[0] << 56) + \
-	 ((ivm_sint64)(bytes)[1] << 48) + \
-	 ((ivm_sint64)(bytes)[2] << 40) + \
-	 ((ivm_sint64)(bytes)[3] << 32) + \
-	 ((ivm_sint64)(bytes)[4] << 24) + \
-	 ((ivm_sint64)(bytes)[5] << 16) + \
-	 ((ivm_sint64)(bytes)[6] << 8) + \
+	(((ivm_sint64_t)(bytes)[0] << 56) + \
+	 ((ivm_sint64_t)(bytes)[1] << 48) + \
+	 ((ivm_sint64_t)(bytes)[2] << 40) + \
+	 ((ivm_sint64_t)(bytes)[3] << 32) + \
+	 ((ivm_sint64_t)(bytes)[4] << 24) + \
+	 ((ivm_sint64_t)(bytes)[5] << 16) + \
+	 ((ivm_sint64_t)(bytes)[6] << 8) + \
 	 ((bytes)[7]))
 
 ivm_byte_t *
