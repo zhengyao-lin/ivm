@@ -7,7 +7,9 @@
 #include "gc/gc.h"
 
 #define GC(state) ((state)->gc)
-#define HEAP(state) ((state)->heap)
+#define HEAP1(state) ((state)->heaps[0])
+#define HEAP2(state) ((state)->heaps[1])
+#define HEAP_CUR HEAP1
 
 static
 ivm_type_t static_type_list[] = {
@@ -26,7 +28,8 @@ ivm_vmstate_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
-	ret->heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
+	ret->heaps[0] = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
+	ret->heaps[1] = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
 
 	ret->cur_coro = 0;
 	ret->coro_list = ivm_coro_list_new();
@@ -51,7 +54,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	if (state) {
 		ivm_collector_free(GC(state));
 
-		ivm_heap_free(HEAP(state));
+		ivm_heap_free(HEAP1(state));
+		ivm_heap_free(HEAP2(state));
 
 		ivm_coro_list_free(state->coro_list);
 		ivm_exec_list_free(state->exec_list);
@@ -65,47 +69,24 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
-#if 0
-
-void
-ivm_vmstate_addHeap(ivm_vmstate_t *state)
-{
-	state->heaps = MEM_REALLOC(state->heaps,
-							  sizeof(ivm_heap_t *)
-							  * ++state->heap_count);
-	
-	state->heaps[state->heap_count - 1]
-	= ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
-
-	return;
-}
-
-ivm_heap_t *
-ivm_vmstate_findHeap(ivm_vmstate_t *state,
-					 ivm_object_t *obj)
-{
-	ivm_heap_t *ret = IVM_NULL;
-	ivm_size_t i;
-
-	for (i = 0; i < state->heap_count; i++) {
-		if (ivm_heap_isInHeap(state->heaps[i], obj)) {
-			ret = state->heaps[i];
-		}
-	}
-
-	return ret;
-}
-
-#endif
-
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
-	if (!ivm_heap_hasSize(HEAP(state), size)) {
-		ivm_collector_collect(GC(state), state, HEAP(state));
+	if (!ivm_heap_hasSize(HEAP_CUR(state), size)) {
+		ivm_collector_collect(GC(state), state, HEAP_CUR(state));
 	}
 
-	return ivm_heap_alloc(HEAP(state), size);
+	return ivm_heap_alloc(HEAP_CUR(state), size);
+}
+
+void
+ivm_vmstate_swapHeap(ivm_vmstate_t *state)
+{
+	ivm_heap_t *tmp = HEAP1(state);
+	HEAP1(state) = HEAP2(state);
+	HEAP2(state) = tmp;
+
+	return;
 }
 
 #define IS_AVAILABLE(state, i) (ivm_coro_isAsleep(ivm_coro_list_at((state)->coro_list, (i))))

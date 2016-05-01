@@ -48,6 +48,7 @@ static
 ivm_size_t
 ivm_heap_addBlock(ivm_heap_t *heap)
 {
+	printf("new block added\n");
 	heap->curs = MEM_REALLOC(heap->curs,
 							 sizeof(*heap->curs) * ++heap->bcount);
 	heap->blocks = MEM_REALLOC(heap->blocks,

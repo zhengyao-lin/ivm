@@ -14,7 +14,7 @@
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
 
 typedef struct ivm_vmstate_t_tag {
-	ivm_heap_t *heap;
+	ivm_heap_t *heaps[2];
 
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
@@ -26,6 +26,7 @@ typedef struct ivm_vmstate_t_tag {
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_CORO_LIST(state) ((state)->coro_list)
+#define IVM_VMSTATE_EMPTY_HEAP(state) ((state)->heaps[1])
 
 ivm_vmstate_t *
 ivm_vmstate_new();
@@ -48,6 +49,8 @@ ivm_vmstate_findHeap(ivm_vmstate_t *state, ivm_object_t *obj);
 
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size);
+void
+ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 
 #if 0
 
