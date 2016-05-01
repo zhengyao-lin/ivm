@@ -10,6 +10,7 @@ struct ivm_vmstate_t_tag;
 typedef ivm_sint64_t ivm_mark_period_t;
 
 typedef struct ivm_collector_t_tag {
+	ivm_cell_set_t *des_log;
 	ivm_mark_period_t period;
 } ivm_collector_t;
 
@@ -25,7 +26,15 @@ typedef struct ivm_traverser_arg_t_tag {
 ivm_collector_t *
 ivm_collector_new();
 void
-ivm_collector_free(ivm_collector_t *collector);
+ivm_collector_free(ivm_collector_t *collector, struct ivm_vmstate_t_tag *state);
+
+/* only objects in destructor log will be 'informed' when being destructed */
+#define ivm_collector_addDesLog(collector, obj) (ivm_cell_set_addObject((collector)->des_log, (obj)))
+
+/* destruct objects in destructor log */
+void
+ivm_collector_triggerDestructor(ivm_collector_t *collector,
+								struct ivm_vmstate_t_tag *state);
 
 void
 ivm_collector_collect(ivm_collector_t *collector,

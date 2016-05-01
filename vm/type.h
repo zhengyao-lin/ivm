@@ -35,11 +35,11 @@ typedef ivm_sint32_t	ivm_type_tag_t;
 
 typedef ivm_double_t	ivm_number_t;
 
-#define IVM_UNDEFINED_T	0
-#define IVM_NULL_T		1
-#define IVM_OBJECT_T	2
-#define IVM_NUMERIC_T	3
-#define IVM_FUNCTION_T	4
+#define IVM_UNDEFINED_T			0
+#define IVM_NULL_T				1
+#define IVM_OBJECT_T			2
+#define IVM_NUMERIC_T			3
+#define IVM_FUNCTION_OBJECT_T	4
 
 typedef ivm_size_t		ivm_pc_t;
 typedef ivm_byte_t		ivm_mark_t;

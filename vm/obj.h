@@ -80,13 +80,9 @@ ivm_object_init(ivm_object_t *obj,
 				struct ivm_vmstate_t_tag *state,
 				ivm_type_tag_t type);
 
-/* dump: clean the data the object contains, but not free itself */
-#define ivm_object_dump(obj, state) \
-	if (obj) { \
-		if (IVM_TYPE_OF(obj) && IVM_TYPE_DES_OF(obj)) { \
-			IVM_TYPE_DES_OF(obj)(obj, state); \
-		} \
-		/* ivm_slot_table_free(obj->slots, state); */ \
+#define ivm_object_destruct(obj, state) \
+	if ((obj) && IVM_TYPE_OF(obj) && IVM_TYPE_DES_OF(obj)) { \
+		IVM_TYPE_DES_OF(obj)(obj, state); \
 	}
 	
 #if 0

@@ -42,7 +42,7 @@ int main()
 {
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2;
-	ivm_exec_t *exec1, *exec2;
+	ivm_exec_t *exec1, *exec2, *exec3;
 	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
@@ -52,10 +52,11 @@ int main()
 #endif
 
 	state = ivm_vmstate_new();
-	obj1 = ivm_object_new(state);
+	obj1 = ivm_function_object_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	obj2 = ivm_numeric_new(state, 110);
 	exec1 = ivm_exec_new();
 	exec2 = ivm_exec_new();
+	exec3 = ivm_exec_new();
 	chain = ivm_ctchain_new();
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
@@ -64,6 +65,10 @@ int main()
 	ivm_object_setSlot(obj2, state, "b", obj1);
 	ivm_object_setSlot(obj2, state, "c", obj1);
 
+	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
+
+	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -145,7 +150,7 @@ int main()
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
 	ivm_ctchain_free(chain);
-	ivm_exec_free(exec1); ivm_exec_free(exec2);
+	ivm_exec_free(exec1); ivm_exec_free(exec2); ivm_exec_free(exec3);
 	ivm_vmstate_free(state);
 
 #if IVM_PERF_PROFILE

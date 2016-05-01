@@ -28,21 +28,11 @@ ivm_cell_free(ivm_cell_t *cell)
 }
 
 void
-ivm_cell_dispose(ivm_cell_t *cell, ivm_vmstate_t *state)
+ivm_cell_destruct(ivm_cell_t *cell, ivm_vmstate_t *state)
 {
 	if (cell) {
-		/* ivm_object_free(cell->obj, state); */
+		ivm_object_destruct(cell->obj, state);
 		MEM_FREE(cell);
-	}
-
-	return;
-}
-
-void
-ivm_cell_dump(ivm_cell_t *cell, ivm_vmstate_t *state)
-{
-	if (cell) {
-		ivm_object_dump(cell->obj, state);
 	}
 
 	return;
@@ -125,7 +115,7 @@ ivm_cell_set_free(ivm_cell_set_t *set)
 }
 
 void
-ivm_cell_set_dispose(ivm_cell_set_t *set, ivm_vmstate_t *state)
+ivm_cell_set_destruct(ivm_cell_set_t *set, ivm_vmstate_t *state)
 {
 	ivm_cell_t *i, *tmp;
 
@@ -133,24 +123,7 @@ ivm_cell_set_dispose(ivm_cell_set_t *set, ivm_vmstate_t *state)
 		for (i = set->head; i;) {
 			tmp = i;
 			i = i->next;
-			ivm_cell_dispose(tmp, state);
-		}
-		MEM_FREE(set);
-	}
-
-	return;
-}
-
-void
-ivm_cell_set_dump(ivm_cell_set_t *set, ivm_vmstate_t *state)
-{
-	ivm_cell_t *i, *tmp;
-
-	if (set) {
-		for (i = set->head; i;) {
-			tmp = i;
-			i = i->next;
-			ivm_cell_dispose(tmp, state);
+			ivm_cell_destruct(tmp, state);
 		}
 		MEM_FREE(set);
 	}

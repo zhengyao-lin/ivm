@@ -3,6 +3,7 @@
 #include "err.h"
 #include "obj.h"
 #include "coro.h"
+#include "func.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
 
@@ -16,7 +17,8 @@ ivm_type_t static_type_list[] = {
 	{ IVM_UNDEFINED_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
 	{ IVM_NULL_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
 	{ IVM_OBJECT_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
-	{ IVM_NUMERIC_T, sizeof(ivm_numeric_t), IVM_NULL, IVM_NULL }
+	{ IVM_NUMERIC_T, sizeof(ivm_numeric_t), IVM_NULL, IVM_NULL },
+	{ IVM_FUNCTION_OBJECT_T, sizeof(ivm_function_object_t), ivm_function_object_destructor, IVM_NULL }
 };
 
 ivm_vmstate_t *
@@ -42,7 +44,7 @@ ivm_vmstate_new()
 		ivm_type_list_register(ret->type_list, tmp_type);
 	}
 
-	/* ret->gc_flag = IVM_FALSE; */
+	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 
 	return ret;
@@ -52,7 +54,7 @@ void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	if (state) {
-		ivm_collector_free(GC(state));
+		ivm_collector_free(GC(state), state);
 
 		ivm_heap_free(HEAP1(state));
 		ivm_heap_free(HEAP2(state));
@@ -73,7 +75,8 @@ void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
 	if (!ivm_heap_hasSize(HEAP_CUR(state), size)) {
-		ivm_collector_collect(GC(state), state, HEAP_CUR(state));
+		ivm_vmstate_openGCFlag(state);
+		/* ivm_collector_collect(GC(state), state, HEAP_CUR(state)); */
 	}
 
 	return ivm_heap_alloc(HEAP_CUR(state), size);

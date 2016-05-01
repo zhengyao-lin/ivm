@@ -22,6 +22,7 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
 
+	ivm_bool_t gc_flag;
 	ivm_collector_t *gc;
 } ivm_vmstate_t;
 
@@ -67,21 +68,21 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #define ivm_vmstate_registerType(state, type) (ivm_type_list_register((state)->type_list, (type)))
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
 
-/*
-#ifdef IVM_DEBUG
+#define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
 
-#define ivm_vmstate_checkGC(state) (ivm_collector_collect((state)->gc))
+#if 0 && IVM_DEBUG
+
+#define ivm_vmstate_checkGC(state) (ivm_collector_collect((state)->gc, (state), (state)->heaps[0]))
 
 #else
 
 #define ivm_vmstate_checkGC(state) \
 	if ((state)->gc_flag) { \
-		ivm_collector_collect((state)->gc); \
+		ivm_collector_collect((state)->gc, (state), (state)->heaps[0]); \
 		ivm_vmstate_closeGCFlag(state); \
 	}
 
 #endif
-*/
 
 #define ivm_vmstate_addCoro(state, coro) (ivm_coro_list_add((state)->coro_list, (coro)))
 

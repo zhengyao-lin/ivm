@@ -29,12 +29,9 @@ ivm_cell_new();
 /* free cell: just dispose the container */
 void
 ivm_cell_free(ivm_cell_t *cell);
-/* dispose cell: dispose both the container and the object it contains */
+/* destruct cell: call the destructor of the object and free the cell */
 void
-ivm_cell_dispose(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
-/* dump cell: dump the data the object contains, but not free it */
-void
-ivm_cell_dump(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
+ivm_cell_destruct(ivm_cell_t *cell, struct ivm_vmstate_t_tag *state);
 #define ivm_cell_init(cell, o) ((cell)->next = (cell)->prev = IVM_NULL, (cell)->obj = (o))
 
 /* notice: use ivm_cell_move_to_set() to move cell BETWEEN SETS
@@ -53,13 +50,11 @@ ivm_cell_moveToSet(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to);
 ivm_cell_set_t *
 ivm_cell_set_new();
 
-/* similar to the interface of free/dispose cell */
+/* similar to the interface of free/destruct cell */
 void
 ivm_cell_set_free(ivm_cell_set_t *set);
 void
-ivm_cell_set_dispose(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
-void
-ivm_cell_set_dump(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
+ivm_cell_set_destruct(ivm_cell_set_t *set, struct ivm_vmstate_t_tag *state);
 
 void
 ivm_cell_set_addCell(ivm_cell_set_t *set, ivm_cell_t *cell);

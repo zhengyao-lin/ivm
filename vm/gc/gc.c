@@ -21,14 +21,16 @@ ivm_collector_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
+	ret->des_log = ivm_cell_set_new();
 	ret->period = 1;
 
 	return ret;
 }
 
 void
-ivm_collector_free(ivm_collector_t *collector)
+ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 {
+	ivm_cell_set_destruct(collector->des_log, state);
 	MEM_FREE(collector);
 	return;
 }
@@ -75,7 +77,7 @@ ivm_collector_copyObject(ivm_object_t *obj,
 
 	trav = IVM_TYPE_TRAV_OF(obj);
 	if (trav) {
-		trav(obj, arg);
+		trav(ret, arg);
 	}
 
 	return ret;
@@ -155,6 +157,36 @@ ivm_collector_travState(ivm_collector_t *collector,
 	return;
 }
 
+static
+void
+ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
+						   ivm_collector_t *collector, ivm_vmstate_t *state)
+{
+	ivm_object_t *obj = IVM_CELL_OBJ(cell);
+
+	if (obj) {
+		if (IVM_OBJECT_MARK(obj)
+			!= IVM_COLLECTOR_PERIOD(collector)) {
+			ivm_cell_removeFrom(cell, set);
+			ivm_object_destruct(obj, state);
+		} else {
+			/* update reference */
+			IVM_CELL_OBJ(cell) = obj->copy;
+		}
+	}
+
+	return;
+}
+
+void
+ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state)
+{
+	ivm_cell_set_foreach(collector->des_log,
+						 (ivm_cell_set_foreach_proc_t)ivm_collector_destructCell,
+						 collector, state);
+	return;
+}
+
 #if IVM_PERF_PROFILE
 
 clock_t ivm_perf_gc_time = 0;
@@ -163,7 +195,7 @@ clock_t ivm_perf_gc_time = 0;
 
 void
 ivm_collector_collect(ivm_collector_t *collector,
-					  struct ivm_vmstate_t_tag *state,
+					  ivm_vmstate_t *state,
 					  ivm_heap_t *heap)
 {
 
@@ -182,6 +214,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	printf("***collecting***\n");
 
 	ivm_collector_travState(collector, &arg);
+	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
 	INC_PERIOD(collector);
 

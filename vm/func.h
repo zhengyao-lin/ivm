@@ -5,6 +5,7 @@
 #include "context.h"
 #include "exec.h"
 #include "runtime.h"
+#include "obj.h"
 
 struct ivm_vmstate_t_tag;
 struct ivm_caller_info_t_tag;
@@ -50,13 +51,32 @@ ivm_function_free(ivm_function_t *func);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 ivm_runtime_t *
-ivm_function_createRuntime(ivm_function_t *func);
+ivm_function_createRuntime(const ivm_function_t *func);
 struct ivm_caller_info_t_tag *
-ivm_function_invoke(ivm_function_t *func, struct ivm_coro_t_tag *coro);
+ivm_function_invoke(const ivm_function_t *func, struct ivm_coro_t_tag *coro);
 ivm_object_t *
-ivm_function_callNative(ivm_function_t *func,
+ivm_function_callNative(const ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,
 						ivm_ctchain_t *context, ivm_object_t *base,
 						ivm_argc_t argc, ivm_object_t **argv);
+
+typedef struct {
+	IVM_OBJECT_HEADER
+	ivm_function_t val;
+} ivm_function_object_t;
+
+void
+ivm_function_object_destructor(ivm_object_t *obj,
+							   struct ivm_vmstate_t_tag *state);
+
+ivm_object_t *
+ivm_function_object_new(struct ivm_vmstate_t_tag *state,
+						ivm_ctchain_t *context,
+						ivm_exec_t *body,
+						ivm_signal_mask_t intsig);
+ivm_object_t *
+ivm_function_object_newNative(struct ivm_vmstate_t_tag *state,
+							  ivm_native_function_t native,
+							  ivm_signal_mask_t intsig);
 
 #endif

@@ -14,6 +14,7 @@
 
 #define CORO (__ivm_coro__)
 #define RUNTIME (__ivm_coro__->runtime)
+#define CONTEXT (__ivm_coro__->runtime->context)
 #define PC (__ivm_coro__->runtime->pc)
 #define STATE (__ivm_state__)
 #define CALL_STACK (__ivm_coro__->call_st)
@@ -64,8 +65,10 @@ OP_PROC(NEW_NUM_s)
 
 OP_PROC(NEW_FUNC)
 {
-	printf("NEW_FUNC: no implementation\n");
-	PC++;
+	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
+	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
+	STACK_PUSH(ivm_function_object_new(STATE, CONTEXT, exec, IVM_INTSIG_NONE));
+	PC += sizeof(exec_id) / sizeof(ivm_byte_t) + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -151,8 +154,15 @@ OP_PROC(PRINT_NUM)
 
 OP_PROC(INVOKE)
 {
-	printf("INVOKE: no implementation\n");
+	ivm_function_t *func;
+
+	CHECK_STACK(1);
+
+	func = &IVM_AS(STACK_POP(), ivm_function_object_t)->val;
+	
 	PC++;
+	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
+
 	return IVM_ACTION_NONE;
 }
 
