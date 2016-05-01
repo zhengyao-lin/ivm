@@ -12,7 +12,10 @@
 #include "../vm.h"
 #include "../err.h"
 
-#define INC_PERIOD(collector) ((collector)->period++)
+#define INC_PERIOD(collector) (IVM_COLLECTOR_PERIOD(collector)++, \
+							   !IVM_COLLECTOR_PERIOD(collector) \
+							   ? IVM_COLLECTOR_PERIOD(collector)++ \
+							   : 0)
 
 ivm_collector_t *
 ivm_collector_new()

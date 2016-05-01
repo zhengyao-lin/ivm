@@ -7,7 +7,7 @@
 
 struct ivm_vmstate_t_tag;
 
-typedef ivm_byte_t ivm_mark_period_t;
+typedef ivm_mark_t ivm_mark_period_t;
 
 typedef struct ivm_collector_t_tag {
 	ivm_cell_set_t *des_log;
