@@ -49,9 +49,9 @@ ivm_size_t
 ivm_heap_addBlock(ivm_heap_t *heap)
 {
 	heap->curs = MEM_REALLOC(heap->curs,
-							 sizeof(*heap->curs) * heap->bcount);
+							 sizeof(*heap->curs) * ++heap->bcount);
 	heap->blocks = MEM_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks) * ++heap->bcount);
+							   sizeof(*heap->blocks) * heap->bcount);
 
 	heap->curs[heap->bcount - 1] = 0;
 	heap->blocks[heap->bcount - 1] = MEM_ALLOC(heap->bsize);
