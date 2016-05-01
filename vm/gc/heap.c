@@ -48,7 +48,7 @@ static
 ivm_size_t
 ivm_heap_addBlock(ivm_heap_t *heap)
 {
-	printf("new block added\n");
+	printf("new block added: %ld\n", heap->bcount);
 	heap->curs = MEM_REALLOC(heap->curs,
 							 sizeof(*heap->curs) * ++heap->bcount);
 	heap->blocks = MEM_REALLOC(heap->blocks,
@@ -118,112 +118,26 @@ ivm_heap_reset(ivm_heap_t *heap)
 	return;
 }
 
-/* old heap */
-#if 0
-
-#define CELL_SET_OBJ(c, o) ((c)->obj = (o))
-
-#define OFFSET_AS(p, i, type) (((type *)p)[i])
-
-/*
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wpointer-arith"
-*/
-
-ivm_heap_t *
-ivm_heap_new(ivm_size_t obj_count)
-{
-	void *pre = IVM_NULL;
-	void *pre_cell = IVM_NULL;
-	ivm_heap_t *ret = MEM_ALLOC(sizeof(*ret));
-	ivm_size_t i;
-	ivm_cell_t *tmp;
-
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap"));
-
-	ret->pre = pre = MEM_ALLOC_INIT((sizeof(ivm_object_t) + sizeof(ivm_cell_t)) * obj_count);
-	IVM_ASSERT(pre, IVM_ERROR_MSG_FAILED_ALLOC_NEW("prealloc memory in heap"));
-
-	ret->empty = ivm_cell_set_new();
-	IVM_ASSERT(ret->empty,
-			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("empty set in heap"));
-
-	/* preallocated cell start address */
-	pre_cell = &OFFSET_AS(pre, obj_count, ivm_object_t);
-
-	for (i = 0; i < obj_count; i++) {
-		tmp = &(OFFSET_AS(pre_cell, i, ivm_cell_t));
-		CELL_SET_OBJ(tmp, &OFFSET_AS(pre, i, ivm_object_t));
-		ivm_cell_set_addCell(ret->empty, tmp);
-	}
-	ret->size = ret->empty_size = obj_count;
-
-	return ret;
-}
-
 void
-ivm_heap_free(ivm_heap_t *heap)
+ivm_heap_compact(ivm_heap_t *heap)
 {
-	if (heap) {
-		MEM_FREE(heap->empty);
-		MEM_FREE(heap->pre);
-		MEM_FREE(heap);
+	ivm_size_t i, bcount = 0;
+
+	for (i = 0; i < heap->bcount; i++) {
+		if (heap->curs[i]) {
+			heap->curs[bcount] = heap->curs[i];
+			heap->blocks[bcount] = heap->blocks[i];
+			bcount++;
+		} else {
+			MEM_FREE(heap->blocks[i]);
+		}
 	}
+
+	printf("compact to %ld\n", bcount);
+
+	heap->bcount = bcount;
+	heap->curs = MEM_REALLOC(heap->curs, sizeof(*heap->curs) * bcount);
+	heap->blocks = MEM_REALLOC(heap->blocks, sizeof(*heap->blocks) * bcount);
 
 	return;
 }
-
-ivm_object_t *
-ivm_heap_alloc(ivm_heap_t *heap)
-{
-	ivm_object_t *ret = IVM_NULL;
-	ivm_cell_t *cell;
-
-	if (heap && heap->empty->tail) {
-		cell = ivm_cell_set_removeTail(heap->empty);
-		/* IVM_ASSERT(cell, IVM_ERROR_MSG_NO_SPARE_MEM); */
-		if (!cell) return ret;
-		ret = cell->obj;
-		heap->empty_size--;
-	}
-
-	return ret;
-}
-
-void
-ivm_heap_freeObject(ivm_heap_t *heap,
-					ivm_vmstate_t *state,
-					ivm_object_t *obj)
-{
-	ivm_cell_t *cell;
-	void *pre_cell;
-
-	if (heap) {
-		IVM_ASSERT(heap->empty_size < heap->size, IVM_ERROR_MSG_WRONG_FREE_HEAP);
-		
-		pre_cell = &OFFSET_AS(heap->pre, heap->size, ivm_object_t);
-		cell = &OFFSET_AS(pre_cell, heap->empty_size, ivm_cell_t);
-
-		ivm_object_dump(obj, state);
-		ivm_cell_init(cell, obj);
-
-		ivm_cell_set_addCell(heap->empty, cell);
-	}
-
-	return;
-}
-
-ivm_bool_t
-ivm_heap_isInHeap(ivm_heap_t *heap, ivm_object_t *obj)
-{
-	if (heap) {
-		return heap->pre <= (void *)obj
-			   && (void *)obj <= (void *)(&OFFSET_AS(heap->pre,
-			   										 heap->size - 1,
-			   										 ivm_object_t));
-	}
-
-	return IVM_FALSE;
-}
-
-#endif

@@ -168,7 +168,7 @@ ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
 		if (IVM_OBJECT_MARK(obj)
 			!= IVM_COLLECTOR_PERIOD(collector)) {
 			ivm_cell_removeFrom(cell, set);
-			ivm_object_destruct(obj, state);
+			ivm_cell_destruct(cell, state);
 		} else {
 			/* update reference */
 			IVM_CELL_OBJ(cell) = obj->copy;
@@ -216,7 +216,10 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_collector_travState(collector, &arg);
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
+	ivm_heap_compact(IVM_VMSTATE_CUR_HEAP(state));
 	INC_PERIOD(collector);
+
+	ivm_vmstate_closeGCFlag(state);
 
 #if IVM_PERF_PROFILE
 	time_taken = clock() - time_st;

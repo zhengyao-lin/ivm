@@ -10,7 +10,7 @@
 #include "gc/heap.h"
 #include "gc/gc.h"
 
-#define IVM_DEFAULT_INIT_HEAP_SIZE (1024)
+#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 20)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
 
 typedef struct ivm_vmstate_t_tag {
@@ -27,6 +27,7 @@ typedef struct ivm_vmstate_t_tag {
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_CORO_LIST(state) ((state)->coro_list)
+#define IVM_VMSTATE_CUR_HEAP(state) ((state)->heaps[0])
 #define IVM_VMSTATE_EMPTY_HEAP(state) ((state)->heaps[1])
 
 ivm_vmstate_t *

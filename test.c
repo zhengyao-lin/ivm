@@ -40,6 +40,7 @@ void profile_output()
 
 int main()
 {
+	int i;
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2;
 	ivm_exec_t *exec1, *exec2, *exec3;
@@ -73,6 +74,12 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
+	for (i = 0; i < 100000; i++) { /* 79349 */
+		/* ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), ""); */
+		ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
+		ivm_exec_addCode(exec1, IVM_OP(POP), "");
+		/* ivm_object_new(state); */
+	}
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1002);
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_NUM), "");
@@ -124,6 +131,9 @@ int main()
 #if 1
 	ivm_coro_setRoot(coro1, func2);
 	ivm_coro_setRoot(coro2, func3);
+	for (i = 0; i < 1000000; i++) {
+		ivm_object_new(state);
+	}
 	ivm_vmstate_schedule(state);
 
 #else
