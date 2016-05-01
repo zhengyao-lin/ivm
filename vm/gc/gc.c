@@ -1,4 +1,6 @@
+#include <time.h>
 #include "pub/mem.h"
+#include "pub/const.h"
 #include "gc.h"
 #include "cell.h"
 #include "../slot.h"
@@ -153,11 +155,22 @@ ivm_collector_travState(ivm_collector_t *collector,
 	return;
 }
 
+#if IVM_PERF_PROFILE
+
+clock_t ivm_perf_gc_time = 0;
+
+#endif
+
 void
 ivm_collector_collect(ivm_collector_t *collector,
 					  struct ivm_vmstate_t_tag *state,
 					  ivm_heap_t *heap)
 {
+
+#if IVM_PERF_PROFILE
+	clock_t time_st = clock(), time_taken;
+#endif
+
 	ivm_traverser_arg_t arg;
 
 	arg.state = state;
@@ -171,6 +184,13 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_collector_travState(collector, &arg);
 	ivm_vmstate_swapHeap(state);
 	INC_PERIOD(collector);
+
+#if IVM_PERF_PROFILE
+	time_taken = clock() - time_st;
+	ivm_perf_gc_time += time_taken;
+#endif
+
+	/* printf("***collection end: %ld ticks taken***\n", time_taken); */
 
 	return;
 }

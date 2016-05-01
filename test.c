@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <time.h>
+#include "pub/const.h"
 #include "vm/vm.h"
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
@@ -9,18 +11,52 @@ IVM_NATIVE_FUNC(test)
 	return IVM_NULL;
 }
 
+#if IVM_PERF_PROFILE
+
+extern clock_t ivm_perf_gc_time;
+clock_t ivm_perf_program_start;
+
+void profile_start()
+{
+	ivm_perf_program_start = clock();
+	return;
+}
+
+void profile_output()
+{
+	clock_t now = clock();
+	clock_t prog = now - ivm_perf_program_start;
+
+	printf("\n***performance profile***\n\n");
+	printf("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
+	printf("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
+	printf("gc per program: %f%%\n", (double)ivm_perf_gc_time / prog * 100);
+	printf("\n***performance profile***\n\n");
+
+	return;
+}
+
+#endif
+
 int main()
 {
-	ivm_vmstate_t *state = ivm_vmstate_new();
-
-	ivm_object_t *obj1 = ivm_object_new(state);
-	ivm_object_t *obj2 = ivm_numeric_new(state, 110);
-
-	ivm_exec_t *exec1 = ivm_exec_new(),
-			   *exec2 = ivm_exec_new();
-	ivm_ctchain_t *chain = ivm_ctchain_new();
+	ivm_vmstate_t *state;
+	ivm_object_t *obj1, *obj2;
+	ivm_exec_t *exec1, *exec2;
+	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
+
+#if IVM_PERF_PROFILE
+	profile_start();
+#endif
+
+	state = ivm_vmstate_new();
+	obj1 = ivm_object_new(state);
+	obj2 = ivm_numeric_new(state, 110);
+	exec1 = ivm_exec_new();
+	exec2 = ivm_exec_new();
+	chain = ivm_ctchain_new();
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
@@ -28,6 +64,7 @@ int main()
 	ivm_object_setSlot(obj2, state, "b", obj1);
 	ivm_object_setSlot(obj2, state, "c", obj1);
 
+	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -110,6 +147,10 @@ int main()
 	ivm_ctchain_free(chain);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_vmstate_free(state);
+
+#if IVM_PERF_PROFILE
+	profile_output();
+#endif
 
 	return 0;
 }
