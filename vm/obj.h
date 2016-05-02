@@ -23,15 +23,6 @@
 	ivm_mark_t mark; \
 	struct ivm_object_t_tag *copy;
 
-#define IVM_TYPE_OF(obj) ((obj)->type)
-#define IVM_TYPE_TAG_OF(obj) ((obj)->type->tag)
-#define IVM_TYPE_DES_OF(obj) ((obj)->type->des)
-#define IVM_TYPE_TRAV_OF(obj) ((obj)->type->trav)
-#define IVM_TYPE_SIZE_OF(obj) ((obj)->type->size)
-
-#define IVM_OBJECT_SLOTS(obj) ((obj)->slots)
-#define IVM_OBJECT_MARK(obj) ((obj)->mark)
-
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
 struct ivm_function_t_tag;
@@ -68,6 +59,22 @@ typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
 } ivm_object_t;
 
+#define IVM_TYPE_OF(obj) ((obj)->type)
+#define IVM_OBJECT_GET_TYPE_TAG(obj) ((obj)->type->tag)
+#define IVM_OBJECT_GET_TYPE_DES(obj) ((obj)->type->des)
+#define IVM_OBJECT_GET_TYPE_TRAV(obj) ((obj)->type->trav)
+#define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
+#define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
+#define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
+#define IVM_OBJECT_GET_COPY(obj) ((obj)->copy)
+
+#define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
+#define IVM_OBJECT_SET_MARK(obj, val) ((obj)->mark = (val))
+#define IVM_OBJECT_SET_COPY(obj, val) ((obj)->copy = (val))
+
+#define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
+#define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
+
 ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);
 ivm_object_t *
@@ -81,8 +88,8 @@ ivm_object_init(ivm_object_t *obj,
 				ivm_type_tag_t type);
 
 #define ivm_object_destruct(obj, state) \
-	if ((obj) && IVM_TYPE_OF(obj) && IVM_TYPE_DES_OF(obj)) { \
-		IVM_TYPE_DES_OF(obj)(obj, state); \
+	if ((obj) && IVM_TYPE_OF(obj) && IVM_OBJECT_GET(obj, TYPE_DES)) { \
+		IVM_OBJECT_GET(obj, TYPE_DES)((obj), (state)); \
 	}
 	
 #if 0

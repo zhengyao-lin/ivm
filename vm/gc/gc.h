@@ -14,8 +14,11 @@ typedef struct ivm_collector_t_tag {
 	ivm_mark_period_t period;
 } ivm_collector_t;
 
-#define IVM_COLLECTOR_PERIOD(collector) ((collector)->period)
+#define IVM_COLLECTOR_GET_PERIOD(collector) ((collector)->period)
 #define IVM_MARK_WHITE 0
+
+#define IVM_COLLECTOR_GET(obj, member) IVM_GET((obj), IVM_COLLECTOR, member)
+#define IVM_COLLECTOR_SET(obj, member, val) IVM_SET((obj), IVM_COLLECTOR, member, (val))
 
 typedef struct ivm_traverser_arg_t_tag {
 	struct ivm_vmstate_t_tag *state;

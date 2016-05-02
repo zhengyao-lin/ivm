@@ -20,7 +20,11 @@ typedef struct ivm_cell_set_t_tag {
 	ivm_cell_t *tail;
 } ivm_cell_set_t;
 
-#define IVM_CELL_OBJ(cell) ((cell)->obj)
+#define IVM_CELL_GET_OBJ(cell) ((cell)->obj)
+#define IVM_CELL_SET_OBJ(cell, o) ((cell)->obj = (o))
+
+#define IVM_CELL_GET(obj, member) IVM_GET((obj), IVM_CELL, member)
+#define IVM_CELL_SET(obj, member, val) IVM_SET((obj), IVM_CELL, member, (val))
 
 /* cell */
 ivm_cell_t *

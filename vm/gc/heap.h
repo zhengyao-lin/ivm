@@ -14,7 +14,11 @@ typedef struct ivm_heap_t_tag {
 	ivm_byte_t **blocks;
 } ivm_heap_t;
 
-#define IVM_HEAP_BSIZE(heap) ((heap)->bsize)
+#define IVM_HEAP_GET_BLOCK_SIZE(heap) ((heap)->bsize)
+#define IVM_HEAP_SET_BLOCK_SIZE(heap, val) ((heap)->bsize = (val))
+
+#define IVM_HEAP_GET(obj, member) IVM_GET((obj), IVM_HEAP, member)
+#define IVM_HEAP_SET(obj, member, val) IVM_SET((obj), IVM_HEAP, member, (val))
 
 ivm_heap_t *
 ivm_heap_new(ivm_size_t bsize);

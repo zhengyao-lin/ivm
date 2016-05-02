@@ -29,7 +29,7 @@
 #define STACK_PUSH(obj) (ivm_vmstack_push(__ivm_coro__->stack, (obj)))
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
-#define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_STACK_TOP(CALL_STACK_TOP())) \
+#define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)) \
 									 >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 

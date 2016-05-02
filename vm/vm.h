@@ -26,9 +26,12 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_collector_t *gc;
 } ivm_vmstate_t;
 
-#define IVM_VMSTATE_CORO_LIST(state) ((state)->coro_list)
-#define IVM_VMSTATE_CUR_HEAP(state) ((state)->heaps[0])
-#define IVM_VMSTATE_EMPTY_HEAP(state) ((state)->heaps[1])
+#define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
+#define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps[0])
+#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->heaps[1])
+
+#define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
+#define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
 
 ivm_vmstate_t *
 ivm_vmstate_new();

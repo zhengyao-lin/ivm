@@ -12,9 +12,9 @@
 #include "../vm.h"
 #include "../err.h"
 
-#define INC_PERIOD(collector) (IVM_COLLECTOR_PERIOD(collector)++, \
-							   !IVM_COLLECTOR_PERIOD(collector) \
-							   ? IVM_COLLECTOR_PERIOD(collector)++ \
+#define INC_PERIOD(collector) ((collector)->period++, \
+							   !(collector)->period \
+							   ? (collector)->period++ \
 							   : 0)
 
 ivm_collector_t *
@@ -57,28 +57,29 @@ ivm_collector_copyObject(ivm_object_t *obj,
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
+	ivm_mark_period_t period = IVM_COLLECTOR_GET(arg->collector, PERIOD);
 
 	if (!obj
-		|| IVM_OBJECT_MARK(obj)
-		   == IVM_COLLECTOR_PERIOD(arg->collector)) {
+		|| IVM_OBJECT_GET(obj, MARK) == period) {
 		/* NULL object or has been marked */
-		return obj ? obj->copy : IVM_NULL;
+		return obj ? IVM_OBJECT_GET(obj, COPY) : IVM_NULL;
 	}
 
-	IVM_OBJECT_MARK(obj)
-	= IVM_COLLECTOR_PERIOD(arg->collector);
+	IVM_OBJECT_SET(obj, MARK, period);
 
-	ret = ivm_heap_addCopy(arg->heap, obj, IVM_TYPE_SIZE_OF(obj));
-	ret->copy = obj->copy = ret;
+	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
-	IVM_OBJECT_SLOTS(ret) = ivm_slot_table_copy(IVM_OBJECT_SLOTS(ret), arg->heap);
+	IVM_OBJECT_SET(ret, COPY, ret);
+	IVM_OBJECT_SET(obj, COPY, ret);
 
-	ivm_slot_table_foreach(IVM_OBJECT_SLOTS(ret), 
+	IVM_OBJECT_SET(ret, SLOTS, ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
+
+	ivm_slot_table_foreach(IVM_OBJECT_GET(ret, SLOTS), 
 						   (ivm_slot_table_foreach_proc_t)
 						   ivm_collector_travSlot,
 						   arg);
 
-	trav = IVM_TYPE_TRAV_OF(obj);
+	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
 	if (trav) {
 		trav(ret, arg);
 	}
@@ -107,7 +108,7 @@ ivm_collector_travCallerInfo(ivm_caller_info_t *info,
 							 ivm_traverser_arg_t *arg)
 {
 	if (info) {
-		ivm_collector_travContextChain(IVM_CALLER_INFO_CONTEXT(info), arg);
+		ivm_collector_travContextChain(IVM_CALLER_INFO_GET(info, CONTEXT), arg);
 	}
 
 	return;
@@ -118,7 +119,7 @@ ivm_collector_travRuntime(ivm_runtime_t *runtime,
 						  ivm_traverser_arg_t *arg)
 {
 	if (runtime) {
-		ivm_collector_travContextChain(IVM_RUNTIME_CONTEXT(runtime), arg);
+		ivm_collector_travContextChain(IVM_RUNTIME_GET(runtime, CONTEXT), arg);
 	}
 
 	return;
@@ -128,9 +129,9 @@ static void
 ivm_collector_travCoro(ivm_coro_t *coro,
 					   ivm_traverser_arg_t *arg)
 {
-	ivm_vmstack_t *stack = IVM_CORO_STACK(coro);
-	ivm_call_stack_t *call_st = IVM_CORO_CALL_STACK(coro);
-	ivm_runtime_t *runtime = IVM_CORO_RUNTIME(coro);
+	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
+	ivm_call_stack_t *call_st = IVM_CORO_GET(coro, CALL_STACK);
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_object_t **tmp;
 
 	IVM_VMSTACK_EACHPTR(stack, tmp) {
@@ -150,7 +151,7 @@ static void
 ivm_collector_travState(ivm_collector_t *collector,
 						ivm_traverser_arg_t *arg)
 {
-	ivm_coro_list_t *coros = IVM_VMSTATE_CORO_LIST(arg->state);
+	ivm_coro_list_t *coros = IVM_VMSTATE_GET(arg->state, CORO_LIST);
 
 	ivm_coro_list_foreach_arg(coros,
 							  (ivm_ptlist_foreach_proc_arg_t)
@@ -165,16 +166,16 @@ void
 ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
 						   ivm_collector_t *collector, ivm_vmstate_t *state)
 {
-	ivm_object_t *obj = IVM_CELL_OBJ(cell);
+	ivm_object_t *obj = IVM_CELL_GET(cell, OBJ);
 
 	if (obj) {
-		if (IVM_OBJECT_MARK(obj)
-			!= IVM_COLLECTOR_PERIOD(collector)) {
+		if (IVM_OBJECT_GET(obj, MARK)
+			!= IVM_COLLECTOR_GET(collector, PERIOD)) {
 			ivm_cell_removeFrom(cell, set);
 			ivm_cell_destruct(cell, state);
 		} else {
 			/* update reference */
-			IVM_CELL_OBJ(cell) = obj->copy;
+			IVM_CELL_SET(cell, OBJ, obj->copy);
 		}
 	}
 
@@ -209,7 +210,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_traverser_arg_t arg;
 
 	arg.state = state;
-	arg.heap = IVM_VMSTATE_EMPTY_HEAP(state);
+	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 	arg.collector = collector;
 
 	ivm_heap_reset(arg.heap);
@@ -219,7 +220,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_collector_travState(collector, &arg);
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
-	ivm_heap_compact(IVM_VMSTATE_CUR_HEAP(state));
+	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
 	INC_PERIOD(collector);
 
 	ivm_vmstate_closeGCFlag(state);

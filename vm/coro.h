@@ -16,9 +16,12 @@ typedef struct ivm_coro_t_tag {
 	ivm_runtime_t *runtime;
 } ivm_coro_t;
 
-#define IVM_CORO_STACK(coro) ((coro)->stack)
-#define IVM_CORO_CALL_STACK(coro) ((coro)->call_st)
-#define IVM_CORO_RUNTIME(coro) ((coro)->runtime)
+#define IVM_CORO_GET_STACK(coro) ((coro)->stack)
+#define IVM_CORO_GET_CALL_STACK(coro) ((coro)->call_st)
+#define IVM_CORO_GET_RUNTIME(coro) ((coro)->runtime)
+
+#define IVM_CORO_GET(obj, member) IVM_GET((obj), IVM_CORO, member)
+#define IVM_CORO_SET(obj, member, val) IVM_SET((obj), IVM_CORO, member, (val))
 
 ivm_coro_t *
 ivm_coro_new();

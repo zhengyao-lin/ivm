@@ -52,13 +52,13 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 	}
 
 	if (ivm_function_isNative(root)) {
-		ret = ivm_function_callNative(root, state, IVM_RUNTIME_CONTEXT(coro->runtime), IVM_NULL, 0, IVM_NULL);
+		ret = ivm_function_callNative(root, state, IVM_RUNTIME_GET(coro->runtime, CONTEXT), IVM_NULL, 0, IVM_NULL);
 	} else if (coro->runtime) {
 		while (1) {
-			while (IVM_RUNTIME_PC(coro->runtime)
-				   < ivm_exec_length(IVM_RUNTIME_EXEC(coro->runtime))) {
-				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(IVM_RUNTIME_EXEC(coro->runtime),
-															  IVM_RUNTIME_PC(coro->runtime)));
+			while (IVM_RUNTIME_GET(coro->runtime, PC)
+				   < ivm_exec_length(IVM_RUNTIME_GET(coro->runtime, EXEC))) {
+				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(IVM_RUNTIME_GET(coro->runtime, EXEC),
+															  IVM_RUNTIME_GET(coro->runtime, PC)));
 				switch (tmp_proc(state, coro)) {
 					case IVM_ACTION_BREAK:
 						goto ACTION_BREAK;

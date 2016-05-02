@@ -6,7 +6,7 @@
 
 struct ivm_vmstate_t_tag;
 
-#define IVM_NUM(a) ((ivm_numeric_t)(a))
+#define IVM_NUM(a) ((ivm_number_t)(a))
 
 #define IVM_NUM_ADD(a, b) ((a) + (b))
 #define IVM_NUM_SUB(a, b) ((a) - (b))

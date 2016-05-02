@@ -15,9 +15,12 @@ typedef struct {
 	ivm_ctchain_t *context;
 } ivm_runtime_t;
 
-#define IVM_RUNTIME_PC(runtime) ((runtime)->pc)
-#define IVM_RUNTIME_EXEC(runtime) ((runtime)->exec)
-#define IVM_RUNTIME_CONTEXT(runtime) ((runtime)->context)
+#define IVM_RUNTIME_GET_PC(runtime) ((runtime)->pc)
+#define IVM_RUNTIME_GET_EXEC(runtime) ((runtime)->exec)
+#define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
+
+#define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
+#define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))
 
 ivm_runtime_t *
 ivm_runtime_new(ivm_exec_t *exec, ivm_ctchain_t *context);

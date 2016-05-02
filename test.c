@@ -74,12 +74,13 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
-	for (i = 0; i < 100000; i++) { /* 79349 */
-		/* ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), ""); */
+
+	/*
+	for (i = 0; i < 100000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 		ivm_exec_addCode(exec1, IVM_OP(POP), "");
-		/* ivm_object_new(state); */
 	}
+	*/
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1002);
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_NUM), "");
