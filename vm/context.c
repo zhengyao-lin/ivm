@@ -125,7 +125,6 @@ ivm_ctchain_searchSlot(ivm_ctchain_t *chain,
 	ivm_ctchain_sub_t *i;
 
 	RFOREACH (i, chain) {
-		printf("test1: %p\n", i);
 		slot = ivm_object_getSlot(GET_CONTEXT(i), state, key);
 		if (slot && ivm_slot_getValue(slot, state))
 			return slot;
