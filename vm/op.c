@@ -67,7 +67,10 @@ OP_PROC(NEW_FUNC)
 {
 	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
 	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
-	STACK_PUSH(ivm_function_object_new(STATE, CONTEXT, exec, IVM_INTSIG_NONE));
+	STACK_PUSH(ivm_function_object_new_nc(STATE,
+										  ivm_function_new(CONTEXT,
+														   exec,
+														   IVM_INTSIG_NONE)));
 	PC += sizeof(exec_id) / sizeof(ivm_byte_t) + 1;
 	return IVM_ACTION_NONE;
 }
@@ -112,14 +115,20 @@ OP_PROC(SET_SLOT)
 
 OP_PROC(GET_CONTEXT_SLOT)
 {
-	printf("GET_CONTEXT_SLOT: no implementation\n");
-	PC++;
+	ivm_size_t size;
+	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	ivm_object_t *found = ivm_ctchain_search(CONTEXT, STATE, key);
+
+	STACK_PUSH(found ? found : IVM_UNDEFINED(STATE));
+
+	PC += size + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(SET_CONTEXT_SLOT)
 {
 	printf("SET_CONTEXT_SLOT: no implementation\n");
+
 	PC++;
 	return IVM_ACTION_NONE;
 }
@@ -165,10 +174,15 @@ OP_PROC(INVOKE)
 
 	CHECK_STACK(1);
 
-	func = &IVM_AS(STACK_POP(), ivm_function_object_t)->val;
+	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
 	
 	PC++;
+
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
+	if (ivm_function_isNative(func)) {
+		ivm_function_callNative(func, STATE, CONTEXT,
+								IVM_NULL, 0, IVM_NULL);
+	}
 
 	return IVM_ACTION_NONE;
 }

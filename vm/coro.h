@@ -34,6 +34,7 @@ ivm_coro_start(ivm_coro_t *coro, struct ivm_vmstate_t_tag *state, ivm_function_t
 #define ivm_coro_setRoot(coro, root) ((coro)->runtime = ivm_function_createRuntime(root))
 #define ivm_coro_isAsleep(coro) ((coro)->runtime != IVM_NULL)
 #define ivm_coro_resume(coro, state) (ivm_coro_start((coro), (state), IVM_NULL))
+#define ivm_coro_pushCallInfo(coro, info) (ivm_call_stack_push((coro)->call_st, (info)))
 
 typedef ivm_ptlist_t ivm_coro_list_t;
 

@@ -79,8 +79,11 @@ ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);
 ivm_object_t *
 ivm_object_newNull(struct ivm_vmstate_t_tag *state);
+ivm_object_t *
+ivm_object_newUndefined(struct ivm_vmstate_t_tag *state);
 
 #define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
+#define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
 
 void
 ivm_object_init(ivm_object_t *obj,

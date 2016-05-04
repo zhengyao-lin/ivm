@@ -53,7 +53,7 @@ int main()
 #endif
 
 	state = ivm_vmstate_new();
-	obj1 = ivm_function_object_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
+	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
 	exec1 = ivm_exec_new();
 	exec2 = ivm_exec_new();
@@ -87,6 +87,9 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "slot_a");
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "slot_a");
+
+	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "c");
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
 	
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");

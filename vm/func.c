@@ -78,6 +78,21 @@ ivm_function_free(ivm_function_t *func)
 	return;
 }
 
+ivm_function_t *
+ivm_function_clone(ivm_function_t *func)
+{
+	ivm_function_t *ret = MEM_ALLOC(sizeof(*ret));
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cloned function"));
+
+	MEM_COPY(ret, func, sizeof(*ret));
+	if (!ret->is_native) {
+		ret->u.f.closure = ivm_ctchain_clone(ret->u.f.closure);
+	}
+
+	return ret;
+}
+
 ivm_runtime_t *
 ivm_function_createRuntime(const ivm_function_t *func)
 {
@@ -111,39 +126,36 @@ void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
 {
-	ivm_function_t *func = &IVM_AS(obj, ivm_function_object_t)->val;
-	if (!func->is_native) {
-		ivm_ctchain_free(func->u.f.closure);
-	}
+	ivm_function_t *func = IVM_AS(obj, ivm_function_object_t)->val;
+	
+	ivm_function_free(func);
+
 	return;
 }
 
 ivm_object_t *
-ivm_function_object_new(ivm_vmstate_t *state,
-						ivm_ctchain_t *context,
-						ivm_exec_t *body,
-						ivm_signal_mask_t intsig)
+ivm_function_object_new(ivm_vmstate_t *state, ivm_function_t *func)
 {
 	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ivm_function_init(&ret->val, context, body, intsig);
-	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+	ret->val = ivm_function_clone(func);
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
 	return IVM_AS_OBJ(ret);
 }
 
 ivm_object_t *
-ivm_function_object_newNative(ivm_vmstate_t *state,
-							  ivm_native_function_t native,
-							  ivm_signal_mask_t intsig)
+ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
+						   ivm_function_t *func)
 {
 	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ivm_function_initNative(&ret->val, native, intsig);
+	ret->val = func;
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 
 	return IVM_AS_OBJ(ret);
 }

@@ -111,16 +111,27 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_char_t *key)
 {
-	ivm_object_t *ret = IVM_NULL;
+	ivm_slot_t *slot = ivm_ctchain_searchSlot(chain, state, key);
+
+	return slot ? ivm_slot_getValue(slot, state) : IVM_NULL;
+}
+
+ivm_slot_t *
+ivm_ctchain_searchSlot(ivm_ctchain_t *chain,
+					   struct ivm_vmstate_t_tag *state,
+					   const ivm_char_t *key)
+{
+	ivm_slot_t *slot = IVM_NULL;
 	ivm_ctchain_sub_t *i;
 
 	RFOREACH (i, chain) {
-		if ((ret = ivm_object_getSlotValue(GET_CONTEXT(i), state, key))
-			!= IVM_NULL)
-			break;
+		printf("test1: %p\n", i);
+		slot = ivm_object_getSlot(GET_CONTEXT(i), state, key);
+		if (slot && ivm_slot_getValue(slot, state))
+			return slot;
 	}
 
-	return ret;
+	return IVM_NULL;
 }
 
 ivm_ctchain_t *

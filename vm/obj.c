@@ -52,11 +52,22 @@ ivm_object_new(ivm_vmstate_t *state)
 	return ret;
 }
 
-ivm_object_t *ivm_object_newNull(ivm_vmstate_t *state)
+ivm_object_t *
+ivm_object_newNull(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	ivm_object_init(ret, state, IVM_NULL_T);
+
+	return ret;
+}
+
+ivm_object_t *
+ivm_object_newUndefined(ivm_vmstate_t *state)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_UNDEFINED_T);
 
 	return ret;
 }
