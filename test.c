@@ -47,6 +47,7 @@ int main()
 	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
+	ivm_size_t addr1, addr2, addr3, addr4;
 
 #if IVM_PERF_PROFILE
 	profile_start();
@@ -67,6 +68,7 @@ int main()
 	ivm_object_setSlot(obj2, state, "c", obj1);
 	ivm_object_setSlot(obj2, state, "d", obj1);
 
+	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
@@ -96,6 +98,20 @@ int main()
 
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
+
+	addr1 = ivm_exec_addCode(exec1, IVM_OP(JUMP_i), "$i32", 0);
+	addr3 = ivm_exec_addCode(exec1, IVM_OP(NEW_NULL), "");
+	addr4 = ivm_exec_addCode(exec1, IVM_OP(JUMP_IF_FALSE_i), "$i32", 0);
+	addr2 = ivm_exec_addCode(exec1, IVM_OP(NONE), "");
+	ivm_exec_rewriteArg(exec1, addr1, "$i32", addr2);
+
+	/*
+	ivm_exec_addCode(exec1, IVM_OP(POP), "");
+	ivm_exec_addCode(exec1, IVM_OP(NEW_NULL), "");
+	*/
+	ivm_exec_addCode(exec1, IVM_OP(JUMP_i), "$i32", addr3);
+	addr2 = ivm_exec_addCode(exec1, IVM_OP(NONE), "");
+	ivm_exec_rewriteArg(exec1, addr4, "$i32", addr2);
 	
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -116,11 +132,13 @@ int main()
 	printf("obj1: %p\n", (void *)obj1);
 	printf("obj2: %p\n", (void *)obj2);
 
+	/* some test on context chain */
 	ivm_ctchain_addContext(chain, obj1);
 	ivm_ctchain_addContext(chain, obj2);
 	ivm_ctchain_removeContext(chain, obj2);
 	ivm_ctchain_addContext(chain, obj2);
 
+	/* init functions & coroutines */
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
 	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
@@ -128,37 +146,18 @@ int main()
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
 
+	/* add coroutines to vm state */
 	ivm_vmstate_addCoro(state, coro1);
 	ivm_vmstate_addCoro(state, coro2);
 
-#if 1
 	ivm_coro_setRoot(coro1, state, func2);
 	ivm_coro_setRoot(coro2, state, func3);
 	for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
 	}
+
+	/* start executing */
 	ivm_vmstate_schedule(state);
-
-#else
-	printf("***start***\n\n");
-
-	printf("***starting coro1***\n");
-	ivm_coro_start(coro1, state, func2);
-	printf("***starting coro2***\n");
-	ivm_coro_start(coro2, state, func3);
-	printf("***resume coro1***\n");
-	ivm_coro_resume(coro1, state);
-	printf("***resume coro2***\n");
-	ivm_coro_resume(coro2, state);
-	printf("***resume coro1***\n");
-	ivm_coro_resume(coro1, state);
-	printf("***resume coro2***\n");
-	ivm_coro_resume(coro2, state);
-
-	printf("\n***all end***\n");
-
-	ivm_coro_start(coro1, state, IVM_NULL);
-#endif
 
 	printf("slot a in context chain: %p\n",
 		   (void *)ivm_ctchain_search(chain, state, "a"));

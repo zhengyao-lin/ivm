@@ -85,6 +85,38 @@ ivm_object_init(ivm_object_t *obj,
 	return;
 }
 
+ivm_bool_t
+ivm_object_isTrue(ivm_object_t *obj,
+				  ivm_vmstate_t *state)
+{
+	return obj != IVM_NULL;
+}
+
+ivm_bool_t
+ivm_object_alwaysTrue(ivm_object_t *obj,
+					  ivm_vmstate_t *state)
+{
+	return IVM_TRUE;
+}
+ivm_bool_t
+ivm_object_alwaysFalse(ivm_object_t *obj,
+					   ivm_vmstate_t *state)
+{
+	return IVM_FALSE;
+}
+
+ivm_bool_t
+ivm_object_toBool(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state)
+{
+	ivm_bool_converter_t conv = IVM_OBJECT_GET(obj, TYPE_TO_BOOL);
+
+	if (conv)
+		return conv(obj, state);
+
+	return IVM_FALSE;
+}
+
 ivm_slot_t *
 ivm_object_setSlot(ivm_object_t *obj,
 				   ivm_vmstate_t *state,

@@ -41,10 +41,20 @@ ivm_exec_addBuffer(ivm_exec_t *exec);
  *    %%: write a character '%'
  *    other: write exactly what it is
  */
-void
+ivm_size_t
 ivm_exec_addCode(ivm_exec_t *exec,
 				 ivm_opcode_t op,
 				 ivm_char_t *format, ...);
+void
+ivm_exec_rewrite(ivm_exec_t *exec,
+				 ivm_size_t addr,
+				 ivm_opcode_t op,
+				 ivm_char_t *format, ...);
+/* notice: pass in the address of opcode, not the start of argument */
+void
+ivm_exec_rewriteArg(ivm_exec_t *exec,
+					ivm_size_t addr,
+					ivm_char_t *format, ...);
 
 #define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)exec->code[pc])
 #define ivm_exec_length(exec) (exec->cur)

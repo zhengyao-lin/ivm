@@ -42,6 +42,14 @@ OP_PROC(NONE)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(NEW_NULL)
+{
+	printf("new null\n");
+	STACK_PUSH(IVM_NULL_OBJ(STATE));
+	PC++;
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(NEW_OBJ)
 {
 	STACK_PUSH(ivm_object_new(STATE));
@@ -207,6 +215,42 @@ OP_PROC(YIELD)
 	return IVM_ACTION_YIELD;
 }
 
+OP_PROC(JUMP_i)
+{
+	PC = ivm_byte_readSInt32(ARG_START);
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(JUMP_IF_TRUE_i)
+{
+	ivm_sint32_t addr = ivm_byte_readSInt32(ARG_START);
+
+	if (ivm_object_toBool(STACK_POP(), STATE)) {
+		printf("jump true!\n");
+		PC = addr;
+	} else {
+		printf("no jump true\n");
+		PC += sizeof(addr) / sizeof(ivm_byte_t) + 1;
+	}
+
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(JUMP_IF_FALSE_i)
+{
+	ivm_sint32_t addr = ivm_byte_readSInt32(ARG_START);
+
+	if (!ivm_object_toBool(STACK_POP(), STATE)) {
+		printf("jump false!\n");
+		PC = addr;
+	} else {
+		printf("no jump false\n");
+		PC += sizeof(addr) / sizeof(ivm_byte_t) + 1;
+	}
+
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(TEST1)
 {
 #if 0
@@ -265,6 +309,7 @@ static const
 ivm_op_table_t
 ivm_global_op_table[] = {
 	OP_MAPPING(NONE),
+	OP_MAPPING(NEW_NULL),
 	OP_MAPPING(NEW_OBJ),
 	OP_MAPPING(NEW_NUM_i),
 	OP_MAPPING(NEW_NUM_s),
@@ -279,6 +324,9 @@ ivm_global_op_table[] = {
 	OP_MAPPING(PRINT_NUM),
 	OP_MAPPING(INVOKE),
 	OP_MAPPING(YIELD),
+	OP_MAPPING(JUMP_i),
+	OP_MAPPING(JUMP_IF_TRUE_i),
+	OP_MAPPING(JUMP_IF_FALSE_i),
 	OP_MAPPING(TEST1),
 	OP_MAPPING(TEST2),
 	OP_MAPPING(TEST3),

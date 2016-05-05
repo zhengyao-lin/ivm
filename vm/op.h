@@ -10,6 +10,7 @@ struct ivm_vmstate_t_tag;
 
 typedef enum {
 	IVM_OP(NONE) = 0,
+	IVM_OP(NEW_NULL),
 	IVM_OP(NEW_OBJ),
 	IVM_OP(NEW_NUM_i),
 	IVM_OP(NEW_NUM_s),
@@ -24,6 +25,9 @@ typedef enum {
 	IVM_OP(PRINT_NUM),
 	IVM_OP(INVOKE),
 	IVM_OP(YIELD),
+	IVM_OP(JUMP_i), /* _i: i32 argument */
+	IVM_OP(JUMP_IF_TRUE_i),
+	IVM_OP(JUMP_IF_FALSE_i),
 	IVM_OP(TEST1),
 	IVM_OP(TEST2),
 	IVM_OP(TEST3),

@@ -91,15 +91,14 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 		break; \
 	}
 
-void
-ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
+static
+ivm_size_t
+ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_list args)
 {
-	va_list args;
 	ivm_size_t i, n_cur, tmp;
 	const char *tmp_str;
 	ivm_int_t tmp_int;
-
-	va_start(args, format);
+	ivm_size_t ret = exec->cur;
 
 	n_cur = exec->cur + 1;
 	while (exec->length <= n_cur)
@@ -137,18 +136,57 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
 
 	exec->cur = n_cur;
 
-#if 0
-	n_cur = exec->cur + arg_count + 1;
-	while (exec->length < n_cur)
-		ivm_exec_addBuffer(exec);
+	return ret;
+}
 
-	exec->code[exec->cur] = op;
-	for (i = exec->cur + 1;
-		 i < n_cur; i++) {
-		exec->code[i] = va_arg(args, ivm_int_t);
-	}
-	exec->cur = n_cur;
-#endif
+ivm_size_t
+ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
+{
+	va_list args;
+	ivm_size_t ret;
+
+	va_start(args, format);
+	ret = ivm_exec_addCode_c(exec, op, format, args);
+	va_end(args);
+
+	return ret;
+}
+
+void
+ivm_exec_rewrite(ivm_exec_t *exec,
+				 ivm_size_t addr,
+				 ivm_opcode_t op,
+				 ivm_char_t *format, ...)
+{
+	va_list args;
+	ivm_size_t cur_back;
+
+	va_start(args, format);
+	
+	cur_back = exec->cur;
+	exec->cur = addr;
+	ivm_exec_addCode_c(exec, op, format, args);
+	exec->cur = cur_back;
+
+	va_end(args);
+
+	return;
+}
+
+void
+ivm_exec_rewriteArg(ivm_exec_t *exec,
+					ivm_size_t addr,
+					ivm_char_t *format, ...)
+{
+	va_list args;
+	ivm_size_t cur_back;
+
+	va_start(args, format);
+	
+	cur_back = exec->cur;
+	exec->cur = addr;
+	ivm_exec_addCode_c(exec, exec->code[addr], format, args);
+	exec->cur = cur_back;
 
 	va_end(args);
 

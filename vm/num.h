@@ -28,4 +28,8 @@ typedef struct ivm_numeric_t_tag {
 
 ivm_object_t *ivm_numeric_new(struct ivm_vmstate_t_tag *state, ivm_number_t val);
 
+ivm_bool_t
+ivm_numeric_isTrue(ivm_object_t *obj,
+				   struct ivm_vmstate_t_tag *state);
+
 #endif

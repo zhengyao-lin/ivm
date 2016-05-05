@@ -14,3 +14,10 @@ ivm_object_t *ivm_numeric_new(ivm_vmstate_t *state, ivm_number_t val)
 
 	return IVM_AS_OBJ(ret);
 }
+
+ivm_bool_t
+ivm_numeric_isTrue(ivm_object_t *obj,
+				   ivm_vmstate_t *state)
+{
+	return IVM_AS(obj, ivm_numeric_t)->val != 0;
+}

@@ -31,6 +31,7 @@ struct ivm_traverser_arg_t_tag;
 
 typedef void (*ivm_destructor_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
 typedef void (*ivm_traverser_t)(struct ivm_object_t_tag *, struct ivm_traverser_arg_t_tag *);
+typedef ivm_bool_t (*ivm_bool_converter_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
 
 typedef struct ivm_type_t_tag {
 	ivm_type_tag_t tag;
@@ -38,6 +39,7 @@ typedef struct ivm_type_t_tag {
 
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
+	ivm_bool_converter_t to_bool;
 } ivm_type_t;
 
 ivm_type_t *
@@ -63,6 +65,7 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_TAG(obj) ((obj)->type->tag)
 #define IVM_OBJECT_GET_TYPE_DES(obj) ((obj)->type->des)
 #define IVM_OBJECT_GET_TYPE_TRAV(obj) ((obj)->type->trav)
+#define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
@@ -102,6 +105,20 @@ ivm_object_free(ivm_object_t *obj,
 				struct ivm_vmstate_t_tag *state);
 
 #endif
+
+ivm_bool_t
+ivm_object_isTrue(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state);
+ivm_bool_t
+ivm_object_alwaysTrue(ivm_object_t *obj,
+					  struct ivm_vmstate_t_tag *state);
+ivm_bool_t
+ivm_object_alwaysFalse(ivm_object_t *obj,
+					   struct ivm_vmstate_t_tag *state);
+
+ivm_bool_t
+ivm_object_toBool(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state);
 
 ivm_slot_t *
 ivm_object_setSlot(ivm_object_t *obj,

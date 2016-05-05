@@ -4,6 +4,7 @@
 #include "obj.h"
 #include "coro.h"
 #include "func.h"
+#include "num.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
 
@@ -14,11 +15,45 @@
 
 static
 ivm_type_t static_type_list[] = {
-	{ IVM_UNDEFINED_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
-	{ IVM_NULL_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
-	{ IVM_OBJECT_T, sizeof(ivm_object_t), IVM_NULL, IVM_NULL },
-	{ IVM_NUMERIC_T, sizeof(ivm_numeric_t), IVM_NULL, IVM_NULL },
-	{ IVM_FUNCTION_OBJECT_T, sizeof(ivm_function_object_t), ivm_function_object_destructor, IVM_NULL }
+	{
+		IVM_UNDEFINED_T,
+			sizeof(ivm_object_t),
+			IVM_NULL,
+			IVM_NULL,
+			ivm_object_alwaysFalse
+	},
+
+	{
+		IVM_NULL_T,
+			sizeof(ivm_object_t),
+			IVM_NULL,
+			IVM_NULL,
+			ivm_object_alwaysFalse
+	},
+
+	{
+		IVM_OBJECT_T,
+			sizeof(ivm_object_t),
+			IVM_NULL,
+			IVM_NULL,
+			ivm_object_isTrue
+	},
+
+	{
+		IVM_NUMERIC_T,
+			sizeof(ivm_numeric_t),
+			IVM_NULL,
+			IVM_NULL,
+			ivm_numeric_isTrue
+	},
+
+	{
+		IVM_FUNCTION_OBJECT_T,
+			sizeof(ivm_function_object_t),
+			ivm_function_object_destructor,
+			IVM_NULL,
+			ivm_object_isTrue
+	}
 };
 
 ivm_vmstate_t *
