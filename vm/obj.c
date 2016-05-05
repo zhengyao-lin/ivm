@@ -117,3 +117,21 @@ ivm_object_getSlot(ivm_object_t *obj,
 
 	return ivm_slot_table_findSlot(obj->slots, state, key);
 }
+
+static
+void
+ivm_object_printSlots_proc(ivm_slot_t *slot, void *arg)
+{
+	fprintf(stderr, "\tkey %s: %p\n", slot->k, (void *)slot->v);
+	return;
+}
+
+void
+ivm_object_printSlots(ivm_object_t *obj)
+{
+	fprintf(stderr, "IVM_DEBUG slots in object %p\n", (void *)obj);
+	ivm_slot_table_foreach(obj->slots,
+						   (ivm_slot_table_foreach_proc_t)ivm_object_printSlots_proc,
+						   IVM_NULL);
+	return;
+}

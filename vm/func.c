@@ -94,14 +94,22 @@ ivm_function_clone(ivm_function_t *func)
 }
 
 ivm_runtime_t *
-ivm_function_createRuntime(const ivm_function_t *func)
+ivm_function_createRuntime(ivm_vmstate_t *state,
+						   const ivm_function_t *func)
 {
-	if (!func) return IVM_NULL;
-	
-	if (func->is_native)
-		return ivm_runtime_new(IVM_NULL, IVM_NULL);
+	ivm_runtime_t *ret = IVM_NULL;
 
-	return ivm_runtime_new(func->u.f.body, func->u.f.closure);
+	if (func) {
+		if (func->is_native) {
+			ret = ivm_runtime_new(IVM_NULL, IVM_NULL);
+		} else {
+			ret = ivm_runtime_new(func->u.f.body, func->u.f.closure);
+			ivm_ctchain_addContext(IVM_RUNTIME_GET(ret, CONTEXT),
+								   ivm_context_new(state));
+		}
+	}
+
+	return ret;
 }
 
 ivm_caller_info_t *

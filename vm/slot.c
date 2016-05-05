@@ -57,20 +57,26 @@ ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table, ivm_heap_t *heap)
 {
 	ivm_slot_table_t *ret = IVM_NULL;
-	ivm_slot_t *slot = IVM_NULL, *cur = IVM_NULL;
+	ivm_slot_t *slot = IVM_NULL,
+			   *cur = IVM_NULL;
 
 	if (table) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
 		ret->head = ivm_slot_copy(table->head, heap);
 
-		if (table->head) {
+		if (ret->head) {
 			for (slot = table->head->next, cur = ret->head;
 				 slot; slot = slot->next, cur = cur->next) {
 				cur->next = ivm_slot_copy(slot, heap);
 			}
 		}
 
-		ret->tail = slot;
+		ret->tail = cur;
+
+		/*
+		for (slot = ret->head; slot; slot = slot->next, i++) printf("\t%p : %s\n", slot, slot->k);
+		printf("after copy: %p, %p, %d\n", ret->head, ret->tail, i);
+		*/
 	}
 
 	return ret;

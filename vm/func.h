@@ -52,10 +52,14 @@ ivm_function_t *
 ivm_function_clone(ivm_function_t *func);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
+
 ivm_runtime_t *
-ivm_function_createRuntime(const ivm_function_t *func);
+ivm_function_createRuntime(struct ivm_vmstate_t_tag *state,
+						   const ivm_function_t *func);
+
 struct ivm_caller_info_t_tag *
 ivm_function_invoke(const ivm_function_t *func, struct ivm_coro_t_tag *coro);
+
 ivm_object_t *
 ivm_function_callNative(const ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,

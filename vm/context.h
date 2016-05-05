@@ -7,6 +7,11 @@
 struct ivm_vmstate_t_tag;
 
 typedef ivm_object_t ivm_context_t;
+
+#define ivm_context_new ivm_object_new
+#define ivm_context_fromObj(obj) (obj)
+#define ivm_context_toObject(context) (context)
+
 typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
 
 struct ivm_ctchain_sub_t_tag {
@@ -27,7 +32,7 @@ ivm_ctchain_new();
 void
 ivm_ctchain_free(ivm_ctchain_t *chain);
 
-void
+ivm_context_t *
 ivm_ctchain_addContext(ivm_ctchain_t *chain,
 					   ivm_context_t *ct);
 void
@@ -46,6 +51,12 @@ ivm_ctchain_clone(ivm_ctchain_t *chain);
 
 #define ivm_ctchain_getLocal(chain) ((chain)->tail ? (chain)->tail->ct : IVM_NULL)
 #define ivm_ctchain_getGlobal(chain) ((chain)->head ? (chain)->head->ct : IVM_NULL)
+
+ivm_slot_t *
+ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
+						 struct ivm_vmstate_t_tag *state,
+						 const ivm_char_t *key,
+						 ivm_object_t *val);
 
 void
 ivm_ctchain_foreach(ivm_ctchain_t *chain,

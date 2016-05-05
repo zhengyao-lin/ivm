@@ -65,10 +65,13 @@ int main()
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj2, state, "b", obj1);
 	ivm_object_setSlot(obj2, state, "c", obj1);
+	ivm_object_setSlot(obj2, state, "d", obj1);
 
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
+	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -89,6 +92,9 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "slot_a");
 
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "c");
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
+
+	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "");
 	
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
@@ -115,11 +121,6 @@ int main()
 	ivm_ctchain_removeContext(chain, obj2);
 	ivm_ctchain_addContext(chain, obj2);
 
-	printf("slot a in context chain: %p\n",
-		   (void *)ivm_ctchain_search(chain, state, "a"));
-	printf("slot c in context chain: %p\n",
-		   (void *)ivm_ctchain_search(chain, state, "c"));
-
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
 	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
@@ -131,8 +132,8 @@ int main()
 	ivm_vmstate_addCoro(state, coro2);
 
 #if 1
-	ivm_coro_setRoot(coro1, func2);
-	ivm_coro_setRoot(coro2, func3);
+	ivm_coro_setRoot(coro1, state, func2);
+	ivm_coro_setRoot(coro2, state, func3);
 	for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
 	}
@@ -158,6 +159,16 @@ int main()
 
 	ivm_coro_start(coro1, state, IVM_NULL);
 #endif
+
+	printf("slot a in context chain: %p\n",
+		   (void *)ivm_ctchain_search(chain, state, "a"));
+	printf("slot c in context chain: %p\n",
+		   (void *)ivm_ctchain_search(chain, state, "c"));
+
+	#if IVM_DEBUG
+		ivm_object_printSlots(obj1);
+		ivm_object_printSlots(obj2);
+	#endif
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);

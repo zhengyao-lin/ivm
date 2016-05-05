@@ -1,5 +1,6 @@
 #include "pub/mem.h"
 #include "context.h"
+#include "vm.h"
 #include "err.h"
 
 #define GET_CONTEXT(chain_sub) ((chain_sub)->ct)
@@ -60,7 +61,7 @@ ivm_ctchain_free(ivm_ctchain_t *chain)
 	return;
 }
 
-void
+ivm_context_t *
 ivm_ctchain_addContext(ivm_ctchain_t *chain,
 					   ivm_context_t *ct)
 {
@@ -74,7 +75,7 @@ ivm_ctchain_addContext(ivm_ctchain_t *chain,
 		chain->tail = n_sub;
 	}
 
-	return;
+	return ct;
 }
 
 void
@@ -149,6 +150,21 @@ ivm_ctchain_clone(ivm_ctchain_t *chain)
 	}
 
 	return ret;
+}
+
+ivm_slot_t *
+ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
+						 ivm_vmstate_t *state,
+						 const ivm_char_t *key,
+						 ivm_object_t *val)
+{
+	ivm_context_t *local = ivm_ctchain_getLocal(chain);
+
+	if (!local) {
+		local = ivm_ctchain_addContext(chain, ivm_context_new(state));
+	}
+
+	return ivm_object_setSlot(ivm_context_toObject(local), state, key, val);
 }
 
 void

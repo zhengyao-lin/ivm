@@ -48,7 +48,7 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 		IVM_ASSERT(!root, IVM_ERROT_MSG_RESET_CORO_ROOT);
 	} else {
 		/* first run */
-		coro->runtime = ivm_function_createRuntime(root);
+		coro->runtime = ivm_function_createRuntime(state, root);
 	}
 
 	if (ivm_function_isNative(root)) {

@@ -127,15 +127,28 @@ OP_PROC(GET_CONTEXT_SLOT)
 
 OP_PROC(SET_CONTEXT_SLOT)
 {
-	printf("SET_CONTEXT_SLOT: no implementation\n");
+	ivm_size_t size;
+	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
 
-	PC++;
+	CHECK_STACK(1);
+	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_TOP());
+
+	PC += size + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(POP)
 {
+	CHECK_STACK(1);
 	STACK_POP();
+	PC++;
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(DUP)
+{
+	CHECK_STACK(1);
+	STACK_PUSH(STACK_TOP());
 	PC++;
 	return IVM_ACTION_NONE;
 }
@@ -261,6 +274,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(GET_CONTEXT_SLOT),
 	OP_MAPPING(SET_CONTEXT_SLOT),
 	OP_MAPPING(POP),
+	OP_MAPPING(DUP),
 	OP_MAPPING(PRINT_OBJ),
 	OP_MAPPING(PRINT_NUM),
 	OP_MAPPING(INVOKE),
