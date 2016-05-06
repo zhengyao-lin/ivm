@@ -27,6 +27,8 @@
 #define STACK_TOP() (ivm_vmstack_top(__ivm_coro__->stack))
 #define STACK_POP() (ivm_vmstack_pop(__ivm_coro__->stack))
 #define STACK_PUSH(obj) (ivm_vmstack_push(__ivm_coro__->stack, (obj)))
+#define STACK_BEFORE(i) (ivm_vmstack_before(__ivm_coro__->stack, (i)))
+#define STACK_CUT(i) (ivm_vmstack_cut(__ivm_coro__->stack, (i)))
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
 #define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)) \
@@ -192,12 +194,15 @@ OP_PROC(PRINT_NUM)
 OP_PROC(INVOKE)
 {
 	ivm_function_t *func;
+	ivm_sint32_t arg_count = ivm_byte_readSInt32(ARG_START);
 
-	CHECK_STACK(1);
+	CHECK_STACK(arg_count + 1);
 
 	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
 	
-	PC++;
+	STACK_CUT(arg_count);
+
+	PC += sizeof(arg_count) / sizeof(ivm_byte_t) + 1;
 
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
 	if (ivm_function_isNative(func)) {
