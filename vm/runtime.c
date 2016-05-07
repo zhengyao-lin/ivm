@@ -14,7 +14,9 @@ ivm_runtime_new(ivm_exec_t *exec, ivm_ctchain_t *context)
 
 	ret->pc = 0;
 	ret->exec = exec;
-	ret->context = ivm_ctchain_clone(context);
+	ret->context = context
+				   ? ivm_ctchain_clone(context)
+				   : ivm_ctchain_new();
 
 	return ret;
 }

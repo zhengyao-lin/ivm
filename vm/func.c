@@ -15,9 +15,10 @@ ivm_function_init(ivm_function_t *func,
 				  ivm_signal_mask_t intsig)
 {
 	func->is_native = IVM_FALSE;
+	func->u.f.param_list = ivm_param_list_new();
 	func->u.f.closure = context
 						? ivm_ctchain_clone(context)
-						: ivm_ctchain_new();
+						: IVM_NULL;
 	func->u.f.body = body;
 	func->intsig = intsig;
 
@@ -69,6 +70,7 @@ ivm_function_free(ivm_function_t *func)
 {
 	if (func) {
 		if (!func->is_native) {
+			ivm_param_list_free(func->u.f.param_list);
 			ivm_ctchain_free(func->u.f.closure);
 		}
 
@@ -118,16 +120,44 @@ ivm_function_invoke(const ivm_function_t *func, ivm_coro_t *coro)
 	if (func->is_native)
 		return IVM_NULL;
 
-	return ivm_runtime_invoke(coro->runtime, coro, func->u.f.body, func->u.f.closure);
+	return ivm_runtime_invoke(coro->runtime, coro,
+							  func->u.f.body, func->u.f.closure);
 }
 
 ivm_object_t *
 ivm_function_callNative(const ivm_function_t *func,
 						ivm_vmstate_t *state,
-						ivm_ctchain_t *context, ivm_object_t *base,
-						ivm_argc_t argc, ivm_object_t **argv)
+						ivm_ctchain_t *context,
+						IVM_FUNCTION_COMMON_ARG)
 {
-	return func->u.native(state, context, base, argc, argv);
+	return func->u.native(state, context, IVM_FUNCTION_COMMON_ARG_PASS);
+}
+
+void
+ivm_function_setParam(const ivm_function_t *func,
+					  ivm_vmstate_t *state,
+					  ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG)
+{
+	ivm_argc_t i = 0;
+	ivm_param_list_t *param_list = func->u.f.param_list;
+	ivm_param_list_iterator_t iter;
+	ivm_char_t *name;
+
+	if (param_list) {
+		IVM_PARAM_LIST_EACHPTR(param_list, iter) {
+			name = IVM_PARAM_LIST_ITER_GET(iter);
+
+			if (i < argc) {
+				ivm_ctchain_setLocalSlot(context, state, name, argv[i]);
+			} else {
+				ivm_ctchain_setLocalSlot(context, state, name, IVM_UNDEFINED(state));
+			}
+
+			i++;
+		}
+	}
+
+	return;
 }
 
 void

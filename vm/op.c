@@ -195,19 +195,23 @@ OP_PROC(INVOKE)
 {
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = ivm_byte_readSInt32(ARG_START);
+	ivm_vmstack_iterator_t args;
 
 	CHECK_STACK(arg_count + 1);
 
 	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
-	
-	STACK_CUT(arg_count);
+	args = STACK_CUT(arg_count);
 
 	PC += sizeof(arg_count) / sizeof(ivm_byte_t) + 1;
 
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
+
 	if (ivm_function_isNative(func)) {
 		ivm_function_callNative(func, STATE, CONTEXT,
-								IVM_NULL, 0, IVM_NULL);
+								IVM_FUNCTION_SET_ARG_2(arg_count, args));
+	} else {
+		ivm_function_setParam(func, STATE, CONTEXT,
+							  IVM_FUNCTION_SET_ARG_2(arg_count, args));
 	}
 
 	return IVM_ACTION_NONE;
@@ -277,17 +281,7 @@ OP_PROC(TEST1)
 
 OP_PROC(TEST2)
 { 
-	ivm_exec_t *exec = ivm_exec_new();
-	ivm_function_t *func = ivm_function_new(IVM_NULL, exec, IVM_INTSIG_NONE);
-
-	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec, IVM_OP(PRINT_OBJ), "");
-	ivm_exec_addCode(exec, IVM_OP(TEST3), "");
-	printf("this is a test string in test2\n");
-	
 	PC++;
-	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
-
 	return IVM_ACTION_NONE;
 }
 

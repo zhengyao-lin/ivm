@@ -4,24 +4,47 @@
 #include "type.h"
 #include "context.h"
 #include "exec.h"
-#include "runtime.h"
 #include "obj.h"
+
+#define IVM_DEFAULT_PARAM_LIST_BUFFER_SIZE 1
+
+#define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
+#define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
+
+#define IVM_FUNCTION_SET_ARG_2(argc, argv) IVM_NULL, (argc), (argv)
+#define IVM_FUNCTION_SET_ARG_3(base, argc, argv) (base), (argc), (argv)
 
 struct ivm_vmstate_t_tag;
 struct ivm_caller_info_t_tag;
 struct ivm_coro_t_tag;
+struct ivm_runtime_t_tag;
 
 typedef ivm_uint16_t ivm_argc_t;
 typedef ivm_uint16_t ivm_signal_mask_t;
 typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
-											   ivm_ctchain_t *context, ivm_object_t *base,
-											   ivm_argc_t argc, ivm_object_t **argv);
+											   ivm_ctchain_t *context,
+											   IVM_FUNCTION_COMMON_ARG);
 
 #define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)(\
 											struct ivm_vmstate_t_tag *state, \
 											ivm_ctchain_t *context, ivm_object_t *base, \
 											ivm_argc_t argc, ivm_object_t **argv)
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+
+typedef ivm_ptlist_t ivm_param_list_t;
+typedef ivm_char_t *ivm_parameter_t;
+typedef ivm_parameter_t *ivm_param_list_iterator_t;
+
+#define ivm_parameter_getName(param) (param)
+
+#define ivm_param_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_PARAM_LIST_BUFFER_SIZE))
+#define ivm_param_list_free ivm_ptlist_free
+#define ivm_param_list_add ivm_ptlist_push
+#define ivm_param_list_size ivm_ptlist_size
+#define ivm_param_list_at(list, i) ((ivm_parameter_t *)ivm_ptlist_at((list), (i)))
+
+#define IVM_PARAM_LIST_ITER_GET(iter) (*(iter))
+#define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_parameter_t)
 
 enum {
 	IVM_INTSIG_NONE			= 0,
@@ -34,6 +57,7 @@ typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
 	union {
 		struct {
+			ivm_param_list_t *param_list;
 			ivm_ctchain_t *closure;
 			ivm_exec_t *body;
 		} f;
@@ -53,18 +77,23 @@ ivm_function_clone(ivm_function_t *func);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 
-ivm_runtime_t *
+struct ivm_runtime_t_tag *
 ivm_function_createRuntime(struct ivm_vmstate_t_tag *state,
 						   const ivm_function_t *func);
 
 struct ivm_caller_info_t_tag *
-ivm_function_invoke(const ivm_function_t *func, struct ivm_coro_t_tag *coro);
+ivm_function_invoke(const ivm_function_t *func,
+					struct ivm_coro_t_tag *coro);
 
 ivm_object_t *
 ivm_function_callNative(const ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,
-						ivm_ctchain_t *context, ivm_object_t *base,
-						ivm_argc_t argc, ivm_object_t **argv);
+						ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG);
+
+void
+ivm_function_setParam(const ivm_function_t *func,
+					  struct ivm_vmstate_t_tag *state,
+					  ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG);
 
 typedef struct {
 	IVM_OBJECT_HEADER

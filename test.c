@@ -137,7 +137,7 @@ int main()
 	/* init functions & coroutines */
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(IVM_NULL, exec2, IVM_INTSIG_NONE);
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
