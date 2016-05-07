@@ -6,6 +6,7 @@
 #include "../type.h"
 
 struct ivm_vmstate_t_tag;
+struct ivm_ctchain_t_tag;
 
 typedef ivm_mark_t ivm_mark_period_t;
 
@@ -24,6 +25,8 @@ typedef struct ivm_traverser_arg_t_tag {
 	struct ivm_vmstate_t_tag *state;
 	ivm_heap_t *heap;
 	ivm_collector_t *collector;
+	void (*trav_ctchain)(struct ivm_ctchain_t_tag *chain,
+						 struct ivm_traverser_arg_t_tag *arg);
 } ivm_traverser_arg_t;
 
 ivm_collector_t *

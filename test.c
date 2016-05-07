@@ -52,7 +52,7 @@ int main()
 	profile_start();
 #endif
 
-	state = ivm_vmstate_new();
+	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
 	exec1 = ivm_exec_new();
@@ -139,7 +139,7 @@ int main()
 	/* init functions & coroutines */
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	func2 = ivm_function_new(chain, IVM_NULL, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(IVM_NULL, IVM_NULL, exec2, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(chain, IVM_NULL, exec2, IVM_INTSIG_NONE);
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
@@ -154,18 +154,9 @@ int main()
 		ivm_object_new(state);
 	}*/
 
+	ivm_vmstate_unlockGCFlag(state);
 	/* start executing */
 	ivm_vmstate_schedule(state);
-
-	printf("slot a in context chain: %p\n",
-		   (void *)ivm_ctchain_search(chain, state, "a"));
-	printf("slot c in context chain: %p\n",
-		   (void *)ivm_ctchain_search(chain, state, "c"));
-
-	#if IVM_DEBUG
-		ivm_object_printSlots(obj1);
-		ivm_object_printSlots(obj2);
-	#endif
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);

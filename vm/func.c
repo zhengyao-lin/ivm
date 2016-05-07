@@ -5,6 +5,7 @@
 #include "vm.h"
 #include "call.h"
 #include "coro.h"
+#include "gc/gc.h"
 #include "err.h"
 
 static
@@ -199,4 +200,17 @@ ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 
 	return IVM_AS_OBJ(ret);
+}
+
+void
+ivm_function_object_traverser(ivm_object_t *obj,
+							  ivm_traverser_arg_t *arg)
+{
+	ivm_function_t *func = IVM_AS(obj, ivm_function_object_t)->val;
+
+	if (!func->is_native) {
+		arg->trav_ctchain(func->u.f.closure, arg);
+	}
+
+	return;
 }

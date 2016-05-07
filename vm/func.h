@@ -16,6 +16,7 @@ struct ivm_vmstate_t_tag;
 struct ivm_caller_info_t_tag;
 struct ivm_coro_t_tag;
 struct ivm_runtime_t_tag;
+struct ivm_traverser_arg_t_tag;
 
 typedef ivm_uint32_t ivm_argc_t;
 typedef ivm_uint16_t ivm_signal_mask_t;
@@ -110,5 +111,9 @@ ivm_function_object_new(struct ivm_vmstate_t_tag *state,
 ivm_object_t *
 ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
 						   ivm_function_t *func);
+
+void
+ivm_function_object_traverser(ivm_object_t *obj,
+							  struct ivm_traverser_arg_t_tag *arg);
 
 #endif

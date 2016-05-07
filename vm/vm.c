@@ -51,7 +51,7 @@ ivm_type_t static_type_list[] = {
 		IVM_FUNCTION_OBJECT_T, "function",
 			sizeof(ivm_function_object_t),
 			ivm_function_object_destructor,
-			IVM_NULL,
+			ivm_function_object_traverser,
 			ivm_object_isTrue
 	}
 };
@@ -109,12 +109,14 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
-	if (!ivm_heap_hasSize(HEAP_CUR(state), size)) {
+	ivm_bool_t add_block;
+	void *ret = ivm_heap_alloc_c(HEAP_CUR(state), size, &add_block);
+
+	if (add_block) {
 		ivm_vmstate_openGCFlag(state);
-		/* ivm_collector_collect(GC(state), state, HEAP_CUR(state)); */
 	}
 
-	return ivm_heap_alloc(HEAP_CUR(state), size);
+	return ret;
 }
 
 void

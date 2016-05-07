@@ -212,6 +212,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	arg.state = state;
 	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 	arg.collector = collector;
+	arg.trav_ctchain = ivm_collector_travContextChain;
 
 	ivm_heap_reset(arg.heap);
 

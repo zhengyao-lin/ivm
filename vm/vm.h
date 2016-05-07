@@ -22,7 +22,10 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
 
-	ivm_bool_t gc_flag;
+	ivm_int_t gc_flag; /* gc flag:
+						  > 0: open
+						  = 0: closed
+						  < 0: locked */
 	ivm_collector_t *gc;
 } ivm_vmstate_t;
 
@@ -37,8 +40,14 @@ ivm_vmstate_t *
 ivm_vmstate_new();
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
-#define ivm_vmstate_openGCFlag(state) ((state)->gc_flag = IVM_TRUE)
-#define ivm_vmstate_closeGCFlag(state) ((state)->gc_flag = IVM_FALSE)
+
+#define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag > 0)
+
+#define ivm_vmstate_openGCFlag(state) ((state)->gc_flag < 0 ? 0 : ((state)->gc_flag = 1))
+#define ivm_vmstate_closeGCFlag(state) ((state)->gc_flag < 0 ? 0 : ((state)->gc_flag = 0))
+
+#define ivm_vmstate_lockGCFlag(state) ((state)->gc_flag = -1)
+#define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)
 
 #define ivm_vmstate_resetHeap(state, hp) (ivm_heap_free((state)->heap), (state)->heap = (hp))
 
@@ -81,7 +90,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #else
 
 #define ivm_vmstate_checkGC(state) \
-	if ((state)->gc_flag) { \
+	if (ivm_vmstate_isGCFlagOpen(state)) { \
 		ivm_collector_collect((state)->gc, (state), (state)->heaps[0]); \
 		ivm_vmstate_closeGCFlag(state); \
 	}

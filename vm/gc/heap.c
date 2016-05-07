@@ -72,7 +72,7 @@ ivm_heap_allocAt(ivm_heap_t *heap, ivm_size_t idx, ivm_size_t size)
 }
 
 void *
-ivm_heap_alloc(ivm_heap_t *heap, ivm_size_t size)
+ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {
 	ivm_size_t i;
 
@@ -81,7 +81,10 @@ ivm_heap_alloc(ivm_heap_t *heap, ivm_size_t size)
 
 	if (!(i = HAS_SIZE(heap, size))) {
 		i = ivm_heap_addBlock(heap);
-	}
+		if (add_block)
+			*add_block = IVM_TRUE;
+	} else if (add_block)
+		*add_block = IVM_FALSE;
 
 	return ivm_heap_allocAt(heap, i - 1, size);
 }

@@ -17,7 +17,7 @@ ivm_slot_new(ivm_vmstate_t *state,
 {
 	ivm_slot_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ret->k = IVM_STRLEN_STATE(key, state);
+	ret->k = IVM_STRDUP_STATE(key, state);
 	ret->v = value;
 	ret->next = IVM_NULL;
 
@@ -32,7 +32,7 @@ ivm_slot_copy(ivm_slot_t *slot, ivm_heap_t *heap)
 
 	if (slot) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
-		ret->k = IVM_STRLEN_HEAP(slot->k, heap);
+		ret->k = IVM_STRDUP_HEAP(slot->k, heap);
 		ret->v = slot->v;
 		ret->next = IVM_NULL;
 	}
@@ -75,7 +75,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table, ivm_heap_t *heap)
 
 		/*
 		for (slot = ret->head; slot; slot = slot->next, i++) printf("\t%p : %s\n", slot, slot->k);
-		printf("after copy: %p, %p, %d\n", ret->head, ret->tail, i);
+		printf("after copy: %p, %p, %d\n", ret->head, ret->tail, i);	
 		*/
 	}
 
