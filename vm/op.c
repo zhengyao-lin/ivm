@@ -20,7 +20,8 @@
 #define CALL_STACK (__ivm_coro__->call_st)
 
 /* use this before increase pc */
-#define ARG_START (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1])
+#define ARG_OFFSET(i) (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1 + i])
+#define ARG_START (ARG_OFFSET(0))
 
 #define STACK (__ivm_coro__->stack)
 #define STACK_SIZE() (ivm_vmstack_size(__ivm_coro__->stack))
@@ -32,7 +33,7 @@
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
 #define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)) \
-									 >= (req), \
+									>= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
 #define OP_MAPPING(op) { IVM_OP(op), OP_PROC_NAME(op) }
@@ -63,7 +64,7 @@ OP_PROC(NEW_NUM_i)
 {
 	ivm_sint32_t val = ivm_byte_readSInt32(ARG_START);
 	STACK_PUSH(ivm_numeric_new(STATE, val));
-	PC += sizeof(val) / sizeof(ivm_byte_t) + 1;
+	PC += sizeof(val) + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -76,12 +77,24 @@ OP_PROC(NEW_NUM_s)
 OP_PROC(NEW_FUNC)
 {
 	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
+	ivm_sint32_t argc = ivm_byte_readSInt32(ARG_OFFSET(sizeof(exec_id))), i;
+	ivm_size_t size = sizeof(exec_id) + sizeof(argc), tmp;
 	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
+	ivm_param_list_t *param_list = argc ? ivm_param_list_new(argc) : IVM_NULL;
+
+	printf("%d\n", argc);
+	for (i = 0; i < argc; i++) {
+		ivm_param_list_add(param_list,
+						   (ivm_char_t *)
+						   ivm_byte_readString(ARG_OFFSET(size), &tmp));
+		size += tmp;
+	}
+
 	STACK_PUSH(ivm_function_object_new_nc(STATE,
 										  ivm_function_new(CONTEXT,
-														   exec,
+										  				   param_list, exec,
 														   IVM_INTSIG_NONE)));
-	PC += sizeof(exec_id) / sizeof(ivm_byte_t) + 1;
+	PC += size + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -141,7 +154,7 @@ OP_PROC(SET_CONTEXT_SLOT)
 	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
 
 	CHECK_STACK(1);
-	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_TOP());
+	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
 
 	PC += size + 1;
 	return IVM_ACTION_NONE;
@@ -185,7 +198,23 @@ OP_PROC(PRINT_NUM)
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
-	printf("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
+		printf("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	else
+		printf("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+	PC++;
+
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(PRINT_TYPE)
+{
+	ivm_object_t *obj;
+
+	CHECK_STACK(1);
+
+	obj = STACK_POP();
+	printf("type: %s\n", IVM_OBJECT_GET(obj, TYPE_NAME));
 	PC++;
 
 	return IVM_ACTION_NONE;
@@ -202,7 +231,7 @@ OP_PROC(INVOKE)
 	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
 	args = STACK_CUT(arg_count);
 
-	PC += sizeof(arg_count) / sizeof(ivm_byte_t) + 1;
+	PC += sizeof(arg_count) + 1;
 
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
 
@@ -239,7 +268,7 @@ OP_PROC(JUMP_IF_TRUE_i)
 		PC = addr;
 	} else {
 		printf("no jump true\n");
-		PC += sizeof(addr) / sizeof(ivm_byte_t) + 1;
+		PC += sizeof(addr) + 1;
 	}
 
 	return IVM_ACTION_NONE;
@@ -254,7 +283,7 @@ OP_PROC(JUMP_IF_FALSE_i)
 		PC = addr;
 	} else {
 		printf("no jump false\n");
-		PC += sizeof(addr) / sizeof(ivm_byte_t) + 1;
+		PC += sizeof(addr) + 1;
 	}
 
 	return IVM_ACTION_NONE;
@@ -321,6 +350,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(DUP),
 	OP_MAPPING(PRINT_OBJ),
 	OP_MAPPING(PRINT_NUM),
+	OP_MAPPING(PRINT_TYPE),
 	OP_MAPPING(INVOKE),
 	OP_MAPPING(YIELD),
 	OP_MAPPING(JUMP_i),

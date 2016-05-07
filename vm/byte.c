@@ -46,8 +46,7 @@ ivm_byte_newSInt16(ivm_sint16_t num)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 16"));
 
-	ret[0] = num >> 8;
-	ret[1] = num;
+	*((ivm_sint16_t *)ret) = num;
 
 	return ret;
 }
@@ -61,10 +60,7 @@ ivm_byte_newSInt32(ivm_sint32_t num)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 32"));
 
-	ret[0] = num >> 24;
-	ret[1] = num >> 16;
-	ret[2] = num >> 8;
-	ret[3] = num;
+	*((ivm_sint32_t *)ret) = num;
 
 	return ret;
 }
@@ -78,14 +74,7 @@ ivm_byte_newSInt64(ivm_sint64_t num)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 64"));
 
-	ret[0] = num >> 56;
-	ret[1] = num >> 48;
-	ret[2] = num >> 40;
-	ret[3] = num >> 32;
-	ret[4] = num >> 24;
-	ret[5] = num >> 16;
-	ret[6] = num >> 8;
-	ret[7] = num;
+	*((ivm_sint64_t *)ret) = num;
 
 	return ret;
 }
@@ -123,8 +112,7 @@ ivm_byte_writeSInt16(ivm_byte_t *bytes, ivm_size_t size, ivm_sint16_t num)
 		return 0;
 	}
 
-	bytes[0] = num >> 8;
-	bytes[1] = num;
+	*((ivm_sint16_t *)bytes) = num;
 
 	return sizeof(num) / sizeof(*bytes);
 }
@@ -136,10 +124,7 @@ ivm_byte_writeSInt32(ivm_byte_t *bytes, ivm_size_t size, ivm_sint32_t num)
 		return 0;
 	}
 
-	bytes[0] = num >> 24;
-	bytes[1] = num >> 16;
-	bytes[2] = num >> 8;
-	bytes[3] = num;
+	*((ivm_sint32_t *)bytes) = num;
 
 	return sizeof(num) / sizeof(*bytes);
 }
@@ -151,14 +136,7 @@ ivm_byte_writeSInt64(ivm_byte_t *bytes, ivm_size_t size, ivm_sint64_t num)
 		return 0;
 	}
 
-	bytes[0] = num >> 56;
-	bytes[1] = num >> 48;
-	bytes[2] = num >> 40;
-	bytes[3] = num >> 32;
-	bytes[4] = num >> 24;
-	bytes[5] = num >> 16;
-	bytes[6] = num >> 8;
-	bytes[7] = num;
+	*((ivm_sint64_t *)bytes) = num;
 
 	return sizeof(num) / sizeof(*bytes);
 }

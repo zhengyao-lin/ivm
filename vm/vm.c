@@ -16,7 +16,7 @@
 static
 ivm_type_t static_type_list[] = {
 	{
-		IVM_UNDEFINED_T,
+		IVM_UNDEFINED_T, "undefined",
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
@@ -24,7 +24,7 @@ ivm_type_t static_type_list[] = {
 	},
 
 	{
-		IVM_NULL_T,
+		IVM_NULL_T, "null",
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
@@ -32,7 +32,7 @@ ivm_type_t static_type_list[] = {
 	},
 
 	{
-		IVM_OBJECT_T,
+		IVM_OBJECT_T, "object",
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
@@ -40,7 +40,7 @@ ivm_type_t static_type_list[] = {
 	},
 
 	{
-		IVM_NUMERIC_T,
+		IVM_NUMERIC_T, "numeric",
 			sizeof(ivm_numeric_t),
 			IVM_NULL,
 			IVM_NULL,
@@ -48,7 +48,7 @@ ivm_type_t static_type_list[] = {
 	},
 
 	{
-		IVM_FUNCTION_OBJECT_T,
+		IVM_FUNCTION_OBJECT_T, "function",
 			sizeof(ivm_function_object_t),
 			ivm_function_object_destructor,
 			IVM_NULL,

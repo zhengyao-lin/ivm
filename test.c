@@ -40,7 +40,6 @@ void profile_output()
 
 int main()
 {
-	int i;
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2;
 	ivm_exec_t *exec1, *exec2, *exec3;
@@ -70,20 +69,23 @@ int main()
 
 	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
+	ivm_exec_addCode(exec3, IVM_OP(GET_CONTEXT_SLOT), "$s", "arg1");
+	ivm_exec_addCode(exec3, IVM_OP(PRINT_NUM), "");
 
-	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 10202);
+	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32$i32$s", ivm_vmstate_registerExec(state, exec3), 1, "arg1");
 	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
-	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 
-	for (i = 0; i < 1000; i++) {
+	/*for (i = 0; i < 1000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 		ivm_exec_addCode(exec1, IVM_OP(POP), "");
-	}
+	}*/
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1002);
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_NUM), "");
@@ -136,8 +138,8 @@ int main()
 
 	/* init functions & coroutines */
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
-	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(IVM_NULL, exec2, IVM_INTSIG_NONE);
+	func2 = ivm_function_new(chain, IVM_NULL, exec1, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(IVM_NULL, IVM_NULL, exec2, IVM_INTSIG_NONE);
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
@@ -148,9 +150,9 @@ int main()
 
 	ivm_coro_setRoot(coro1, state, func2);
 	ivm_coro_setRoot(coro2, state, func3);
-	for (i = 0; i < 100000; i++) {
+	/*for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
-	}
+	}*/
 
 	/* start executing */
 	ivm_vmstate_schedule(state);

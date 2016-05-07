@@ -6,8 +6,6 @@
 #include "exec.h"
 #include "obj.h"
 
-#define IVM_DEFAULT_PARAM_LIST_BUFFER_SIZE 1
-
 #define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 
@@ -19,7 +17,7 @@ struct ivm_caller_info_t_tag;
 struct ivm_coro_t_tag;
 struct ivm_runtime_t_tag;
 
-typedef ivm_uint16_t ivm_argc_t;
+typedef ivm_uint32_t ivm_argc_t;
 typedef ivm_uint16_t ivm_signal_mask_t;
 typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											   ivm_ctchain_t *context,
@@ -37,7 +35,7 @@ typedef ivm_parameter_t *ivm_param_list_iterator_t;
 
 #define ivm_parameter_getName(param) (param)
 
-#define ivm_param_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_PARAM_LIST_BUFFER_SIZE))
+#define ivm_param_list_new(argc) (ivm_ptlist_new_c(argc))
 #define ivm_param_list_free ivm_ptlist_free
 #define ivm_param_list_add ivm_ptlist_push
 #define ivm_param_list_size ivm_ptlist_size
@@ -67,7 +65,8 @@ typedef struct ivm_function_t_tag {
 } ivm_function_t;
 
 ivm_function_t *
-ivm_function_new(ivm_ctchain_t *context, ivm_exec_t *body, ivm_signal_mask_t intsig);
+ivm_function_new(ivm_ctchain_t *context, ivm_param_list_t *param_list,
+				 ivm_exec_t *body, ivm_signal_mask_t intsig);
 ivm_function_t *
 ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
 void

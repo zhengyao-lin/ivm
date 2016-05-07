@@ -8,6 +8,11 @@ const ivm_char_t *
 ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size);
 
 #define ivm_byte_readSInt8(bytes) (*bytes)
+#define ivm_byte_readSInt16(bytes) (*((ivm_sint16_t *)(bytes)))
+#define ivm_byte_readSInt32(bytes) (*((ivm_sint32_t *)(bytes)))
+#define ivm_byte_readSInt64(bytes) (*((ivm_sint64_t *)(bytes)))
+
+#if 0
 #define ivm_byte_readSInt16(bytes) \
 	(((ivm_sint16_t)(bytes)[0] << 8) + \
 	 ((bytes)[1]))
@@ -27,6 +32,7 @@ ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size);
 	 ((ivm_sint64_t)(bytes)[5] << 16) + \
 	 ((ivm_sint64_t)(bytes)[6] << 8) + \
 	 ((bytes)[7]))
+#endif
 
 ivm_byte_t *
 ivm_byte_newString(const ivm_char_t *str);

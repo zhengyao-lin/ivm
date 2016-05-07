@@ -35,6 +35,7 @@ typedef ivm_bool_t (*ivm_bool_converter_t)(struct ivm_object_t_tag *, struct ivm
 
 typedef struct ivm_type_t_tag {
 	ivm_type_tag_t tag;
+	const ivm_char_t *name;
 	ivm_size_t size;
 
 	ivm_destructor_t des;
@@ -63,10 +64,11 @@ typedef struct ivm_object_t_tag {
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_OBJECT_GET_TYPE_TAG(obj) ((obj)->type->tag)
+#define IVM_OBJECT_GET_TYPE_NAME(obj) ((obj)->type->name)
+#define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
 #define IVM_OBJECT_GET_TYPE_DES(obj) ((obj)->type->des)
 #define IVM_OBJECT_GET_TYPE_TRAV(obj) ((obj)->type->trav)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
-#define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
 #define IVM_OBJECT_GET_COPY(obj) ((obj)->copy)

@@ -11,11 +11,12 @@ static
 void
 ivm_function_init(ivm_function_t *func,
 				  ivm_ctchain_t *context,
+				  ivm_param_list_t *param_list,
 				  ivm_exec_t *body,
 				  ivm_signal_mask_t intsig)
 {
 	func->is_native = IVM_FALSE;
-	func->u.f.param_list = ivm_param_list_new();
+	func->u.f.param_list = param_list;
 	func->u.f.closure = context
 						? ivm_ctchain_clone(context)
 						: IVM_NULL;
@@ -40,6 +41,7 @@ ivm_function_initNative(ivm_function_t *func,
 
 ivm_function_t *
 ivm_function_new(ivm_ctchain_t *context,
+				 ivm_param_list_t *param_list,
 				 ivm_exec_t *body,
 				 ivm_signal_mask_t intsig)
 {
@@ -47,7 +49,7 @@ ivm_function_new(ivm_ctchain_t *context,
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
 
-	ivm_function_init(ret, context, body, intsig);
+	ivm_function_init(ret, context, param_list, body, intsig);
 
 	return ret;
 }
@@ -139,14 +141,15 @@ ivm_function_setParam(const ivm_function_t *func,
 					  ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG)
 {
 	ivm_argc_t i = 0;
-	ivm_param_list_t *param_list = func->u.f.param_list;
+	ivm_param_list_t *param_list;
 	ivm_param_list_iterator_t iter;
 	ivm_char_t *name;
 
-	if (param_list) {
+	if (!func->is_native
+		&& (param_list = func->u.f.param_list)) {
 		IVM_PARAM_LIST_EACHPTR(param_list, iter) {
 			name = IVM_PARAM_LIST_ITER_GET(iter);
-
+			printf("%s\n", name);
 			if (i < argc) {
 				ivm_ctchain_setLocalSlot(context, state, name, argv[i]);
 			} else {

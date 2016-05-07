@@ -23,6 +23,7 @@ typedef enum {
 	IVM_OP(DUP),
 	IVM_OP(PRINT_OBJ),
 	IVM_OP(PRINT_NUM),
+	IVM_OP(PRINT_TYPE),
 	IVM_OP(INVOKE),
 	IVM_OP(YIELD),
 	IVM_OP(JUMP_i), /* _i: i32 argument */
