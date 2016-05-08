@@ -152,9 +152,16 @@ OP_PROC(SET_CONTEXT_SLOT)
 {
 	ivm_size_t size;
 	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	ivm_slot_t *slot;
 
 	CHECK_STACK(1);
-	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
+	slot = ivm_ctchain_searchSlot(CONTEXT, STATE, key);
+
+	if (slot) {
+		ivm_slot_setValue(slot, STATE, STACK_POP());
+	} else { 
+		ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
+	}
 
 	PC += size + 1;
 	return IVM_ACTION_NONE;

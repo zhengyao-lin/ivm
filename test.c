@@ -42,15 +42,11 @@ int main()
 {
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2;
-	ivm_exec_t *exec1, *exec2, *exec3;
+	ivm_exec_t *exec1, *exec2, *exec3, *exec4;
 	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
 	ivm_size_t addr1, addr2, addr3, addr4;
-
-#if IVM_PERF_PROFILE
-	profile_start();
-#endif
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
@@ -58,6 +54,7 @@ int main()
 	exec1 = ivm_exec_new();
 	exec2 = ivm_exec_new();
 	exec3 = ivm_exec_new();
+	exec4 = ivm_exec_new();
 	chain = ivm_ctchain_new();
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
@@ -71,12 +68,22 @@ int main()
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
 	ivm_exec_addCode(exec3, IVM_OP(GET_CONTEXT_SLOT), "$s", "arg1");
 	ivm_exec_addCode(exec3, IVM_OP(PRINT_NUM), "");
+	ivm_exec_addCode(exec3, IVM_OP(NEW_NUM_i), "$i32", 5252);
+	ivm_exec_addCode(exec3, IVM_OP(SET_CONTEXT_SLOT), "$s", "in_closure");
+	ivm_exec_addCode(exec3, IVM_OP(NEW_FUNC), "$i32$i32", ivm_vmstate_registerExec(state, exec4), 0);
+
+	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "this is exec4");
+	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "now print in_closure");
+	ivm_exec_addCode(exec4, IVM_OP(GET_CONTEXT_SLOT), "$s", "in_closure");
+	ivm_exec_addCode(exec4, IVM_OP(PRINT_NUM), "");
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 10202);
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32$i32$s", ivm_vmstate_registerExec(state, exec3), 1, "arg1");
 	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -155,18 +162,24 @@ int main()
 	}*/
 
 	ivm_vmstate_unlockGCFlag(state);
+
+#if IVM_PERF_PROFILE
+	profile_start();
+#endif
+
 	/* start executing */
 	ivm_vmstate_schedule(state);
-
-	ivm_coro_free(coro1); ivm_coro_free(coro2);
-	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
-	ivm_ctchain_free(chain);
-	ivm_exec_free(exec1); ivm_exec_free(exec2); ivm_exec_free(exec3);
-	ivm_vmstate_free(state);
 
 #if IVM_PERF_PROFILE
 	profile_output();
 #endif
+
+	ivm_coro_free(coro1); ivm_coro_free(coro2);
+	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
+	ivm_ctchain_free(chain);
+	ivm_exec_free(exec1); ivm_exec_free(exec2);
+	ivm_exec_free(exec3); ivm_exec_free(exec4);
+	ivm_vmstate_free(state);
 
 	return 0;
 }
