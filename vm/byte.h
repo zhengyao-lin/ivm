@@ -4,12 +4,13 @@
 #include "type.h"
 #include "str.h"
 
+#define IVM_STRING_POOL_INDEX_SIZE (sizeof(ivm_sint32_t))
+
 const ivm_char_t *
 ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size);
 const ivm_char_t *
 ivm_byte_readStringFromPool(ivm_byte_t *bytes,
-							ivm_string_pool_t *pool,
-							ivm_size_t *size);
+							ivm_string_pool_t *pool);
 
 #define ivm_byte_readSInt8(bytes) (*bytes)
 #define ivm_byte_readSInt16(bytes) (*((ivm_sint16_t *)(bytes)))

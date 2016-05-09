@@ -93,7 +93,7 @@ OP_PROC(NEW_FUNC)
 	for (i = 0; i < argc; i++) {
 		ivm_param_list_add(param_list,
 						   (ivm_char_t *)
-						   ivm_byte_readStringFromPool(ARG_OFFSET(size), STRING_POOL, &tmp));
+						   ivm_byte_readStringFromPool(ARG_OFFSET(size), STRING_POOL));
 		size += tmp;
 	}
 #endif
@@ -107,8 +107,7 @@ OP_PROC(NEW_FUNC)
 
 OP_PROC(GET_SLOT)
 {
-	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -118,15 +117,13 @@ OP_PROC(GET_SLOT)
 		STACK_PUSH(ivm_object_getSlotValue(obj, STATE, key));
 	}
 
-	PC += size + 1;
-
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(SET_SLOT)
 {
-	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
 	ivm_object_t *obj, *val;
 
 	CHECK_STACK(2);
@@ -138,27 +135,24 @@ OP_PROC(SET_SLOT)
 	}
 	STACK_PUSH(obj);
 
-	PC += size + 1;
-
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(GET_CONTEXT_SLOT)
 {
-	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
 	ivm_object_t *found = ivm_ctchain_search(CONTEXT, STATE, key);
 
 	STACK_PUSH(found ? found : IVM_UNDEFINED(STATE));
 
-	PC += size + 1;
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(SET_CONTEXT_SLOT)
 {
-	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
 	ivm_slot_t *slot;
 
 	CHECK_STACK(1);
@@ -170,7 +164,18 @@ OP_PROC(SET_CONTEXT_SLOT)
 		ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
 	}
 
-	PC += size + 1;
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
+	return IVM_ACTION_NONE;
+}
+
+OP_PROC(SET_ARG)
+{
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
+
+	CHECK_STACK(1);
+	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
+
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -333,13 +338,10 @@ OP_PROC(TEST2)
 
 OP_PROC(TEST3)
 {
-	ivm_size_t size;
-
 	printf("morning! this is test3\n");
-	printf("string argument: %s\n", ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size));
+	printf("string argument: %s\n", ivm_byte_readStringFromPool(ARG_START, STRING_POOL));
 
-	PC += size + 1;
-
+	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -363,6 +365,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(SET_SLOT, "set_slot"),
 	OP_MAPPING(GET_CONTEXT_SLOT, "get_context_slot"),
 	OP_MAPPING(SET_CONTEXT_SLOT, "set_context_slot"),
+	OP_MAPPING(SET_ARG, "set_arg"),
 	OP_MAPPING(POP, "pop"),
 	OP_MAPPING(DUP, "dup"),
 	OP_MAPPING(PRINT_OBJ, "print_obj"),
