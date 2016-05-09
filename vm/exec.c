@@ -6,12 +6,13 @@
 #include "err.h"
 
 ivm_exec_t *
-ivm_exec_new()
+ivm_exec_new(ivm_string_pool_t *pool)
 {
 	ivm_exec_t *ret = MEM_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
+	ret->pool = pool;
 	ret->length = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	ret->cur = 0;
 	ret->code = MEM_ALLOC_INIT(sizeof(*ret->code)
@@ -96,9 +97,8 @@ ivm_size_t
 ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_list args)
 {
 	ivm_size_t i, n_cur, tmp;
-	const char *tmp_str;
 	ivm_int_t tmp_int;
-	ivm_size_t ret = exec->cur;
+	ivm_size_t ret = exec->cur, tmp_i;
 
 	n_cur = exec->cur + 1;
 	while (exec->length <= n_cur)
@@ -116,8 +116,10 @@ ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_lis
 					/* if any of the branches is triggered, the loop is continue */
 					/* else fallthrough */
 				} else if (format[i + 1] == 's') {
-					tmp_str = va_arg(args, const ivm_char_t *);
-					WRITE_ARG(String, tmp_str);
+					tmp_i
+					= ivm_string_pool_register(exec->pool,
+											   va_arg(args, const ivm_char_t *));
+					WRITE_ARG(SInt32, tmp_i);
 					n_cur += tmp;
 					i += 1;
 					break;

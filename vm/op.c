@@ -23,6 +23,8 @@
 #define ARG_OFFSET(i) (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1 + i])
 #define ARG_START (ARG_OFFSET(0))
 
+#define STRING_POOL (__ivm_coro__->runtime->exec->pool)
+
 #define STACK (__ivm_coro__->stack)
 #define STACK_SIZE() (ivm_vmstack_size(__ivm_coro__->stack))
 #define STACK_TOP() (ivm_vmstack_top(__ivm_coro__->stack))
@@ -86,7 +88,7 @@ OP_PROC(NEW_FUNC)
 	for (i = 0; i < argc; i++) {
 		ivm_param_list_add(param_list,
 						   (ivm_char_t *)
-						   ivm_byte_readString(ARG_OFFSET(size), &tmp));
+						   ivm_byte_readStringFromPool(ARG_OFFSET(size), STRING_POOL, &tmp));
 		size += tmp;
 	}
 
@@ -101,7 +103,7 @@ OP_PROC(NEW_FUNC)
 OP_PROC(GET_SLOT)
 {
 	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -119,7 +121,7 @@ OP_PROC(GET_SLOT)
 OP_PROC(SET_SLOT)
 {
 	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
 	ivm_object_t *obj, *val;
 
 	CHECK_STACK(2);
@@ -139,7 +141,7 @@ OP_PROC(SET_SLOT)
 OP_PROC(GET_CONTEXT_SLOT)
 {
 	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
 	ivm_object_t *found = ivm_ctchain_search(CONTEXT, STATE, key);
 
 	STACK_PUSH(found ? found : IVM_UNDEFINED(STATE));
@@ -151,7 +153,7 @@ OP_PROC(GET_CONTEXT_SLOT)
 OP_PROC(SET_CONTEXT_SLOT)
 {
 	ivm_size_t size;
-	const ivm_char_t *key = ivm_byte_readString(ARG_START, &size);
+	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size);
 	ivm_slot_t *slot;
 
 	CHECK_STACK(1);
@@ -326,7 +328,7 @@ OP_PROC(TEST3)
 	ivm_size_t size;
 
 	printf("morning! this is test3\n");
-	printf("string argument: %s\n", ivm_byte_readString(ARG_START, &size));
+	printf("string argument: %s\n", ivm_byte_readStringFromPool(ARG_START, STRING_POOL, &size));
 
 	PC += size + 1;
 

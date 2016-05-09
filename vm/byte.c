@@ -12,6 +12,19 @@ ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size)
 	return (const ivm_char_t *)bytes;
 }
 
+const ivm_char_t *
+ivm_byte_readStringFromPool(ivm_byte_t *bytes,
+							ivm_string_pool_t *pool,
+							ivm_size_t *size)
+{
+	ivm_size_t i = ivm_byte_readSInt32(bytes);
+
+	if (size)
+		*size = sizeof(ivm_sint32_t);
+
+	return ivm_string_pool_get(pool, i);
+}
+
 ivm_byte_t *
 ivm_byte_newString(const ivm_char_t *str)
 {

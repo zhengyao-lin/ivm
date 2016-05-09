@@ -59,7 +59,7 @@ ivm_type_t static_type_list[] = {
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
-	ivm_vmstate_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret));
 	ivm_type_t *tmp_type;
 	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
 

@@ -48,3 +48,41 @@ ivm_strdup_heap(const ivm_char_t *src,
 
 	return ret;
 }
+
+ivm_size_t
+ivm_string_list_register(ivm_string_list_t *list,
+						 ivm_char_t *str)
+{
+	ivm_size_t ret = ivm_string_list_indexOf(list, str);
+
+	if (ret == (ivm_size_t)-1) {
+		ret = ivm_ptlist_push(list, str);
+	}
+
+	return ret;
+}
+
+ivm_string_pool_t *
+ivm_string_pool_new()
+{
+	ivm_string_pool_t *ret = MEM_ALLOC(sizeof(*ret));
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
+
+	ret->heap = ivm_heap_new(IVM_STRING_POOL_DEFAULT_BLOCK_SIZE);
+	ret->set = ivm_string_list_new();
+
+	return ret;
+}
+
+void
+ivm_string_pool_free(ivm_string_pool_t *pool)
+{
+	if (pool) {
+		ivm_heap_free(pool->heap);
+		ivm_string_list_free(pool->set);
+		MEM_FREE(pool);
+	}
+
+	return;
+}

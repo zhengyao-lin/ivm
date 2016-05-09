@@ -52,6 +52,20 @@ ivm_ptlist_foreach_arg(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_arg_t proc,
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 
-#define IVM_PTLIST_EACHPTR(ptlist, ptr, type) for ((ptr) = (type *)((ptlist)->lst); (ptr) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); (ptr)++)
+#define IVM_PTLIST_ITER_TYPE(elem_type) elem_type *
+#define IVM_PTLIST_EACHPTR(ptlist, ptr, type) \
+	for ((ptr) = (type *)((ptlist)->lst); \
+		 (ptr) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); \
+		 (ptr)++)
+
+typedef int (*ivm_ptlist_comparer_t)(const void *, const void *);
+
+ivm_size_t
+ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr, ivm_ptlist_comparer_t comp);
+
+#define ivm_ptlist_indexOf(ptlist, ptr, comp) \
+	(ivm_ptlist_indexOf_c((ptlist), \
+						  (ptr), \
+						  (ivm_ptlist_comparer_t)(comp)))
 
 #endif

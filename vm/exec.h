@@ -4,6 +4,7 @@
 #include "pub/const.h"
 #include "std/list.h"
 #include "type.h"
+#include "str.h"
 #include "op.h"
 
 #if IVM_DEBUG
@@ -19,13 +20,15 @@
 #endif
 
 typedef struct {
+	ivm_string_pool_t *pool;
+
 	ivm_size_t length;
 	ivm_size_t cur;
 	ivm_byte_t *code;
 } ivm_exec_t;
 
 ivm_exec_t *
-ivm_exec_new();
+ivm_exec_new(ivm_string_pool_t *pool);
 void
 ivm_exec_free(ivm_exec_t *exec);
 void

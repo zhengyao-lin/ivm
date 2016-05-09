@@ -47,14 +47,16 @@ int main()
 	ivm_function_t *func1, *func2, *func3;
 	ivm_coro_t *coro1, *coro2;
 	ivm_size_t addr1, addr2, addr3, addr4;
+	ivm_string_pool_t *str_pool;
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
-	exec1 = ivm_exec_new();
-	exec2 = ivm_exec_new();
-	exec3 = ivm_exec_new();
-	exec4 = ivm_exec_new();
+	str_pool = ivm_string_pool_new();
+	exec1 = ivm_exec_new(str_pool);
+	exec2 = ivm_exec_new(str_pool);
+	exec3 = ivm_exec_new(str_pool);
+	exec4 = ivm_exec_new(str_pool);
 	chain = ivm_ctchain_new();
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
@@ -179,6 +181,7 @@ int main()
 	ivm_ctchain_free(chain);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_exec_free(exec3); ivm_exec_free(exec4);
+	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
 
 	return 0;
