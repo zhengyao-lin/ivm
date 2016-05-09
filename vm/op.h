@@ -9,7 +9,7 @@ struct ivm_vmstate_t_tag;
 #define IVM_OP(name) IVM_OP_##name
 
 typedef enum {
-	IVM_OP(NONE) = 0,
+	IVM_OP(NOP) = 0,
 	IVM_OP(NEW_NULL),
 	IVM_OP(NEW_OBJ),
 	IVM_OP(NEW_NUM_i),
@@ -46,6 +46,7 @@ typedef ivm_action_t (*ivm_op_proc_t)(struct ivm_vmstate_t_tag *state, struct iv
 typedef struct {
 	ivm_opcode_t op;
 	ivm_op_proc_t proc;
+	const char *name;
 } ivm_op_table_t;
 
 ivm_op_proc_t

@@ -13,7 +13,8 @@ ADD_LIBRARY(vm SHARED
 			coro.c
 			runtime.c
 			op.c
-			byte.c)
+			byte.c
+			dbg.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

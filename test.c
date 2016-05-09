@@ -68,11 +68,10 @@ int main()
 
 	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
-	ivm_exec_addCode(exec3, IVM_OP(GET_CONTEXT_SLOT), "$s", "arg1");
 	ivm_exec_addCode(exec3, IVM_OP(PRINT_NUM), "");
 	ivm_exec_addCode(exec3, IVM_OP(NEW_NUM_i), "$i32", 5252);
 	ivm_exec_addCode(exec3, IVM_OP(SET_CONTEXT_SLOT), "$s", "in_closure");
-	ivm_exec_addCode(exec3, IVM_OP(NEW_FUNC), "$i32$i32", ivm_vmstate_registerExec(state, exec4), 0);
+	ivm_exec_addCode(exec3, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec4));
 
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "this is exec4");
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "now print in_closure");
@@ -80,7 +79,7 @@ int main()
 	ivm_exec_addCode(exec4, IVM_OP(PRINT_NUM), "");
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 10202);
-	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32$i32$s", ivm_vmstate_registerExec(state, exec3), 1, "arg1");
+	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
 	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
@@ -107,17 +106,18 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "c");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 
+	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1222);
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
-	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 
 	addr1 = ivm_exec_addCode(exec1, IVM_OP(JUMP_i), "$i32", 0);
 	addr3 = ivm_exec_addCode(exec1, IVM_OP(NEW_NULL), "");
 	addr4 = ivm_exec_addCode(exec1, IVM_OP(JUMP_IF_FALSE_i), "$i32", 0);
-	addr2 = ivm_exec_addCode(exec1, IVM_OP(NONE), "");
+	addr2 = ivm_exec_addCode(exec1, IVM_OP(NOP), "");
 	ivm_exec_rewriteArg(exec1, addr1, "$i32", addr2);
 
 	ivm_exec_addCode(exec1, IVM_OP(JUMP_i), "$i32", addr3);
-	addr2 = ivm_exec_addCode(exec1, IVM_OP(NONE), "");
+	addr2 = ivm_exec_addCode(exec1, IVM_OP(NOP), "");
 	ivm_exec_rewriteArg(exec1, addr4, "$i32", addr2);
 	
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
@@ -147,8 +147,8 @@ int main()
 
 	/* init functions & coroutines */
 	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
-	func2 = ivm_function_new(chain, IVM_NULL, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(chain, IVM_NULL, exec2, IVM_INTSIG_NONE);
+	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();

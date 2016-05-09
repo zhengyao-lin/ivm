@@ -56,7 +56,6 @@ typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
 	union {
 		struct {
-			ivm_param_list_t *param_list;
 			ivm_ctchain_t *closure;
 			ivm_exec_t *body;
 		} f;
@@ -66,8 +65,9 @@ typedef struct ivm_function_t_tag {
 } ivm_function_t;
 
 ivm_function_t *
-ivm_function_new(ivm_ctchain_t *context, ivm_param_list_t *param_list,
-				 ivm_exec_t *body, ivm_signal_mask_t intsig);
+ivm_function_new(ivm_ctchain_t *context,
+				 ivm_exec_t *body,
+				 ivm_signal_mask_t intsig);
 ivm_function_t *
 ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
 void
@@ -90,10 +90,12 @@ ivm_function_callNative(const ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,
 						ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG);
 
+#if 0
 void
 ivm_function_setParam(const ivm_function_t *func,
 					  struct ivm_vmstate_t_tag *state,
 					  ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG);
+#endif
 
 typedef struct {
 	IVM_OBJECT_HEADER

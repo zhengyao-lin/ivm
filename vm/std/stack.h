@@ -32,7 +32,7 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_cut(stack, i) (ivm_ptlist_setCur((stack), ivm_ptlist_size(stack) - (i)), \
 								 &ivm_stack_before((stack), -1))
 
-#define ivm_stack_setTop  ivm_stack_setCur
+#define ivm_stack_setTop  ivm_ptlist_setCur
 #define ivm_stack_foreach ivm_ptlist_foreach
 #define ivm_stack_foreach_arg ivm_ptlist_foreach_arg
 

@@ -32,17 +32,20 @@
 #define STACK_PUSH(obj) (ivm_vmstack_push(__ivm_coro__->stack, (obj)))
 #define STACK_BEFORE(i) (ivm_vmstack_before(__ivm_coro__->stack, (i)))
 #define STACK_CUT(i) (ivm_vmstack_cut(__ivm_coro__->stack, (i)))
+#define STACK_INC(i) \
+	(ivm_vmstack_setTop(__ivm_coro__->stack, \
+						(i) + IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)))
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
 #define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)) \
 									>= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
-#define OP_MAPPING(op) { IVM_OP(op), OP_PROC_NAME(op) }
+#define OP_MAPPING(op, name) { IVM_OP(op), OP_PROC_NAME(op), (name) }
 
-OP_PROC(NONE)
+OP_PROC(NOP)
 {
-	printf("NONE\n");
+	printf("NOP\n");
 	PC++;
 	return IVM_ACTION_NONE;
 }
@@ -79,24 +82,26 @@ OP_PROC(NEW_NUM_s)
 OP_PROC(NEW_FUNC)
 {
 	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
+	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
+
+#if 0
 	ivm_sint32_t argc = ivm_byte_readSInt32(ARG_OFFSET(sizeof(exec_id))), i;
 	ivm_size_t size = sizeof(exec_id) + sizeof(argc), tmp;
 	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
 	ivm_param_list_t *param_list = argc ? ivm_param_list_new(argc) : IVM_NULL;
 
-	printf("%d\n", argc);
 	for (i = 0; i < argc; i++) {
 		ivm_param_list_add(param_list,
 						   (ivm_char_t *)
 						   ivm_byte_readStringFromPool(ARG_OFFSET(size), STRING_POOL, &tmp));
 		size += tmp;
 	}
+#endif
 
 	STACK_PUSH(ivm_function_object_new_nc(STATE,
-										  ivm_function_new(CONTEXT,
-										  				   param_list, exec,
+										  ivm_function_new(CONTEXT, exec,
 														   IVM_INTSIG_NONE)));
-	PC += size + 1;
+	PC += sizeof(exec_id) + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -248,8 +253,11 @@ OP_PROC(INVOKE)
 		ivm_function_callNative(func, STATE, CONTEXT,
 								IVM_FUNCTION_SET_ARG_2(arg_count, args));
 	} else {
+		/*
 		ivm_function_setParam(func, STATE, CONTEXT,
 							  IVM_FUNCTION_SET_ARG_2(arg_count, args));
+		*/
+		STACK_INC(arg_count);
 	}
 
 	return IVM_ACTION_NONE;
@@ -345,30 +353,30 @@ OP_PROC(LAST)
 static const
 ivm_op_table_t
 ivm_global_op_table[] = {
-	OP_MAPPING(NONE),
-	OP_MAPPING(NEW_NULL),
-	OP_MAPPING(NEW_OBJ),
-	OP_MAPPING(NEW_NUM_i),
-	OP_MAPPING(NEW_NUM_s),
-	OP_MAPPING(NEW_FUNC),
-	OP_MAPPING(GET_SLOT),
-	OP_MAPPING(SET_SLOT),
-	OP_MAPPING(GET_CONTEXT_SLOT),
-	OP_MAPPING(SET_CONTEXT_SLOT),
-	OP_MAPPING(POP),
-	OP_MAPPING(DUP),
-	OP_MAPPING(PRINT_OBJ),
-	OP_MAPPING(PRINT_NUM),
-	OP_MAPPING(PRINT_TYPE),
-	OP_MAPPING(INVOKE),
-	OP_MAPPING(YIELD),
-	OP_MAPPING(JUMP_i),
-	OP_MAPPING(JUMP_IF_TRUE_i),
-	OP_MAPPING(JUMP_IF_FALSE_i),
-	OP_MAPPING(TEST1),
-	OP_MAPPING(TEST2),
-	OP_MAPPING(TEST3),
-	OP_MAPPING(LAST)
+	OP_MAPPING(NOP, "nop"),
+	OP_MAPPING(NEW_NULL, "new_null"),
+	OP_MAPPING(NEW_OBJ, "new_obj"),
+	OP_MAPPING(NEW_NUM_i, "new_num_i"),
+	OP_MAPPING(NEW_NUM_s, "new_num_s"),
+	OP_MAPPING(NEW_FUNC, "new_func"),
+	OP_MAPPING(GET_SLOT, "get_slot"),
+	OP_MAPPING(SET_SLOT, "set_slot"),
+	OP_MAPPING(GET_CONTEXT_SLOT, "get_context_slot"),
+	OP_MAPPING(SET_CONTEXT_SLOT, "set_context_slot"),
+	OP_MAPPING(POP, "pop"),
+	OP_MAPPING(DUP, "dup"),
+	OP_MAPPING(PRINT_OBJ, "print_obj"),
+	OP_MAPPING(PRINT_NUM, "print_num"),
+	OP_MAPPING(PRINT_TYPE, "print_type"),
+	OP_MAPPING(INVOKE, "invoke"),
+	OP_MAPPING(YIELD, "yield"),
+	OP_MAPPING(JUMP_i, "jmp"),
+	OP_MAPPING(JUMP_IF_TRUE_i, "jmp_true"),
+	OP_MAPPING(JUMP_IF_FALSE_i, "jmp_false"),
+	OP_MAPPING(TEST1, "test1"),
+	OP_MAPPING(TEST2, "test2"),
+	OP_MAPPING(TEST3, "test3"),
+	OP_MAPPING(LAST, "last")
 };
 
 ivm_op_proc_t
