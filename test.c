@@ -81,7 +81,8 @@ int main()
 	ivm_exec_addCode(exec4, IVM_OP(GET_CONTEXT_SLOT), "$s", "in_closure");
 	ivm_exec_addCode(exec4, IVM_OP(PRINT_NUM), "");
 
-	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 10202);
+	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1022);
+
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
 	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
