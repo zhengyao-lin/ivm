@@ -12,7 +12,7 @@ const ivm_char_t *
 ivm_byte_readStringFromPool(ivm_byte_t *bytes,
 							ivm_string_pool_t *pool);
 
-#define ivm_byte_readSInt8(bytes) (*bytes)
+#define ivm_byte_readSInt8(bytes) (*((ivm_sint8_t *)bytes))
 #define ivm_byte_readSInt16(bytes) (*((ivm_sint16_t *)(bytes)))
 #define ivm_byte_readSInt32(bytes) (*((ivm_sint32_t *)(bytes)))
 #define ivm_byte_readSInt64(bytes) (*((ivm_sint64_t *)(bytes)))

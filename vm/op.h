@@ -48,9 +48,17 @@ typedef struct {
 	ivm_opcode_t op;
 	ivm_op_proc_t proc;
 	const char *name;
+	const char *args;
+	ivm_pc_t offset;
 } ivm_op_table_t;
 
 ivm_op_proc_t
 ivm_op_table_getProc(ivm_opcode_t op);
+const char *
+ivm_op_table_getArg(ivm_opcode_t op);
+ivm_pc_t
+ivm_op_table_getOffset(ivm_opcode_t op);
+const char *
+ivm_op_table_getName(ivm_opcode_t op);
 
 #endif

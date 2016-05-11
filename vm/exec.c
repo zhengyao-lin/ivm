@@ -60,8 +60,6 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 	return;
 }
 
-#define ESC_CHAR '$'
-
 #define CUR_EXEC (&exec->code[n_cur])
 #define REM_LEN (exec->length - n_cur)
 
@@ -94,7 +92,7 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 
 static
 ivm_size_t
-ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_list args)
+ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, const ivm_char_t *format, va_list args)
 {
 	ivm_size_t i, n_cur, tmp;
 	ivm_int_t tmp_int;
@@ -107,7 +105,7 @@ ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_lis
 
 	for (i = 0; format[i] != '\0'; i++) {
 		switch (format[i]) {
-			case ESC_CHAR:
+			case IVM_EXEC_FORMAT_ESC_CHAR:
 				if (format[i + 1] == 'i') {
 					IF_INT_N_THEN_CALL_1(format, i + 2, SInt8)
 					else IF_INT_N_THEN_CALL_2(format, i + 2, SInt16)
@@ -123,7 +121,7 @@ ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_lis
 					n_cur += tmp;
 					i += 1;
 					break;
-				} else if (format[i + 1] == ESC_CHAR) {
+				} else if (format[i + 1] == IVM_EXEC_FORMAT_ESC_CHAR) {
 					i++;
 					/* two successive escape characters -- only write 1 */
 					/* fallthrough */
@@ -142,7 +140,7 @@ ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, va_lis
 }
 
 ivm_size_t
-ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
+ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, const ivm_char_t *format, ...)
 {
 	va_list args;
 	ivm_size_t ret;
@@ -154,11 +152,25 @@ ivm_exec_addCode(ivm_exec_t *exec, ivm_opcode_t op, ivm_char_t *format, ...)
 	return ret;
 }
 
+ivm_size_t
+ivm_exec_addOp(ivm_exec_t *exec,
+			   ivm_opcode_t op, ...)
+{
+	va_list args;
+	ivm_size_t ret;
+
+	va_start(args, op);
+	ret = ivm_exec_addCode_c(exec, op, ivm_op_table_getArg(op), args);
+	va_end(args);
+
+	return ret;
+}
+
 void
 ivm_exec_rewrite(ivm_exec_t *exec,
 				 ivm_size_t addr,
 				 ivm_opcode_t op,
-				 ivm_char_t *format, ...)
+				 const ivm_char_t *format, ...)
 {
 	va_list args;
 	ivm_size_t cur_back;
@@ -178,7 +190,7 @@ ivm_exec_rewrite(ivm_exec_t *exec,
 void
 ivm_exec_rewriteArg(ivm_exec_t *exec,
 					ivm_size_t addr,
-					ivm_char_t *format, ...)
+					const ivm_char_t *format, ...)
 {
 	va_list args;
 	ivm_size_t cur_back;

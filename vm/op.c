@@ -37,11 +37,11 @@
 						(i) + IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)))
 
 #define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
-#define CHECK_STACK(req) IVM_ASSERT((STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)) \
-									>= (req), \
+#define AVAIL_STACK (STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP))
+#define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
-#define OP_MAPPING(op, name) { IVM_OP(op), OP_PROC_NAME(op), (name) }
+#define OP_MAPPING(op, name, args, offset) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), (offset) }
 
 OP_PROC(NOP)
 {
@@ -172,8 +172,10 @@ OP_PROC(SET_ARG)
 {
 	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
 
-	CHECK_STACK(1);
-	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
+	ivm_ctchain_setLocalSlot(CONTEXT, STATE, key,
+							 AVAIL_STACK >= 1
+							 ? STACK_POP()
+							 : IVM_UNDEFINED(STATE));
 
 	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
@@ -332,7 +334,7 @@ OP_PROC(TEST1)
 
 OP_PROC(TEST2)
 { 
-	PC++;
+	PC += 4;
 	return IVM_ACTION_NONE;
 }
 
@@ -355,42 +357,71 @@ OP_PROC(LAST)
 static const
 ivm_op_table_t
 ivm_global_op_table[] = {
-	OP_MAPPING(NOP, "nop"),
-	OP_MAPPING(NEW_NULL, "new_null"),
-	OP_MAPPING(NEW_OBJ, "new_obj"),
-	OP_MAPPING(NEW_NUM_i, "new_num_i"),
-	OP_MAPPING(NEW_NUM_s, "new_num_s"),
-	OP_MAPPING(NEW_FUNC, "new_func"),
-	OP_MAPPING(GET_SLOT, "get_slot"),
-	OP_MAPPING(SET_SLOT, "set_slot"),
-	OP_MAPPING(GET_CONTEXT_SLOT, "get_context_slot"),
-	OP_MAPPING(SET_CONTEXT_SLOT, "set_context_slot"),
-	OP_MAPPING(SET_ARG, "set_arg"),
-	OP_MAPPING(POP, "pop"),
-	OP_MAPPING(DUP, "dup"),
-	OP_MAPPING(PRINT_OBJ, "print_obj"),
-	OP_MAPPING(PRINT_NUM, "print_num"),
-	OP_MAPPING(PRINT_TYPE, "print_type"),
-	OP_MAPPING(INVOKE, "invoke"),
-	OP_MAPPING(YIELD, "yield"),
-	OP_MAPPING(JUMP_i, "jmp"),
-	OP_MAPPING(JUMP_IF_TRUE_i, "jmp_true"),
-	OP_MAPPING(JUMP_IF_FALSE_i, "jmp_false"),
-	OP_MAPPING(TEST1, "test1"),
-	OP_MAPPING(TEST2, "test2"),
-	OP_MAPPING(TEST3, "test3"),
-	OP_MAPPING(LAST, "last")
+	OP_MAPPING(NOP,					"nop",					"",				1),
+	OP_MAPPING(NEW_NULL,			"new_null",				"",				1),
+	OP_MAPPING(NEW_OBJ,				"new_obj",				"",				1),
+	OP_MAPPING(NEW_NUM_i,			"new_num_i",			"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(NEW_NUM_s,			"new_num_s",			"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(NEW_FUNC,			"new_func",				"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(GET_SLOT,			"get_slot",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(SET_SLOT,			"set_slot",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(GET_CONTEXT_SLOT,	"get_context_slot",		"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(SET_CONTEXT_SLOT,	"set_context_slot",		"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(SET_ARG,				"set_arg",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(POP,					"pop",					"",				1),
+	OP_MAPPING(DUP,					"dup",					"",				1),
+	OP_MAPPING(PRINT_OBJ,			"print_obj",			"",				1),
+	OP_MAPPING(PRINT_NUM,			"print_num",			"",				1),
+	OP_MAPPING(PRINT_TYPE,			"print_type",			"",				1),
+	OP_MAPPING(INVOKE,				"invoke",				"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(YIELD,				"yield",				"",				1),
+	OP_MAPPING(JUMP_i,				"jmp",					"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(JUMP_IF_TRUE_i,		"jmp_true",				"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(JUMP_IF_FALSE_i,		"jmp_false",			"$i32",			sizeof(ivm_sint32_t) + 1),
+	OP_MAPPING(TEST1,				"test1",				"",				1),
+	OP_MAPPING(TEST2,				"test2",				"$i8$i16",		4),
+	OP_MAPPING(TEST3,				"test3",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
+	OP_MAPPING(LAST,				"last",					"",				1)
 };
+
+#if IVM_DEBUG
+
+#define checkLegal() \
+	IVM_ASSERT(op < IVM_OP_LAST, \
+			   IVM_ERROR_MSG_BAD_OP); \
+	IVM_ASSERT(ivm_global_op_table[op].op == op, \
+			   IVM_ERROR_MSG_BAD_OP_TABLE);
+
+#else
+
+#define checkLegal()
+
+#endif
 
 ivm_op_proc_t
 ivm_op_table_getProc(ivm_opcode_t op)
 {
-#if IVM_DEBUG
-	IVM_ASSERT(op < IVM_OP_LAST,
-			   IVM_ERROR_MSG_BAD_OP);
-	IVM_ASSERT(ivm_global_op_table[op].op == op,
-			   IVM_ERROR_MSG_BAD_OP_TABLE);
-#endif
-	
+	checkLegal();
 	return ivm_global_op_table[op].proc;
+}
+
+const char *
+ivm_op_table_getArg(ivm_opcode_t op)
+{
+	checkLegal()
+	return ivm_global_op_table[op].args;
+}
+
+ivm_pc_t
+ivm_op_table_getOffset(ivm_opcode_t op)
+{
+	checkLegal()
+	return ivm_global_op_table[op].offset;
+}
+
+const char *
+ivm_op_table_getName(ivm_opcode_t op)
+{
+	checkLegal()
+	return ivm_global_op_table[op].name;
 }

@@ -2,6 +2,7 @@
 #include <time.h>
 #include "pub/const.h"
 #include "vm/vm.h"
+#include "vm/dbg.h"
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
 
@@ -68,10 +69,12 @@ int main()
 
 	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
-	ivm_exec_addCode(exec3, IVM_OP(PRINT_NUM), "");
-	ivm_exec_addCode(exec3, IVM_OP(NEW_NUM_i), "$i32", 5252);
-	ivm_exec_addCode(exec3, IVM_OP(SET_CONTEXT_SLOT), "$s", "in_closure");
-	ivm_exec_addCode(exec3, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec4));
+	ivm_exec_addOp(exec3, IVM_OP(SET_ARG), "arg");
+	ivm_exec_addOp(exec3, IVM_OP(GET_CONTEXT_SLOT), "arg");
+	ivm_exec_addOp(exec3, IVM_OP(PRINT_NUM));
+	ivm_exec_addOp(exec3, IVM_OP(NEW_NUM_i), 5252);
+	ivm_exec_addOp(exec3, IVM_OP(SET_CONTEXT_SLOT), "in_closure");
+	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerExec(state, exec4));
 
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "this is exec4");
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "now print in_closure");
@@ -105,10 +108,9 @@ int main()
 
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "c");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
-
-	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1222);
+	
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
-	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 
 	addr1 = ivm_exec_addCode(exec1, IVM_OP(JUMP_i), "$i32", 0);
 	addr3 = ivm_exec_addCode(exec1, IVM_OP(NEW_NULL), "");
@@ -126,6 +128,7 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), "");
+	ivm_exec_addCode(exec1, IVM_OP(TEST2), "$i8$i8$i8", 0x7f, 0xff, 0x7f);
 
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(PRINT_OBJ), "");
@@ -175,6 +178,24 @@ int main()
 #if IVM_PERF_PROFILE
 	profile_output();
 #endif
+
+	fprintf(stderr, "disasm exec1:\n");
+	ivm_dbg_disAsmExec_c(exec1, "  ", stderr);
+
+	fprintf(stderr, "\n");
+
+	fprintf(stderr, "disasm exec2:\n");
+	ivm_dbg_disAsmExec_c(exec2, "  ", stderr);
+
+	fprintf(stderr, "\n");
+
+	fprintf(stderr, "disasm exec3:\n");
+	ivm_dbg_disAsmExec_c(exec3, "  ", stderr);
+
+	fprintf(stderr, "\n");
+
+	fprintf(stderr, "disasm exec4:\n");
+	ivm_dbg_disAsmExec_c(exec4, "  ", stderr);
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);

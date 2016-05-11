@@ -39,28 +39,36 @@ ivm_exec_addBuffer(ivm_exec_t *exec);
 
 /**
  * format:
- *    %i8, %i16, %i32, %i64: write integer of size 8-16
- *    %s: write string
- *    %%: write a character '%'
+ *    $i8, $i16, $i32, $i64: write integer of size 8-16
+ *    $s: write string
+ *    $$: write a character '$'
  *    other: write exactly what it is
  */
+
+#define IVM_EXEC_FORMAT_ESC_CHAR '$'
+
 ivm_size_t
 ivm_exec_addCode(ivm_exec_t *exec,
 				 ivm_opcode_t op,
-				 ivm_char_t *format, ...);
+				 const ivm_char_t *format, ...);
+ivm_size_t
+ivm_exec_addOp(ivm_exec_t *exec,
+			   ivm_opcode_t op, ...);
 void
 ivm_exec_rewrite(ivm_exec_t *exec,
 				 ivm_size_t addr,
 				 ivm_opcode_t op,
-				 ivm_char_t *format, ...);
+				 const ivm_char_t *format, ...);
 /* notice: pass in the address of opcode, not the start of argument */
 void
 ivm_exec_rewriteArg(ivm_exec_t *exec,
 					ivm_size_t addr,
-					ivm_char_t *format, ...);
+					const ivm_char_t *format, ...);
 
 #define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)exec->code[pc])
+#define ivm_exec_offset(exec, pc) (&(exec->code[pc]))
 #define ivm_exec_length(exec) (exec->cur)
+#define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
 
 typedef ivm_size_t ivm_exec_id_t;
 typedef ivm_ptlist_t ivm_exec_list_t;
