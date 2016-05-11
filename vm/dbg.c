@@ -8,9 +8,9 @@
 #define STRING_BUF_SIZE 128
 
 void
-ivm_dbg_disAsmExec_c(ivm_exec_t *exec,
-					 const char *prefix,
-					 FILE *fp)
+ivm_dbg_disAsmExec(ivm_exec_t *exec,
+				   const char *prefix,
+				   FILE *fp)
 {
 	ivm_pc_t pc;
 	ivm_opcode_t op;

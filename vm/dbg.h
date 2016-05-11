@@ -5,7 +5,8 @@
 #include "type.h"
 #include "exec.h"
 
+/* output bytecodes in a readable form */
 void
-ivm_dbg_disAsmExec_c(ivm_exec_t *exec, const char *prefix, FILE *fp);
+ivm_dbg_disAsmExec(ivm_exec_t *exec, const char *prefix, FILE *fp);
 
 #endif

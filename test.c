@@ -77,6 +77,8 @@ int main()
 	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerExec(state, exec4));
 
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "this is exec4");
+	ivm_exec_addCode(exec4, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec4, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "now print in_closure");
 	ivm_exec_addCode(exec4, IVM_OP(GET_CONTEXT_SLOT), "$s", "in_closure");
 	ivm_exec_addCode(exec4, IVM_OP(PRINT_NUM), "");
@@ -181,22 +183,22 @@ int main()
 #endif
 
 	fprintf(stderr, "disasm exec1:\n");
-	ivm_dbg_disAsmExec_c(exec1, "  ", stderr);
+	ivm_dbg_disAsmExec(exec1, "  ", stderr);
 
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "disasm exec2:\n");
-	ivm_dbg_disAsmExec_c(exec2, "  ", stderr);
+	ivm_dbg_disAsmExec(exec2, "  ", stderr);
 
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "disasm exec3:\n");
-	ivm_dbg_disAsmExec_c(exec3, "  ", stderr);
+	ivm_dbg_disAsmExec(exec3, "  ", stderr);
 
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "disasm exec4:\n");
-	ivm_dbg_disAsmExec_c(exec4, "  ", stderr);
+	ivm_dbg_disAsmExec(exec4, "  ", stderr);
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
