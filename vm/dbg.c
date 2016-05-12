@@ -4,6 +4,8 @@
 #include "op.h"
 #include "byte.h"
 #include "exec.h"
+#include "vm.h"
+#include "gc/heap.h"
 
 #define STRING_BUF_SIZE 128
 
@@ -81,6 +83,51 @@ ivm_dbg_disAsmExec(ivm_exec_t *exec,
 		}
 		fprintf(fp, "\n");
 	}
+
+	return;
+}
+
+#define B2MB(val) (val / (2 << 20))
+
+static
+void
+ivm_dbg_printHeap(ivm_heap_t *heap,
+				  const char *prefix,
+				  FILE *fp)
+{
+	ivm_size_t bcount = IVM_HEAP_GET(heap, BLOCK_COUNT),
+			   bsize = IVM_HEAP_GET(heap, BLOCK_SIZE),
+			   *curs = IVM_HEAP_GET(heap, CUR_SIZE),
+			   size = 0, i;
+
+	fprintf(fp, "%sblock size: %ldMB\n", prefix, B2MB(bsize));
+	fprintf(fp, "%sblock count: %ld\n", prefix, bcount);
+	fprintf(fp, "%susage:\n", prefix);
+
+	for (i = 0; i < bcount; i++) {
+		fprintf(fp, "%s" IVM_DBG_TAB "block %ld: %ld in %ld(%.2f%%)\n",
+				prefix, i + 1, curs[i], bsize,
+				((double)curs[i]) / bsize * 100);
+		size += curs[i];
+	}
+	fprintf(fp, "%s" IVM_DBG_TAB "(total: %ld in %ld(%.2f%%))\n",
+			prefix, size, bsize,
+			((double)size) / bsize * 100);
+
+	return;
+}
+
+void
+ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp)
+{
+	ivm_heap_t *cur = IVM_VMSTATE_GET(state, CUR_HEAP);
+	ivm_heap_t *empty = IVM_VMSTATE_GET(state, EMPTY_HEAP);
+
+	fprintf(fp, "current heap:\n");
+	ivm_dbg_printHeap(cur, IVM_DBG_TAB, fp);
+
+	fprintf(fp, "\nempty heap\n");
+	ivm_dbg_printHeap(empty, IVM_DBG_TAB, fp);
 
 	return;
 }

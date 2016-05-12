@@ -36,6 +36,34 @@ typedef enum {
 	IVM_OP(LAST)
 } ivm_opcode_t;
 
+#define IVM_OP_OFFSET_NOP					(1)
+#define IVM_OP_OFFSET_NEW_NULL				(1)
+#define IVM_OP_OFFSET_NEW_OBJ				(1)
+#define IVM_OP_OFFSET_NEW_NUM_i				(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_NEW_NUM_s				(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_NEW_FUNC				(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_GET_SLOT				(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_SET_SLOT				(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_GET_CONTEXT_SLOT		(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_SET_CONTEXT_SLOT		(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_SET_ARG				(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_POP					(1)
+#define IVM_OP_OFFSET_DUP					(1)
+#define IVM_OP_OFFSET_PRINT_OBJ				(1)
+#define IVM_OP_OFFSET_PRINT_NUM				(1)
+#define IVM_OP_OFFSET_PRINT_TYPE			(1)
+#define IVM_OP_OFFSET_INVOKE				(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_YIELD					(1)
+#define IVM_OP_OFFSET_JUMP_i				(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_JUMP_IF_TRUE_i		(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_JUMP_IF_FALSE_i		(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_TEST1					(1)
+#define IVM_OP_OFFSET_TEST2					(4)
+#define IVM_OP_OFFSET_TEST3					(IVM_STRING_POOL_INDEX_SIZE + 1)
+#define IVM_OP_OFFSET_LAST					(1)
+
+#define IVM_OP_OFFSET_OF(op) IVM_OP_OFFSET_##op
+
 typedef enum {
 	IVM_ACTION_NONE = 0,
 	IVM_ACTION_BREAK,

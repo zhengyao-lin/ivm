@@ -73,13 +73,13 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
 ACTION_BREAK:
 			
 			tmp_info = ivm_call_stack_pop(coro->call_st);
-			
-			if ((ivm_vmstack_size(coro->stack)
-				 - IVM_CALLER_INFO_GET(tmp_info, STACK_TOP)) > 0) {
-				ret = ivm_vmstack_pop(coro->stack);
-			}
 
 			if (tmp_info) {
+				if ((ivm_vmstack_size(coro->stack)
+					 - IVM_CALLER_INFO_GET(tmp_info, STACK_TOP)) > 0) {
+					ret = ivm_vmstack_pop(coro->stack);
+				}
+		
 				ivm_runtime_restore(coro->runtime, coro, tmp_info);
 				ivm_caller_info_free(tmp_info);
 				ivm_vmstack_push(coro->stack, ret ? ret : IVM_NULL_OBJ(state));

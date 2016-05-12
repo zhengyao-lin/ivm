@@ -157,9 +157,12 @@ ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state)
 {
+	ivm_object_t *ret = IVM_NULL;
+
 	while (ivm_coro_list_size(state->coro_list) > 0) {
-		ivm_coro_resume(ivm_coro_list_at(state->coro_list,
-										 state->cur_coro), state);
+		ret = ivm_coro_resume(ivm_coro_list_at(state->coro_list,
+											   state->cur_coro),
+							  state, ret);
 		if (!ivm_vmstate_wrapCoro(state))
 			break;
 	}

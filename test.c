@@ -31,7 +31,7 @@ void profile_output()
 	printf("\n***performance profile***\n\n");
 	printf("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
 	printf("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
-	printf("gc per program: %f%%\n", (double)ivm_perf_gc_time / prog * 100);
+	printf("gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
 	printf("\n***performance profile***\n\n");
 
 	return;
@@ -41,6 +41,7 @@ void profile_output()
 
 int main()
 {
+	int i;
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2;
 	ivm_exec_t *exec1, *exec2, *exec3, *exec4;
@@ -85,11 +86,13 @@ int main()
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1022);
 
-	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
-	ivm_exec_addCode(exec1, IVM_OP(DUP), "");
-	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
-	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
-	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+	for (i = 0; i < 1; i++) {
+		ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+		ivm_exec_addCode(exec1, IVM_OP(DUP), "");
+		ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
+		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
+		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+	}
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -128,7 +131,7 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
-	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
+	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 9990);
 	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST2), "$i8$i8$i8", 0x7f, 0xff, 0x7f);
@@ -140,6 +143,7 @@ int main()
 	ivm_exec_addCode(exec2, IVM_OP(YIELD), "");
 	ivm_exec_addCode(exec2, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec2, IVM_OP(YIELD), "");
+	ivm_exec_addCode(exec2, IVM_OP(PRINT_NUM), "");
 	ivm_exec_addCode(exec2, IVM_OP(TEST3), "$s", "hello?");
 
 	printf("obj1: %p\n", (void *)obj1);
@@ -182,6 +186,9 @@ int main()
 	profile_output();
 #endif
 
+	ivm_dbg_heapState(state, stderr);
+
+#if 0
 	fprintf(stderr, "disasm exec1:\n");
 	ivm_dbg_disAsmExec(exec1, "  ", stderr);
 
@@ -199,6 +206,7 @@ int main()
 
 	fprintf(stderr, "disasm exec4:\n");
 	ivm_dbg_disAsmExec(exec4, "  ", stderr);
+#endif
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
 	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);

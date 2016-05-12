@@ -41,12 +41,14 @@
 #define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
-#define OP_MAPPING(op, name, args, offset) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), (offset) }
+#define OP_OFFSET IVM_OP_OFFSET_OF
+#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), OP_OFFSET(op) }
 
 OP_PROC(NOP)
 {
 	printf("NOP\n");
-	PC++;
+	PC += OP_OFFSET(NOP);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -54,14 +56,16 @@ OP_PROC(NEW_NULL)
 {
 	printf("new null\n");
 	STACK_PUSH(IVM_NULL_OBJ(STATE));
-	PC++;
+	PC += OP_OFFSET(NEW_NULL);
+
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(NEW_OBJ)
 {
 	STACK_PUSH(ivm_object_new(STATE));
-	PC++;
+	PC += OP_OFFSET(NEW_OBJ);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -69,13 +73,14 @@ OP_PROC(NEW_NUM_i)
 {
 	ivm_sint32_t val = ivm_byte_readSInt32(ARG_START);
 	STACK_PUSH(ivm_numeric_new(STATE, val));
-	PC += sizeof(val) + 1;
+	PC += OP_OFFSET(NEW_NUM_i);
+
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(NEW_NUM_s)
 {
-	PC++;
+	PC += OP_OFFSET(NEW_NUM_s);
 	return IVM_ACTION_NONE;
 }
 
@@ -84,24 +89,11 @@ OP_PROC(NEW_FUNC)
 	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
 	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
 
-#if 0
-	ivm_sint32_t argc = ivm_byte_readSInt32(ARG_OFFSET(sizeof(exec_id))), i;
-	ivm_size_t size = sizeof(exec_id) + sizeof(argc), tmp;
-	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
-	ivm_param_list_t *param_list = argc ? ivm_param_list_new(argc) : IVM_NULL;
-
-	for (i = 0; i < argc; i++) {
-		ivm_param_list_add(param_list,
-						   (ivm_char_t *)
-						   ivm_byte_readStringFromPool(ARG_OFFSET(size), STRING_POOL));
-		size += tmp;
-	}
-#endif
-
 	STACK_PUSH(ivm_function_object_new_nc(STATE,
 										  ivm_function_new(CONTEXT, exec,
 														   IVM_INTSIG_NONE)));
-	PC += sizeof(exec_id) + 1;
+	PC += OP_OFFSET(NEW_FUNC);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -117,7 +109,8 @@ OP_PROC(GET_SLOT)
 		STACK_PUSH(ivm_object_getSlotValue(obj, STATE, key));
 	}
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
+	PC += OP_OFFSET(GET_SLOT);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -130,12 +123,14 @@ OP_PROC(SET_SLOT)
 
 	obj = STACK_POP();
 	val = STACK_POP();
+	
 	if (obj) {
 		ivm_object_setSlot(obj, STATE, key, val);
 	}
+	
 	STACK_PUSH(obj);
+	PC += OP_OFFSET(SET_SLOT);
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -145,8 +140,8 @@ OP_PROC(GET_CONTEXT_SLOT)
 	ivm_object_t *found = ivm_ctchain_search(CONTEXT, STATE, key);
 
 	STACK_PUSH(found ? found : IVM_UNDEFINED(STATE));
+	PC += OP_OFFSET(GET_CONTEXT_SLOT);
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
@@ -164,7 +159,8 @@ OP_PROC(SET_CONTEXT_SLOT)
 		ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
 	}
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
+	PC += OP_OFFSET(SET_CONTEXT_SLOT);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -177,7 +173,8 @@ OP_PROC(SET_ARG)
 							 ? STACK_POP()
 							 : IVM_UNDEFINED(STATE));
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
+	PC += OP_OFFSET(SET_ARG);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -185,7 +182,8 @@ OP_PROC(POP)
 {
 	CHECK_STACK(1);
 	STACK_POP();
-	PC++;
+	PC += OP_OFFSET(POP);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -193,7 +191,8 @@ OP_PROC(DUP)
 {
 	CHECK_STACK(1);
 	STACK_PUSH(STACK_TOP());
-	PC++;
+	PC += OP_OFFSET(DUP);
+
 	return IVM_ACTION_NONE;
 }
 
@@ -201,13 +200,11 @@ OP_PROC(PRINT_OBJ)
 {
 	ivm_object_t *obj;
 
-	/* printf("%ld, %ld\n", STACK_SIZE(), ivm_caller_info_stackTop(CALL_STACK_TOP())); */
-
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
 	printf("print: %p\n", (void *)obj);
-	PC++;
+	PC += OP_OFFSET(PRINT_OBJ);
 
 	return IVM_ACTION_NONE;
 }
@@ -223,7 +220,8 @@ OP_PROC(PRINT_NUM)
 		printf("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
 	else
 		printf("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
-	PC++;
+
+	PC += OP_OFFSET(PRINT_NUM);
 
 	return IVM_ACTION_NONE;
 }
@@ -236,7 +234,8 @@ OP_PROC(PRINT_TYPE)
 
 	obj = STACK_POP();
 	printf("type: %s\n", IVM_OBJECT_GET(obj, TYPE_NAME));
-	PC++;
+	
+	PC += OP_OFFSET(PRINT_TYPE);
 
 	return IVM_ACTION_NONE;
 }
@@ -252,7 +251,7 @@ OP_PROC(INVOKE)
 	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
 	args = STACK_CUT(arg_count);
 
-	PC += sizeof(arg_count) + 1;
+	PC += OP_OFFSET(INVOKE);
 
 	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
 
@@ -273,7 +272,8 @@ OP_PROC(INVOKE)
 OP_PROC(YIELD)
 {
 	CHECK_STACK(1);
-	PC++;
+	PC += OP_OFFSET(YIELD);
+
 	return IVM_ACTION_YIELD;
 }
 
@@ -292,7 +292,7 @@ OP_PROC(JUMP_IF_TRUE_i)
 		PC = addr;
 	} else {
 		printf("no jump true\n");
-		PC += sizeof(addr) + 1;
+		PC += OP_OFFSET(JUMP_IF_TRUE_i);
 	}
 
 	return IVM_ACTION_NONE;
@@ -307,7 +307,7 @@ OP_PROC(JUMP_IF_FALSE_i)
 		PC = addr;
 	} else {
 		printf("no jump false\n");
-		PC += sizeof(addr) + 1;
+		PC += OP_OFFSET(JUMP_IF_FALSE_i);
 	}
 
 	return IVM_ACTION_NONE;
@@ -315,26 +315,15 @@ OP_PROC(JUMP_IF_FALSE_i)
 
 OP_PROC(TEST1)
 {
-#if 0
-	ivm_exec_t *exec = ivm_exec_new();
-	ivm_function_t *func = ivm_function_new(IVM_NULL, exec, IVM_INTSIG_NONE);
-
-	ivm_exec_addCode(exec, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec, IVM_OP(PRINT), "");
-	ivm_exec_addCode(exec, IVM_OP(TEST2), "");
-	
-	PC++;
-	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
-#endif
 	printf("test1\n");
+	PC += OP_OFFSET(TEST1);
 
-	PC++;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(TEST2)
 { 
-	PC += 4;
+	PC += OP_OFFSET(TEST2);
 	return IVM_ACTION_NONE;
 }
 
@@ -342,46 +331,47 @@ OP_PROC(TEST3)
 {
 	printf("morning! this is test3\n");
 	printf("string argument: %s\n", ivm_byte_readStringFromPool(ARG_START, STRING_POOL));
+	PC += OP_OFFSET(TEST3);
 
-	PC += IVM_STRING_POOL_INDEX_SIZE + 1;
 	return IVM_ACTION_NONE;
 }
 
 OP_PROC(LAST)
 {
 	printf("LAST\n");
-	PC++;
+	PC += OP_OFFSET(LAST);
+
 	return IVM_ACTION_NONE;
 }
 
 static const
 ivm_op_table_t
 ivm_global_op_table[] = {
-	OP_MAPPING(NOP,					"nop",					"",				1),
-	OP_MAPPING(NEW_NULL,			"new_null",				"",				1),
-	OP_MAPPING(NEW_OBJ,				"new_obj",				"",				1),
-	OP_MAPPING(NEW_NUM_i,			"new_num_i",			"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(NEW_NUM_s,			"new_num_s",			"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(NEW_FUNC,			"new_func",				"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(GET_SLOT,			"get_slot",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(SET_SLOT,			"set_slot",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(GET_CONTEXT_SLOT,	"get_context_slot",		"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(SET_CONTEXT_SLOT,	"set_context_slot",		"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(SET_ARG,				"set_arg",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(POP,					"pop",					"",				1),
-	OP_MAPPING(DUP,					"dup",					"",				1),
-	OP_MAPPING(PRINT_OBJ,			"print_obj",			"",				1),
-	OP_MAPPING(PRINT_NUM,			"print_num",			"",				1),
-	OP_MAPPING(PRINT_TYPE,			"print_type",			"",				1),
-	OP_MAPPING(INVOKE,				"invoke",				"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(YIELD,				"yield",				"",				1),
-	OP_MAPPING(JUMP_i,				"jmp",					"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(JUMP_IF_TRUE_i,		"jmp_true",				"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(JUMP_IF_FALSE_i,		"jmp_false",			"$i32",			sizeof(ivm_sint32_t) + 1),
-	OP_MAPPING(TEST1,				"test1",				"",				1),
-	OP_MAPPING(TEST2,				"test2",				"$i8$i16",		4),
-	OP_MAPPING(TEST3,				"test3",				"$s",			IVM_STRING_POOL_INDEX_SIZE + 1),
-	OP_MAPPING(LAST,				"last",					"",				1)
+	OP_MAPPING(NOP,					"nop",					""),
+	OP_MAPPING(NEW_NULL,			"new_null",				""),
+	OP_MAPPING(NEW_OBJ,				"new_obj",				""),
+	OP_MAPPING(NEW_NUM_i,			"new_num_i",			"$i32"),
+	OP_MAPPING(NEW_NUM_s,			"new_num_s",			"$s"),
+	OP_MAPPING(NEW_FUNC,			"new_func",				"$i32"),
+	OP_MAPPING(GET_SLOT,			"get_slot",				"$s"),
+	OP_MAPPING(SET_SLOT,			"set_slot",				"$s"),
+	OP_MAPPING(GET_CONTEXT_SLOT,	"get_context_slot",		"$s"),
+	OP_MAPPING(SET_CONTEXT_SLOT,	"set_context_slot",		"$s"),
+	OP_MAPPING(SET_ARG,				"set_arg",				"$s"),
+	OP_MAPPING(POP,					"pop",					""),
+	OP_MAPPING(DUP,					"dup",					""),
+	OP_MAPPING(PRINT_OBJ,			"print_obj",			""),
+	OP_MAPPING(PRINT_NUM,			"print_num",			""),
+	OP_MAPPING(PRINT_TYPE,			"print_type",			""),
+	OP_MAPPING(INVOKE,				"invoke",				"$i32"),
+	OP_MAPPING(YIELD,				"yield",				""),
+	OP_MAPPING(JUMP_i,				"jmp",					"$i32"),
+	OP_MAPPING(JUMP_IF_TRUE_i,		"jmp_true",				"$i32"),
+	OP_MAPPING(JUMP_IF_FALSE_i,		"jmp_false",			"$i32"),
+	OP_MAPPING(TEST1,				"test1",				""),
+	OP_MAPPING(TEST2,				"test2",				"$i8$i16"),
+	OP_MAPPING(TEST3,				"test3",				"$s"),
+	OP_MAPPING(LAST,				"last",					"")
 };
 
 #if IVM_DEBUG
