@@ -28,11 +28,11 @@ void profile_output()
 	clock_t now = clock();
 	clock_t prog = now - ivm_perf_program_start;
 
-	printf("\n***performance profile***\n\n");
-	printf("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
-	printf("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
-	printf("gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
-	printf("\n***performance profile***\n\n");
+	fprintf(stderr, "\n***performance profile***\n\n");
+	fprintf(stderr, "program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
+	fprintf(stderr, "gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
+	fprintf(stderr, "gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
+	fprintf(stderr, "\n***performance profile***\n\n");
 
 	return;
 }
@@ -77,19 +77,13 @@ int main()
 	ivm_exec_addOp(exec3, IVM_OP(SET_CONTEXT_SLOT), "in_closure");
 	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerExec(state, exec4));
 
-	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "this is exec4");
-	ivm_exec_addCode(exec4, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec4, IVM_OP(YIELD), "");
-	ivm_exec_addCode(exec4, IVM_OP(TEST3), "$s", "now print in_closure");
-	ivm_exec_addCode(exec4, IVM_OP(GET_CONTEXT_SLOT), "$s", "in_closure");
-	ivm_exec_addCode(exec4, IVM_OP(PRINT_NUM), "");
-
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1022);
 
-	for (i = 0; i < 1; i++) {
-		ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
-		ivm_exec_addCode(exec1, IVM_OP(DUP), "");
-		ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
+	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
+
+	for (i = 0; i < 100; i++) {
+		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 	}
@@ -128,11 +122,11 @@ int main()
 	addr2 = ivm_exec_addCode(exec1, IVM_OP(NOP), "");
 	ivm_exec_rewriteArg(exec1, addr4, "$i32", addr2);
 	
-	ivm_exec_addCode(exec1, IVM_OP(PRINT_OBJ), "");
-	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
-	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
-	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 9990);
-	ivm_exec_addCode(exec1, IVM_OP(YIELD), "");
+	ivm_exec_addOp(exec1, IVM_OP(PRINT_OBJ));
+	ivm_exec_addOp(exec1, IVM_OP(NEW_OBJ));
+	ivm_exec_addOp(exec1, IVM_OP(YIELD));
+	ivm_exec_addOp(exec1, IVM_OP(NEW_NUM_i), 9990);
+	ivm_exec_addOp(exec1, IVM_OP(YIELD));
 	ivm_exec_addCode(exec1, IVM_OP(TEST1), "");
 	ivm_exec_addCode(exec1, IVM_OP(TEST2), "$i8$i8$i8", 0x7f, 0xff, 0x7f);
 
@@ -180,6 +174,7 @@ int main()
 #endif
 
 	/* start executing */
+	fprintf(stderr, "start\n");
 	ivm_vmstate_schedule(state);
 
 #if IVM_PERF_PROFILE
