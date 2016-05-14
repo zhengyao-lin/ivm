@@ -54,9 +54,9 @@ enum {
 
 typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
+	ivm_ctchain_t *closure;
 	union {
 		struct {
-			ivm_ctchain_t *closure;
 			ivm_exec_t *body;
 		} f;
 		ivm_native_function_t native;
@@ -68,21 +68,30 @@ ivm_function_t *
 ivm_function_new(ivm_ctchain_t *context,
 				 ivm_exec_t *body,
 				 ivm_signal_mask_t intsig);
+
 ivm_function_t *
-ivm_function_newNative(ivm_native_function_t func, ivm_signal_mask_t intsig);
+ivm_function_newNative(ivm_ctchain_t *context,
+					   ivm_native_function_t func,
+					   ivm_signal_mask_t intsig);
+
 void
 ivm_function_free(ivm_function_t *func);
+
 ivm_function_t *
 ivm_function_clone(ivm_function_t *func);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 
 struct ivm_runtime_t_tag *
-ivm_function_createRuntime(struct ivm_vmstate_t_tag *state,
-						   const ivm_function_t *func);
+ivm_function_createRuntime(const ivm_function_t *func,
+						   struct ivm_vmstate_t_tag *state);
 
-struct ivm_caller_info_t_tag *
+/* 1. save the current state(push caller info to call stack)
+ * 2. call runtime_invoke to rewrite environment of the function
+ */
+void
 ivm_function_invoke(const ivm_function_t *func,
+					struct ivm_vmstate_t_tag *state,
 					struct ivm_coro_t_tag *coro);
 
 ivm_object_t *

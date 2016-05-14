@@ -25,6 +25,7 @@ typedef enum {
 	IVM_OP(PRINT_OBJ),
 	IVM_OP(PRINT_NUM),
 	IVM_OP(PRINT_TYPE),
+	IVM_OP(PRINT_STR),
 	IVM_OP(INVOKE),
 	IVM_OP(YIELD),
 	IVM_OP(JUMP_i), /* _i: i32 argument */
@@ -52,6 +53,7 @@ typedef enum {
 #define IVM_OP_OFFSET_PRINT_OBJ				(1)
 #define IVM_OP_OFFSET_PRINT_NUM				(1)
 #define IVM_OP_OFFSET_PRINT_TYPE			(1)
+#define IVM_OP_OFFSET_PRINT_STR				(IVM_STRING_POOL_INDEX_SIZE + 1)
 #define IVM_OP_OFFSET_INVOKE				(sizeof(ivm_sint32_t) + 1)
 #define IVM_OP_OFFSET_YIELD					(1)
 #define IVM_OP_OFFSET_JUMP_i				(sizeof(ivm_sint32_t) + 1)

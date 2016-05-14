@@ -12,6 +12,17 @@ IVM_NATIVE_FUNC(test)
 	return IVM_NULL;
 }
 
+IVM_NATIVE_FUNC(call_func)
+{
+	ivm_function_t *func = IVM_AS(argv[0], ivm_function_object_t)->val;
+	printf("call function!!\n");
+
+	ivm_function_invoke(func, state, IVM_VMSTATE_GET(state, CUR_CORO));
+	ivm_coro_resume(IVM_VMSTATE_GET(state, CUR_CORO), state, IVM_NULL);
+
+	return IVM_NULL;
+}
+
 #if IVM_PERF_PROFILE
 
 extern clock_t ivm_perf_gc_time;
@@ -43,7 +54,7 @@ int main()
 {
 	int i;
 	ivm_vmstate_t *state;
-	ivm_object_t *obj1, *obj2;
+	ivm_object_t *obj1, *obj2, *obj3;
 	ivm_exec_t *exec1, *exec2, *exec3, *exec4;
 	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3;
@@ -52,8 +63,9 @@ int main()
 	ivm_string_pool_t *str_pool;
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
-	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
+	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
+	obj3 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
 	str_pool = ivm_string_pool_new();
 	exec1 = ivm_exec_new(str_pool);
 	exec2 = ivm_exec_new(str_pool);
@@ -64,17 +76,13 @@ int main()
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
+	ivm_object_setSlot(obj1, state, "call_func", obj3);
 	ivm_object_setSlot(obj2, state, "b", obj1);
 	ivm_object_setSlot(obj2, state, "c", obj1);
 	ivm_object_setSlot(obj2, state, "d", obj1);
 
 	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
-	ivm_exec_addOp(exec3, IVM_OP(SET_ARG), "arg");
-	ivm_exec_addOp(exec3, IVM_OP(GET_CONTEXT_SLOT), "arg");
-	ivm_exec_addOp(exec3, IVM_OP(PRINT_NUM));
-	ivm_exec_addOp(exec3, IVM_OP(NEW_NUM_i), 5252);
-	ivm_exec_addOp(exec3, IVM_OP(SET_CONTEXT_SLOT), "in_closure");
 	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerExec(state, exec4));
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1022);
@@ -82,11 +90,18 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
-		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
+		ivm_exec_addOp(exec1, IVM_OP(POP));
 	}
+
+	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "***************start******************");
+	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
+	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "call_func");
+	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
+	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
@@ -150,7 +165,7 @@ int main()
 	ivm_ctchain_addContext(chain, obj2);
 
 	/* init functions & coroutines */
-	func1 = ivm_function_newNative(IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
+	func1 = ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
 	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
 	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
 

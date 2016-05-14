@@ -240,11 +240,20 @@ OP_PROC(PRINT_TYPE)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(PRINT_STR)
+{
+	printf("%s\n", ivm_byte_readStringFromPool(ARG_START, STRING_POOL));
+	PC += OP_OFFSET(PRINT_STR);
+
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(INVOKE)
 {
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = ivm_byte_readSInt32(ARG_START);
 	ivm_vmstack_iterator_t args;
+	ivm_object_t *ret;
 
 	CHECK_STACK(arg_count + 1);
 
@@ -253,16 +262,13 @@ OP_PROC(INVOKE)
 
 	PC += OP_OFFSET(INVOKE);
 
-	ivm_call_stack_push(CALL_STACK, ivm_function_invoke(func, CORO));
+	ivm_function_invoke(func, STATE, CORO);
 
 	if (ivm_function_isNative(func)) {
-		ivm_function_callNative(func, STATE, CONTEXT,
-								IVM_FUNCTION_SET_ARG_2(arg_count, args));
+		ret = ivm_function_callNative(func, STATE, CONTEXT,
+									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
+		STACK_PUSH(ret ? ret : IVM_NULL_OBJ(STATE));
 	} else {
-		/*
-		ivm_function_setParam(func, STATE, CONTEXT,
-							  IVM_FUNCTION_SET_ARG_2(arg_count, args));
-		*/
 		STACK_INC(arg_count);
 	}
 
@@ -363,6 +369,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(PRINT_OBJ,			"print_obj",			""),
 	OP_MAPPING(PRINT_NUM,			"print_num",			""),
 	OP_MAPPING(PRINT_TYPE,			"print_type",			""),
+	OP_MAPPING(PRINT_STR,			"print_str",			"$s"),
 	OP_MAPPING(INVOKE,				"invoke",				"$i32"),
 	OP_MAPPING(YIELD,				"yield",				""),
 	OP_MAPPING(JUMP_i,				"jmp",					"$i32"),

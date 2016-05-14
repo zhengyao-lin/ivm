@@ -11,7 +11,7 @@ SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set compiler flags
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC -DIVM_DEBUG=1")
-# SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC -O3 -DIVM_DEBUG=0")
+# SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC -O3")
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

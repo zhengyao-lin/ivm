@@ -16,14 +16,18 @@
 
 #endif
 
+#define IVM_EXEC_INFO_HEAD \
+	ivm_pc_t pc; \
+	ivm_exec_t *exec; \
+	struct ivm_ctchain_t_tag *context;
+
 struct ivm_ctchain_t_tag;
+struct ivm_runtime_t_tag;
 
 typedef struct ivm_caller_info_t_tag {
-	ivm_exec_t *exec;
-	
+	IVM_EXEC_INFO_HEAD
+
 	ivm_size_t st_top;
-	ivm_pc_t pc;
-	struct ivm_ctchain_t_tag *context;
 } ivm_caller_info_t;
 
 #define IVM_CALLER_INFO_GET_EXEC(info) ((info) ? (info)->exec : IVM_NULL)
@@ -35,10 +39,8 @@ typedef struct ivm_caller_info_t_tag {
 #define IVM_CALLER_INFO_SET(obj, member, val) IVM_SET((obj), IVM_CALLER_INFO, member, (val))
 
 ivm_caller_info_t *
-ivm_caller_info_new(ivm_exec_t *exec,
-					ivm_size_t st_top,
-					ivm_pc_t pc,
-					struct ivm_ctchain_t_tag *context);
+ivm_caller_info_new(struct ivm_runtime_t_tag *runtime,
+					ivm_size_t st_top);
 void
 ivm_caller_info_free(ivm_caller_info_t *info);
 
