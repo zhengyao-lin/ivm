@@ -9,9 +9,22 @@ ADD_EXECUTABLE(test test.c)
 SET(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
-# set compiler flags
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC -DIVM_DEBUG=1")
-# SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC -O3")
+# set basic compile flags
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC")
+
+# set flags for different versions
+IF(VERSION STREQUAL "release")
+	MESSAGE(STATUS "Compile in release mode")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+ELSEIF(VERSION STREQUAL "debug")
+	MESSAGE(STATUS "Compile in debug mode")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
+ELSEIF(VERSION STREQUAL "")
+	MESSAGE(STATUS "Compile in debug mode(in default)")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
+ELSE()
+	MESSAGE(FATAL_ERROR "Unknown compile mode '${VERSION}'")
+ENDIF()
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
