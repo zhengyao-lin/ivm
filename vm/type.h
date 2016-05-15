@@ -42,9 +42,9 @@ typedef ivm_double_t	ivm_number_t;
 #define IVM_FUNCTION_OBJECT_T	4
 
 typedef ivm_size_t		ivm_pc_t;
-typedef void *			ivm_mark_t;
+typedef intptr_t		ivm_mark_t;
 
-#define IVM_MARK_INIT IVM_NULL
+#define IVM_MARK_INIT 0
 
 #define IVM_GET(obj, type, member) (IVM_NULL, type##_GET_##member(obj))
 #define IVM_SET(obj, type, member, val) (type##_SET_##member((obj), (val)))

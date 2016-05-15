@@ -70,9 +70,11 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
+#define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(obj)->mark)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
 #define IVM_OBJECT_SET_MARK(obj, val) ((obj)->mark = (val))
+#define IVM_OBJECT_SET_COPY(obj, val) ((obj)->mark = (ivm_mark_t)(val))
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))

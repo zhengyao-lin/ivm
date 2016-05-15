@@ -53,13 +53,13 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	ivm_traverser_t trav;
 
 	if (!obj) return IVM_NULL;
-	if (IVM_OBJECT_GET(obj, MARK) != IVM_NULL)
-		return IVM_OBJECT_GET(obj, MARK);
+	if (IVM_OBJECT_GET(obj, COPY) != IVM_NULL)
+		return IVM_OBJECT_GET(obj, COPY);
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
-	IVM_OBJECT_SET(ret, MARK, IVM_NULL); /* remove the new object's copy */
-	IVM_OBJECT_SET(obj, MARK, ret);
+	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
+	IVM_OBJECT_SET(obj, COPY, ret);
 
 	IVM_OBJECT_SET(ret, SLOTS, ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
 
@@ -158,12 +158,12 @@ ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
 	ivm_object_t *obj = IVM_CELL_GET(cell, OBJ);
 
 	if (obj) {
-		if (!IVM_OBJECT_GET(obj, MARK)) {
+		if (!IVM_OBJECT_GET(obj, COPY)) {
 			ivm_cell_removeFrom(cell, set);
 			ivm_cell_destruct(cell, state);
 		} else {
 			/* update reference */
-			IVM_CELL_SET(cell, OBJ, IVM_OBJECT_GET(obj, MARK));
+			IVM_CELL_SET(cell, OBJ, IVM_OBJECT_GET(obj, COPY));
 		}
 	}
 
