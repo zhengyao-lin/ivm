@@ -29,12 +29,10 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_string_iterator_t;
 #define ivm_string_list_new ivm_ptlist_new
 #define ivm_string_list_free ivm_ptlist_free
 
-ivm_size_t
-ivm_string_list_register(ivm_string_list_t *list,
-						 ivm_char_t *str);
+#define ivm_string_list_register ivm_ptlist_push
 
 #define ivm_string_list_at(list, i) ((ivm_char_t *)ivm_ptlist_at((list), (i)))
-#define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (str), IVM_STRCMP))
+#define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (void *)(str), IVM_STRCMP))
 
 #define IVM_STRING_LIST_EACHPTR(list, ptr) IVM_PTLIST_EACHPTR((list), (ptr), ivm_char_t *)
 
@@ -51,9 +49,10 @@ ivm_string_pool_new();
 void
 ivm_string_pool_free(ivm_string_pool_t *pool);
 
-#define ivm_string_pool_register(pool, str) \
-	(ivm_string_list_register((pool)->set, \
-							  IVM_STRDUP_HEAP((str), (pool)->heap)))
+ivm_size_t
+ivm_string_pool_register(ivm_string_pool_t *list,
+						 const ivm_char_t *str);
+
 #define ivm_string_pool_get(pool, i) (ivm_string_list_at((pool)->set, (i)))
 
 #endif

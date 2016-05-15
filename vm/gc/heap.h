@@ -10,6 +10,7 @@ struct ivm_vmstate_t_tag;
 typedef struct ivm_heap_t_tag {
 	ivm_size_t bcount;
 	ivm_size_t bsize;
+	ivm_size_t btop;
 	ivm_size_t *curs;
 	ivm_byte_t **blocks;
 } ivm_heap_t;

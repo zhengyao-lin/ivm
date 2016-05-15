@@ -49,19 +49,6 @@ ivm_strdup_heap(const ivm_char_t *src,
 	return ret;
 }
 
-ivm_size_t
-ivm_string_list_register(ivm_string_list_t *list,
-						 ivm_char_t *str)
-{
-	ivm_size_t ret = ivm_string_list_indexOf(list, str);
-
-	if (ret == (ivm_size_t)-1) {
-		ret = ivm_ptlist_push(list, str);
-	}
-
-	return ret;
-}
-
 ivm_string_pool_t *
 ivm_string_pool_new()
 {
@@ -85,4 +72,18 @@ ivm_string_pool_free(ivm_string_pool_t *pool)
 	}
 
 	return;
+}
+
+ivm_size_t
+ivm_string_pool_register(ivm_string_pool_t *pool,
+						 const ivm_char_t *str)
+{
+	ivm_size_t ret = ivm_string_list_indexOf(pool->set, str);
+
+	if (ret == (ivm_size_t)-1) {
+		ret = ivm_string_list_register(pool->set,
+									   IVM_STRDUP_HEAP(str, pool->heap));
+	}
+
+	return ret;
 }

@@ -18,6 +18,7 @@ ivm_heap_new(ivm_size_t bsize)
 
 	ret->bcount = 1;
 	ret->bsize = bsize;
+	ret->btop = 0;
 	ret->curs = MEM_ALLOC(sizeof(*ret->curs));
 	ret->blocks = MEM_ALLOC(sizeof(*ret->blocks));
 	
@@ -104,7 +105,7 @@ ivm_heap_hasSize(ivm_heap_t *heap, ivm_size_t size)
 {
 	ivm_size_t i;
 
-	for (i = 0; i < heap->bcount; i++) {
+	for (i = heap->btop; i < heap->bcount; i++) {
 		if (heap->bsize - heap->curs[i] >= size) {
 			return i + 1;
 		}

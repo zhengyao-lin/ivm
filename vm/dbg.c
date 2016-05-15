@@ -5,6 +5,7 @@
 #include "byte.h"
 #include "exec.h"
 #include "vm.h"
+#include "obj.h"
 #include "gc/heap.h"
 
 #define STRING_BUF_SIZE 128
@@ -130,4 +131,10 @@ ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp)
 	ivm_dbg_printHeap(empty, IVM_DBG_TAB, fp);
 
 	return;
+}
+
+void
+ivm_dbg_printObject(ivm_object_t *obj, FILE *fp)
+{
+	
 }
