@@ -20,8 +20,7 @@
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type; \
 	ivm_slot_table_t *slots; \
-	ivm_mark_t mark; \
-	struct ivm_object_t_tag *copy;
+	ivm_mark_t mark;
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
@@ -71,11 +70,9 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
-#define IVM_OBJECT_GET_COPY(obj) ((obj)->copy)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
 #define IVM_OBJECT_SET_MARK(obj, val) ((obj)->mark = (val))
-#define IVM_OBJECT_SET_COPY(obj, val) ((obj)->copy = (val))
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))

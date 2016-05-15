@@ -8,11 +8,10 @@
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
 
-typedef ivm_mark_t ivm_mark_period_t;
+/* typedef ivm_mark_t ivm_mark_period_t; */
 
 typedef struct ivm_collector_t_tag {
 	ivm_cell_set_t *des_log;
-	ivm_mark_period_t period;
 } ivm_collector_t;
 
 #define IVM_COLLECTOR_GET_PERIOD(collector) ((collector)->period)

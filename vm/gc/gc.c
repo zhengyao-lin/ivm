@@ -12,11 +12,6 @@
 #include "../vm.h"
 #include "../err.h"
 
-#define INC_PERIOD(collector) ((collector)->period++, \
-							   !(collector)->period \
-							   ? (collector)->period++ \
-							   : 0)
-
 ivm_collector_t *
 ivm_collector_new()
 {
@@ -25,7 +20,6 @@ ivm_collector_new()
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
 	ret->des_log = ivm_cell_set_new();
-	ret->period = 1;
 
 	return ret;
 }
@@ -57,20 +51,15 @@ ivm_collector_copyObject(ivm_object_t *obj,
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
-	ivm_mark_period_t period = IVM_COLLECTOR_GET(arg->collector, PERIOD);
 
-	if (!obj
-		|| IVM_OBJECT_GET(obj, MARK) == period) {
-		/* NULL object or has been marked */
-		return obj ? IVM_OBJECT_GET(obj, COPY) : IVM_NULL;
-	}
-
-	IVM_OBJECT_SET(obj, MARK, period);
+	if (!obj) return IVM_NULL;
+	if (IVM_OBJECT_GET(obj, MARK) != IVM_NULL)
+		return IVM_OBJECT_GET(obj, MARK);
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
-	IVM_OBJECT_SET(ret, COPY, ret);
-	IVM_OBJECT_SET(obj, COPY, ret);
+	IVM_OBJECT_SET(ret, MARK, IVM_NULL); /* remove the new object's copy */
+	IVM_OBJECT_SET(obj, MARK, ret);
 
 	IVM_OBJECT_SET(ret, SLOTS, ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
 
@@ -169,13 +158,12 @@ ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
 	ivm_object_t *obj = IVM_CELL_GET(cell, OBJ);
 
 	if (obj) {
-		if (IVM_OBJECT_GET(obj, MARK)
-			!= IVM_COLLECTOR_GET(collector, PERIOD)) {
+		if (!IVM_OBJECT_GET(obj, MARK)) {
 			ivm_cell_removeFrom(cell, set);
 			ivm_cell_destruct(cell, state);
 		} else {
 			/* update reference */
-			IVM_CELL_SET(cell, OBJ, obj->copy);
+			IVM_CELL_SET(cell, OBJ, IVM_OBJECT_GET(obj, MARK));
 		}
 	}
 
@@ -222,7 +210,6 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
 	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
-	INC_PERIOD(collector);
 
 	ivm_vmstate_closeGCFlag(state);
 
