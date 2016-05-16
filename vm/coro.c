@@ -11,7 +11,8 @@
 ivm_coro_t *
 ivm_coro_new()
 {
-	ivm_coro_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_coro_t *ret = MEM_ALLOC(sizeof(*ret),
+								ivm_coro_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("coroutine"));
 
@@ -98,7 +99,9 @@ ACTION_BREAK:
 					goto END;
 				}
 
-				ivm_vmstack_push(tmp_stack, ret ? ret : IVM_NULL_OBJ(state));
+				ivm_vmstack_push(tmp_stack,
+								 ret ? ret
+								 	 : IVM_NULL_OBJ(state));
 			} else {
 				/* no more callee to restore, end coro */
 				ivm_coro_kill(coro);

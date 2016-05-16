@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "pub/com.h"
 #include "dbg.h"
 #include "op.h"
 #include "byte.h"
@@ -90,7 +91,7 @@ ivm_dbg_disAsmExec(ivm_exec_t *exec,
 
 #define B2MB(val) (val / (2 << 20))
 
-static
+IVM_PRIVATE
 void
 ivm_dbg_printHeap(ivm_heap_t *heap,
 				  const char *prefix,

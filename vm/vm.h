@@ -7,11 +7,13 @@
 #include "op.h"
 #include "coro.h"
 #include "context.h"
+#include "std/pool.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
 
-#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 22)
+#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 20) * 5)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
+#define IVM_DEFAULT_FUNCTION_POOL_SIZE (128)
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t *heaps[2];
@@ -21,6 +23,8 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
+
+	ivm_function_pool_t *func_pool;
 
 	ivm_int_t gc_flag; /* gc flag:
 						  > 0: open
@@ -66,6 +70,22 @@ void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size);
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state);
+
+#if IVM_USE_FUNCTION_POOL
+
+#define ivm_vmstate_allocFunc(state) \
+	(ivm_function_pool_alloc((state)->func_pool))
+#define ivm_vmstate_dumpFunc(state, func) \
+	(ivm_function_pool_dump((state)->func_pool, (func)))
+
+#else
+
+#define ivm_vmstate_allocFunc(state) \
+	(MEM_ALLOC(sizeof(ivm_function_t), ivm_function_t *))
+#define ivm_vmstate_dumpFunc(state, func) \
+	(MEM_FREE(func))
+
+#endif
 
 #if 0
 

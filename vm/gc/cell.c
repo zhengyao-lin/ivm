@@ -6,7 +6,7 @@
 ivm_cell_t *
 ivm_cell_new(ivm_object_t *obj)
 {
-	ivm_cell_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_cell_t *ret = MEM_ALLOC_INIT(sizeof(*ret), ivm_cell_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cell"));
 
@@ -87,7 +87,8 @@ ivm_cell_moveToSet(ivm_cell_t *cell, ivm_cell_set_t *from, ivm_cell_set_t *to)
 ivm_cell_set_t *
 ivm_cell_set_new()
 {
-	ivm_cell_set_t *ret = MEM_ALLOC_INIT(sizeof(*ret));
+	ivm_cell_set_t *ret = MEM_ALLOC_INIT(sizeof(*ret),
+										 ivm_cell_set_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cell set"));
 

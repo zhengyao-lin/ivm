@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "exec.h"
 #include "str.h"
 #include "byte.h"
@@ -8,7 +9,7 @@
 ivm_exec_t *
 ivm_exec_new(ivm_string_pool_t *pool)
 {
-	ivm_exec_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_exec_t *ret = MEM_ALLOC(sizeof(*ret), ivm_exec_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
@@ -16,7 +17,8 @@ ivm_exec_new(ivm_string_pool_t *pool)
 	ret->length = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	ret->cur = 0;
 	ret->code = MEM_ALLOC_INIT(sizeof(*ret->code)
-							   * IVM_DEFAULT_EXEC_BUFFER_SIZE);
+							   * IVM_DEFAULT_EXEC_BUFFER_SIZE,
+							   ivm_byte_t *);
 
 	IVM_ASSERT(ret->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("code buffer in executable"));
 
@@ -40,7 +42,8 @@ ivm_exec_compact(ivm_exec_t *exec)
 	if (exec && exec->length > exec->cur) {
 		exec->code = MEM_REALLOC(exec->code,
 								 sizeof(*exec->code)
-								 * exec->cur);
+								 * exec->cur,
+								 ivm_byte_t *);
 		IVM_ASSERT(exec->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted code in executable"));
 		exec->length = exec->cur;
 	}
@@ -53,7 +56,8 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 {
 	exec->code = MEM_REALLOC(exec->code,
 							 sizeof(*exec->code)
-							 * (exec->length + IVM_DEFAULT_EXEC_BUFFER_SIZE));
+							 * (exec->length + IVM_DEFAULT_EXEC_BUFFER_SIZE),
+							 ivm_byte_t *);
 	IVM_ASSERT(exec->code, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new code buffer in executable"));
 	exec->length += IVM_DEFAULT_EXEC_BUFFER_SIZE;
 
@@ -90,7 +94,7 @@ ivm_exec_addBuffer(ivm_exec_t *exec)
 		break; \
 	}
 
-static
+IVM_PRIVATE
 ivm_size_t
 ivm_exec_addCode_c(ivm_exec_t *exec, ivm_opcode_t op, const ivm_char_t *format, va_list args)
 {

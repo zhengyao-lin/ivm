@@ -1,6 +1,7 @@
 #include <time.h>
 #include "pub/mem.h"
 #include "pub/const.h"
+#include "pub/com.h"
 #include "gc.h"
 #include "cell.h"
 #include "../slot.h"
@@ -15,7 +16,8 @@
 ivm_collector_t *
 ivm_collector_new()
 {
-	ivm_collector_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_collector_t *ret = MEM_ALLOC(sizeof(*ret),
+									 ivm_collector_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
@@ -32,11 +34,13 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 	return;
 }
 
-static ivm_object_t *
+IVM_PRIVATE
+ivm_object_t *
 ivm_collector_copyObject(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg);
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travSlot(ivm_slot_t *slot,
 					   ivm_traverser_arg_t *arg)
 {
@@ -45,7 +49,8 @@ ivm_collector_travSlot(ivm_slot_t *slot,
 	return;
 }
 
-static ivm_object_t *
+IVM_PRIVATE
+ivm_object_t *
 ivm_collector_copyObject(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg)
 {
@@ -76,7 +81,8 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	return ret;
 }
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travContextChain(ivm_ctchain_t *chain,
 							   ivm_traverser_arg_t *arg)
 {
@@ -92,7 +98,8 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 	return;
 }
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travCallerInfo(ivm_caller_info_t *info,
 							 ivm_traverser_arg_t *arg)
 {
@@ -103,7 +110,8 @@ ivm_collector_travCallerInfo(ivm_caller_info_t *info,
 	return;
 }
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travRuntime(ivm_runtime_t *runtime,
 						  ivm_traverser_arg_t *arg)
 {
@@ -114,7 +122,8 @@ ivm_collector_travRuntime(ivm_runtime_t *runtime,
 	return;
 }
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travCoro(ivm_coro_t *coro,
 					   ivm_traverser_arg_t *arg)
 {
@@ -136,7 +145,8 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	return;
 }
 
-static void
+IVM_PRIVATE
+void
 ivm_collector_travState(ivm_collector_t *collector,
 						ivm_traverser_arg_t *arg)
 {
@@ -150,7 +160,7 @@ ivm_collector_travState(ivm_collector_t *collector,
 	return;
 }
 
-static
+IVM_PRIVATE
 void
 ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
 						   ivm_collector_t *collector, ivm_vmstate_t *state)

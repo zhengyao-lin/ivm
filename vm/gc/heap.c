@@ -1,4 +1,5 @@
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "heap.h"
 #include "type.h"
 #include "obj.h"
@@ -12,20 +13,23 @@
 ivm_heap_t *
 ivm_heap_new(ivm_size_t bsize)
 {
-	ivm_heap_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_heap_t *ret = MEM_ALLOC(sizeof(*ret),
+								ivm_heap_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap"));
 
 	ret->bcount = 1;
 	ret->bsize = bsize;
 	ret->btop = 0;
-	ret->curs = MEM_ALLOC(sizeof(*ret->curs));
-	ret->blocks = MEM_ALLOC(sizeof(*ret->blocks));
+	ret->curs = MEM_ALLOC(sizeof(*ret->curs),
+						  ivm_size_t *);
+	ret->blocks = MEM_ALLOC(sizeof(*ret->blocks),
+							ivm_byte_t **);
 	
 	IVM_ASSERT(ret->curs && ret->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
 
 	ret->curs[0] = 0;
-	ret->blocks[0] = MEM_ALLOC(bsize);
+	ret->blocks[0] = MEM_ALLOC(bsize, ivm_byte_t *);
 
 	return ret;
 }
@@ -45,23 +49,26 @@ ivm_heap_free(ivm_heap_t *heap)
 	return;
 }
 
-static
+IVM_PRIVATE
 ivm_size_t
 ivm_heap_addBlock(ivm_heap_t *heap)
 {
 	printf("new block added: %ld\n", heap->bcount);
 	heap->curs = MEM_REALLOC(heap->curs,
-							 sizeof(*heap->curs) * ++heap->bcount);
+							 sizeof(*heap->curs) * ++heap->bcount,
+							 ivm_size_t *);
 	heap->blocks = MEM_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks) * heap->bcount);
+							   sizeof(*heap->blocks) * heap->bcount,
+							   ivm_byte_t **);
 
 	heap->curs[heap->bcount - 1] = 0;
-	heap->blocks[heap->bcount - 1] = MEM_ALLOC(heap->bsize);
+	heap->blocks[heap->bcount - 1] = MEM_ALLOC(heap->bsize,
+											   ivm_byte_t *);
 
 	return heap->bcount;
 }
 
-static
+IVM_PRIVATE
 void *
 ivm_heap_allocAt(ivm_heap_t *heap, ivm_size_t idx, ivm_size_t size)
 {
@@ -118,7 +125,8 @@ void
 ivm_heap_reset(ivm_heap_t *heap)
 {
 	MEM_FREE(heap->curs);
-	heap->curs = MEM_ALLOC_INIT(sizeof(*heap->curs) * heap->bcount);
+	heap->curs = MEM_ALLOC_INIT(sizeof(*heap->curs) * heap->bcount,
+								ivm_size_t *);
 	return;
 }
 
@@ -140,8 +148,12 @@ ivm_heap_compact(ivm_heap_t *heap)
 	printf("compact to %ld\n", bcount);
 
 	heap->bcount = bcount;
-	heap->curs = MEM_REALLOC(heap->curs, sizeof(*heap->curs) * bcount);
-	heap->blocks = MEM_REALLOC(heap->blocks, sizeof(*heap->blocks) * bcount);
+	heap->curs = MEM_REALLOC(heap->curs,
+							 sizeof(*heap->curs) * bcount,
+							 ivm_size_t *);
+	heap->blocks = MEM_REALLOC(heap->blocks,
+							   sizeof(*heap->blocks) * bcount,
+							   ivm_byte_t **);
 
 	return;
 }

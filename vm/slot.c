@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "slot.h"
 #include "obj.h"
 #include "str.h"
@@ -9,7 +10,7 @@
 
 #define HEAP_STRDUP(state, str) (ivm_vmstate_alloc((state), sizeof(*(str)) * (IVM_STRLEN(str) + 1)))
 
-static
+IVM_PRIVATE
 ivm_slot_t *
 ivm_slot_new(ivm_vmstate_t *state,
 			 const ivm_char_t *key,
@@ -24,7 +25,7 @@ ivm_slot_new(ivm_vmstate_t *state,
 	return ret;
 }
 
-static
+IVM_PRIVATE
 ivm_slot_t *
 ivm_slot_copy(ivm_slot_t *slot, ivm_heap_t *heap)
 {

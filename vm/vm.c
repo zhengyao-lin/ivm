@@ -1,4 +1,5 @@
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "vm.h"
 #include "err.h"
 #include "obj.h"
@@ -13,7 +14,7 @@
 #define HEAP2(state) ((state)->heaps[1])
 #define HEAP_CUR HEAP1
 
-static
+IVM_PRIVATE
 ivm_type_t static_type_list[] = {
 	{
 		IVM_UNDEFINED_T, "undefined",
@@ -59,7 +60,8 @@ ivm_type_t static_type_list[] = {
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
-	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret),
+								   ivm_vmstate_t *);
 	ivm_type_t *tmp_type;
 	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
 
@@ -73,6 +75,9 @@ ivm_vmstate_new()
 	
 	ret->exec_list = ivm_exec_list_new();
 	ret->type_list = ivm_type_list_new();
+
+	ret->func_pool
+	= ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
 
 	for (i = 0; i < type_count; i++) {
 		tmp_type = ivm_type_new(static_type_list[i]);
@@ -96,6 +101,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_coro_list_free(state->coro_list);
 		ivm_exec_list_free(state->exec_list);
+
+		ivm_ptpool_free(state->func_pool);
 
 		ivm_type_list_foreach(state->type_list, ivm_type_free);
 		ivm_type_list_free(state->type_list);
@@ -131,7 +138,8 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 
 #define IS_AVAILABLE(state, i) (ivm_coro_isAsleep(ivm_coro_list_at((state)->coro_list, (i))))
 
-static ivm_bool_t
+IVM_PRIVATE
+ivm_bool_t
 ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
 {
 	ivm_size_t i;

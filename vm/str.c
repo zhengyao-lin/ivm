@@ -8,7 +8,7 @@ ivm_char_t *
 ivm_strdup(const ivm_char_t *src)
 {
 	ivm_size_t size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
-	ivm_char_t *ret = MEM_ALLOC(size);
+	ivm_char_t *ret = MEM_ALLOC(size, ivm_char_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new string"));
 
@@ -52,7 +52,8 @@ ivm_strdup_heap(const ivm_char_t *src,
 ivm_string_pool_t *
 ivm_string_pool_new()
 {
-	ivm_string_pool_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_string_pool_t *ret = MEM_ALLOC(sizeof(*ret),
+									   ivm_string_pool_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
 

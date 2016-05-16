@@ -6,4 +6,6 @@
 
 #define IVM_PERF_PROFILE 1
 
+#define IVM_USE_FUNCTION_POOL 1
+
 #endif

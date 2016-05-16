@@ -1,4 +1,5 @@
 #include "pub/const.h"
+#include "pub/com.h"
 #include "op.h"
 #include "coro.h"
 #include "vmstack.h"
@@ -90,7 +91,7 @@ OP_PROC(NEW_FUNC)
 	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
 
 	STACK_PUSH(ivm_function_object_new_nc(STATE,
-										  ivm_function_new(CONTEXT, exec,
+										  ivm_function_new(STATE, CONTEXT, exec,
 														   IVM_INTSIG_NONE)));
 	PC += OP_OFFSET(NEW_FUNC);
 
@@ -350,7 +351,7 @@ OP_PROC(LAST)
 	return IVM_ACTION_NONE;
 }
 
-static const
+IVM_PRIVATE const
 ivm_op_table_t
 ivm_global_op_table[] = {
 	OP_MAPPING(NOP,					"nop",					""),

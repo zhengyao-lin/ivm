@@ -1,4 +1,5 @@
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "func.h"
 #include "context.h"
 #include "runtime.h"
@@ -13,7 +14,7 @@
 	 ? ivm_ctchain_clone(context) \
 	 : IVM_NULL)
 
-static
+IVM_PRIVATE
 void
 ivm_function_init(ivm_function_t *func,
 				  ivm_ctchain_t *context,
@@ -28,7 +29,7 @@ ivm_function_init(ivm_function_t *func,
 	return;
 }
 
-static
+IVM_PRIVATE
 void
 ivm_function_initNative(ivm_function_t *func,
 						ivm_ctchain_t *context,
@@ -44,11 +45,12 @@ ivm_function_initNative(ivm_function_t *func,
 }
 
 ivm_function_t *
-ivm_function_new(ivm_ctchain_t *context,
+ivm_function_new(ivm_vmstate_t *state,
+				 ivm_ctchain_t *context,
 				 ivm_exec_t *body,
 				 ivm_signal_mask_t intsig)
 {
-	ivm_function_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
 
@@ -58,11 +60,12 @@ ivm_function_new(ivm_ctchain_t *context,
 }
 
 ivm_function_t *
-ivm_function_newNative(ivm_ctchain_t *context,
+ivm_function_newNative(ivm_vmstate_t *state,
+					   ivm_ctchain_t *context,
 					   ivm_native_function_t func,
 					   ivm_signal_mask_t intsig)
 {
-	ivm_function_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("native function"));
 
@@ -72,7 +75,8 @@ ivm_function_newNative(ivm_ctchain_t *context,
 }
 
 void
-ivm_function_free(ivm_function_t *func)
+ivm_function_free(ivm_function_t *func,
+				  ivm_vmstate_t *state)
 {
 	if (func) {
 		if (!func->is_native) {
@@ -80,16 +84,17 @@ ivm_function_free(ivm_function_t *func)
 			ivm_ctchain_free(func->closure);
 		}
 
-		MEM_FREE(func);
+		ivm_vmstate_dumpFunc(state, func);
 	}
 
 	return;
 }
 
 ivm_function_t *
-ivm_function_clone(ivm_function_t *func)
+ivm_function_clone(ivm_function_t *func,
+				   ivm_vmstate_t *state)
 {
-	ivm_function_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cloned function"));
 
@@ -99,7 +104,7 @@ ivm_function_clone(ivm_function_t *func)
 	return ret;
 }
 
-static
+IVM_PRIVATE
 void
 ivm_function_invoke_c(const ivm_function_t *func,
 					  ivm_vmstate_t *state,
@@ -188,7 +193,7 @@ ivm_function_object_destructor(ivm_object_t *obj,
 {
 	ivm_function_t *func = IVM_AS(obj, ivm_function_object_t)->val;
 	
-	ivm_function_free(func);
+	ivm_function_free(func, state);
 
 	return;
 }
@@ -200,7 +205,7 @@ ivm_function_object_new(ivm_vmstate_t *state, ivm_function_t *func)
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ret->val = ivm_function_clone(func);
+	ret->val = ivm_function_clone(func, state);
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
 	return IVM_AS_OBJ(ret);

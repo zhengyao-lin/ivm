@@ -5,6 +5,7 @@
 #include "vm/dbg.h"
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
+#include "vm/std/pool.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -50,7 +51,7 @@ void profile_output()
 
 #endif
 
-int main()
+int test_vm()
 {
 	int i;
 	ivm_vmstate_t *state;
@@ -63,9 +64,9 @@ int main()
 	ivm_string_pool_t *str_pool;
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
-	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
+	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
-	obj3 = ivm_function_object_new_nc(state, ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
+	obj3 = ivm_function_object_new_nc(state, ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
 	str_pool = ivm_string_pool_new();
 	exec1 = ivm_exec_new(str_pool);
 	exec2 = ivm_exec_new(str_pool);
@@ -90,7 +91,7 @@ int main()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 100; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -165,9 +166,9 @@ int main()
 	ivm_ctchain_addContext(chain, obj2);
 
 	/* init functions & coroutines */
-	func1 = ivm_function_newNative(IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
-	func2 = ivm_function_new(chain, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(chain, exec2, IVM_INTSIG_NONE);
+	func1 = ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
+	func2 = ivm_function_new(state, chain, exec1, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(state, chain, exec2, IVM_INTSIG_NONE);
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
@@ -219,12 +220,31 @@ int main()
 #endif
 
 	ivm_coro_free(coro1); ivm_coro_free(coro2);
-	ivm_function_free(func1); ivm_function_free(func2); ivm_function_free(func3);
+	ivm_function_free(func1, state);
+	ivm_function_free(func2, state);
+	ivm_function_free(func3, state);
 	ivm_ctchain_free(chain);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_exec_free(exec3); ivm_exec_free(exec4);
 	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
+
+	return 0;
+}
+
+int main()
+{
+	test_vm();
+
+#if 0
+	ivm_ptpool_t *pool = ivm_ptpool_new(2, sizeof(ivm_function_t));
+
+	ivm_function_t *f1 = ivm_ptpool_alloc(pool);
+	ivm_function_t *f2 = ivm_ptpool_alloc(pool);
+	ivm_function_t *f3 = ivm_ptpool_alloc(pool);
+
+	ivm_ptpool_free(pool);
+#endif
 
 	return 0;
 }

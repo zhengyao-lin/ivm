@@ -35,7 +35,8 @@ ivm_byte_newSInt8(ivm_sint8_t num)
 {
 	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint8_t)
-								   / sizeof(*ret)));
+								   / sizeof(*ret)),
+								ivm_byte_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 8"));
 
@@ -49,7 +50,8 @@ ivm_byte_newSInt16(ivm_sint16_t num)
 {
 	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint16_t)
-								   / sizeof(*ret)));
+								   / sizeof(*ret)),
+								ivm_byte_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 16"));
 
@@ -63,7 +65,8 @@ ivm_byte_newSInt32(ivm_sint32_t num)
 {
 	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint32_t)
-								   / sizeof(*ret)));
+								   / sizeof(*ret)),
+								ivm_byte_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 32"));
 
@@ -77,7 +80,8 @@ ivm_byte_newSInt64(ivm_sint64_t num)
 {
 	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint64_t)
-								   / sizeof(*ret)));
+								   / sizeof(*ret)),
+								ivm_byte_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("byte for signed integer of size 64"));
 

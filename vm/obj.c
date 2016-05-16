@@ -1,32 +1,16 @@
 #include "pub/mem.h"
+#include "pub/com.h"
 #include "obj.h"
 #include "slot.h"
 #include "vm.h"
 #include "err.h"
 #include "gc/gc.h"
 
-#if 0
-
-ivm_type_t *
-ivm_type_new(ivm_type_tag_t tag, ivm_destructor_t des, ivm_marker_t marker)
-{
-	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret));
-
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
-
-	ret->tag = tag;
-	ret->des = des;
-	ret->marker = marker;
-
-	return ret;
-}
-
-#endif
-
 ivm_type_t *
 ivm_type_new(ivm_type_t type)
 {
-	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret),
+								ivm_type_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
 
@@ -149,7 +133,7 @@ ivm_object_getSlot(ivm_object_t *obj,
 	return ivm_slot_table_findSlot(obj->slots, state, key);
 }
 
-static
+IVM_PRIVATE
 void
 ivm_object_printSlots_proc(ivm_slot_t *slot, void *arg)
 {

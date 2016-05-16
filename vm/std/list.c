@@ -5,7 +5,8 @@
 ivm_ptlist_t *
 ivm_ptlist_new_c(ivm_size_t buf_size)
 {
-	ivm_ptlist_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_ptlist_t *ret = MEM_ALLOC(sizeof(*ret),
+								  ivm_ptlist_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist"));
 
@@ -15,7 +16,8 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 
 	ret->cur = 0;
 	ret->lst = MEM_ALLOC_INIT(sizeof(*ret->lst)
-							  * ret->buf_size);
+							  * ret->buf_size,
+							  void **);
 
 	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
 
@@ -38,7 +40,8 @@ ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
 	ptlist->lst = MEM_REALLOC(ptlist->lst,
 							  sizeof(*ptlist->lst)
-							  * (ptlist->alloc + ptlist->buf_size));
+							  * (ptlist->alloc + ptlist->buf_size),
+							  void **);
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
 	ptlist->alloc += ptlist->buf_size;
 
@@ -94,7 +97,8 @@ void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 {
 	ptlist->lst = MEM_REALLOC(ptlist->lst,
-							  sizeof(*ptlist->lst) * ptlist->cur);
+							  sizeof(*ptlist->lst) * ptlist->cur,
+							  void **);
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted pointer list"));
 	ptlist->alloc = ptlist->cur;
 

@@ -5,6 +5,7 @@
 #include "context.h"
 #include "exec.h"
 #include "obj.h"
+#include "std/pool.h"
 
 #define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
@@ -24,7 +25,7 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											   ivm_ctchain_t *context,
 											   IVM_FUNCTION_COMMON_ARG);
 
-#define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)(\
+#define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)( \
 											struct ivm_vmstate_t_tag *state, \
 											ivm_ctchain_t *context, ivm_object_t *base, \
 											ivm_argc_t argc, ivm_object_t **argv)
@@ -65,20 +66,24 @@ typedef struct ivm_function_t_tag {
 } ivm_function_t;
 
 ivm_function_t *
-ivm_function_new(ivm_ctchain_t *context,
+ivm_function_new(struct ivm_vmstate_t_tag *state,
+				 ivm_ctchain_t *context,
 				 ivm_exec_t *body,
 				 ivm_signal_mask_t intsig);
 
 ivm_function_t *
-ivm_function_newNative(ivm_ctchain_t *context,
+ivm_function_newNative(struct ivm_vmstate_t_tag *state,
+					   ivm_ctchain_t *context,
 					   ivm_native_function_t func,
 					   ivm_signal_mask_t intsig);
 
 void
-ivm_function_free(ivm_function_t *func);
+ivm_function_free(ivm_function_t *func,
+				  struct ivm_vmstate_t_tag *state);
 
 ivm_function_t *
-ivm_function_clone(ivm_function_t *func);
+ivm_function_clone(ivm_function_t *func,
+				   struct ivm_vmstate_t_tag *state);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 
@@ -126,5 +131,12 @@ ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
 void
 ivm_function_object_traverser(ivm_object_t *obj,
 							  struct ivm_traverser_arg_t_tag *arg);
+
+typedef ivm_ptpool_t ivm_function_pool_t;
+
+#define ivm_function_pool_new(count) (ivm_ptpool_new(sizeof(ivm_function_t), (count)))
+#define ivm_function_pool_free ivm_ptpool_free
+#define ivm_function_pool_alloc(pool) ((ivm_function_t *)ivm_ptpool_alloc(pool))
+#define ivm_function_pool_dump ivm_ptpool_dump
 
 #endif

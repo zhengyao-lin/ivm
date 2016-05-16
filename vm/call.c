@@ -8,7 +8,8 @@ ivm_caller_info_t *
 ivm_caller_info_new(ivm_runtime_t *runtime,
 					ivm_size_t st_top)
 {
-	ivm_caller_info_t *ret = MEM_ALLOC(sizeof(*ret));
+	ivm_caller_info_t *ret = MEM_ALLOC(sizeof(*ret),
+									   ivm_caller_info_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("caller info"));
 

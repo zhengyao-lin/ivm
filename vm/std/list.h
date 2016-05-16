@@ -2,6 +2,7 @@
 #define _IVM_VM_STD_LIST_H_
 
 #include "pub/const.h"
+#include "vm/type.h"
 
 #if IVM_DEBUG
 
