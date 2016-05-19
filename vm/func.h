@@ -14,7 +14,7 @@
 #define IVM_FUNCTION_SET_ARG_3(base, argc, argv) (base), (argc), (argv)
 
 struct ivm_vmstate_t_tag;
-struct ivm_caller_info_t_tag;
+struct ivm_frame_t_tag;
 struct ivm_coro_t_tag;
 struct ivm_runtime_t_tag;
 struct ivm_traverser_arg_t_tag;
@@ -91,7 +91,7 @@ struct ivm_runtime_t_tag *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   struct ivm_vmstate_t_tag *state);
 
-/* 1. save the current state(push caller info to call stack)
+/* 1. save the current state(push frame to frame stack)
  * 2. call runtime_invoke to rewrite environment of the function
  */
 void
@@ -134,7 +134,7 @@ ivm_function_object_traverser(ivm_object_t *obj,
 
 typedef ivm_ptpool_t ivm_function_pool_t;
 
-#define ivm_function_pool_new(count) (ivm_ptpool_new(sizeof(ivm_function_t), (count)))
+#define ivm_function_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_function_t)))
 #define ivm_function_pool_free ivm_ptpool_free
 #define ivm_function_pool_alloc(pool) ((ivm_function_t *)ivm_ptpool_alloc(pool))
 #define ivm_function_pool_dump ivm_ptpool_dump

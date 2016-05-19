@@ -9,20 +9,21 @@
 #include "gc/gc.h"
 #include "err.h"
 
-#define CLOSURE_CONTEXT(origin)  \
+#define CLOSURE_CONTEXT(origin, state)  \
 	((origin) \
-	 ? ivm_ctchain_clone(context) \
+	 ? ivm_ctchain_clone((context), (state)) \
 	 : IVM_NULL)
 
 IVM_PRIVATE
 void
-ivm_function_init(ivm_function_t *func,
+ivm_function_init(ivm_vmstate_t *state,
+				  ivm_function_t *func,
 				  ivm_ctchain_t *context,
 				  ivm_exec_t *body,
 				  ivm_signal_mask_t intsig)
 {
 	func->is_native = IVM_FALSE;
-	func->closure = CLOSURE_CONTEXT(context);
+	func->closure = CLOSURE_CONTEXT(context, state);
 	func->u.f.body = body;
 	func->intsig = intsig;
 
@@ -31,13 +32,14 @@ ivm_function_init(ivm_function_t *func,
 
 IVM_PRIVATE
 void
-ivm_function_initNative(ivm_function_t *func,
+ivm_function_initNative(ivm_vmstate_t *state,
+					    ivm_function_t *func,
 						ivm_ctchain_t *context,
 						ivm_native_function_t native,
 						ivm_signal_mask_t intsig)
 {
 	func->is_native = IVM_TRUE;
-	func->closure = CLOSURE_CONTEXT(context);
+	func->closure = CLOSURE_CONTEXT(context, state);
 	func->u.native = native;
 	func->intsig = intsig;
 
@@ -54,7 +56,7 @@ ivm_function_new(ivm_vmstate_t *state,
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
 
-	ivm_function_init(ret, context, body, intsig);
+	ivm_function_init(state, ret, context, body, intsig);
 
 	return ret;
 }
@@ -69,7 +71,7 @@ ivm_function_newNative(ivm_vmstate_t *state,
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("native function"));
 
-	ivm_function_initNative(ret, context, func, intsig);
+	ivm_function_initNative(state, ret, context, func, intsig);
 
 	return ret;
 }
@@ -81,7 +83,7 @@ ivm_function_free(ivm_function_t *func,
 	if (func) {
 		if (!func->is_native) {
 			/* ivm_param_list_free(func->u.f.param_list); */
-			ivm_ctchain_free(func->closure);
+			ivm_ctchain_free(func->closure, state);
 		}
 
 		ivm_vmstate_dumpFunc(state, func);
@@ -99,7 +101,7 @@ ivm_function_clone(ivm_function_t *func,
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cloned function"));
 
 	MEM_COPY(ret, func, sizeof(*ret));
-	ret->closure = ivm_ctchain_clone(ret->closure);
+	ret->closure = ivm_ctchain_clone(ret->closure, state);
 
 	return ret;
 }
@@ -111,10 +113,11 @@ ivm_function_invoke_c(const ivm_function_t *func,
 					  ivm_runtime_t *runtime)
 {
 	if (func->is_native) {
-		ivm_runtime_invoke(runtime, IVM_NULL, func->closure);
+		ivm_runtime_invoke(runtime, state, IVM_NULL, func->closure);
 	} else {
-		ivm_runtime_invoke(runtime, func->u.f.body, func->closure);
+		ivm_runtime_invoke(runtime, state, func->u.f.body, func->closure);
 		ivm_ctchain_addContext(IVM_RUNTIME_GET(runtime, CONTEXT),
+							   state,
 							   ivm_context_new(state));
 	}
 
@@ -125,7 +128,7 @@ ivm_runtime_t *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state)
 {
-	ivm_runtime_t *ret = ivm_runtime_new();
+	ivm_runtime_t *ret = ivm_runtime_new(state);
 
 	ivm_function_invoke_c(func, state, ret);
 
@@ -138,10 +141,10 @@ ivm_function_invoke(const ivm_function_t *func,
 					ivm_coro_t *coro)
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_caller_info_t *cur = ivm_runtime_getCallerInfo(runtime, coro);
+	ivm_frame_t *cur = ivm_runtime_getFrame(runtime, state, coro);
 
 	ivm_function_invoke_c(func, state, runtime);
-	ivm_call_stack_push(IVM_CORO_GET(coro, CALL_STACK), cur);
+	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), cur);
 
 	return;
 }

@@ -13,7 +13,10 @@
 
 #define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 20) * 5)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
-#define IVM_DEFAULT_FUNCTION_POOL_SIZE (128)
+
+#define IVM_DEFAULT_FUNCTION_POOL_SIZE (1024)
+#define IVM_DEFAULT_CONTEXT_POOL_SIZE (1024)
+#define IVM_DEFAULT_FRAME_POOL_SIZE (1024)
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t *heaps[2];
@@ -25,6 +28,8 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_type_list_t *type_list;
 
 	ivm_function_pool_t *func_pool;
+	ivm_context_pool_t *ct_pool;
+	ivm_frame_pool_t *fr_pool;
 
 	ivm_int_t gc_flag; /* gc flag:
 						  > 0: open
@@ -71,6 +76,7 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size);
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 
+/* function pool */
 #if IVM_USE_FUNCTION_POOL
 
 #define ivm_vmstate_allocFunc(state) \
@@ -84,6 +90,40 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 	(MEM_ALLOC(sizeof(ivm_function_t), ivm_function_t *))
 #define ivm_vmstate_dumpFunc(state, func) \
 	(MEM_FREE(func))
+
+#endif
+
+/* context pool */
+#if IVM_USE_CONTEXT_POOL
+
+#define ivm_vmstate_allocContext(state) \
+	(ivm_context_pool_alloc((state)->ct_pool))
+#define ivm_vmstate_dumpContext(state, ct) \
+	(ivm_context_pool_dump((state)->ct_pool, (ct)))
+
+#else
+
+#define ivm_vmstate_allocContext(state) \
+	(MEM_ALLOC(sizeof(ivm_ctchain_t), void *))
+#define ivm_vmstate_dumpContext(state, ct) \
+	(MEM_FREE(ct))
+
+#endif
+
+/* frame pool */
+#if IVM_USE_FRAME_POOL
+
+#define ivm_vmstate_allocFrame(state) \
+	(ivm_frame_pool_alloc((state)->fr_pool))
+#define ivm_vmstate_dumpFrame(state, fr) \
+	(ivm_frame_pool_dump((state)->fr_pool, (fr)))
+
+#else
+
+#define ivm_vmstate_allocFrame(state) \
+	(MEM_ALLOC(sizeof(ivm_frame_t), void *))
+#define ivm_vmstate_dumpFrame(state, fr) \
+	(MEM_FREE(fr))
 
 #endif
 

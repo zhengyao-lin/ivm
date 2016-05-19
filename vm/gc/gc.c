@@ -100,11 +100,11 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 
 IVM_PRIVATE
 void
-ivm_collector_travCallerInfo(ivm_caller_info_t *info,
-							 ivm_traverser_arg_t *arg)
+ivm_collector_travFrame(ivm_frame_t *frame,
+						ivm_traverser_arg_t *arg)
 {
-	if (info) {
-		ivm_collector_travContextChain(IVM_CALLER_INFO_GET(info, CONTEXT), arg);
+	if (frame) {
+		ivm_collector_travContextChain(IVM_FRAME_GET(frame, CONTEXT), arg);
 	}
 
 	return;
@@ -128,7 +128,7 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 					   ivm_traverser_arg_t *arg)
 {
 	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
-	ivm_call_stack_t *call_st = IVM_CORO_GET(coro, CALL_STACK);
+	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_object_t **tmp;
 
@@ -136,10 +136,10 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 		*tmp = ivm_collector_copyObject(*tmp, arg);
 	}
 
-	ivm_call_stack_foreach_arg(call_st,
-							   (ivm_ptlist_foreach_proc_arg_t)
-	 						   ivm_collector_travCallerInfo,
-	 						   arg);
+	ivm_frame_stack_foreach_arg(frame_st,
+								(ivm_ptlist_foreach_proc_arg_t)
+	 							ivm_collector_travFrame,
+	 							arg);
 	ivm_collector_travRuntime(runtime, arg);
 
 	return;

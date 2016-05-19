@@ -18,7 +18,7 @@
 #define CONTEXT (__ivm_coro__->runtime->context)
 #define PC (__ivm_coro__->runtime->pc)
 #define STATE (__ivm_state__)
-#define CALL_STACK (__ivm_coro__->call_st)
+#define FRAME_STACK (__ivm_coro__->frame_st)
 
 /* use this before increase pc */
 #define ARG_OFFSET(i) (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1 + i])
@@ -35,10 +35,10 @@
 #define STACK_CUT(i) (ivm_vmstack_cut(__ivm_coro__->stack, (i)))
 #define STACK_INC(i) \
 	(ivm_vmstack_setTop(__ivm_coro__->stack, \
-						(i) + IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP)))
+						(i) + IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP)))
 
-#define CALL_STACK_TOP() (ivm_call_stack_top(__ivm_coro__->call_st))
-#define AVAIL_STACK (STACK_SIZE() - IVM_CALLER_INFO_GET(CALL_STACK_TOP(), STACK_TOP))
+#define FRAME_STACK_TOP() (ivm_frame_stack_top(__ivm_coro__->frame_st))
+#define AVAIL_STACK (STACK_SIZE() - IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP))
 #define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 

@@ -3,10 +3,11 @@
 #include "context.h"
 #include "call.h"
 #include "coro.h"
+#include "vm.h"
 #include "err.h"
 
 ivm_runtime_t *
-ivm_runtime_new()
+ivm_runtime_new(ivm_vmstate_t *state)
 {
 	ivm_runtime_t *ret = MEM_ALLOC_INIT(sizeof(*ret),
 										ivm_runtime_t *);
@@ -17,10 +18,11 @@ ivm_runtime_new()
 }
 
 void
-ivm_runtime_free(ivm_runtime_t *runtime)
+ivm_runtime_free(ivm_runtime_t *runtime,
+				 ivm_vmstate_t *state)
 {
 	if (runtime) {
-		ivm_ctchain_free(runtime->context);
+		ivm_ctchain_free(runtime->context, state);
 		MEM_FREE(runtime);
 	}
 	
@@ -29,33 +31,38 @@ ivm_runtime_free(ivm_runtime_t *runtime)
 
 void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
+				   ivm_vmstate_t *state,
 				   ivm_exec_t *exec,
 				   ivm_ctchain_t *context)
 {
 	runtime->pc = 0;
 	runtime->exec = exec;
 	runtime->context = context
-					   ? ivm_ctchain_clone(context)
-					   : ivm_ctchain_new();
+					   ? ivm_ctchain_clone(context, state)
+					   : ivm_ctchain_new(state);
 
 	return;
 }
 
-ivm_caller_info_t *
-ivm_runtime_getCallerInfo(ivm_runtime_t *runtime,
-						  ivm_coro_t *coro)
+ivm_frame_t *
+ivm_runtime_getFrame(ivm_runtime_t *runtime,
+					 ivm_vmstate_t *state,
+					 ivm_coro_t *coro)
 {
-	return ivm_caller_info_new(runtime,
-							   ivm_coro_stackTop(coro));
+	return ivm_frame_new(state,
+						 runtime,
+						 ivm_coro_stackTop(coro));
 }
 
 void
-ivm_runtime_restore(ivm_runtime_t *runtime, ivm_coro_t *coro,
-					struct ivm_caller_info_t_tag *info)
+ivm_runtime_restore(ivm_runtime_t *runtime,
+					ivm_vmstate_t *state,
+					ivm_coro_t *coro,
+					ivm_frame_t *frame)
 {
-	ivm_ctchain_free(runtime->context);
+	ivm_ctchain_free(runtime->context, state);
 
-	MEM_COPY(runtime, info, sizeof(*runtime));
+	MEM_COPY(runtime, frame, sizeof(*runtime));
 
 	return;
 }

@@ -10,10 +10,10 @@ typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_sub_t;
 
 IVM_PRIVATE
 ivm_ctchain_sub_t *
-ivm_ctchain_sub_new(ivm_context_t *ct)
+ivm_ctchain_sub_new(ivm_vmstate_t *state, ivm_context_t *ct)
 {
-	ivm_ctchain_sub_t *ret = MEM_ALLOC(sizeof(*ret),
-									   ivm_ctchain_sub_t *);
+	ivm_ctchain_sub_t *ret = (ivm_ctchain_sub_t *)
+							 ivm_vmstate_allocContext(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("sub context chain"));
 
@@ -25,9 +25,9 @@ ivm_ctchain_sub_new(ivm_context_t *ct)
 
 IVM_PRIVATE
 void
-ivm_ctchain_sub_free(ivm_ctchain_sub_t *chain_sub)
+ivm_ctchain_sub_free(ivm_ctchain_sub_t *chain_sub, ivm_vmstate_t *state)
 {
-	MEM_FREE(chain_sub);
+	ivm_vmstate_dumpContext(state, chain_sub);
 	return;
 }
 
@@ -35,10 +35,10 @@ ivm_ctchain_sub_free(ivm_ctchain_sub_t *chain_sub)
 #define RFOREACH(i, chain) for ((i) = (chain)->tail; (i); (i) = (i)->outer)
 
 ivm_ctchain_t *
-ivm_ctchain_new()
+ivm_ctchain_new(ivm_vmstate_t *state)
 {
-	ivm_ctchain_t *ret = MEM_ALLOC(sizeof(*ret),
-								   ivm_ctchain_t *);
+	ivm_ctchain_t *ret = (ivm_ctchain_t *)
+						 ivm_vmstate_allocContext(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("context chain"));
 
@@ -48,7 +48,7 @@ ivm_ctchain_new()
 }
 
 void
-ivm_ctchain_free(ivm_ctchain_t *chain)
+ivm_ctchain_free(ivm_ctchain_t *chain, ivm_vmstate_t *state)
 {
 	ivm_ctchain_sub_t *i, *tmp;
 
@@ -56,9 +56,9 @@ ivm_ctchain_free(ivm_ctchain_t *chain)
 		for (i = chain->head; i;) {
 			tmp = i;
 			i = i->inner;
-			ivm_ctchain_sub_free(tmp);
+			ivm_ctchain_sub_free(tmp, state);
 		}
-		MEM_FREE(chain);
+		ivm_vmstate_dumpContext(state, chain);
 	}
 
 	return;
@@ -66,9 +66,10 @@ ivm_ctchain_free(ivm_ctchain_t *chain)
 
 ivm_context_t *
 ivm_ctchain_addContext(ivm_ctchain_t *chain,
+					   ivm_vmstate_t *state,
 					   ivm_context_t *ct)
 {
-	ivm_ctchain_sub_t *n_sub = ivm_ctchain_sub_new(ct);
+	ivm_ctchain_sub_t *n_sub = ivm_ctchain_sub_new(state, ct);
 
 	if (!chain->tail) {
 		chain->head = chain->tail = n_sub;
@@ -83,6 +84,7 @@ ivm_ctchain_addContext(ivm_ctchain_t *chain,
 
 void
 ivm_ctchain_removeContext(ivm_ctchain_t *chain,
+						  ivm_vmstate_t *state,
 						  ivm_context_t *ct)
 {
 	ivm_ctchain_sub_t *i;
@@ -101,7 +103,7 @@ ivm_ctchain_removeContext(ivm_ctchain_t *chain,
 			if (i == chain->tail)
 				chain->tail = i->outer;
 
-			ivm_ctchain_sub_free(i);
+			ivm_ctchain_sub_free(i, state);
 
 			break;
 		}
@@ -112,7 +114,7 @@ ivm_ctchain_removeContext(ivm_ctchain_t *chain,
 
 ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,
-				   struct ivm_vmstate_t_tag *state,
+				   ivm_vmstate_t *state,
 				   const ivm_char_t *key)
 {
 	ivm_slot_t *slot = ivm_ctchain_searchSlot(chain, state, key);
@@ -122,7 +124,7 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 
 ivm_slot_t *
 ivm_ctchain_searchSlot(ivm_ctchain_t *chain,
-					   struct ivm_vmstate_t_tag *state,
+					   ivm_vmstate_t *state,
 					   const ivm_char_t *key)
 {
 	ivm_slot_t *slot = IVM_NULL;
@@ -138,7 +140,8 @@ ivm_ctchain_searchSlot(ivm_ctchain_t *chain,
 }
 
 ivm_ctchain_t *
-ivm_ctchain_clone(ivm_ctchain_t *chain)
+ivm_ctchain_clone(ivm_ctchain_t *chain,
+				  ivm_vmstate_t *state)
 {
 	ivm_ctchain_t *ret;
 	ivm_ctchain_sub_t *i;
@@ -146,10 +149,10 @@ ivm_ctchain_clone(ivm_ctchain_t *chain)
 	if (!chain)
 		return IVM_NULL;
 
-	ret = ivm_ctchain_new();
+	ret = ivm_ctchain_new(state);
 
 	FOREACH (i, chain) {
-		ivm_ctchain_addContext(ret, GET_CONTEXT(i));
+		ivm_ctchain_addContext(ret, state, GET_CONTEXT(i));
 	}
 
 	return ret;
@@ -164,7 +167,7 @@ ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 	ivm_context_t *local = ivm_ctchain_getLocal(chain);
 
 	if (!local) {
-		local = ivm_ctchain_addContext(chain, ivm_context_new(state));
+		local = ivm_ctchain_addContext(chain, state, ivm_context_new(state));
 	}
 
 	return ivm_object_setSlot(ivm_context_toObject(local), state, key, val);

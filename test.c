@@ -6,6 +6,7 @@
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
 #include "vm/std/pool.h"
+#include "vm/std/chain.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -49,6 +50,33 @@ void profile_output()
 	return;
 }
 
+#define print_type(type) (fprintf(stderr, #type ": %ld\n", sizeof(type)))
+
+void profile_type()
+{
+	/*
+	fprintf(stderr, "object_t: %ld\n", sizeof(ivm_object_t));
+	fprintf(stderr, "function_t: %ld\n", sizeof(ivm_function_t));
+	fprintf(stderr, "fun_t: %ld\n", sizeof(ivm_function_object_t));
+	fprintf(stderr, "_t: %ld\n", sizeof(ivm_type_t));
+	fprintf(stderr, "_t: %ld\n", sizeof(ivm_vmstate_t));
+	fprintf(stderr, "_t: %ld\n", sizeof(ivm_exec_t));
+	fprintf(stderr, "_t: %ld\n", sizeof(ivm_ctchain_t));
+	*/
+	fprintf(stderr, "***size of types***\n\n");
+	print_type(ivm_object_t);
+	print_type(ivm_function_t);
+	print_type(ivm_function_object_t);
+	print_type(ivm_type_t);
+	print_type(ivm_vmstate_t);
+	print_type(ivm_exec_t);
+	print_type(ivm_ctchain_t);
+	print_type(ivm_frame_t);
+	fprintf(stderr, "\n***size of types***\n");
+
+	return;
+}
+
 #endif
 
 int test_vm()
@@ -72,7 +100,7 @@ int test_vm()
 	exec2 = ivm_exec_new(str_pool);
 	exec3 = ivm_exec_new(str_pool);
 	exec4 = ivm_exec_new(str_pool);
-	chain = ivm_ctchain_new();
+	chain = ivm_ctchain_new(state);
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
@@ -91,7 +119,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -160,10 +188,10 @@ int test_vm()
 	printf("obj2: %p\n", (void *)obj2);
 
 	/* some test on context chain */
-	ivm_ctchain_addContext(chain, obj1);
-	ivm_ctchain_addContext(chain, obj2);
-	ivm_ctchain_removeContext(chain, obj2);
-	ivm_ctchain_addContext(chain, obj2);
+	ivm_ctchain_addContext(chain, state, obj1);
+	ivm_ctchain_addContext(chain, state, obj2);
+	ivm_ctchain_removeContext(chain, state, obj2);
+	ivm_ctchain_addContext(chain, state, obj2);
 
 	/* init functions & coroutines */
 	func1 = ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
@@ -195,6 +223,7 @@ int test_vm()
 
 #if IVM_PERF_PROFILE
 	profile_output();
+	profile_type();
 #endif
 
 	ivm_dbg_heapState(state, stderr);
@@ -219,11 +248,11 @@ int test_vm()
 	ivm_dbg_disAsmExec(exec4, "  ", stderr);
 #endif
 
-	ivm_coro_free(coro1); ivm_coro_free(coro2);
+	ivm_coro_free(coro1, state); ivm_coro_free(coro2, state);
 	ivm_function_free(func1, state);
 	ivm_function_free(func2, state);
 	ivm_function_free(func3, state);
-	ivm_ctchain_free(chain);
+	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_exec_free(exec3); ivm_exec_free(exec4);
 	ivm_string_pool_free(str_pool);
@@ -235,6 +264,28 @@ int test_vm()
 int main()
 {
 	test_vm();
+
+#if 0
+	ivm_ptchain_t *chain = ivm_ptchain_new();
+
+	profile_start();
+
+	ivm_ptchain_addTail(chain, (void *)1);
+	ivm_ptchain_addTail(chain, (void *)1);
+	ivm_ptchain_addTail(chain, (void *)1);
+	ivm_ptchain_removeTail(chain);
+	ivm_ptchain_addTail(chain, (void *)2);
+
+	printf("%d\n", (int)ivm_ptchain_removeTail(chain));
+	printf("%ld\n", sizeof(ivm_object_t));
+
+	profile_output();
+
+	ivm_ptchain_free(chain);
+
+	profile_type();
+
+#endif
 
 #if 0
 	ivm_ptpool_t *pool = ivm_ptpool_new(2, sizeof(ivm_function_t));

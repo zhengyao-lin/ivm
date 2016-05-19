@@ -78,6 +78,10 @@ ivm_vmstate_new()
 
 	ret->func_pool
 	= ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
+	ret->ct_pool
+	= ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
+	ret->fr_pool
+	= ivm_frame_pool_new(IVM_DEFAULT_FRAME_POOL_SIZE);
 
 	for (i = 0; i < type_count; i++) {
 		tmp_type = ivm_type_new(static_type_list[i]);
@@ -102,7 +106,9 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_coro_list_free(state->coro_list);
 		ivm_exec_list_free(state->exec_list);
 
-		ivm_ptpool_free(state->func_pool);
+		ivm_function_pool_free(state->func_pool);
+		ivm_context_pool_free(state->ct_pool);
+		ivm_frame_pool_free(state->fr_pool);
 
 		ivm_type_list_foreach(state->type_list, ivm_type_free);
 		ivm_type_list_free(state->type_list);

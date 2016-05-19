@@ -23,9 +23,9 @@ ivm_ptchain_free(ivm_ptchain_t *chain);
 
 void
 ivm_ptchain_addTail(ivm_ptchain_t *chain,
-					ivm_ptchain_cell_t *cell);
+					void *ptr);
 
-ivm_ptchain_cell_t *
+void *
 ivm_ptchain_removeTail(ivm_ptchain_t *chain);
 
 #endif
