@@ -1,12 +1,15 @@
 #ifndef _IVM_VM_RUNTIME_H_
 #define _IVM_VM_RUNTIME_H_
 
+#include "pub/com.h"
 #include "pub/mem.h"
 #include "type.h"
 #include "exec.h"
 #include "func.h"
 #include "context.h"
 #include "call.h"
+
+IVM_COM_HEADER
 
 struct ivm_coro_t_tag;
 struct ivm_frame_t_tag;
@@ -58,5 +61,7 @@ typedef ivm_ptpool_t ivm_runtime_pool_t;
 #define ivm_runtime_pool_free ivm_ptpool_free
 #define ivm_runtime_pool_alloc(pool) ((ivm_runtime_t *)ivm_ptpool_alloc(pool))
 #define ivm_runtime_pool_dump ivm_ptpool_dump
+
+IVM_COM_END
 
 #endif

@@ -1,8 +1,11 @@
 #ifndef _IVM_VM_VMSTACK_H_
 #define _IVM_VM_VMSTACK_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
 #include "std/stack.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -33,5 +36,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_object_t *) ivm_vmstack_iterator_t;
 #define ivm_vmstack_foreach_arg ivm_stack_foreach_arg
 
 #define IVM_VMSTACK_EACHPTR(stack, ptr) IVM_STACK_EACHPTR((stack), (ptr), ivm_object_t *)
+
+IVM_COM_END
 
 #endif

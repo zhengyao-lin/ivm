@@ -1,6 +1,7 @@
 #ifndef _IVM_VM_VM_H_
 #define _IVM_VM_VM_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
 #include "obj.h"
 #include "num.h"
@@ -10,6 +11,8 @@
 #include "std/pool.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
+
+IVM_COM_HEADER
 
 #define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 20) * 5)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
@@ -48,6 +51,7 @@ typedef struct ivm_vmstate_t_tag {
 
 ivm_vmstate_t *
 ivm_vmstate_new();
+
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
 
@@ -73,6 +77,7 @@ ivm_vmstate_findHeap(ivm_vmstate_t *state, ivm_object_t *obj);
 
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size);
+
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 
@@ -141,6 +146,8 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #define ivm_vmstate_registerType(state, type) (ivm_type_list_register((state)->type_list, (type)))
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
+#define ivm_vmstate_getTypeProto(state, tag) \
+	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
 
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
 
@@ -175,5 +182,7 @@ ivm_vmstate_execute();
 		ivm_heap_freeObject((state), (state)->heaps, (obj)); \
 	}
 */
+
+IVM_COM_END
 
 #endif

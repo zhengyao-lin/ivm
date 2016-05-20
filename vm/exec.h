@@ -1,11 +1,14 @@
 #ifndef _IVM_VM_EXEC_H_
 #define _IVM_VM_EXEC_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
 #include "std/list.h"
 #include "type.h"
 #include "str.h"
 #include "op.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -79,5 +82,7 @@ typedef ivm_ptlist_t ivm_exec_list_t;
 #define ivm_exec_list_size ivm_ptlist_size
 #define ivm_exec_list_at(list, i) ((ivm_exec_t *)ivm_ptlist_at((list), (i)))
 #define ivm_exec_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
+
+IVM_COM_END
 
 #endif

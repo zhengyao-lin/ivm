@@ -1,6 +1,10 @@
 #ifndef _IVM_VM_GC_CELL_H_
 #define _IVM_VM_GC_CELL_H_
 
+#include "pub/com.h"
+
+IVM_COM_HEADER
+
 struct ivm_vmstate_t_tag;
 struct ivm_cell_t_tag;
 struct ivm_cell_set_t_tag;
@@ -70,5 +74,7 @@ ivm_cell_set_removeTail(ivm_cell_set_t *set);
 void
 ivm_cell_set_foreach(ivm_cell_set_t *set, ivm_cell_set_foreach_proc_t proc,
 					 void *arg1, void *arg2);
+
+IVM_COM_END
 
 #endif

@@ -3,7 +3,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "pub/com.h"
 #include "pub/type.h"
+
+IVM_COM_HEADER
 
 #define MEM_ALLOC(size, type)			((type)malloc(size))
 #define MEM_ALLOC_INIT(size, type)		((type)calloc(1, (size)))
@@ -11,5 +14,7 @@
 #define MEM_INIT(p)						(memset((p), 0x0, sizeof(p)))
 #define MEM_FREE(p)						(free(p))
 #define MEM_COPY(dest, src, size)		(memcpy((dest), (src), (size)))
+
+IVM_COM_END
 
 #endif

@@ -1,8 +1,11 @@
 #ifndef _IVM_VM_NUM_H_
 #define _IVM_VM_NUM_H_
 
+#include "pub/com.h"
 #include "type.h"
 #include "obj.h"
+
+IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 
@@ -31,5 +34,7 @@ ivm_object_t *ivm_numeric_new(struct ivm_vmstate_t_tag *state, ivm_number_t val)
 ivm_bool_t
 ivm_numeric_isTrue(ivm_object_t *obj,
 				   struct ivm_vmstate_t_tag *state);
+
+IVM_COM_END
 
 #endif

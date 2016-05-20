@@ -1,9 +1,12 @@
 #ifndef _IVM_VM_STD_POOL_H_
 #define _IVM_VM_STD_POOL_H_
 
-#include "vm/type.h"
+#include "pub/com.h"
+#include "pub/type.h"
 #include "chain.h"
 #include "list.h"
+
+IVM_COM_HEADER
 
 typedef struct {
 	ivm_size_t ecount; /* element count */
@@ -28,5 +31,7 @@ ivm_ptpool_alloc(ivm_ptpool_t *pool);
 
 void
 ivm_ptpool_dump(ivm_ptpool_t *pool, void *ptr);
+
+IVM_COM_END
 
 #endif

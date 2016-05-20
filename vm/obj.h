@@ -1,11 +1,14 @@
 #ifndef _IVM_VM_OBJ_H_
 #define _IVM_VM_OBJ_H_
 
+#include "pub/com.h"
 #include "pub/mem.h"
 #include "pub/const.h"
 #include "std/list.h"
 #include "type.h"
 #include "slot.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -20,7 +23,8 @@
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type; \
 	ivm_slot_table_t *slots; \
-	ivm_mark_t mark;
+	ivm_mark_t mark; \
+	struct ivm_object_t_tag *proto;
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
@@ -40,13 +44,19 @@ typedef struct ivm_type_t_tag {
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
 	ivm_bool_converter_t to_bool;
+
+	struct ivm_object_t_tag *proto;	
 } ivm_type_t;
 
 ivm_type_t *
 ivm_type_new(ivm_type_t type);
+
 void
 ivm_type_free(ivm_type_t *type);
+
 #define ivm_type_setTag(type, t) ((type)->tag = (t))
+#define ivm_type_setProto(type, p) ((type)->proto = (p))
+#define ivm_type_getProto(type) ((type)->proto)
 
 typedef ivm_ptlist_t ivm_type_list_t;
 
@@ -71,10 +81,14 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
 #define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(obj)->mark)
+#define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
+#define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark & 0x1)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
 #define IVM_OBJECT_SET_MARK(obj, val) ((obj)->mark = (val))
 #define IVM_OBJECT_SET_COPY(obj, val) ((obj)->mark = (ivm_mark_t)(val))
+#define IVM_OBJECT_SET_PROTO(obj, val) ((obj)->proto = (val))
+#define IVM_OBJECT_SET_TRAV_PROTECT(obj, val) ((obj)->mark = (val) & 0x1)
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
@@ -121,6 +135,8 @@ ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
 				  struct ivm_vmstate_t_tag *state);
 
+#if 0
+
 ivm_slot_t *
 ivm_object_setSlot(ivm_object_t *obj,
 				   struct ivm_vmstate_t_tag *state,
@@ -133,6 +149,31 @@ ivm_object_getSlot(ivm_object_t *obj,
 
 #define ivm_object_getSlotValue(obj, state, key) (ivm_slot_getValue(ivm_object_getSlot((obj), (state), (key)), (state)))
 
+#endif
+
+void
+ivm_object_setSlot(ivm_object_t *obj,
+				   struct ivm_vmstate_t_tag *state,
+				   const ivm_char_t *key,
+				   ivm_object_t *value);
+
+ivm_bool_t /* if exist */
+ivm_object_setSlotIfExist(ivm_object_t *obj,
+						  struct ivm_vmstate_t_tag *state,
+						  const ivm_char_t *key,
+						  ivm_object_t *value);
+
+ivm_object_t *
+ivm_object_getSlotValue(ivm_object_t *obj,
+						struct ivm_vmstate_t_tag *state,
+						const ivm_char_t *key);
+
+/* no prototype */
+ivm_object_t *
+ivm_object_getSlotValue_np(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state,
+						   const ivm_char_t *key);
+
 #if IVM_DEBUG
 
 void
@@ -142,5 +183,7 @@ ivm_object_printSlots(ivm_object_t *obj);
 
 #define IVM_AS(obj, type) ((type *)(obj))
 #define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))
+
+IVM_COM_END
 
 #endif

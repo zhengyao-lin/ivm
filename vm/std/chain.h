@@ -1,6 +1,10 @@
 #ifndef _IVM_VM_STD_CHAIN_H_
 #define _IVM_VM_STD_CHAIN_H_
 
+#include "pub/com.h"
+
+IVM_COM_HEADER
+
 typedef struct ivm_ptchain_cell_t_tag {
 	void *ptr;
 
@@ -27,5 +31,7 @@ ivm_ptchain_addTail(ivm_ptchain_t *chain,
 
 void *
 ivm_ptchain_removeTail(ivm_ptchain_t *chain);
+
+IVM_COM_END
 
 #endif

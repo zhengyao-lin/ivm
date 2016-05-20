@@ -149,15 +149,14 @@ OP_PROC(GET_CONTEXT_SLOT)
 OP_PROC(SET_CONTEXT_SLOT)
 {
 	const ivm_char_t *key = ivm_byte_readStringFromPool(ARG_START, STRING_POOL);
-	ivm_slot_t *slot;
+	ivm_object_t *val;
 
 	CHECK_STACK(1);
-	slot = ivm_ctchain_searchSlot(CONTEXT, STATE, key);
 
-	if (slot) {
-		ivm_slot_setValue(slot, STATE, STACK_POP());
-	} else { 
-		ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, STACK_POP());
+	val = STACK_POP();
+
+	if (!ivm_ctchain_setSlotIfExist(CONTEXT, STATE, key, val)) {
+		ivm_ctchain_setLocalSlot(CONTEXT, STATE, key, val);
 	}
 
 	PC += OP_OFFSET(SET_CONTEXT_SLOT);

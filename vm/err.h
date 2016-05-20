@@ -1,8 +1,11 @@
 #ifndef _IVM_PUB_ERR_H_
 #define _IVM_PUB_ERR_H_
 
+#include "pub/com.h"
 #include "io.h"
 #include "sys.h"
+
+IVM_COM_HEADER
 
 #define IVM_ASSERT(cond, ...) \
 	if (!(cond)) { \
@@ -24,5 +27,7 @@
 #define IVM_ERROR_MSG_INSUFFICIENT_STACK			("insufficient stack")
 #define IVM_ERROR_MSG_BYTE_NOT_EQUAL_TO_CHAR		("size of byte is not equal to char")
 #define IVM_ERROR_MSG_SIZE_EXCEEDS_BLOCK_SIZE		("size exceeds the block size")
+
+IVM_COM_END
 
 #endif

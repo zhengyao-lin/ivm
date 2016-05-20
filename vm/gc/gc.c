@@ -73,6 +73,8 @@ ivm_collector_copyObject(ivm_object_t *obj,
 						   ivm_collector_travSlot,
 						   arg);
 
+	IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
+
 	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
 	if (trav) {
 		trav(ret, arg);

@@ -1,11 +1,14 @@
 #ifndef _IVM_VM_CALL_H_
 #define _IVM_VM_CALL_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
 #include "type.h"
 #include "exec.h"
 #include "std/stack.h"
 #include "std/pool.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -67,5 +70,7 @@ typedef ivm_ptpool_t ivm_frame_pool_t;
 #define ivm_frame_pool_free ivm_ptpool_free
 #define ivm_frame_pool_alloc(pool) ((ivm_frame_t *)ivm_ptpool_alloc(pool))
 #define ivm_frame_pool_dump ivm_ptpool_dump
+
+IVM_COM_END
 
 #endif

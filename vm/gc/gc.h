@@ -1,9 +1,12 @@
 #ifndef _IVM_VM_GC_GC_H_
 #define _IVM_VM_GC_GC_H_
 
+#include "pub/com.h"
+#include "pub/type.h"
 #include "cell.h"
 #include "heap.h"
-#include "../type.h"
+
+IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
@@ -45,5 +48,7 @@ void
 ivm_collector_collect(ivm_collector_t *collector,
 					  struct ivm_vmstate_t_tag *state,
 					  ivm_heap_t *heap);
+
+IVM_COM_END
 
 #endif

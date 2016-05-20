@@ -21,7 +21,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
-			ivm_object_alwaysFalse
+			ivm_object_alwaysFalse,
+			IVM_NULL
 	},
 
 	{
@@ -29,7 +30,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
-			ivm_object_alwaysFalse
+			ivm_object_alwaysFalse,
+			IVM_NULL
 	},
 
 	{
@@ -37,7 +39,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
-			ivm_object_isTrue
+			ivm_object_isTrue,
+			IVM_NULL
 	},
 
 	{
@@ -45,7 +48,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_numeric_t),
 			IVM_NULL,
 			IVM_NULL,
-			ivm_numeric_isTrue
+			ivm_numeric_isTrue,
+			IVM_NULL
 	},
 
 	{
@@ -53,7 +57,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_function_object_t),
 			ivm_function_object_destructor,
 			ivm_function_object_traverser,
-			ivm_object_isTrue
+			ivm_object_isTrue,
+			IVM_NULL
 	}
 };
 

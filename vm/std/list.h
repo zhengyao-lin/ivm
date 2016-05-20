@@ -1,8 +1,11 @@
 #ifndef _IVM_VM_STD_LIST_H_
 #define _IVM_VM_STD_LIST_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
-#include "vm/type.h"
+#include "pub/type.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -68,5 +71,7 @@ ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr, ivm_ptlist_comparer_t comp
 	(ivm_ptlist_indexOf_c((ptlist), \
 						  (ptr), \
 						  (ivm_ptlist_comparer_t)(comp)))
+
+IVM_COM_END
 
 #endif

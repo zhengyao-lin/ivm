@@ -1,9 +1,12 @@
 #ifndef _IVM_VM_STD_STACK_H_
 #define _IVM_VM_STD_STACK_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
+#include "pub/type.h"
 #include "list.h"
-#include "../type.h"
+
+IVM_COM_HEADER
 
 #if IVM_DEBUG
 
@@ -37,5 +40,7 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_foreach_arg ivm_ptlist_foreach_arg
 
 #define IVM_STACK_EACHPTR IVM_PTLIST_EACHPTR
+
+IVM_COM_END
 
 #endif

@@ -2,8 +2,11 @@
 #define _IVM_VM_STR_H_
 
 #include <string.h>
-#include "std/list.h"
+#include "pub/com.h"
 #include "type.h"
+#include "std/list.h"
+
+IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 struct ivm_heap_t_tag;
@@ -54,5 +57,7 @@ ivm_string_pool_register(ivm_string_pool_t *list,
 						 const ivm_char_t *str);
 
 #define ivm_string_pool_get(pool, i) (ivm_string_list_at((pool)->set, (i)))
+
+IVM_COM_END
 
 #endif

@@ -1,8 +1,11 @@
 #ifndef _IVM_VM_BYTE_H_
 #define _IVM_VM_BYTE_H_
 
+#include "pub/com.h"
 #include "type.h"
 #include "str.h"
+
+IVM_COM_HEADER
 
 #define IVM_STRING_POOL_INDEX_SIZE (sizeof(ivm_sint32_t))
 
@@ -60,5 +63,7 @@ ivm_size_t
 ivm_byte_writeSInt32(ivm_byte_t *bytes, ivm_size_t size, ivm_sint32_t num);
 ivm_size_t
 ivm_byte_writeSInt64(ivm_byte_t *bytes, ivm_size_t size, ivm_sint64_t num);
+
+IVM_COM_END
 
 #endif

@@ -1,11 +1,14 @@
 #ifndef _IVM_VM_FUNC_H_
 #define _IVM_VM_FUNC_H_
 
+#include "pub/com.h"
 #include "type.h"
 #include "context.h"
 #include "exec.h"
 #include "obj.h"
 #include "std/pool.h"
+
+IVM_COM_HEADER
 
 #define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
@@ -138,5 +141,7 @@ typedef ivm_ptpool_t ivm_function_pool_t;
 #define ivm_function_pool_free ivm_ptpool_free
 #define ivm_function_pool_alloc(pool) ((ivm_function_t *)ivm_ptpool_alloc(pool))
 #define ivm_function_pool_dump ivm_ptpool_dump
+
+IVM_COM_END
 
 #endif

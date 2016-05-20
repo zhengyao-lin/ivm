@@ -1,7 +1,10 @@
 #ifndef _IVM_VM_SLOT_H_
 #define _IVM_VM_SLOT_H_
 
+#include "pub/com.h"
 #include "type.h"
+
+IVM_COM_HEADER
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
@@ -20,6 +23,10 @@ typedef struct ivm_slot_t_tag {
 #define ivm_slot_setValue(slot, state, obj) (slot ? slot->v = obj : IVM_NULL)
 #define ivm_slot_getValue(slot, state) (slot ? slot->v : IVM_NULL)
 #define ivm_slot_getKey(slot, state) (slot->k)
+#define ivm_slot_init(slot, state, key, value) \
+	(slot)->k = (key); \
+	(slot)->v = (value); \
+	(slot)->next = IVM_NULL;
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_slot_t *head;
@@ -49,5 +56,7 @@ void
 ivm_slot_table_foreach(ivm_slot_table_t *table,
 					   ivm_slot_table_foreach_proc_t proc,
 					   void *arg);
+
+IVM_COM_END
 
 #endif

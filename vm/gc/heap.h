@@ -1,9 +1,11 @@
 #ifndef _IVM_VM_GC_HEAP_H_
 #define _IVM_VM_GC_HEAP_H_
 
-#include "../obj.h"
-#include "../type.h"
+#include "pub/com.h"
+#include "pub/type.h"
 #include "cell.h"
+
+IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 
@@ -45,5 +47,7 @@ ivm_heap_reset(ivm_heap_t *heap);
 
 void
 ivm_heap_compact(ivm_heap_t *heap);
+
+IVM_COM_END
 
 #endif

@@ -1,7 +1,10 @@
 #ifndef _IVM_VM_OP_H_
 #define _IVM_VM_OP_H_
 
+#include "pub/com.h"
 #include "type.h"
+
+IVM_COM_HEADER
 
 struct ivm_coro_t_tag;
 struct ivm_vmstate_t_tag;
@@ -90,5 +93,7 @@ ivm_pc_t
 ivm_op_table_getOffset(ivm_opcode_t op);
 const char *
 ivm_op_table_getName(ivm_opcode_t op);
+
+IVM_COM_END
 
 #endif

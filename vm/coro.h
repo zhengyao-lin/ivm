@@ -1,12 +1,15 @@
 #ifndef _IVM_VM_CORO_H_
 #define _IVM_VM_CORO_H_
 
+#include "pub/com.h"
 #include "type.h"
 #include "obj.h"
 #include "vmstack.h"
 #include "func.h"
 #include "call.h"
 #include "runtime.h"
+
+IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 
@@ -56,5 +59,7 @@ typedef ivm_ptlist_t ivm_coro_list_t;
 #define ivm_coro_list_at(list, i) ((ivm_coro_t *)ivm_ptlist_at((list), (i)))
 #define ivm_coro_list_foreach ivm_ptlist_foreach
 #define ivm_coro_list_foreach_arg ivm_ptlist_foreach_arg
+
+IVM_COM_END
 
 #endif
