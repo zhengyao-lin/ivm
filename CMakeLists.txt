@@ -13,18 +13,17 @@ SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC")
 
 # set flags for different versions
-# IF(VERSION STREQUAL "release")
-# 	MESSAGE(STATUS "Compile in release mode")
-# 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
-# ELSEIF(VERSION STREQUAL "debug")
-# 	MESSAGE(STATUS "Compile in debug mode")
-# 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
-# ELSEIF(NOT DEFINED VERSION)
-# 	MESSAGE(STATUS "Compile in debug mode(in default)")
-# 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
-# ELSE()
-# 	MESSAGE(FATAL_ERROR "Unknown compile mode '${VERSION}'")
-# ENDIF()
+IF(VERSION STREQUAL "release")
+	MESSAGE(STATUS "Compile in release mode")
+	SET(CMAKE_BUILD_TYPE Release)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+ELSEIF((VERSION STREQUAL "debug") OR (NOT DEFINED VERSION))
+	MESSAGE(STATUS "Compile in debug mode")
+	SET(CMAKE_BUILD_TYPE Debug)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
+ELSE()
+	MESSAGE(FATAL_ERROR "Unknown compile mode '${VERSION}'")
+ENDIF()
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
@@ -39,3 +38,5 @@ ADD_SUBDIRECTORY(mem)
 
 # link libraries
 TARGET_LINK_LIBRARIES(test vm mem)
+
+MESSAGE(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")

@@ -54,30 +54,34 @@ ivm_ptpool_alloc(ivm_ptpool_t *pool)
 	ivm_byte_t *tmp;
 	ivm_size_t i, ecount, esize;
 
-	if ((tmp = ivm_ptlist_pop(pool->freed))
-		!= IVM_NULL) {
-		return tmp;
+	if (!(tmp = ivm_ptlist_pop(pool->freed))) {
+		/* no more freed element */
+		ecount = pool->ecount;
+		esize = pool->esize;
+		i = pool->bcur % ecount * esize;
+
+		if (pool->bcur
+			/ ecount >= pool->bcount) {
+			/* add block */
+			pool->blocks
+			= MEM_REALLOC(pool->blocks,
+						  sizeof(*pool->blocks)
+						  * ++pool->bcount,
+						  ivm_byte_t **);
+
+			pool->blocks[pool->bcount - 1]
+			= MEM_ALLOC(ecount * esize, ivm_byte_t *);
+
+			IVM_ASSERT(pool->blocks
+					   && pool->blocks[pool->bcount - 1],
+					   IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptpool"));
+		}
+
+		pool->bcur++;
+		tmp = &pool->blocks[pool->bcount - 1][i];
 	}
 
-	ecount = pool->ecount;
-	esize = pool->esize;
-	i = pool->bcur % ecount * esize;
-
-	if (pool->bcur
-		/ ecount >= pool->bcount) {
-		/* add block */
-		pool->blocks
-		= MEM_REALLOC(pool->blocks,
-					  sizeof(*pool->blocks)
-					  * ++pool->bcount,
-					  ivm_byte_t **);
-		pool->blocks[pool->bcount - 1]
-		= MEM_ALLOC(ecount * esize, ivm_byte_t *);
-	}
-
-	pool->bcur++;
-
-	return &pool->blocks[pool->bcount - 1][i];	
+	return tmp;	
 }
 
 void

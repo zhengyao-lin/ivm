@@ -16,7 +16,7 @@
 
 #define IVM_DEFAULT_FUNCTION_POOL_SIZE (1024)
 #define IVM_DEFAULT_CONTEXT_POOL_SIZE (1024)
-#define IVM_DEFAULT_FRAME_POOL_SIZE (1024)
+#define IVM_DEFAULT_FRAME_POOL_SIZE (256)
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t *heaps[2];
@@ -121,7 +121,7 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 #else
 
 #define ivm_vmstate_allocFrame(state) \
-	(MEM_ALLOC(sizeof(ivm_frame_t), void *))
+	(MEM_ALLOC(sizeof(ivm_frame_t), ivm_frame_t *))
 #define ivm_vmstate_dumpFrame(state, fr) \
 	(MEM_FREE(fr))
 

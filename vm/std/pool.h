@@ -9,8 +9,8 @@ typedef struct {
 	ivm_size_t ecount; /* element count */
 	ivm_size_t esize; /* element size */
 
-	ivm_size_t bcount;
-	ivm_size_t bcur;
+	ivm_size_t bcount; /* block count */
+	ivm_size_t bcur; /* current element */
 	ivm_byte_t **blocks; /* preallocated room */
 
 	ivm_ptlist_t *freed; /* freed ptrs */
