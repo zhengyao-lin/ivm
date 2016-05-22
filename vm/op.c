@@ -87,12 +87,10 @@ OP_PROC(NEW_NUM_s)
 
 OP_PROC(NEW_FUNC)
 {
-	ivm_sint32_t exec_id = ivm_byte_readSInt32(ARG_START);
-	ivm_exec_t *exec = ivm_vmstate_getExec(STATE, exec_id);
+	ivm_sint32_t func_id = ivm_byte_readSInt32(ARG_START);
+	ivm_function_t *func = ivm_vmstate_getFunc(STATE, func_id);
 
-	STACK_PUSH(ivm_function_object_new_nc(STATE,
-										  ivm_function_new(STATE, CONTEXT, exec,
-														   IVM_INTSIG_NONE)));
+	STACK_PUSH(ivm_function_object_new_nc(STATE, CONTEXT, func));
 	PC += OP_OFFSET(NEW_FUNC);
 
 	return IVM_ACTION_NONE;
@@ -250,6 +248,7 @@ OP_PROC(PRINT_STR)
 
 OP_PROC(INVOKE)
 {
+	ivm_function_object_t *obj;
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = ivm_byte_readSInt32(ARG_START);
 	ivm_vmstack_iterator_t args;
@@ -257,12 +256,14 @@ OP_PROC(INVOKE)
 
 	CHECK_STACK(arg_count + 1);
 
-	func = IVM_AS(STACK_POP(), ivm_function_object_t)->val;
+	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+	func = ivm_function_object_getFunc(obj);
 	args = STACK_CUT(arg_count);
 
 	PC += OP_OFFSET(INVOKE);
 
-	ivm_function_invoke(func, STATE, CORO);
+	ivm_function_invoke(func, STATE,
+						ivm_function_object_getClosure(obj), CORO);
 
 	if (ivm_function_isNative(func)) {
 		ret = ivm_function_callNative(func, STATE, CONTEXT,

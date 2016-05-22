@@ -37,10 +37,11 @@ ivm_coro_free(ivm_coro_t *coro,
 ivm_object_t *
 ivm_coro_start(ivm_coro_t *coro,
 			   struct ivm_vmstate_t_tag *state,
-			   ivm_function_t *root);
+			   ivm_function_object_t *root);
 
 #define ivm_coro_setRoot(coro, state, root) \
-	((coro)->runtime = ivm_function_createRuntime((root), (state)))
+	((coro)->runtime = ivm_function_createRuntime(ivm_function_object_getFunc(root), (state), \
+												  ivm_function_object_getClosure(root)))
 
 #define ivm_coro_isAsleep(coro) ((coro)->runtime != IVM_NULL)
 

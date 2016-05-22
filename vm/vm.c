@@ -80,6 +80,7 @@ ivm_vmstate_new()
 	
 	ret->exec_list = ivm_exec_list_new();
 	ret->type_list = ivm_type_list_new();
+	ret->func_list = ivm_func_list_new();
 
 	ret->func_pool
 	= ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
@@ -110,6 +111,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_coro_list_free(state->coro_list);
 		ivm_exec_list_free(state->exec_list);
+		ivm_func_list_free(state->func_list);
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);

@@ -10,6 +10,8 @@
 
 IVM_COM_HEADER
 
+#define IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE 64
+
 #define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 
@@ -58,7 +60,6 @@ enum {
 
 typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
-	ivm_ctchain_t *closure;
 	union {
 		struct {
 			ivm_exec_t *body;
@@ -70,13 +71,11 @@ typedef struct ivm_function_t_tag {
 
 ivm_function_t *
 ivm_function_new(struct ivm_vmstate_t_tag *state,
-				 ivm_ctchain_t *context,
 				 ivm_exec_t *body,
 				 ivm_signal_mask_t intsig);
 
 ivm_function_t *
 ivm_function_newNative(struct ivm_vmstate_t_tag *state,
-					   ivm_ctchain_t *context,
 					   ivm_native_function_t func,
 					   ivm_signal_mask_t intsig);
 
@@ -92,7 +91,8 @@ ivm_function_clone(ivm_function_t *func,
 
 struct ivm_runtime_t_tag *
 ivm_function_createRuntime(const ivm_function_t *func,
-						   struct ivm_vmstate_t_tag *state);
+						   struct ivm_vmstate_t_tag *state,
+						   ivm_ctchain_t *context);
 
 /* 1. save the current state(push frame to frame stack)
  * 2. call runtime_invoke to rewrite environment of the function
@@ -100,12 +100,14 @@ ivm_function_createRuntime(const ivm_function_t *func,
 void
 ivm_function_invoke(const ivm_function_t *func,
 					struct ivm_vmstate_t_tag *state,
+					ivm_ctchain_t *context,
 					struct ivm_coro_t_tag *coro);
 
 ivm_object_t *
 ivm_function_callNative(const ivm_function_t *func,
 						struct ivm_vmstate_t_tag *state,
-						ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG);
+						ivm_ctchain_t *context,
+						IVM_FUNCTION_COMMON_ARG);
 
 #if 0
 void
@@ -116,6 +118,7 @@ ivm_function_setParam(const ivm_function_t *func,
 
 typedef struct {
 	IVM_OBJECT_HEADER
+	ivm_ctchain_t *closure;
 	ivm_function_t *val;
 } ivm_function_object_t;
 
@@ -125,15 +128,20 @@ ivm_function_object_destructor(ivm_object_t *obj,
 
 ivm_object_t *
 ivm_function_object_new(struct ivm_vmstate_t_tag *state,
+						ivm_ctchain_t *context,
 						ivm_function_t *func);
 /* no clone */
 ivm_object_t *
 ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
+						   ivm_ctchain_t *context,
 						   ivm_function_t *func);
 
 void
 ivm_function_object_traverser(ivm_object_t *obj,
 							  struct ivm_traverser_arg_t_tag *arg);
+
+#define ivm_function_object_getClosure(obj) ((obj)->closure)
+#define ivm_function_object_getFunc(obj) ((obj)->val)
 
 typedef ivm_ptpool_t ivm_function_pool_t;
 
@@ -141,6 +149,16 @@ typedef ivm_ptpool_t ivm_function_pool_t;
 #define ivm_function_pool_free ivm_ptpool_free
 #define ivm_function_pool_alloc(pool) ((ivm_function_t *)ivm_ptpool_alloc(pool))
 #define ivm_function_pool_dump ivm_ptpool_dump
+
+typedef ivm_size_t ivm_func_id_t;
+typedef ivm_ptlist_t ivm_func_list_t;
+
+#define ivm_func_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
+#define ivm_func_list_free ivm_ptlist_free
+#define ivm_func_list_register ivm_ptlist_push
+#define ivm_func_list_size ivm_ptlist_size
+#define ivm_func_list_at(list, i) ((ivm_function_t *)ivm_ptlist_at((list), (i)))
+#define ivm_func_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
 
 IVM_COM_END
 

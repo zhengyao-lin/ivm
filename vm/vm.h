@@ -29,6 +29,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
+	ivm_func_list_t *func_list;
 
 	ivm_function_pool_t *func_pool;
 	ivm_context_pool_t *ct_pool;
@@ -148,6 +149,9 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
 #define ivm_vmstate_getTypeProto(state, tag) \
 	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
+
+#define ivm_vmstate_registerFunc(state, exec) (ivm_func_list_register((state)->func_list, (exec)))
+#define ivm_vmstate_getFunc(state, id) (ivm_func_list_at((state)->func_list, (id)))
 
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
 

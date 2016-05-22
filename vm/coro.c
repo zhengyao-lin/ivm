@@ -43,22 +43,28 @@ ivm_coro_free(ivm_coro_t *coro,
 	(coro)->runtime = IVM_NULL;
 
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state, ivm_function_t *root)
+ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
+			   ivm_function_object_t *root)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_op_proc_t tmp_proc;
 	ivm_frame_t *tmp_frame;
 	ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
+	ivm_function_t *tmp_func = IVM_NULL;
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
 		IVM_ASSERT(!coro->runtime, IVM_ERROT_MSG_RESET_CORO_ROOT);
-		coro->runtime = ivm_function_createRuntime(root, state);
+
+		tmp_func = ivm_function_object_getFunc(root);
+		coro->runtime
+		= ivm_function_createRuntime(tmp_func, state,
+									 ivm_function_object_getClosure(root));
 	}
 
-	if (ivm_function_isNative(root)) {
-		ret = ivm_function_callNative(root, state,
+	if (ivm_function_isNative(tmp_func)) {
+		ret = ivm_function_callNative(tmp_func, state,
 									  IVM_RUNTIME_GET(coro->runtime, CONTEXT),
 									  IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
 		ivm_coro_kill(coro, state);

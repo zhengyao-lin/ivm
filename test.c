@@ -16,10 +16,11 @@ IVM_NATIVE_FUNC(test)
 
 IVM_NATIVE_FUNC(call_func)
 {
-	ivm_function_t *func = IVM_AS(argv[0], ivm_function_object_t)->val;
+	ivm_function_object_t *func = IVM_AS(argv[0], ivm_function_object_t);
 	printf("call function!!\n");
 
-	ivm_function_invoke(func, state, IVM_VMSTATE_GET(state, CUR_CORO));
+	ivm_function_invoke(func->val, state,
+						func->closure, IVM_VMSTATE_GET(state, CUR_CORO));
 	ivm_coro_resume(IVM_VMSTATE_GET(state, CUR_CORO), state, IVM_NULL);
 
 	return IVM_NULL;
@@ -86,20 +87,26 @@ int test_vm()
 	ivm_object_t *obj1, *obj2, *obj3;
 	ivm_exec_t *exec1, *exec2, *exec3, *exec4;
 	ivm_ctchain_t *chain;
-	ivm_function_t *func1, *func2, *func3;
+	ivm_function_t *func1, *func2, *func3, *func4;
 	ivm_coro_t *coro1, *coro2;
 	ivm_size_t addr1, addr2, addr3, addr4;
 	ivm_string_pool_t *str_pool;
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
-	obj1 = ivm_function_object_new_nc(state, ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
+	obj1 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
-	obj3 = ivm_function_object_new_nc(state, ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
+	obj3 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
 	str_pool = ivm_string_pool_new();
 	exec1 = ivm_exec_new(str_pool);
 	exec2 = ivm_exec_new(str_pool);
 	exec3 = ivm_exec_new(str_pool);
 	exec4 = ivm_exec_new(str_pool);
+
+	func1 = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
+	func2 = ivm_function_new(state, exec2, IVM_INTSIG_NONE);
+	func3 = ivm_function_new(state, exec3, IVM_INTSIG_NONE);
+	func4 = ivm_function_new(state, exec4, IVM_INTSIG_NONE);
+	
 	chain = ivm_ctchain_new(state);
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
@@ -112,14 +119,14 @@ int test_vm()
 
 	/* add opcodes */
 	ivm_exec_addCode(exec3, IVM_OP(TEST3), "$s", "this is exec3");
-	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerExec(state, exec4));
+	ivm_exec_addOp(exec3, IVM_OP(NEW_FUNC), ivm_vmstate_registerFunc(state, func4));
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 1022);
 
-	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerExec(state, exec3));
+	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 100000; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -193,10 +200,7 @@ int test_vm()
 	ivm_ctchain_removeContext(chain, state, obj2);
 	ivm_ctchain_addContext(chain, state, obj2);
 
-	/* init functions & coroutines */
-	func1 = ivm_function_newNative(state, IVM_NULL, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE);
-	func2 = ivm_function_new(state, chain, exec1, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(state, chain, exec2, IVM_INTSIG_NONE);
+	/* init coroutines */
 
 	coro1 = ivm_coro_new();
 	coro2 = ivm_coro_new();
@@ -205,8 +209,10 @@ int test_vm()
 	ivm_vmstate_addCoro(state, coro1);
 	ivm_vmstate_addCoro(state, coro2);
 
-	ivm_coro_setRoot(coro1, state, func2);
-	ivm_coro_setRoot(coro2, state, func3);
+	ivm_coro_setRoot(coro1, state,
+					 IVM_AS(ivm_function_object_new_nc(state, chain, func1), ivm_function_object_t));
+	ivm_coro_setRoot(coro2, state,
+					 IVM_AS(ivm_function_object_new_nc(state, chain, func2), ivm_function_object_t));
 	/*for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
 	}*/
@@ -252,6 +258,7 @@ int test_vm()
 	ivm_function_free(func1, state);
 	ivm_function_free(func2, state);
 	ivm_function_free(func3, state);
+	ivm_function_free(func4, state);
 	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_exec_free(exec3); ivm_exec_free(exec4);
