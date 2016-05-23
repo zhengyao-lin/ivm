@@ -71,7 +71,6 @@ typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
 } ivm_object_t;
 
-#define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_OBJECT_GET_TYPE_TAG(obj) ((obj)->type->tag)
 #define IVM_OBJECT_GET_TYPE_NAME(obj) ((obj)->type->name)
 #define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
@@ -92,6 +91,10 @@ typedef struct ivm_object_t_tag {
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
+
+#define IVM_TYPE_OF(obj) ((obj)->type)
+#define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
+#define IVM_IS_TYPE(obj, type) (IVM_TYPE_TAG_OF(obj) == (type))
 
 ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);

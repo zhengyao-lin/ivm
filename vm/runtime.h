@@ -35,7 +35,9 @@ ivm_runtime_free(ivm_runtime_t *runtime,
 				 struct ivm_vmstate_t_tag *state);
 
 /* just rewrite new environment */
-/* NOTICE: this function will copy the context chain */
+/* NOTICE: this function will NOT copy the context chain,
+ *		   clone the context chain by yourself
+ */
 void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,

@@ -20,22 +20,40 @@ typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
 
 struct ivm_ctchain_sub_t_tag {
 	ivm_context_t *ct;
-	struct ivm_ctchain_sub_t_tag *outer;
-	struct ivm_ctchain_sub_t_tag *inner;
 };
 
-typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_iterator_t;
-
 typedef struct ivm_ctchain_t_tag {
-	void *dummy;
-	struct ivm_ctchain_sub_t_tag *head;
-	struct ivm_ctchain_sub_t_tag *tail;
+	ivm_int_t len;
 } ivm_ctchain_t;
 
+#define ivm_ctchain_getSize(len) \
+	(sizeof(ivm_ctchain_t) + (sizeof(struct ivm_ctchain_sub_t_tag) * (len)))
+
+#define ivm_ctchain_getContextSize(chain) \
+	(sizeof(struct ivm_ctchain_sub_t_tag) * (chain)->len)
+
+#define ivm_ctchain_contextStart(chain) \
+	((struct ivm_ctchain_sub_t_tag *) \
+	 (&((ivm_ctchain_t *)(chain))[1]))
+
+#define ivm_ctchain_contextEnd(chain) \
+	(&((struct ivm_ctchain_sub_t_tag *) \
+	   (&((ivm_ctchain_t *)(chain))[1]))[(chain)->len - 1])
+
+#define ivm_ctchain_contextAt(chain, i) \
+	(&(((struct ivm_ctchain_sub_t_tag *) \
+		 (&((ivm_ctchain_t *) \
+			(chain))[1]))[i]))
+
+#define ivm_ctchain_setAt(chain, i, context) \
+	(ivm_ctchain_contextAt((chain), (i))->ct = (context))
+
 ivm_ctchain_t *
-ivm_ctchain_new(struct ivm_vmstate_t_tag *state);
+ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
 void
 ivm_ctchain_free(ivm_ctchain_t *chain, struct ivm_vmstate_t_tag *state);
+
+#if 0
 
 ivm_context_t *
 ivm_ctchain_addContext(ivm_ctchain_t *chain,
@@ -45,24 +63,24 @@ void
 ivm_ctchain_removeContext(ivm_ctchain_t *chain,
 						  struct ivm_vmstate_t_tag *state,
 						  ivm_context_t *ct);
+#endif
+
+ivm_ctchain_t *
+ivm_ctchain_appendContext(ivm_ctchain_t *chain,
+						  struct ivm_vmstate_t_tag *state,
+						  ivm_context_t *ct);
+
 ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_char_t *key);
 
-/*
-ivm_slot_t *
-ivm_ctchain_searchSlot(ivm_ctchain_t *chain,
-					   struct ivm_vmstate_t_tag *state,
-					   const ivm_char_t *key);
-*/
-
 ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain,
 				  struct ivm_vmstate_t_tag *state);
 
-#define ivm_ctchain_getLocal(chain) ((chain)->tail ? (chain)->tail->ct : IVM_NULL)
-#define ivm_ctchain_getGlobal(chain) ((chain)->head ? (chain)->head->ct : IVM_NULL)
+#define ivm_ctchain_getLocal(chain) (ivm_ctchain_contextStart(chain)->ct)
+#define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextEnd(chain)->ct)
 
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
@@ -81,16 +99,46 @@ ivm_ctchain_foreach(ivm_ctchain_t *chain,
 					ivm_ctchain_foreach_proc_t proc,
 					void *arg);
 
+typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_iterator_t;
+
 #define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->ct = val)
 #define IVM_CTCHAIN_ITER_GET(iter) ((iter)->ct)
-#define IVM_CTCHAIN_EACHPTR(chain, ptr) for ((ptr) = (chain)->head; (ptr); (ptr) = (ptr)->inner)
+#define IVM_CTCHAIN_EACHPTR(chain, ptr) \
+	for ((ptr) = ivm_ctchain_contextStart(chain); \
+		 (ptr) <= ivm_ctchain_contextEnd(chain); (ptr)++)
 
+#define IVM_CONTEXT_POOL_MAX_CACHE_LEN 10
+
+typedef struct {
+	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1];
+} ivm_context_pool_t;
+
+ivm_context_pool_t *
+ivm_context_pool_new(ivm_size_t ecount);
+
+void
+ivm_context_pool_free(ivm_context_pool_t *pool);
+
+ivm_ctchain_t *
+ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len);
+
+ivm_ctchain_t *
+ivm_context_pool_realloc(ivm_context_pool_t *pool,
+						 ivm_ctchain_t *chain,
+						 ivm_int_t len);
+
+void
+ivm_context_pool_dump(ivm_context_pool_t *pool, ivm_ctchain_t *chain);
+
+#if 0
 typedef ivm_ptpool_t ivm_context_pool_t;
 
-#define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_function_t)))
+#define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_ctchain_t)))
 #define ivm_context_pool_free ivm_ptpool_free
-#define ivm_context_pool_alloc(pool) (ivm_ptpool_alloc(pool))
+#define ivm_context_pool_alloc(pool) ((ivm_ctchain_t *)ivm_ptpool_alloc(pool))
 #define ivm_context_pool_dump ivm_ptpool_dump
+
+#endif
 
 IVM_COM_END
 

@@ -102,12 +102,12 @@ ivm_function_invoke_c(const ivm_function_t *func,
 					  ivm_runtime_t *runtime)
 {
 	if (func->is_native) {
+		context = ivm_ctchain_clone(context, state);
 		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
 	} else {
+		context = ivm_ctchain_appendContext(context, state,
+											ivm_context_new(state));
 		ivm_runtime_invoke(runtime, state, func->u.f.body, context);
-		ivm_ctchain_addContext(IVM_RUNTIME_GET(runtime, CONTEXT),
-							   state,
-							   ivm_context_new(state));
 	}
 
 	return;
@@ -218,7 +218,7 @@ ivm_function_object_new_nc(ivm_vmstate_t *state,
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ret->closure = ivm_ctchain_clone(context ,state);
+	ret->closure =  ivm_ctchain_clone(context, state);
 	ret->val = func;
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 

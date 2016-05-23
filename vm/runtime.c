@@ -37,9 +37,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 {
 	runtime->pc = 0;
 	runtime->exec = exec;
-	runtime->context = context
-					   ? ivm_ctchain_clone(context, state)
-					   : ivm_ctchain_new(state);
+	runtime->context = context;
 
 	return;
 }

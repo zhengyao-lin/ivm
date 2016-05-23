@@ -107,7 +107,9 @@ int test_vm()
 	func3 = ivm_function_new(state, exec3, IVM_INTSIG_NONE);
 	func4 = ivm_function_new(state, exec4, IVM_INTSIG_NONE);
 	
-	chain = ivm_ctchain_new(state);
+	chain = ivm_ctchain_new(state, 2);
+	ivm_ctchain_setAt(chain, 0, obj1);
+	ivm_ctchain_setAt(chain, 1, obj2);
 
 	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
@@ -193,12 +195,6 @@ int test_vm()
 
 	printf("obj1: %p\n", (void *)obj1);
 	printf("obj2: %p\n", (void *)obj2);
-
-	/* some test on context chain */
-	ivm_ctchain_addContext(chain, state, obj1);
-	ivm_ctchain_addContext(chain, state, obj2);
-	ivm_ctchain_removeContext(chain, state, obj2);
-	ivm_ctchain_addContext(chain, state, obj2);
 
 	/* init coroutines */
 

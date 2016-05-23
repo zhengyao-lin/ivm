@@ -27,6 +27,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_INSUFFICIENT_STACK			("insufficient stack")
 #define IVM_ERROR_MSG_BYTE_NOT_EQUAL_TO_CHAR		("size of byte is not equal to char")
 #define IVM_ERROR_MSG_SIZE_EXCEEDS_BLOCK_SIZE		("size exceeds the block size")
+#define IVM_ERROT_MSG_NOT_TYPE(type)				("expecting type <" type ">")
 
 IVM_COM_END
 

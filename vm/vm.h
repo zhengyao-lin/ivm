@@ -102,15 +102,15 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 /* context pool */
 #if IVM_USE_CONTEXT_POOL
 
-#define ivm_vmstate_allocContext(state) \
-	(ivm_context_pool_alloc((state)->ct_pool))
+#define ivm_vmstate_allocContext(state, len) \
+	(ivm_context_pool_alloc((state)->ct_pool, (len)))
 #define ivm_vmstate_dumpContext(state, ct) \
 	(ivm_context_pool_dump((state)->ct_pool, (ct)))
 
 #else
 
-#define ivm_vmstate_allocContext(state) \
-	(MEM_ALLOC(sizeof(ivm_ctchain_t), void *))
+#define ivm_vmstate_allocContext(state, len) \
+	(MEM_ALLOC(ivm_ctchain_getSize(len), ivm_ctchain_t *))
 #define ivm_vmstate_dumpContext(state, ct) \
 	(MEM_FREE(ct))
 

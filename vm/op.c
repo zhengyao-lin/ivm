@@ -257,6 +257,10 @@ OP_PROC(INVOKE)
 	CHECK_STACK(arg_count + 1);
 
 	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+
+	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROT_MSG_NOT_TYPE("function"));
+	
 	func = ivm_function_object_getFunc(obj);
 	args = STACK_CUT(arg_count);
 
