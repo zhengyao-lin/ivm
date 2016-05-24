@@ -149,14 +149,30 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 
 IVM_PRIVATE
 void
-ivm_collector_travState(ivm_collector_t *collector,
-						ivm_traverser_arg_t *arg)
+ivm_collector_travType(ivm_type_t *type,
+					   ivm_traverser_arg_t *arg)
+{
+	ivm_type_setProto(type,
+					  ivm_collector_copyObject(ivm_type_getProto(type),
+					  						   arg));
+	return;
+}
+
+IVM_PRIVATE
+void
+ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
 	ivm_coro_list_t *coros = IVM_VMSTATE_GET(arg->state, CORO_LIST);
+	ivm_type_list_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST);
 
 	ivm_coro_list_foreach_arg(coros,
 							  (ivm_ptlist_foreach_proc_arg_t)
 							  ivm_collector_travCoro,
+							  arg);
+
+	ivm_type_list_foreach_arg(types,
+							  (ivm_ptlist_foreach_proc_arg_t)
+							  ivm_collector_travType,
 							  arg);
 
 	return;
@@ -218,7 +234,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	printf("***collecting***\n");
 
-	ivm_collector_travState(collector, &arg);
+	ivm_collector_travState(&arg);
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
 	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));

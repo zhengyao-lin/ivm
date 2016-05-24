@@ -13,8 +13,8 @@ struct ivm_vmstate_t_tag;
 typedef ivm_object_t ivm_context_t;
 
 #define ivm_context_new ivm_object_new
-#define ivm_context_fromObj(obj) (obj)
-#define ivm_context_toObject(context) (context)
+#define ivm_context_fromObj(obj) (IVM_AS((obj), ivm_context_t))
+#define ivm_context_toObject(context) (IVM_AS_OBJ(context))
 
 typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
 

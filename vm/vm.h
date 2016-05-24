@@ -14,12 +14,12 @@
 
 IVM_COM_HEADER
 
-#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 20) * 5)
+#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 11) * 2)
 #define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
 
-#define IVM_DEFAULT_FUNCTION_POOL_SIZE (1024)
-#define IVM_DEFAULT_CONTEXT_POOL_SIZE (1024)
-#define IVM_DEFAULT_FRAME_POOL_SIZE (256)
+#define IVM_DEFAULT_FUNCTION_POOL_SIZE (64)
+#define IVM_DEFAULT_CONTEXT_POOL_SIZE (64)
+#define IVM_DEFAULT_FRAME_POOL_SIZE (64)
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t *heaps[2];
@@ -44,6 +44,7 @@ typedef struct ivm_vmstate_t_tag {
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
 #define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
+#define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps[0])
 #define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->heaps[1])
 
@@ -100,21 +101,10 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 #endif
 
 /* context pool */
-#if IVM_USE_CONTEXT_POOL
-
 #define ivm_vmstate_allocContext(state, len) \
 	(ivm_context_pool_alloc((state)->ct_pool, (len)))
 #define ivm_vmstate_dumpContext(state, ct) \
 	(ivm_context_pool_dump((state)->ct_pool, (ct)))
-
-#else
-
-#define ivm_vmstate_allocContext(state, len) \
-	(MEM_ALLOC(ivm_ctchain_getSize(len), ivm_ctchain_t *))
-#define ivm_vmstate_dumpContext(state, ct) \
-	(MEM_FREE(ct))
-
-#endif
 
 /* frame pool */
 #if IVM_USE_FRAME_POOL

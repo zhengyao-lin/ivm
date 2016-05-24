@@ -257,7 +257,7 @@ ivm_context_pool_new(ivm_size_t ecount)
 
 	for (i = 0; i <= IVM_CONTEXT_POOL_MAX_CACHE_LEN; i++) {
 		ret->pools[i] = ivm_ptpool_new(ecount,
-									  ivm_ctchain_getSize(i));
+									   ivm_ctchain_getSize(i));
 	}
 
 	return ret;

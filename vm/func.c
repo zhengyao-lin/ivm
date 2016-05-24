@@ -85,11 +85,12 @@ ivm_function_t *
 ivm_function_clone(ivm_function_t *func,
 				   ivm_vmstate_t *state)
 {
-	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
+	ivm_function_t *ret = IVM_NULL;
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("cloned function"));
-
-	MEM_COPY(ret, func, sizeof(*ret));
+	if (func) {
+		ret = ivm_vmstate_allocFunc(state);
+		MEM_COPY(ret, func, sizeof(*ret));
+	}
 
 	return ret;
 }

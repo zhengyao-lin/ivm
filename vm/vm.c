@@ -62,6 +62,9 @@ ivm_type_t static_type_list[] = {
 	}
 };
 
+#define SET_TYPE_PROTO(state, tag, obj) \
+	(ivm_type_setProto(ivm_vmstate_getType((state), (tag)), (obj)))
+
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
@@ -69,6 +72,7 @@ ivm_vmstate_new()
 								   ivm_vmstate_t *);
 	ivm_type_t *tmp_type;
 	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
+	ivm_object_t *mproto, *dproto;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
@@ -96,6 +100,21 @@ ivm_vmstate_new()
 
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
+
+	ivm_vmstate_lockGCFlag(ret);
+
+	mproto = ivm_object_new(ret);
+	SET_TYPE_PROTO(ret, IVM_OBJECT_T, mproto);
+
+	dproto = ivm_numeric_new(ret, IVM_NUM(0));
+	SET_TYPE_PROTO(ret, IVM_NUMERIC_T, dproto);
+	IVM_OBJECT_SET(dproto, PROTO, mproto);
+
+	dproto = ivm_function_object_new(ret, IVM_NULL, IVM_NULL);
+	SET_TYPE_PROTO(ret, IVM_FUNCTION_OBJECT_T, dproto);
+	IVM_OBJECT_SET(dproto, PROTO, mproto);
+
+	ivm_vmstate_unlockGCFlag(ret);
 
 	return ret;
 }

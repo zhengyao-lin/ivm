@@ -103,10 +103,9 @@ OP_PROC(GET_SLOT)
 
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
-	if (obj) {
-		STACK_PUSH(ivm_object_getSlotValue(obj, STATE, key));
-	}
+	obj = ivm_object_getSlotValue(STACK_POP(), STATE, key);
+	
+	STACK_PUSH(obj ? obj : IVM_UNDEFINED(STATE));
 
 	PC += OP_OFFSET(GET_SLOT);
 
@@ -231,7 +230,7 @@ OP_PROC(PRINT_TYPE)
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
-	printf("type: %s\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+	printf("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
 	
 	PC += OP_OFFSET(PRINT_TYPE);
 
@@ -259,7 +258,7 @@ OP_PROC(INVOKE)
 	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
 
 	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROT_MSG_NOT_TYPE("function"));
+			   IVM_ERROT_MSG_NOT_TYPE("function", IVM_OBJECT_GET(obj, TYPE_NAME)));
 	
 	func = ivm_function_object_getFunc(obj);
 	args = STACK_CUT(arg_count);

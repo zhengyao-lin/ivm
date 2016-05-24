@@ -45,7 +45,7 @@ typedef struct ivm_type_t_tag {
 	ivm_traverser_t trav;
 	ivm_bool_converter_t to_bool;
 
-	struct ivm_object_t_tag *proto;	
+	struct ivm_object_t_tag *proto; /* default prototype */
 } ivm_type_t;
 
 ivm_type_t *
@@ -66,6 +66,7 @@ typedef ivm_ptlist_t ivm_type_list_t;
 #define ivm_type_list_size ivm_ptlist_size
 #define ivm_type_list_at(list, i) ((ivm_type_t *)ivm_ptlist_at((list), (i)))
 #define ivm_type_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
+#define ivm_type_list_foreach_arg ivm_ptlist_foreach_arg
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
@@ -137,22 +138,6 @@ ivm_object_alwaysFalse(ivm_object_t *obj,
 ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
 				  struct ivm_vmstate_t_tag *state);
-
-#if 0
-
-ivm_slot_t *
-ivm_object_setSlot(ivm_object_t *obj,
-				   struct ivm_vmstate_t_tag *state,
-				   const ivm_char_t *key,
-				   ivm_object_t *value);
-ivm_slot_t *
-ivm_object_getSlot(ivm_object_t *obj,
-				   struct ivm_vmstate_t_tag *state,
-				   const ivm_char_t *key);
-
-#define ivm_object_getSlotValue(obj, state, key) (ivm_slot_getValue(ivm_object_getSlot((obj), (state), (key)), (state)))
-
-#endif
 
 void
 ivm_object_setSlot(ivm_object_t *obj,

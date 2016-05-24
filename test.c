@@ -84,7 +84,7 @@ int test_vm()
 {
 	int i;
 	ivm_vmstate_t *state;
-	ivm_object_t *obj1, *obj2, *obj3;
+	ivm_object_t *obj1, *obj2, *obj3, *proto;
 	ivm_exec_t *exec1, *exec2, *exec3, *exec4;
 	ivm_ctchain_t *chain;
 	ivm_function_t *func1, *func2, *func3, *func4;
@@ -101,6 +101,9 @@ int test_vm()
 	exec2 = ivm_exec_new(str_pool);
 	exec3 = ivm_exec_new(str_pool);
 	exec4 = ivm_exec_new(str_pool);
+
+	proto = ivm_vmstate_getTypeProto(state, IVM_OBJECT_T);
+	ivm_object_setSlot(proto, state, "proto_func", obj3);
 
 	func1 = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
 	func2 = ivm_function_new(state, exec2, IVM_INTSIG_NONE);
@@ -128,7 +131,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -140,6 +143,14 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "call_func");
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
+
+	for (i = 0; i < 10000; i++) {
+		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
+		ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 2);
+		ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "proto_func");
+		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
+		ivm_exec_addOp(exec1, IVM_OP(POP));
+	}
 
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");
 	ivm_exec_addCode(exec1, IVM_OP(NEW_OBJ), "");

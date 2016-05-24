@@ -107,7 +107,8 @@ ivm_object_toBool(ivm_object_t *obj,
 	str[1] == 'r' && \
 	str[2] == 'o' && \
 	str[3] == 't' && \
-	str[4] == 'o'
+	str[4] == 'o' && \
+	str[5] == '\0'
 
 void
 ivm_object_setSlot(ivm_object_t *obj,
@@ -171,7 +172,7 @@ ivm_object_searchProtoSlot(ivm_object_t *obj,
 
 	IVM_OBJECT_SET(obj, TRAV_PROTECT, IVM_TRUE);
 
-	while (i && !IVM_OBJECT_GET(obj, TRAV_PROTECT)) {
+	while (i && !IVM_OBJECT_GET(i, TRAV_PROTECT)) {
 		IVM_OBJECT_SET(i, TRAV_PROTECT, IVM_TRUE);
 		ret = ivm_slot_getValue(ivm_slot_table_findSlot(i->slots, state, key),
 								state);
@@ -182,7 +183,7 @@ ivm_object_searchProtoSlot(ivm_object_t *obj,
 	}
 
 	i = obj;
-	while (i && IVM_OBJECT_GET(obj, TRAV_PROTECT)) {
+	while (i && IVM_OBJECT_GET(i, TRAV_PROTECT)) {
 		IVM_OBJECT_SET(i, TRAV_PROTECT, IVM_FALSE);
 		i = IVM_OBJECT_GET(i, PROTO);
 	}
