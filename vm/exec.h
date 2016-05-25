@@ -10,18 +10,6 @@
 
 IVM_COM_HEADER
 
-#if IVM_DEBUG
-
-#define IVM_DEFAULT_EXEC_BUFFER_SIZE 1
-#define IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE 1
-
-#else
-
-#define IVM_DEFAULT_EXEC_BUFFER_SIZE 32
-#define IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE 32
-
-#endif
-
 typedef struct {
 	ivm_string_pool_t *pool;
 

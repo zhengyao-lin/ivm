@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include "pub/com.h"
+#include "pub/const.h"
 #include "type.h"
 #include "std/list.h"
 
@@ -27,7 +28,6 @@ ivm_strdup_heap(const ivm_char_t *src,
 				struct ivm_heap_t_tag *heap);
 
 typedef ivm_ptlist_t ivm_string_list_t;
-typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_string_iterator_t;
 
 #define ivm_string_list_new ivm_ptlist_new
 #define ivm_string_list_free ivm_ptlist_free
@@ -36,10 +36,6 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_string_iterator_t;
 
 #define ivm_string_list_at(list, i) ((ivm_char_t *)ivm_ptlist_at((list), (i)))
 #define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (void *)(str), IVM_STRCMP))
-
-#define IVM_STRING_LIST_EACHPTR(list, ptr) IVM_PTLIST_EACHPTR((list), (ptr), ivm_char_t *)
-
-#define IVM_STRING_POOL_DEFAULT_BLOCK_SIZE 1024
 
 typedef struct {
 	struct ivm_heap_t_tag *heap;

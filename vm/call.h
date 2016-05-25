@@ -10,16 +10,6 @@
 
 IVM_COM_HEADER
 
-#if IVM_DEBUG
-
-#define IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE 1
-
-#else
-
-#define IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE 32
-
-#endif
-
 #define IVM_EXEC_INFO_HEAD \
 	ivm_pc_t pc; \
 	ivm_exec_t *exec; \
@@ -52,6 +42,7 @@ ivm_frame_free(ivm_frame_t *frame,
 			   struct ivm_vmstate_t_tag *state);
 
 typedef ivm_stack_t ivm_frame_stack_t;
+typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
 
 #define ivm_frame_stack_new() (ivm_stack_new_c(IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE))
 #define ivm_frame_stack_free ivm_stack_free
@@ -63,6 +54,10 @@ typedef ivm_stack_t ivm_frame_stack_t;
 #define ivm_frame_stack_setTop ivm_stack_setTop
 #define ivm_frame_stack_foreach ivm_stack_foreach
 #define ivm_frame_stack_foreach_arg ivm_stack_foreach_arg
+
+#define IVM_FRAME_STACK_ITER_SET(iter, val) (IVM_STACK_ITER_SET((iter), (val)))
+#define IVM_FRAME_STACK_ITER_GET(iter) ((ivm_frame_t *)IVM_STACK_ITER_GET(iter))
+#define IVM_FRAME_STACK_EACHPTR(list, iter) IVM_STACK_EACHPTR((list), (iter), ivm_frame_t *)
 
 typedef ivm_ptpool_t ivm_frame_pool_t;
 

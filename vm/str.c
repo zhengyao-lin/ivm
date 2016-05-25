@@ -57,7 +57,7 @@ ivm_string_pool_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
 
-	ret->heap = ivm_heap_new(IVM_STRING_POOL_DEFAULT_BLOCK_SIZE);
+	ret->heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
 	ret->set = ivm_string_list_new();
 
 	return ret;

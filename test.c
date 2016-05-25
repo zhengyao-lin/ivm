@@ -131,7 +131,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -144,7 +144,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
 
-	for (i = 0; i < 10000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 2);
 		ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "proto_func");

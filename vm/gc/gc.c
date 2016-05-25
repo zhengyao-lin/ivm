@@ -21,7 +21,8 @@ ivm_collector_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
-	ret->des_log = ivm_cell_set_new();
+	ret->des_log[0] = ivm_destruct_list_new();
+	ret->des_log[1] = ivm_destruct_list_new();
 
 	return ret;
 }
@@ -29,23 +30,12 @@ ivm_collector_new()
 void
 ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 {
-	ivm_cell_set_destruct(collector->des_log, state);
-	MEM_FREE(collector);
-	return;
-}
+	if (collector) {
+		ivm_destruct_list_free(collector->des_log[0]);
+		ivm_destruct_list_free(collector->des_log[1]);
+		MEM_FREE(collector);
+	}
 
-IVM_PRIVATE
-ivm_object_t *
-ivm_collector_copyObject(ivm_object_t *obj,
-						 ivm_traverser_arg_t *arg);
-
-IVM_PRIVATE
-void
-ivm_collector_travSlot(ivm_slot_t *slot,
-					   ivm_traverser_arg_t *arg)
-{
-	ivm_slot_setValue(slot, arg->state,
-					  ivm_collector_copyObject(ivm_slot_getValue(slot, arg->state), arg));
 	return;
 }
 
@@ -56,6 +46,7 @@ ivm_collector_copyObject(ivm_object_t *obj,
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
+	ivm_slot_table_iterator_t siter;
 
 	if (!obj) return IVM_NULL;
 	if (IVM_OBJECT_GET(obj, COPY) != IVM_NULL)
@@ -68,10 +59,12 @@ ivm_collector_copyObject(ivm_object_t *obj,
 
 	IVM_OBJECT_SET(ret, SLOTS, ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
 
-	ivm_slot_table_foreach(IVM_OBJECT_GET(ret, SLOTS), 
-						   (ivm_slot_table_foreach_proc_t)
-						   ivm_collector_travSlot,
-						   arg);
+	IVM_SLOT_TABLE_EACHPTR(IVM_OBJECT_GET(ret, SLOTS), siter) {
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+									ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
+															 arg));
+	}
+
 
 	IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
 
@@ -88,7 +81,7 @@ void
 ivm_collector_travContextChain(ivm_ctchain_t *chain,
 							   ivm_traverser_arg_t *arg)
 {
-	ivm_ctchain_iterator_t *iter;
+	ivm_ctchain_iterator_t iter;
 
 	if (chain) {
 		IVM_CTCHAIN_EACHPTR(chain, iter) {
@@ -132,16 +125,19 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_object_t **tmp;
+	ivm_vmstack_iterator_t siter;
+	ivm_frame_stack_iterator_t fiter;
 
-	IVM_VMSTACK_EACHPTR(stack, tmp) {
-		*tmp = ivm_collector_copyObject(*tmp, arg);
+	IVM_VMSTACK_EACHPTR(stack, siter) {
+		IVM_VMSTACK_ITER_SET(siter,
+							 ivm_collector_copyObject(IVM_VMSTACK_ITER_GET(siter),
+							 						  arg));
 	}
 
-	ivm_frame_stack_foreach_arg(frame_st,
-								(ivm_ptlist_foreach_proc_arg_t)
-	 							ivm_collector_travFrame,
-	 							arg);
+	IVM_FRAME_STACK_EACHPTR(frame_st, fiter) {
+		ivm_collector_travFrame(IVM_FRAME_STACK_ITER_GET(fiter), arg);
+	}
+
 	ivm_collector_travRuntime(runtime, arg);
 
 	return;
@@ -164,46 +160,60 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
 	ivm_coro_list_t *coros = IVM_VMSTATE_GET(arg->state, CORO_LIST);
 	ivm_type_list_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST);
+	ivm_coro_list_iterator_t citer;
+	ivm_type_list_iterator_t titer;
 
-	ivm_coro_list_foreach_arg(coros,
-							  (ivm_ptlist_foreach_proc_arg_t)
-							  ivm_collector_travCoro,
-							  arg);
+	IVM_CORO_LIST_EACHPTR(coros, citer) {
+		ivm_collector_travCoro(IVM_CORO_LIST_ITER_GET(citer),
+							   arg);
+	}
 
-	ivm_type_list_foreach_arg(types,
-							  (ivm_ptlist_foreach_proc_arg_t)
-							  ivm_collector_travType,
-							  arg);
+	IVM_TYPE_LIST_EACHPTR(types, titer) {
+		ivm_collector_travType(IVM_TYPE_LIST_ITER_GET(titer),
+							   arg);
+	}
+
+	return;
+}
+
+#define ADD_EMPTY_LIST(collector, obj) \
+	(ivm_destruct_list_add((collector)->des_log[1], (obj)))
+
+IVM_PRIVATE
+void
+ivm_collector_checkIfDestruct(ivm_collector_t *collector,
+							  ivm_object_t *obj,
+							  ivm_vmstate_t *state)
+{
+	if (!IVM_OBJECT_GET(obj, COPY)) {
+		ivm_object_destruct(obj, state);
+	} else {
+		/* copy to another log */
+		ADD_EMPTY_LIST(collector, IVM_OBJECT_GET(obj, COPY));
+	}
 
 	return;
 }
 
 IVM_PRIVATE
 void
-ivm_collector_destructCell(ivm_cell_t *cell, ivm_cell_set_t *set,
-						   ivm_collector_t *collector, ivm_vmstate_t *state)
-{
-	ivm_object_t *obj = IVM_CELL_GET(cell, OBJ);
-
-	if (obj) {
-		if (!IVM_OBJECT_GET(obj, COPY)) {
-			ivm_cell_removeFrom(cell, set);
-			ivm_cell_destruct(cell, state);
-		} else {
-			/* update reference */
-			IVM_CELL_SET(cell, OBJ, IVM_OBJECT_GET(obj, COPY));
-		}
-	}
-
-	return;
-}
-
-void
 ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state)
 {
-	ivm_cell_set_foreach(collector->des_log,
-						 (ivm_cell_set_foreach_proc_t)ivm_collector_destructCell,
-						 collector, state);
+	ivm_destruct_list_t *tmp;
+	ivm_destruct_list_iterator_t iter;
+
+	ivm_destruct_list_empty(collector->des_log[1]);
+
+	IVM_DESTRUCT_LIST_EACHPTR(collector->des_log[0], iter) {
+		ivm_collector_checkIfDestruct(collector,
+									  IVM_DESTRUCT_LIST_ITER_GET(iter),
+									  state);
+	}
+
+	tmp = collector->des_log[0];
+	collector->des_log[0] = collector->des_log[1];
+	collector->des_log[1] = tmp;
+
 	return;
 }
 

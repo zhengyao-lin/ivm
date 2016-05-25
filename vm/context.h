@@ -99,7 +99,7 @@ ivm_ctchain_foreach(ivm_ctchain_t *chain,
 					ivm_ctchain_foreach_proc_t proc,
 					void *arg);
 
-typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_iterator_t;
+typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 
 #define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->ct = val)
 #define IVM_CTCHAIN_ITER_GET(iter) ((iter)->ct)
@@ -129,16 +129,6 @@ ivm_context_pool_realloc(ivm_context_pool_t *pool,
 
 void
 ivm_context_pool_dump(ivm_context_pool_t *pool, ivm_ctchain_t *chain);
-
-#if 0
-typedef ivm_ptpool_t ivm_context_pool_t;
-
-#define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_ctchain_t)))
-#define ivm_context_pool_free ivm_ptpool_free
-#define ivm_context_pool_alloc(pool) ((ivm_ctchain_t *)ivm_ptpool_alloc(pool))
-#define ivm_context_pool_dump ivm_ptpool_dump
-
-#endif
 
 IVM_COM_END
 

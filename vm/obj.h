@@ -10,16 +10,6 @@
 
 IVM_COM_HEADER
 
-#if IVM_DEBUG
-
-#define IVM_DEFAULT_TYPE_LIST_BUFFER_SIZE 1
-
-#else
-
-#define IVM_DEFAULT_TYPE_LIST_BUFFER_SIZE 8
-
-#endif
-
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type; \
 	ivm_slot_table_t *slots; \
@@ -59,6 +49,7 @@ ivm_type_free(ivm_type_t *type);
 #define ivm_type_getProto(type) ((type)->proto)
 
 typedef ivm_ptlist_t ivm_type_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
 
 #define ivm_type_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_TYPE_LIST_BUFFER_SIZE))
 #define ivm_type_list_free ivm_ptlist_free
@@ -67,6 +58,10 @@ typedef ivm_ptlist_t ivm_type_list_t;
 #define ivm_type_list_at(list, i) ((ivm_type_t *)ivm_ptlist_at((list), (i)))
 #define ivm_type_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
 #define ivm_type_list_foreach_arg ivm_ptlist_foreach_arg
+
+#define IVM_TYPE_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_TYPE_LIST_ITER_GET(iter) ((ivm_type_t *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_TYPE_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_type_t *)
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER

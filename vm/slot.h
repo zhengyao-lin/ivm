@@ -57,6 +57,17 @@ ivm_slot_table_foreach(ivm_slot_table_t *table,
 					   ivm_slot_table_foreach_proc_t proc,
 					   void *arg);
 
+typedef ivm_slot_t *ivm_slot_table_iterator_t;
+
+#define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
+#define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))
+#define IVM_SLOT_TABLE_ITER_SET(iter, key, val) ((iter)->k = (key), (iter)->v = (val))
+#define IVM_SLOT_TABLE_ITER_GET_KEY(iter) ((iter)->k)
+#define IVM_SLOT_TABLE_ITER_GET_VAL(iter) ((iter)->v)
+#define IVM_SLOT_TABLE_EACHPTR(table, iter) \
+	for ((iter) = IVM_SLOT_TABLE_HEAD(table); \
+		 (iter); (iter) = (iter)->next)
+
 IVM_COM_END
 
 #endif

@@ -10,8 +10,6 @@
 
 IVM_COM_HEADER
 
-#define IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE 64
-
 #define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 

@@ -14,13 +14,6 @@
 
 IVM_COM_HEADER
 
-#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 11) * 2)
-#define IVM_CHECK_STATE_NULL (IVM_CHECK_BASE_NULL)
-
-#define IVM_DEFAULT_FUNCTION_POOL_SIZE (64)
-#define IVM_DEFAULT_CONTEXT_POOL_SIZE (64)
-#define IVM_DEFAULT_FRAME_POOL_SIZE (64)
-
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t *heaps[2];
 

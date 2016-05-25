@@ -8,16 +8,6 @@
 
 IVM_COM_HEADER
 
-#if IVM_DEBUG
-
-#define IVM_DEFAULT_STACK_BUFFER_SIZE 1
-
-#else
-
-#define IVM_DEFAULT_STACK_BUFFER_SIZE 32
-
-#endif
-
 typedef ivm_ptlist_t ivm_stack_t;
 typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 
@@ -39,6 +29,17 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_foreach ivm_ptlist_foreach
 #define ivm_stack_foreach_arg ivm_ptlist_foreach_arg
 
+#define IVM_PTLIST_ITER_TYPE(elem_type) elem_type *
+#define IVM_PTLIST_ITER_SET(iter, val) (*(iter) = val)
+#define IVM_PTLIST_ITER_GET(iter) (*(iter))
+#define IVM_PTLIST_EACHPTR(ptlist, iter, type) \
+	for ((iter) = (type *)((ptlist)->lst); \
+		 (iter) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); \
+		 (iter)++)
+
+#define IVM_STACK_ITER_TYPE IVM_PTLIST_ITER_TYPE
+#define IVM_STACK_ITER_SET IVM_PTLIST_ITER_SET
+#define IVM_STACK_ITER_GET IVM_PTLIST_ITER_GET
 #define IVM_STACK_EACHPTR IVM_PTLIST_EACHPTR
 
 IVM_COM_END

@@ -41,7 +41,7 @@ ivm_slot_copy(ivm_slot_t *slot, ivm_heap_t *heap)
 	return ret;
 }
 
-#define FOREACH(i, table) for ((i) = IVM_SLOT_TABLE_HEAD(table); (i); (i) = (i)->next)
+#define FOREACH(i, table) IVM_SLOT_TABLE_EACHPTR((table), (i))
 
 ivm_slot_table_t *
 ivm_slot_table_new(ivm_vmstate_t *state)

@@ -7,16 +7,6 @@
 
 IVM_COM_HEADER
 
-#if IVM_DEBUG
-
-#define IVM_DEFAULT_LIST_BUFFER_SIZE 1
-
-#else
-
-#define IVM_DEFAULT_LIST_BUFFER_SIZE 32
-
-#endif
-
 typedef void (*ivm_ptlist_foreach_proc_t)(void *p);
 typedef void (*ivm_ptlist_foreach_proc_arg_t)(void *p, void *arg);
 
@@ -29,7 +19,7 @@ typedef struct {
 
 ivm_ptlist_t *
 ivm_ptlist_new_c(ivm_size_t buf_size);
-#define ivm_ptlist_new() (ivm_ptlist_new_c(IVM_DEFAULT_LIST_BUFFER_SIZE))
+#define ivm_ptlist_new() (ivm_ptlist_new_c(IVM_DEFAULT_PTLIST_BUFFER_SIZE))
 void
 ivm_ptlist_free(ivm_ptlist_t *ptlist);
 void
@@ -47,6 +37,7 @@ void *
 ivm_ptlist_pop(ivm_ptlist_t *ptlist);
 
 #define ivm_ptlist_setCur(ptlist, t) ((ptlist)->cur = t)
+#define ivm_ptlist_empty(ptlist) (ivm_ptlist_setCur((ptlist), 0))
 
 void
 ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc);
@@ -57,10 +48,12 @@ void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 
 #define IVM_PTLIST_ITER_TYPE(elem_type) elem_type *
-#define IVM_PTLIST_EACHPTR(ptlist, ptr, type) \
-	for ((ptr) = (type *)((ptlist)->lst); \
-		 (ptr) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); \
-		 (ptr)++)
+#define IVM_PTLIST_ITER_SET(iter, val) (*(iter) = val)
+#define IVM_PTLIST_ITER_GET(iter) (*(iter))
+#define IVM_PTLIST_EACHPTR(ptlist, iter, type) \
+	for ((iter) = (type *)((ptlist)->lst); \
+		 (iter) != &(((type *)(ptlist)->lst)[(ptlist)->cur]); \
+		 (iter)++)
 
 typedef int (*ivm_ptlist_comparer_t)(const void *, const void *);
 
