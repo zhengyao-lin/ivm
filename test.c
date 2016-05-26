@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include "pub/const.h"
 #include "vm/vm.h"
@@ -7,6 +8,7 @@
 #include "vm/gc/gc.h"
 #include "vm/std/pool.h"
 #include "vm/std/chain.h"
+#include "vm/std/hash.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -131,7 +133,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -144,7 +146,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 100; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 2);
 		ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "proto_func");
@@ -275,6 +277,38 @@ int test_vm()
 	return 0;
 }
 
+ivm_hash_val_t
+strhash(const char *key)
+{
+	register ivm_hash_val_t hash = 5381;
+	ivm_size_t len = strlen(key);
+ 
+	for (; len >= 8; len -= 8) {
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+	}
+ 
+	switch (len) {
+		case 7: hash = ((hash << 5) + hash) + *key++;
+		case 6: hash = ((hash << 5) + hash) + *key++;
+		case 5: hash = ((hash << 5) + hash) + *key++;
+		case 4: hash = ((hash << 5) + hash) + *key++;
+		case 3: hash = ((hash << 5) + hash) + *key++;
+		case 2: hash = ((hash << 5) + hash) + *key++;
+		case 1: hash = ((hash << 5) + hash) + *key++; break;
+		case 0: break;
+		default: ;
+	}
+
+	return hash;
+}
+
 int main()
 {
 	test_vm();
@@ -298,6 +332,38 @@ int main()
 	ivm_ptchain_free(chain);
 
 	profile_type();
+
+#endif
+
+#if 0
+
+	ivm_hash_table_t *table =
+			ivm_hash_table_new(1024,
+							  (ivm_hash_table_comparer_t)strcmp,
+							  (ivm_hash_function_t)strhash);
+	char *chartab[] = { "a", "b", "c", "d",
+						"e", "f", "g", "h",
+						"i", "j", "k", "l",
+						"m", "n", "o", "p",
+						"q", "r", "s", "t",
+						"u", "v", "w", "x",
+						"y", "z" };
+
+	int i;
+
+	profile_start();
+
+	for (i = 0; i < 26; i++) {
+		ivm_hash_table_setMap(table, chartab[i], (void *)(i + 120));
+	}
+
+	for (i = 0; i < 26; i++) {
+		printf("%s -> %d\n", chartab[i], (int)ivm_hash_table_getValue(table, chartab[i], IVM_NULL));
+	}
+
+	profile_output();
+
+	ivm_hash_table_free(table);
 
 #endif
 

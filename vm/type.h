@@ -7,6 +7,7 @@
 typedef int				ivm_bool_t;
 
 typedef int				ivm_int_t;
+typedef unsigned int	ivm_uint_t;
 
 typedef int8_t			ivm_sint8_t;
 typedef int16_t			ivm_sint16_t;
