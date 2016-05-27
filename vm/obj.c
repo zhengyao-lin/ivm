@@ -229,20 +229,33 @@ ivm_object_getSlotValue_np(ivm_object_t *obj,
 							 state);
 }
 
-IVM_PRIVATE
-void
-ivm_object_printSlots_proc(ivm_slot_t *slot, void *arg)
-{
-	fprintf(stderr, "\tkey %s: %p\n", slot->k, (void *)slot->v);
-	return;
-}
-
 void
 ivm_object_printSlots(ivm_object_t *obj)
 {
-	fprintf(stderr, "IVM_DEBUG slots in object %p\n", (void *)obj);
-	ivm_slot_table_foreach(obj->slots,
-						   (ivm_slot_table_foreach_proc_t)ivm_object_printSlots_proc,
-						   IVM_NULL);
+	ivm_slot_table_iterator_t iter;
+	ivm_size_t ecount = 0; /* empty count */
+
+	fprintf(stderr, "IVM_DEBUG slots in object %p(slot table using %s)\n",
+			(void *)obj, obj->slots && obj->slots->is_hash ? "hash table" : "list");
+
+	if (obj->slots) {
+		IVM_SLOT_TABLE_EACHPTR(obj->slots, iter) {
+			if (IVM_SLOT_TABLE_ITER_GET_KEY(iter)) {
+				fprintf(stderr, "\tkey %s: %p\n",
+						IVM_SLOT_TABLE_ITER_GET_KEY(iter),
+						(void *)IVM_SLOT_TABLE_ITER_GET_VAL(iter));
+			} else {
+				ecount++;
+			}
+		}
+
+		if (obj->slots->is_hash) {
+			fprintf(stderr, "\thash table load factor: %f\n",
+					(double)ecount / obj->slots->size);
+		}
+	} else {
+		fprintf(stderr, "\tnone\n");
+	}
+
 	return;
 }

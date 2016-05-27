@@ -47,6 +47,7 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
 	ivm_slot_table_iterator_t siter;
+	ivm_slot_table_t *tmp;
 
 	if (!obj) return IVM_NULL;
 	if (IVM_OBJECT_GET(obj, COPY) != IVM_NULL)
@@ -57,12 +58,14 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
 	IVM_OBJECT_SET(obj, COPY, ret);
 
-	IVM_OBJECT_SET(ret, SLOTS, ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
+	IVM_OBJECT_SET(ret, SLOTS, tmp = ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
 
-	IVM_SLOT_TABLE_EACHPTR(IVM_OBJECT_GET(ret, SLOTS), siter) {
-		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-									ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
-															 arg));
+	if (tmp) {
+		IVM_SLOT_TABLE_EACHPTR(tmp, siter) {
+			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+										ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
+																 arg));
+		}
 	}
 
 

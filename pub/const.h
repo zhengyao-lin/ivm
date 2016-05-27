@@ -7,6 +7,9 @@
 #define IVM_USE_FUNCTION_POOL 1
 #define IVM_USE_FRAME_POOL 1
 
+/* if defined 1, a slot table will turn from list to hash table when having too many elements */
+#define IVM_USE_HASH_TABLE_AS_SLOT_TABLE 1
+
 #define IVM_DEFAULT_FUNCTION_POOL_SIZE 32
 #define IVM_DEFAULT_CONTEXT_POOL_SIZE 32
 #define IVM_DEFAULT_FRAME_POOL_SIZE 32
@@ -30,5 +33,9 @@
 
 /* string pool block size */
 #define IVM_DEFAULT_STRING_POOL_BLOCK_SIZE 1024
+
+#define IVM_DEFAULT_SLOT_TABLE_SIZE 3
+/* when the number of elements is greater than this value, the slot table will be turned into hash table */
+#define IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD 24
 
 #endif

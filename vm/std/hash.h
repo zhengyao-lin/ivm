@@ -40,6 +40,11 @@ void *
 ivm_hash_table_getValue(ivm_hash_table_t *table,
 						void *key, ivm_bool_t *suc);
 
+/* hash functions */
+
+ivm_hash_val_t
+ivm_hash_fromString(const ivm_char_t *key);
+
 IVM_COM_END
 
 #endif

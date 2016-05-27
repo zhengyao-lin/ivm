@@ -94,6 +94,26 @@ int test_vm()
 	ivm_coro_t *coro1, *coro2;
 	ivm_size_t addr1, addr2, addr3, addr4;
 	ivm_string_pool_t *str_pool;
+	char *chartab[] = { "a", "b", "c", "d",
+						"e", "f", "g", "h",
+						"i", "j", "k", "l",
+						"m", "n", "o", "p",
+						"q", "r", "s", "t",
+						"u", "v", "w", "x",
+						"y", "z", "aa", "bb",
+						"cc", "dd", "ee", "ff",
+						"gg", "hh", "ii", "jj",
+						"kk", "ll", "mm", "nn",
+						"oo", "pp", "qq", "rr",
+						"ss", "tt", "uu", "vv",
+						"ww", "xx", "yy", "zz",
+						"aaa", "bbb", "ccc", "ddd",
+						"fff", "ggg", "hhh", "iii",
+						"jjj", "kkk", "lll", "mmm",
+						"nnn", "ooo", "ppp", "qqq",
+						"rrr", "sss", "ttt", "uuu",
+						"vvv", "www", "xxx", "yyy",
+						"zzz" };
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
@@ -106,7 +126,13 @@ int test_vm()
 	exec4 = ivm_exec_new(str_pool);
 
 	proto = ivm_vmstate_getTypeProto(state, IVM_OBJECT_T);
+
+	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
+		ivm_object_setSlot(proto, state, chartab[i], obj3);
+	}
 	ivm_object_setSlot(proto, state, "proto_func", obj3);
+
+	ivm_object_printSlots(proto);
 
 	func1 = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
 	func2 = ivm_function_new(state, exec2, IVM_INTSIG_NONE);
@@ -134,7 +160,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -147,7 +173,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 2);
 		ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "proto_func");

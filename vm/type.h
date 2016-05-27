@@ -26,8 +26,8 @@ typedef wchar_t			ivm_wchar_t;
 typedef char			ivm_char_t;
 
 #define IVM_NULL		(NULL)
-#define IVM_TRUE		1
 #define IVM_FALSE		0
+#define IVM_TRUE		!0
 
 typedef ivm_uint64_t	ivm_size_t;
 typedef ivm_uint8_t		ivm_byte_t;
