@@ -55,7 +55,7 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
-		IVM_ASSERT(!coro->runtime, IVM_ERROT_MSG_RESET_CORO_ROOT);
+		IVM_ASSERT(!coro->runtime, IVM_ERROR_MSG_RESET_CORO_ROOT);
 
 		tmp_func = ivm_function_object_getFunc(root);
 		coro->runtime

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <time.h>
 #include "pub/const.h"
 #include "vm/vm.h"
@@ -133,7 +134,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(NEW_FUNC), "$i32", ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addCode(exec1, IVM_OP(SET_CONTEXT_SLOT), "$s", "func");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
 		ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 0);
@@ -146,7 +147,7 @@ int test_vm()
 	ivm_exec_addCode(exec1, IVM_OP(INVOKE), "$i32", 1);
 	ivm_exec_addOp(exec1, IVM_OP(PRINT_STR), "****************end*****************");
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addCode(exec1, IVM_OP(GET_CONTEXT_SLOT), "$s", "func");
 		ivm_exec_addCode(exec1, IVM_OP(NEW_NUM_i), "$i32", 2);
 		ivm_exec_addCode(exec1, IVM_OP(GET_SLOT), "$s", "proto_func");
@@ -309,6 +310,11 @@ strhash(const char *key)
 	return hash;
 }
 
+int dump()
+{
+	return 23;
+}
+
 int main()
 {
 	test_vm();
@@ -338,7 +344,7 @@ int main()
 #if 0
 
 	ivm_hash_table_t *table =
-			ivm_hash_table_new(1024,
+			ivm_hash_table_new(2,
 							  (ivm_hash_table_comparer_t)strcmp,
 							  (ivm_hash_function_t)strhash);
 	char *chartab[] = { "a", "b", "c", "d",
@@ -353,12 +359,13 @@ int main()
 
 	profile_start();
 
-	for (i = 0; i < 26; i++) {
-		ivm_hash_table_setMap(table, chartab[i], (void *)(i + 120));
+	for (i = 0; i < 10000000; i++) {
+		ivm_hash_table_insert(table, chartab[i % 26], (void *)chartab[i % 26]);
 	}
 
 	for (i = 0; i < 26; i++) {
-		printf("%s -> %d\n", chartab[i], (int)ivm_hash_table_getValue(table, chartab[i], IVM_NULL));
+		/* printf("%s -> %s\n", chartab[i], (char *)ivm_hash_table_getValue(table, chartab[i], IVM_NULL)); */
+		assert(ivm_hash_table_getValue(table, chartab[i % 26], IVM_NULL) == chartab[i % 26]);
 	}
 
 	profile_output();

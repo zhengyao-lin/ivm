@@ -17,18 +17,15 @@ typedef struct {
 } ivm_ptpair_t;
 
 typedef struct {
-	ivm_uint_t bsize; /* base size */
-	ivm_ptpair_t *base; /* pairs with NULL keys are considered empty */
-
-	ivm_size_t osize;
-	ivm_ptpair_t *otable;
+	ivm_size_t tsize; /* table size */
+	ivm_ptpair_t *table;
 
 	ivm_hash_table_comparer_t cmp;
 	ivm_hash_function_t hash;
 } ivm_hash_table_t;
 
 ivm_hash_table_t *
-ivm_hash_table_new(ivm_uint_t bsize,
+ivm_hash_table_new(ivm_size_t tsize,
 				   ivm_hash_table_comparer_t cmp,
 				   ivm_hash_function_t hash);
 
@@ -36,7 +33,7 @@ void
 ivm_hash_table_free(ivm_hash_table_t *table);
 
 void
-ivm_hash_table_setMap(ivm_hash_table_t *table,
+ivm_hash_table_insert(ivm_hash_table_t *table,
 					  void *key, void *value);
 
 void *
