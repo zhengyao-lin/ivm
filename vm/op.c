@@ -193,6 +193,18 @@ OP_PROC(DUP)
 	return IVM_ACTION_NONE;
 }
 
+OP_PROC(DUP_i)
+{
+	ivm_sint32_t i = ivm_byte_readSInt32(ARG_START);
+
+	CHECK_STACK(i + 1);
+	
+	STACK_PUSH(STACK_BEFORE(i));
+	PC += OP_OFFSET(DUP_i);
+
+	return IVM_ACTION_NONE;
+}
+
 OP_PROC(PRINT_OBJ)
 {
 	ivm_object_t *obj;
@@ -370,6 +382,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(SET_ARG,				"set_arg",				"$s"),
 	OP_MAPPING(POP,					"pop",					""),
 	OP_MAPPING(DUP,					"dup",					""),
+	OP_MAPPING(DUP_i,				"dup_i",				"$i32"),
 	OP_MAPPING(PRINT_OBJ,			"print_obj",			""),
 	OP_MAPPING(PRINT_NUM,			"print_num",			""),
 	OP_MAPPING(PRINT_TYPE,			"print_type",			""),

@@ -157,12 +157,8 @@ ivm_object_getSlotValue_np(ivm_object_t *obj,
 						   struct ivm_vmstate_t_tag *state,
 						   const ivm_char_t *key);
 
-#if IVM_DEBUG
-
 void
 ivm_object_printSlots(ivm_object_t *obj);
-
-#endif
 
 #define IVM_AS(obj, type) ((type *)(obj))
 #define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))

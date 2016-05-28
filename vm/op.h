@@ -25,6 +25,7 @@ typedef enum {
 	IVM_OP(SET_ARG),
 	IVM_OP(POP),
 	IVM_OP(DUP),
+	IVM_OP(DUP_i),
 	IVM_OP(PRINT_OBJ),
 	IVM_OP(PRINT_NUM),
 	IVM_OP(PRINT_TYPE),
@@ -53,6 +54,7 @@ typedef enum {
 #define IVM_OP_OFFSET_SET_ARG				(IVM_STRING_POOL_INDEX_SIZE + 1)
 #define IVM_OP_OFFSET_POP					(1)
 #define IVM_OP_OFFSET_DUP					(1)
+#define IVM_OP_OFFSET_DUP_i					(sizeof(ivm_sint32_t) + 1)
 #define IVM_OP_OFFSET_PRINT_OBJ				(1)
 #define IVM_OP_OFFSET_PRINT_NUM				(1)
 #define IVM_OP_OFFSET_PRINT_TYPE			(1)
