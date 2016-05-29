@@ -15,7 +15,7 @@
 #define IVM_DEFAULT_FRAME_POOL_SIZE 32
 
 /* size of a single heap in GC */
-#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 11) * 2)
+#define IVM_DEFAULT_INIT_HEAP_SIZE ((2 << 18))
 
 /* list buffer sizes */
 #define IVM_DEFAULT_PTLIST_BUFFER_SIZE 32

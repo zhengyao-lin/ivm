@@ -51,6 +51,9 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_frame_t *tmp_frame;
 	ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
+	ivm_pc_t *tmp_pc;
+	ivm_exec_t **tmp_exec;
+	ivm_ctchain_t **tmp_context;
 	ivm_function_t *tmp_func = IVM_NULL;
 
 	if (root) {
@@ -74,13 +77,14 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 		while (1) {
 			ret = IVM_NULL;
+			tmp_pc = IVM_RUNTIME_GET(tmp_runtime, PC_PTR);
+			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC_PTR);
+			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT_PTR);
 
-			while (IVM_RUNTIME_GET(tmp_runtime, EXEC) &&
-				   IVM_RUNTIME_GET(tmp_runtime, PC)
-				   < ivm_exec_length(IVM_RUNTIME_GET(tmp_runtime, EXEC))) {
-				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(IVM_RUNTIME_GET(tmp_runtime, EXEC),
-															  IVM_RUNTIME_GET(tmp_runtime, PC)));
-				switch (tmp_proc(state, coro)) {
+			while (*tmp_exec &&
+				   *tmp_pc < ivm_exec_length(*tmp_exec)) {
+				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(*tmp_exec, *tmp_pc));
+				switch (tmp_proc(state, coro, tmp_stack, tmp_exec, tmp_context, tmp_pc)) {
 					case IVM_ACTION_BREAK:
 						goto ACTION_BREAK;
 					case IVM_ACTION_YIELD:

@@ -24,6 +24,10 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_EXEC(runtime) ((runtime)->exec)
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
 
+#define IVM_RUNTIME_GET_PC_PTR(runtime) (&(runtime)->pc)
+#define IVM_RUNTIME_GET_EXEC_PTR(runtime) (&(runtime)->exec)
+#define IVM_RUNTIME_GET_CONTEXT_PTR(runtime) (&(runtime)->context)
+
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))
 

@@ -10,31 +10,37 @@
 #include "err.h"
 
 #define OP_PROC_NAME(op) ivm_op_proc_##op
-#define OP_PROC(op) ivm_action_t OP_PROC_NAME(op)(ivm_vmstate_t *__ivm_state__, ivm_coro_t *__ivm_coro__)
+#define OP_PROC(op) ivm_action_t OP_PROC_NAME(op)(ivm_vmstate_t *__ivm_state__, \
+												  ivm_coro_t *__ivm_coro__, \
+												  ivm_vmstack_t *__ivm_stack__, \
+												  ivm_exec_t **__ivm_exec__, \
+												  ivm_ctchain_t **__ivm_context__, \
+												  ivm_pc_t *__ivm_pc__)
 												  /* these arguments shouldn't be used directly */
 
 #define CORO (__ivm_coro__)
 #define RUNTIME (__ivm_coro__->runtime)
-#define CONTEXT (__ivm_coro__->runtime->context)
-#define PC (__ivm_coro__->runtime->pc)
+#define CONTEXT (*__ivm_context__)
+#define PC (*__ivm_pc__)
 #define STATE (__ivm_state__)
 #define FRAME_STACK (__ivm_coro__->frame_st)
+#define EXEC (*__ivm_exec__)
 
 /* use this before increase pc */
-#define ARG_OFFSET(i) (&__ivm_coro__->runtime->exec->code[__ivm_coro__->runtime->pc + 1 + i])
+#define ARG_OFFSET(i) (&EXEC->code[PC + 1 + i])
 #define ARG_START (ARG_OFFSET(0))
 
-#define STRING_POOL (__ivm_coro__->runtime->exec->pool)
+#define STRING_POOL (EXEC->pool)
 
-#define STACK (__ivm_coro__->stack)
-#define STACK_SIZE() (ivm_vmstack_size(__ivm_coro__->stack))
-#define STACK_TOP() (ivm_vmstack_top(__ivm_coro__->stack))
-#define STACK_POP() (ivm_vmstack_pop(__ivm_coro__->stack))
-#define STACK_PUSH(obj) (ivm_vmstack_push(__ivm_coro__->stack, (obj)))
-#define STACK_BEFORE(i) (ivm_vmstack_before(__ivm_coro__->stack, (i)))
-#define STACK_CUT(i) (ivm_vmstack_cut(__ivm_coro__->stack, (i)))
+#define STACK (__ivm_stack__)
+#define STACK_SIZE() (ivm_vmstack_size(STACK))
+#define STACK_TOP() (ivm_vmstack_top(STACK))
+#define STACK_POP() (ivm_vmstack_pop(STACK))
+#define STACK_PUSH(obj) (ivm_vmstack_push(STACK, (obj)))
+#define STACK_BEFORE(i) (ivm_vmstack_before(STACK, (i)))
+#define STACK_CUT(i) (ivm_vmstack_cut(STACK, (i)))
 #define STACK_INC(i) \
-	(ivm_vmstack_setTop(__ivm_coro__->stack, \
+	(ivm_vmstack_setTop(STACK, \
 						(i) + IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP)))
 
 #define FRAME_STACK_TOP() (ivm_frame_stack_top(__ivm_coro__->frame_st))
@@ -193,14 +199,14 @@ OP_PROC(DUP)
 	return IVM_ACTION_NONE;
 }
 
-OP_PROC(DUP_i)
+OP_PROC(DUP_b)
 {
-	ivm_sint32_t i = ivm_byte_readSInt32(ARG_START);
+	ivm_byte_t i = *ARG_START;
 
 	CHECK_STACK(i + 1);
 	
 	STACK_PUSH(STACK_BEFORE(i));
-	PC += OP_OFFSET(DUP_i);
+	PC += OP_OFFSET(DUP_b);
 
 	return IVM_ACTION_NONE;
 }
@@ -382,7 +388,7 @@ ivm_global_op_table[] = {
 	OP_MAPPING(SET_ARG,				"set_arg",				"$s"),
 	OP_MAPPING(POP,					"pop",					""),
 	OP_MAPPING(DUP,					"dup",					""),
-	OP_MAPPING(DUP_i,				"dup_i",				"$i32"),
+	OP_MAPPING(DUP_b,				"dup_b",				"$i8"),
 	OP_MAPPING(PRINT_OBJ,			"print_obj",			""),
 	OP_MAPPING(PRINT_NUM,			"print_num",			""),
 	OP_MAPPING(PRINT_TYPE,			"print_type",			""),

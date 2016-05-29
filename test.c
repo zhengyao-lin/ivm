@@ -185,7 +185,7 @@ int test_vm()
 
 	for (i = 0; i < 100; i++) {
 		ivm_exec_addOp(exec1, IVM_OP(NEW_OBJ));
-		ivm_exec_addOp(exec1, IVM_OP(DUP_i), 1);
+		ivm_exec_addOp(exec1, IVM_OP(DUP_b), 1);
 		ivm_exec_addOp(exec1, IVM_OP(SET_SLOT), "a");
 		ivm_exec_addOp(exec1, IVM_OP(POP));
 	}

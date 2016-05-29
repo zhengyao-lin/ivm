@@ -89,7 +89,7 @@ ivm_dbg_disAsmExec(ivm_exec_t *exec,
 	return;
 }
 
-#define B2MB(val) (val / (2 << 20))
+#define B2MB(val) ((double)val / (2 << 20))
 
 IVM_PRIVATE
 void
@@ -102,7 +102,7 @@ ivm_dbg_printHeap(ivm_heap_t *heap,
 			   *curs = IVM_HEAP_GET(heap, CUR_SIZE),
 			   size = 0, i;
 
-	fprintf(fp, "%sblock size: %ldMB\n", prefix, B2MB(bsize));
+	fprintf(fp, "%sblock size: %.2fMB\n", prefix, B2MB(bsize));
 	fprintf(fp, "%sblock count: %ld\n", prefix, bcount);
 	fprintf(fp, "%susage:\n", prefix);
 

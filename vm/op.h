@@ -3,11 +3,14 @@
 
 #include "pub/com.h"
 #include "type.h"
+#include "vmstack.h"
 
 IVM_COM_HEADER
 
 struct ivm_coro_t_tag;
 struct ivm_vmstate_t_tag;
+struct ivm_ctchain_t_tag;
+struct ivm_exec_t_tag;
 
 #define IVM_OP(name) IVM_OP_##name
 
@@ -25,7 +28,7 @@ typedef enum {
 	IVM_OP(SET_ARG),
 	IVM_OP(POP),
 	IVM_OP(DUP),
-	IVM_OP(DUP_i),
+	IVM_OP(DUP_b), /* _b: byte argument */
 	IVM_OP(PRINT_OBJ),
 	IVM_OP(PRINT_NUM),
 	IVM_OP(PRINT_TYPE),
@@ -54,7 +57,7 @@ typedef enum {
 #define IVM_OP_OFFSET_SET_ARG				(IVM_STRING_POOL_INDEX_SIZE + 1)
 #define IVM_OP_OFFSET_POP					(1)
 #define IVM_OP_OFFSET_DUP					(1)
-#define IVM_OP_OFFSET_DUP_i					(sizeof(ivm_sint32_t) + 1)
+#define IVM_OP_OFFSET_DUP_b					(sizeof(ivm_byte_t) + 1)
 #define IVM_OP_OFFSET_PRINT_OBJ				(1)
 #define IVM_OP_OFFSET_PRINT_NUM				(1)
 #define IVM_OP_OFFSET_PRINT_TYPE			(1)
@@ -77,7 +80,12 @@ typedef enum {
 	IVM_ACTION_YIELD
 } ivm_action_t;
 
-typedef ivm_action_t (*ivm_op_proc_t)(struct ivm_vmstate_t_tag *state, struct ivm_coro_t_tag *coro);
+typedef ivm_action_t (*ivm_op_proc_t)(struct ivm_vmstate_t_tag *state,
+									  struct ivm_coro_t_tag *coro,
+									  ivm_vmstack_t *stack,
+									  struct ivm_exec_t_tag **exec,
+									  struct ivm_ctchain_t_tag **context,
+									  ivm_pc_t *pc);
 
 typedef struct {
 	ivm_opcode_t op;

@@ -10,7 +10,7 @@
 
 IVM_COM_HEADER
 
-typedef struct {
+typedef struct ivm_exec_t_tag {
 	ivm_string_pool_t *pool;
 
 	ivm_size_t length;
@@ -56,9 +56,9 @@ ivm_exec_rewriteArg(ivm_exec_t *exec,
 					ivm_size_t addr,
 					const ivm_char_t *format, ...);
 
-#define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)exec->code[pc])
-#define ivm_exec_offset(exec, pc) (&(exec->code[pc]))
-#define ivm_exec_length(exec) (exec->cur)
+#define ivm_exec_opAt(exec, pc) ((ivm_opcode_t)(exec)->code[pc])
+#define ivm_exec_offset(exec, pc) (&((exec)->code[pc]))
+#define ivm_exec_length(exec) ((exec)->cur)
 #define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
 
 typedef ivm_size_t ivm_exec_id_t;
