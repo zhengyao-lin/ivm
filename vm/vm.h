@@ -20,7 +20,6 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
 
-	ivm_exec_list_t *exec_list; /* executable list: used for function object creating */
 	ivm_type_list_t *type_list;
 	ivm_func_list_t *func_list;
 
@@ -124,9 +123,6 @@ void
 ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
-
-#define ivm_vmstate_registerExec(state, exec) (ivm_exec_list_register((state)->exec_list, (exec)))
-#define ivm_vmstate_getExec(state, id) (ivm_exec_list_at((state)->exec_list, (id)))
 
 #define ivm_vmstate_registerType(state, type) (ivm_type_list_register((state)->type_list, (type)))
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))

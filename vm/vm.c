@@ -82,7 +82,6 @@ ivm_vmstate_new()
 	ret->cur_coro = 0;
 	ret->coro_list = ivm_coro_list_new();
 	
-	ret->exec_list = ivm_exec_list_new();
 	ret->type_list = ivm_type_list_new();
 	ret->func_list = ivm_func_list_new();
 
@@ -129,7 +128,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_heap_free(HEAP2(state));
 
 		ivm_coro_list_free(state->coro_list);
-		ivm_exec_list_free(state->exec_list);
 		ivm_func_list_free(state->func_list);
 
 		ivm_function_pool_free(state->func_pool);

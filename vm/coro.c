@@ -47,14 +47,15 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 			   ivm_function_object_t *root)
 {
 	ivm_object_t *ret = IVM_NULL;
-	ivm_op_proc_t tmp_proc;
 	ivm_frame_t *tmp_frame;
 	ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
-	ivm_pc_t *tmp_pc;
-	ivm_exec_t **tmp_exec;
-	ivm_ctchain_t **tmp_context;
+
+	ivm_exec_t *tmp_exec;
+	ivm_ctchain_t *tmp_context;
 	ivm_function_t *tmp_func = IVM_NULL;
+
+	ivm_instr_t *tmp_ip, *tmp_ip_end;
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
@@ -77,21 +78,33 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 		while (1) {
 			ret = IVM_NULL;
-			tmp_pc = IVM_RUNTIME_GET(tmp_runtime, PC_PTR);
-			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC_PTR);
-			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT_PTR);
 
-			while (*tmp_exec &&
-				   *tmp_pc < ivm_exec_length(*tmp_exec)) {
-				tmp_proc = ivm_op_table_getProc(ivm_exec_opAt(*tmp_exec, *tmp_pc));
-				switch (tmp_proc(state, coro, tmp_stack, tmp_exec, tmp_context, tmp_pc)) {
-					case IVM_ACTION_BREAK:
-						goto ACTION_BREAK;
-					case IVM_ACTION_YIELD:
-						goto ACTION_YIELD;
-					default:;
+IVM_ACTION_INVOKE:
+
+			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
+			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
+
+			if (tmp_exec) {
+				tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
+				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
+
+				while (tmp_ip != tmp_ip_end) {
+					switch (tmp_ip->proc(state, coro, tmp_stack, tmp_context,
+										 tmp_exec->pool, &tmp_ip)) {
+						case IVM_ACTION_INVOKE:
+							goto IVM_ACTION_INVOKE;
+						case IVM_ACTION_BREAK:
+							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
+							goto ACTION_BREAK;
+						case IVM_ACTION_YIELD:
+							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
+							goto ACTION_YIELD;
+						default:;
+					}
+					ivm_vmstate_checkGC(state);
 				}
-				ivm_vmstate_checkGC(state);
+
+				IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
 			}
 ACTION_BREAK:
 			

@@ -4,6 +4,7 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "type.h"
+#include "instr.h"
 #include "exec.h"
 #include "std/stack.h"
 #include "std/pool.h"
@@ -11,8 +12,8 @@
 IVM_COM_HEADER
 
 #define IVM_EXEC_INFO_HEAD \
-	ivm_pc_t pc; \
 	ivm_exec_t *exec; \
+	ivm_instr_t *ip; \
 	struct ivm_ctchain_t_tag *context;
 
 struct ivm_vmstate_t_tag;
@@ -27,7 +28,7 @@ typedef struct ivm_frame_t_tag {
 
 #define IVM_FRAME_GET_EXEC(frame) ((frame) ? (frame)->exec : IVM_NULL)
 #define IVM_FRAME_GET_STACK_TOP(frame) ((frame) ? (frame)->st_top : 0)
-#define IVM_FRAME_GET_PC(frame) ((frame) ? (frame)->pc : 0)
+#define IVM_FRAME_GET_IP(frame) ((frame) ? (frame)->ip : 0)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame) ? (frame)->context : IVM_NULL)
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)

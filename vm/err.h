@@ -10,7 +10,7 @@ IVM_COM_HEADER
 #define IVM_ASSERT(cond, ...) \
 	if (!(cond)) { \
 		fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
-		fprintf(IVM_STDERR, __VA_ARGS__); \
+		fprintf(IVM_STDERR, ##__VA_ARGS__); \
 		fputc('\n', IVM_STDERR); \
 		IVM_ABORT(); \
 	}

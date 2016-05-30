@@ -14,6 +14,67 @@ ivm_exec_new(ivm_string_pool_t *pool)
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
 	ret->pool = pool;
+	ret->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
+	ret->next = 0;
+	ret->instrs = MEM_ALLOC(sizeof(*ret->instrs)
+							* IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE,
+							ivm_instr_t *);
+
+	IVM_ASSERT(ret->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
+
+	return ret;
+}
+
+void
+ivm_exec_free(ivm_exec_t *exec)
+{
+	if (exec) {
+		MEM_FREE(exec->instrs);
+		MEM_FREE(exec);
+	}
+
+	return;
+}
+
+IVM_PRIVATE
+void
+ivm_exec_expand(ivm_exec_t *exec)
+{
+	exec->alloc <<= 1;
+	exec->instrs = MEM_REALLOC(exec->instrs,
+								sizeof(*exec->instrs)
+								* exec->alloc,
+								ivm_instr_t *);
+
+	IVM_ASSERT(exec->instrs,
+			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded instruction list in executable"));
+
+	return;
+}
+
+ivm_size_t
+ivm_exec_addInstr(ivm_exec_t *exec,
+				  ivm_instr_t instr)
+{
+	if (exec->next >= exec->alloc) {
+		ivm_exec_expand(exec);
+	}
+
+	exec->instrs[exec->next] = instr;
+
+	return exec->next++;
+}
+
+#if 0
+
+ivm_exec_t *
+ivm_exec_new(ivm_string_pool_t *pool)
+{
+	ivm_exec_t *ret = MEM_ALLOC(sizeof(*ret), ivm_exec_t *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
+
+	ret->pool = pool;
 	ret->length = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	ret->cur = 0;
 	ret->code = MEM_ALLOC_INIT(sizeof(*ret->code)
@@ -210,3 +271,32 @@ ivm_exec_rewriteArg(ivm_exec_t *exec,
 
 	return;
 }
+
+
+void
+ivm_exec_toInstrBlock(ivm_exec_t *exec,
+					  ivm_exec_t *dest)
+{
+	ivm_pc_t pc = 0, tmp;
+	ivm_instr_t instr;
+	ivm_byte_t op;
+
+	while (pc < exec->cur) {
+		op = exec->code[pc];
+
+		MEM_INIT(&instr, sizeof(ivm_instr_t));
+		instr.proc = ivm_op_table_getProc(op);
+		tmp = ivm_op_table_getOffset(op);
+		if (tmp > 1) {
+			MEM_COPY(&instr.op1, &exec->code[pc + 1], tmp - 1);
+		}
+
+		ivm_exec_addInstr(dest, instr);
+
+		pc += tmp;
+	}
+
+	return;
+}
+
+#endif

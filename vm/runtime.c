@@ -35,7 +35,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_exec_t *exec,
 				   ivm_ctchain_t *context)
 {
-	runtime->pc = 0;
+	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->exec = exec;
 	runtime->context = context;
 

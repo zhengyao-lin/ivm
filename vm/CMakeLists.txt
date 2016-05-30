@@ -7,6 +7,7 @@ ADD_LIBRARY(vm SHARED
 			slot.c
 			vm.c
 			exec.c
+			instr.c
 			context.c
 			func.c
 			call.c

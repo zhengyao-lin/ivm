@@ -20,13 +20,15 @@ typedef struct ivm_runtime_t_tag {
 } ivm_runtime_t;
 
 #define IVM_RUNTIME_GET_IS_NATIVE(runtime) ((runtime)->exec == IVM_NULL)
-#define IVM_RUNTIME_GET_PC(runtime) ((runtime)->pc)
+#define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_EXEC(runtime) ((runtime)->exec)
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
 
-#define IVM_RUNTIME_GET_PC_PTR(runtime) (&(runtime)->pc)
+#define IVM_RUNTIME_GET_IP_PTR(runtime) (&(runtime)->IP)
 #define IVM_RUNTIME_GET_EXEC_PTR(runtime) (&(runtime)->exec)
 #define IVM_RUNTIME_GET_CONTEXT_PTR(runtime) (&(runtime)->context)
+
+#define IVM_RUNTIME_SET_IP(runtime, val) ((runtime)->ip = (val))
 
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))
