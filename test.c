@@ -5,6 +5,7 @@
 #include "pub/const.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
+#include "vm/err.h"
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
 #include "vm/std/pool.h"
@@ -13,14 +14,14 @@
 
 IVM_NATIVE_FUNC(test)
 {
-	printf("from native!!\n");
+	IVM_OUT("from native!!\n");
 	return IVM_NULL;
 }
 
 IVM_NATIVE_FUNC(call_func)
 {
 	ivm_function_object_t *func = IVM_AS(argv[0], ivm_function_object_t);
-	printf("call function!!\n");
+	IVM_OUT("call function!!\n");
 
 	ivm_function_invoke(func->val, state,
 						func->closure, IVM_VMSTATE_GET(state, CUR_CORO));
@@ -45,29 +46,20 @@ void profile_output()
 	clock_t now = clock();
 	clock_t prog = now - ivm_perf_program_start;
 
-	fprintf(stderr, "\n***performance profile***\n\n");
-	fprintf(stderr, "program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
-	fprintf(stderr, "gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
-	fprintf(stderr, "gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
-	fprintf(stderr, "\n***performance profile***\n\n");
+	IVM_TRACE("\n***performance profile***\n\n");
+	IVM_TRACE("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
+	IVM_TRACE("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
+	IVM_TRACE("gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
+	IVM_TRACE("\n***performance profile***\n\n");
 
 	return;
 }
 
-#define print_type(type) (fprintf(stderr, #type ": %ld\n", sizeof(type)))
+#define print_type(type) (IVM_TRACE(#type ": %ld\n", sizeof(type)))
 
 void profile_type()
 {
-	/*
-	fprintf(stderr, "object_t: %ld\n", sizeof(ivm_object_t));
-	fprintf(stderr, "function_t: %ld\n", sizeof(ivm_function_t));
-	fprintf(stderr, "fun_t: %ld\n", sizeof(ivm_function_object_t));
-	fprintf(stderr, "_t: %ld\n", sizeof(ivm_type_t));
-	fprintf(stderr, "_t: %ld\n", sizeof(ivm_vmstate_t));
-	fprintf(stderr, "_t: %ld\n", sizeof(ivm_exec_t));
-	fprintf(stderr, "_t: %ld\n", sizeof(ivm_ctchain_t));
-	*/
-	fprintf(stderr, "***size of types***\n\n");
+	IVM_TRACE("***size of types***\n\n");
 	print_type(ivm_object_t);
 	print_type(ivm_function_t);
 	print_type(ivm_function_object_t);
@@ -76,7 +68,7 @@ void profile_type()
 	print_type(ivm_exec_t);
 	print_type(ivm_ctchain_t);
 	print_type(ivm_frame_t);
-	fprintf(stderr, "\n***size of types***\n");
+	IVM_TRACE("\n***size of types***\n");
 
 	return;
 }
@@ -144,7 +136,7 @@ int test_vm()
 	ivm_ctchain_setAt(chain, 0, obj1);
 	ivm_ctchain_setAt(chain, 1, obj2);
 
-	printf("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
+	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
 	ivm_object_setSlot(obj1, state, "a", obj2);
 	ivm_object_setSlot(obj1, state, "call_func", obj3);
@@ -155,13 +147,17 @@ int test_vm()
 	/* add opcodes */
 	ivm_exec_addOp(exec3, TEST3, "this is exec3");
 	ivm_exec_addOp(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
+	/* ivm_exec_addOp(exec3, GET_CONTEXT_SLOT, "func2"); */
 
 	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
 
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func");
 
-	for (i = 0; i < 100; i++) {
+	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
+	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func2");
+
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, INVOKE, 0);
@@ -174,7 +170,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, PRINT_STR, "****************end*****************");
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -217,7 +213,7 @@ int test_vm()
 
 	addr1 = ivm_exec_addOp(exec1, JUMP, 0);
 	addr3 = ivm_exec_addOp(exec1, NEW_NULL);
-	addr4 = ivm_exec_addOp(exec1, JUMP_IF_FALSE, 0);
+	addr4 = ivm_exec_addOp(exec1, JUMP_FALSE, 0);
 	addr2 = ivm_exec_addOp(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
 
@@ -242,8 +238,8 @@ int test_vm()
 	ivm_exec_addOp(exec2, PRINT_NUM);
 	ivm_exec_addOp(exec2, TEST3, "hello?");
 
-	printf("obj1: %p\n", (void *)obj1);
-	printf("obj2: %p\n", (void *)obj2);
+	IVM_TRACE("obj1: %p\n", (void *)obj1);
+	IVM_TRACE("obj2: %p\n", (void *)obj2);
 
 	/* init coroutines */
 
@@ -269,7 +265,7 @@ int test_vm()
 #endif
 
 	/* start executing */
-	fprintf(stderr, "start\n");
+	IVM_TRACE("start\n");
 	ivm_vmstate_schedule(state);
 
 #if IVM_PERF_PROFILE
@@ -280,22 +276,22 @@ int test_vm()
 	ivm_dbg_heapState(state, stderr);
 
 #if 0
-	fprintf(stderr, "disasm exec1:\n");
+	IVM_TRACE("disasm exec1:\n");
 	ivm_dbg_disAsmExec(exec1, "  ", stderr);
 
-	fprintf(stderr, "\n");
+	IVM_TRACE("\n");
 
-	fprintf(stderr, "disasm exec2:\n");
+	IVM_TRACE("disasm exec2:\n");
 	ivm_dbg_disAsmExec(exec2, "  ", stderr);
 
-	fprintf(stderr, "\n");
+	IVM_TRACE("\n");
 
-	fprintf(stderr, "disasm exec3:\n");
+	IVM_TRACE("disasm exec3:\n");
 	ivm_dbg_disAsmExec(exec3, "  ", stderr);
 
-	fprintf(stderr, "\n");
+	IVM_TRACE("\n");
 
-	fprintf(stderr, "disasm exec4:\n");
+	IVM_TRACE("disasm exec4:\n");
 	ivm_dbg_disAsmExec(exec4, "  ", stderr);
 #endif
 
@@ -369,8 +365,8 @@ int main()
 	ivm_ptchain_removeTail(chain);
 	ivm_ptchain_addTail(chain, (void *)2);
 
-	printf("%d\n", (int)ivm_ptchain_removeTail(chain));
-	printf("%ld\n", sizeof(ivm_object_t));
+	IVM_TRACE("%d\n", (int)ivm_ptchain_removeTail(chain));
+	IVM_TRACE("%ld\n", sizeof(ivm_object_t));
 
 	profile_output();
 
@@ -403,7 +399,7 @@ int main()
 	}
 
 	for (i = 0; i < 26; i++) {
-		/* printf("%s -> %s\n", chartab[i], (char *)ivm_hash_table_getValue(table, chartab[i], IVM_NULL)); */
+		/* IVM_TRACE("%s -> %s\n", chartab[i], (char *)ivm_hash_table_getValue(table, chartab[i], IVM_NULL)); */
 		assert(ivm_hash_table_getValue(table, chartab[i % 26], IVM_NULL) == chartab[i % 26]);
 	}
 

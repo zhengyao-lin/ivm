@@ -22,6 +22,7 @@ typedef IVM_PTLIST_ITER_TYPE(struct ivm_object_t_tag *) ivm_vmstack_iterator_t;
 #define ivm_vmstack_pop(stack) ((struct ivm_object_t_tag *)ivm_stack_pop(stack))
 #define ivm_vmstack_cut(stack, i) ((struct ivm_object_t_tag **)ivm_stack_cut((stack), (i)))
 #define ivm_vmstack_setTop ivm_stack_setTop
+#define ivm_vmstack_incTop ivm_stack_incTop
 #define ivm_vmstack_foreach ivm_stack_foreach
 #define ivm_vmstack_foreach_arg ivm_stack_foreach_arg
 

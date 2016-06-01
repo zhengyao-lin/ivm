@@ -150,38 +150,6 @@ ivm_function_callNative(const ivm_function_t *func,
 	return func->u.native(state, context, IVM_FUNCTION_COMMON_ARG_PASS);
 }
 
-#if 0
-
-void
-ivm_function_setParam(const ivm_function_t *func,
-					  ivm_vmstate_t *state,
-					  ivm_ctchain_t *context, IVM_FUNCTION_COMMON_ARG)
-{
-	ivm_argc_t i = 0;
-	ivm_param_list_t *param_list;
-	ivm_param_list_iterator_t iter;
-	ivm_char_t *name;
-
-	if (!func->is_native
-		&& (param_list = func->u.f.param_list)) {
-		IVM_PARAM_LIST_EACHPTR(param_list, iter) {
-			name = IVM_PARAM_LIST_ITER_GET(iter);
-			printf("%s\n", name);
-			if (i < argc) {
-				ivm_ctchain_setLocalSlot(context, state, name, argv[i]);
-			} else {
-				ivm_ctchain_setLocalSlot(context, state, name, IVM_UNDEFINED(state));
-			}
-
-			i++;
-		}
-	}
-
-	return;
-}
-
-#endif
-
 void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)

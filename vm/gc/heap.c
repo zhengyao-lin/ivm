@@ -53,7 +53,7 @@ IVM_PRIVATE
 ivm_size_t
 ivm_heap_addBlock(ivm_heap_t *heap)
 {
-	printf("new block added: %ld\n", heap->bcount);
+	IVM_OUT("new block added: %ld\n", heap->bcount);
 	heap->curs = MEM_REALLOC(heap->curs,
 							 sizeof(*heap->curs) * ++heap->bcount,
 							 ivm_size_t *);
@@ -145,7 +145,7 @@ ivm_heap_compact(ivm_heap_t *heap)
 		}
 	}
 
-	printf("compact to %ld\n", bcount);
+	IVM_OUT("compact to %ld\n", bcount);
 
 	heap->bcount = bcount;
 	heap->curs = MEM_REALLOC(heap->curs,

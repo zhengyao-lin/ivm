@@ -23,13 +23,13 @@ typedef struct ivm_instr_t_tag {
 #define IVM_INSTR_GEN(op, ...) \
 	(ivm_instr_gen_##op(__VA_ARGS__))
 
-#define INSTR_GEN(op, type) \
-	ivm_instr_t ivm_instr_gen_##op(IVM_INSTR_TYPE_##type##_ARG \
+#define OP_GEN(op, name, arg) \
+	ivm_instr_t ivm_instr_gen_##op(IVM_INSTR_TYPE_##arg##_ARG \
 								   struct ivm_exec_t_tag *exec);
 
 	#include "op.def"
 
-#undef INSTR_GEN
+#undef OP_GEN
 
 IVM_COM_END
 

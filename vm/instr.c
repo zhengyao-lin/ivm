@@ -14,17 +14,17 @@
 	(instr).arg = ivm_exec_registerString((exec), str)
 
 
-#define INSTR_GEN(o, type) \
-	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##type##_ARG \
+#define OP_GEN(o, name, arg) \
+	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 								   ivm_exec_t *exec) \
 	{ \
 		ivm_instr_t ret; \
 		ret.proc = ivm_op_table_getProc(IVM_OP(o)); \
-		INSTR_TYPE_##type##_ARG_INIT((ret), (exec)); \
+		INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)); \
 		ret.op = IVM_OP(o); \
 		return ret; \
 	}
 
 	#include "op.def"
 
-#undef INSTR_GEN
+#undef OP_GEN

@@ -35,7 +35,8 @@ ivm_ptlist_push(ivm_ptlist_t *ptlist, void *p);
 void *
 ivm_ptlist_pop(ivm_ptlist_t *ptlist);
 
-#define ivm_ptlist_setCur(ptlist, t) ((ptlist)->cur = t)
+#define ivm_ptlist_setCur(ptlist, t) ((ptlist)->cur = (t))
+#define ivm_ptlist_incCur(ptlist, t) ((ptlist)->cur += (t))
 #define ivm_ptlist_empty(ptlist) (ivm_ptlist_setCur((ptlist), 0))
 
 void

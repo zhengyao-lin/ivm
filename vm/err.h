@@ -7,6 +7,12 @@
 
 IVM_COM_HEADER
 
+#define IVM_OUT(...) \
+	(fprintf(IVM_STDOUT, ##__VA_ARGS__))
+
+#define IVM_TRACE(...) \
+	(fprintf(IVM_STDERR, ##__VA_ARGS__))
+
 #define IVM_ASSERT(cond, ...) \
 	if (!(cond)) { \
 		fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \

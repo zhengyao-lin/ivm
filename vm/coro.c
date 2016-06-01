@@ -93,9 +93,9 @@ IVM_ACTION_INVOKE:
 										 tmp_exec->pool, &tmp_ip)) {
 						case IVM_ACTION_INVOKE:
 							goto IVM_ACTION_INVOKE;
-						case IVM_ACTION_BREAK:
+						case IVM_ACTION_RETURN:
 							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
-							goto ACTION_BREAK;
+							goto ACTION_RETURN;
 						case IVM_ACTION_YIELD:
 							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
 							goto ACTION_YIELD;
@@ -106,7 +106,7 @@ IVM_ACTION_INVOKE:
 
 				IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
 			}
-ACTION_BREAK:
+ACTION_RETURN:
 			
 			tmp_frame = ivm_frame_stack_pop(coro->frame_st);
 

@@ -37,20 +37,18 @@
 #define STACK_BEFORE(i) (ivm_vmstack_before(STACK, (i)))
 #define STACK_CUT(i) (ivm_vmstack_cut(STACK, (i)))
 #define STACK_INC(i) \
-	(ivm_vmstack_setTop(STACK, \
-						(i) + IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP)))
+	(ivm_vmstack_incTop(STACK, (i)))
 
 #define FRAME_STACK_TOP() (ivm_frame_stack_top(__ivm_coro__->frame_st))
 #define AVAIL_STACK (STACK_SIZE() - IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP))
 #define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
 
-#define OP_OFFSET IVM_OP_OFFSET_OF
-#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), OP_OFFSET(op) }
+#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args) }
 
 OP_PROC(NOP)
 {
-	printf("NOP\n");
+	IVM_OUT("NOP\n");
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -201,7 +199,7 @@ OP_PROC(PRINT_OBJ)
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
-	printf("print: %p\n", (void *)obj);
+	IVM_OUT("print: %p\n", (void *)obj);
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -215,9 +213,9 @@ OP_PROC(PRINT_NUM)
 
 	obj = STACK_POP();
 	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
-		printf("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+		IVM_OUT("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
 	else
-		printf("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+		IVM_OUT("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
 
 	INSTR++;
 
@@ -231,7 +229,7 @@ OP_PROC(PRINT_TYPE)
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
-	printf("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
+	IVM_OUT("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
 	
 	INSTR++;
 
@@ -240,7 +238,7 @@ OP_PROC(PRINT_TYPE)
 
 OP_PROC(PRINT_STR)
 {
-	printf("%s\n", ivm_string_pool_get(STRING_POOL, ARG));
+	IVM_OUT("%s\n", ivm_string_pool_get(STRING_POOL, ARG));
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -294,7 +292,7 @@ OP_PROC(JUMP)
 	return IVM_ACTION_NONE;
 }
 
-OP_PROC(JUMP_IF_TRUE)
+OP_PROC(JUMP_TRUE)
 {
 	if (ivm_object_toBool(STACK_POP(), STATE)) {
 		INSTR += ARG;
@@ -305,7 +303,7 @@ OP_PROC(JUMP_IF_TRUE)
 	return IVM_ACTION_NONE;
 }
 
-OP_PROC(JUMP_IF_FALSE)
+OP_PROC(JUMP_FALSE)
 {
 	if (!ivm_object_toBool(STACK_POP(), STATE)) {
 		INSTR += ARG;
@@ -318,7 +316,7 @@ OP_PROC(JUMP_IF_FALSE)
 
 OP_PROC(TEST1)
 {
-	printf("test1\n");
+	IVM_OUT("test1\n");
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -332,8 +330,8 @@ OP_PROC(TEST2)
 
 OP_PROC(TEST3)
 {
-	printf("morning! this is test3\n");
-	printf("string argument: %s\n", ivm_string_pool_get(STRING_POOL, ARG));
+	IVM_OUT("morning! this is test3\n");
+	IVM_OUT("string argument: %s\n", ivm_string_pool_get(STRING_POOL, ARG));
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -341,7 +339,7 @@ OP_PROC(TEST3)
 
 OP_PROC(LAST)
 {
-	printf("LAST\n");
+	IVM_OUT("LAST\n");
 	INSTR++;
 
 	return IVM_ACTION_NONE;
@@ -350,32 +348,11 @@ OP_PROC(LAST)
 IVM_PRIVATE const
 ivm_op_table_t
 ivm_global_op_table[] = {
-	OP_MAPPING(NOP,					"nop",					"N"),
-	OP_MAPPING(NEW_NULL,			"new_null",				"N"),
-	OP_MAPPING(NEW_OBJ,				"new_obj",				"N"),
-	OP_MAPPING(NEW_NUM_I,			"new_num_i",			"I"),
-	OP_MAPPING(NEW_NUM_S,			"new_num_s",			"S"),
-	OP_MAPPING(NEW_FUNC,			"new_func",				"I"),
-	OP_MAPPING(GET_SLOT,			"get_slot",				"S"),
-	OP_MAPPING(SET_SLOT,			"set_slot",				"S"),
-	OP_MAPPING(GET_CONTEXT_SLOT,	"get_context_slot",		"S"),
-	OP_MAPPING(SET_CONTEXT_SLOT,	"set_context_slot",		"S"),
-	OP_MAPPING(SET_ARG,				"set_arg",				"S"),
-	OP_MAPPING(POP,					"pop",					"N"),
-	OP_MAPPING(DUP,					"dup",					"N"),
-	OP_MAPPING(PRINT_OBJ,			"print_obj",			"N"),
-	OP_MAPPING(PRINT_NUM,			"print_num",			"N"),
-	OP_MAPPING(PRINT_TYPE,			"print_type",			"N"),
-	OP_MAPPING(PRINT_STR,			"print_str",			"S"),
-	OP_MAPPING(INVOKE,				"invoke",				"I"),
-	OP_MAPPING(YIELD,				"yield",				"N"),
-	OP_MAPPING(JUMP,				"jmp",					"I"),
-	OP_MAPPING(JUMP_IF_TRUE,		"jmp_true",				"I"),
-	OP_MAPPING(JUMP_IF_FALSE,		"jmp_false",			"I"),
-	OP_MAPPING(TEST1,				"test1",				"N"),
-	OP_MAPPING(TEST2,				"test2",				"N"),
-	OP_MAPPING(TEST3,				"test3",				"S"),
-	OP_MAPPING(LAST,				"last",					"N")
+
+#define OP_GEN(o, name, arg) OP_MAPPING(o, name, #arg),
+	#include "op.def"
+#undef OP_GEN
+
 };
 
 #if IVM_DEBUG
@@ -404,13 +381,6 @@ ivm_op_table_getArg(ivm_opcode_t op)
 {
 	checkLegal()
 	return ivm_global_op_table[op].args;
-}
-
-ivm_pc_t
-ivm_op_table_getOffset(ivm_opcode_t op)
-{
-	checkLegal()
-	return ivm_global_op_table[op].offset;
 }
 
 const char *

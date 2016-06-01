@@ -245,7 +245,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	ivm_heap_reset(arg.heap);
 
-	printf("***collecting***\n");
+	IVM_OUT("***collecting***\n");
 
 	ivm_collector_travState(&arg);
 	ivm_collector_triggerDestructor(collector, state);
@@ -259,7 +259,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_perf_gc_time += time_taken;
 #endif
 
-	/* printf("***collection end: %ld ticks taken***\n", time_taken); */
+	/* IVM_OUT("***collection end: %ld ticks taken***\n", time_taken); */
 
 	return;
 }

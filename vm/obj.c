@@ -235,26 +235,26 @@ ivm_object_printSlots(ivm_object_t *obj)
 	ivm_slot_table_iterator_t iter;
 	ivm_size_t ecount = 0; /* empty count */
 
-	fprintf(stderr, "IVM_DEBUG slots in object %p(slot table using %s)\n",
-			(void *)obj, obj->slots && obj->slots->is_hash ? "hash table" : "list");
+	IVM_TRACE("IVM_DEBUG slots in object %p(slot table using %s)\n",
+			  (void *)obj, obj->slots && obj->slots->is_hash ? "hash table" : "list");
 
 	if (obj->slots) {
 		IVM_SLOT_TABLE_EACHPTR(obj->slots, iter) {
 			if (IVM_SLOT_TABLE_ITER_GET_KEY(iter)) {
-				fprintf(stderr, "\tkey %s: %p\n",
-						IVM_SLOT_TABLE_ITER_GET_KEY(iter),
-						(void *)IVM_SLOT_TABLE_ITER_GET_VAL(iter));
+				IVM_TRACE("\tkey %s: %p\n",
+						  IVM_SLOT_TABLE_ITER_GET_KEY(iter),
+						  (void *)IVM_SLOT_TABLE_ITER_GET_VAL(iter));
 			} else {
 				ecount++;
 			}
 		}
 
 		if (obj->slots->is_hash) {
-			fprintf(stderr, "\thash table load factor: %f\n",
-					(double)ecount / obj->slots->size);
+			IVM_TRACE("\thash table load factor: %f\n",
+					  (double)ecount / obj->slots->size);
 		}
 	} else {
-		fprintf(stderr, "\tnone\n");
+		IVM_TRACE("\tnone\n");
 	}
 
 	return;

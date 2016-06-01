@@ -81,9 +81,3 @@ ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp)
 
 	return;
 }
-
-void
-ivm_dbg_printObject(ivm_object_t *obj, FILE *fp)
-{
-	
-}
