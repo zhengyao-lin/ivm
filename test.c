@@ -157,7 +157,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func2");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, INVOKE, 0);
@@ -170,7 +170,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, PRINT_STR, "****************end*****************");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -380,8 +380,8 @@ int main()
 
 	ivm_hash_table_t *table =
 			ivm_hash_table_new(2,
-							  (ivm_hash_table_comparer_t)strcmp,
-							  (ivm_hash_function_t)strhash);
+								(ivm_hash_table_comparer_t)strcmp,
+								(ivm_hash_function_t)strhash);
 	char *chartab[] = { "a", "b", "c", "d",
 						"e", "f", "g", "h",
 						"i", "j", "k", "l",

@@ -18,7 +18,7 @@ struct ivm_instr_t_tag;
 
 typedef enum {
 
-#define OP_GEN(o, name, arg) IVM_OP(o),
+#define OP_GEN(o, name, arg, ...) IVM_OP(o),
 	#include "op.def"
 #undef OP_GEN
 

@@ -14,7 +14,7 @@
 	(instr).arg = ivm_exec_registerString((exec), str)
 
 
-#define OP_GEN(o, name, arg) \
+#define OP_GEN(o, name, arg, ...) \
 	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 								   ivm_exec_t *exec) \
 	{ \
