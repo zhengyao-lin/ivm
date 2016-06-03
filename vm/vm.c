@@ -18,11 +18,12 @@ IVM_PRIVATE
 ivm_type_t static_type_list[] = {
 	{
 		IVM_UNDEFINED_T, "undefined",
-			sizeof(ivm_object_t),
-			IVM_NULL,
-			IVM_NULL,
-			ivm_object_alwaysFalse,
-			IVM_NULL
+			sizeof(ivm_object_t), /* size */
+			IVM_NULL, /* destructor */
+			IVM_NULL, /* traverser */
+			IVM_FALSE, /* const_bool */
+			ivm_object_alwaysFalse, /* to_bool */
+			IVM_NULL /* proto */
 	},
 
 	{
@@ -30,6 +31,7 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
+			IVM_FALSE,
 			ivm_object_alwaysFalse,
 			IVM_NULL
 	},
@@ -39,7 +41,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
-			ivm_object_isTrue,
+			IVM_TRUE,
+			IVM_NULL,
 			IVM_NULL
 	},
 
@@ -48,7 +51,18 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_numeric_t),
 			IVM_NULL,
 			IVM_NULL,
+			IVM_TRUE,
 			ivm_numeric_isTrue,
+			IVM_NULL
+	},
+
+	{
+		IVM_STRING_OBJECT_T, "string",
+			sizeof(ivm_string_object_t),
+			IVM_NULL,
+			ivm_string_object_traverser,
+			IVM_TRUE,
+			IVM_NULL,
 			IVM_NULL
 	},
 
@@ -57,7 +71,8 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_function_object_t),
 			ivm_function_object_destructor,
 			ivm_function_object_traverser,
-			ivm_object_isTrue,
+			IVM_TRUE,
+			IVM_NULL,
 			IVM_NULL
 	}
 };

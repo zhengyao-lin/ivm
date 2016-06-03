@@ -2,6 +2,8 @@
 #include "str.h"
 #include "type.h"
 #include "vm.h"
+#include "bit.h"
+#include "gc/gc.h"
 #include "err.h"
 
 ivm_char_t *
@@ -87,4 +89,36 @@ ivm_string_pool_register(ivm_string_pool_t *pool,
 	}
 
 	return ret;
+}
+
+ivm_object_t *ivm_string_object_new(ivm_vmstate_t *state,
+									ivm_bool_t is_const,
+									const ivm_char_t *val)
+{
+	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
+
+	if (is_const) {
+		IVM_BIT_SET_TRUE(ret->is_const);
+		ret->val = (ivm_char_t *)val;
+	} else {
+		IVM_BIT_SET_FALSE(ret->is_const);
+		ret->val = IVM_STRDUP_STATE(val, state);
+	}
+
+	return IVM_AS_OBJ(ret);
+}
+
+void
+ivm_string_object_traverser(ivm_object_t *obj,
+							ivm_traverser_arg_t *arg)
+{
+	ivm_string_object_t *str = IVM_AS(obj, ivm_string_object_t);
+
+	if (!str->is_const) {
+		str->val = IVM_STRDUP_HEAP(str->val, arg->heap);
+	}
+
+	return;
 }

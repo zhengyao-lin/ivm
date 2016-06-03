@@ -71,13 +71,6 @@ ivm_object_init(ivm_object_t *obj,
 }
 
 ivm_bool_t
-ivm_object_isTrue(ivm_object_t *obj,
-				  ivm_vmstate_t *state)
-{
-	return obj != IVM_NULL;
-}
-
-ivm_bool_t
 ivm_object_alwaysTrue(ivm_object_t *obj,
 					  ivm_vmstate_t *state)
 {
@@ -99,7 +92,7 @@ ivm_object_toBool(ivm_object_t *obj,
 	if (conv)
 		return conv(obj, state);
 
-	return IVM_FALSE;
+	return IVM_OBJECT_GET(obj, TYPE_CONST_BOOL);
 }
 
 #define STR_IS_PROTO(str) \

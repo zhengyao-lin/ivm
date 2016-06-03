@@ -5,6 +5,7 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "type.h"
+#include "obj.h"
 #include "std/list.h"
 
 IVM_COM_HEADER
@@ -53,6 +54,19 @@ ivm_string_pool_register(ivm_string_pool_t *list,
 						 const ivm_char_t *str);
 
 #define ivm_string_pool_get(pool, i) (ivm_string_list_at((pool)->set, (i)))
+
+typedef struct {
+	IVM_OBJECT_HEADER
+	ivm_bool_t is_const: 1;
+	char *val;
+} ivm_string_object_t;
+
+ivm_object_t *ivm_string_object_new(struct ivm_vmstate_t_tag *state,
+									ivm_bool_t is_const, const ivm_char_t *val);
+
+void
+ivm_string_object_traverser(ivm_object_t *obj,
+							struct ivm_traverser_arg_t_tag *arg);
 
 IVM_COM_END
 

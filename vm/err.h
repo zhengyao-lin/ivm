@@ -8,7 +8,7 @@
 IVM_COM_HEADER
 
 #define IVM_OUT(...) \
-	(fprintf(IVM_STDOUT, ##__VA_ARGS__))
+	/* (fprintf(IVM_STDOUT, ##__VA_ARGS__)) */
 
 #define IVM_TRACE(...) \
 	(fprintf(IVM_STDERR, ##__VA_ARGS__))

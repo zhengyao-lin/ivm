@@ -6,12 +6,13 @@
 #include "obj.h"
 #include "str.h"
 #include "vm.h"
+#include "bit.h"
 #include "gc/heap.h"
 #include "std/hash.h"
 #include "err.h"
 
-#define SET_BIT_FALSE(bit) ((bit) &= 0)
-#define SET_BIT_TRUE(bit) ((bit) |= 1)
+#define SET_BIT_FALSE IVM_BIT_SET_FALSE
+#define SET_BIT_TRUE IVM_BIT_SET_TRUE
 
 ivm_slot_table_t *
 ivm_slot_table_new(ivm_vmstate_t *state)

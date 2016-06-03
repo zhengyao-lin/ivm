@@ -23,7 +23,6 @@
 #define RUNTIME (__ivm_coro__->runtime)
 #define CONTEXT (__ivm_context__)
 #define STATE (__ivm_state__)
-#define FRAME_STACK (__ivm_coro__->frame_st)
 #define STRING_POOL (__ivm_pool__)
 #define INSTR (*__ivm_instr__)
 

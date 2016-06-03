@@ -33,6 +33,8 @@ typedef struct ivm_type_t_tag {
 
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
+
+	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 
 	struct ivm_object_t_tag *proto; /* default prototype */
@@ -72,6 +74,7 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_SIZE(obj) ((obj)->type->size)
 #define IVM_OBJECT_GET_TYPE_DES(obj) ((obj)->type->des)
 #define IVM_OBJECT_GET_TYPE_TRAV(obj) ((obj)->type->trav)
+#define IVM_OBJECT_GET_TYPE_CONST_BOOL(obj) ((obj)->type->const_bool)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
@@ -120,9 +123,6 @@ ivm_object_free(ivm_object_t *obj,
 
 #endif
 
-ivm_bool_t
-ivm_object_isTrue(ivm_object_t *obj,
-				  struct ivm_vmstate_t_tag *state);
 ivm_bool_t
 ivm_object_alwaysTrue(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state);
