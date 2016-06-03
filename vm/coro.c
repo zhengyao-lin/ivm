@@ -106,13 +106,17 @@ ACTION_INVOKE:
 				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
+				
 				/* jump to the first op */
-				(tmp_ip != tmp_ip_end ? ({ goto *(tmp_ip->entry); }) : ({ goto END_EXEC; }));
+				if (tmp_ip != tmp_ip_end) {
+					goto *(tmp_ip->entry);
+					#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
+						#include "op.def"
+					#undef OP_GEN
+				}
 
-				#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
-					#include "op.def"
-				#undef OP_GEN
 #elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+
 				/* call each handler */
 				while (tmp_ip != tmp_ip_end) {
 					switch (tmp_ip->proc(state, coro, tmp_stack, tmp_context,
@@ -129,6 +133,7 @@ ACTION_INVOKE:
 					}
 					ivm_vmstate_checkGC(state);
 				}
+
 #endif
 
 END_EXEC:

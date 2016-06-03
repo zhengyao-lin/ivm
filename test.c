@@ -154,7 +154,7 @@ int test_vm()
 	ivm_exec_addOp(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	/* ivm_exec_addOp(exec3, GET_CONTEXT_SLOT, "func2"); */
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1000; i++) {
 		ivm_exec_addOp(exec1, NEW_STR, "hey!");
 		ivm_exec_addOp(exec1, PRINT_STR);
 	}
@@ -167,7 +167,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func2");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, INVOKE, 0);
@@ -180,7 +180,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT, "****************end*****************");
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -190,7 +190,7 @@ int test_vm()
 
 	ivm_exec_addOp(exec1, NEW_OBJ);
 
-	for (i = 0; i < 1000000; i++) {
+	for (i = 0; i < 1000; i++) {
 		ivm_exec_addOp(exec1, NEW_OBJ);
 		ivm_exec_addOp(exec1, DUP, 1);
 		ivm_exec_addOp(exec1, SET_SLOT, "a");
