@@ -1,4 +1,5 @@
-#include "stdlib.h"
+#include <stdlib.h>
+#include "pub/const.h"
 #include "pub/mem.h"
 #include "coro.h"
 #include "vmstack.h"
@@ -42,9 +43,13 @@ ivm_coro_free(ivm_coro_t *coro,
 	ivm_runtime_free((coro)->runtime, (state)); \
 	(coro)->runtime = IVM_NULL;
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	#include "dispatch/direct.h"
+#endif
+
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
-			   ivm_function_object_t *root)
+ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
+				 ivm_function_object_t *root, ivm_bool_t get_op_entry)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_frame_t *tmp_frame;
@@ -56,6 +61,18 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_function_t *tmp_func = IVM_NULL;
 
 	ivm_instr_t *tmp_ip, *tmp_ip_end;
+
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	static void *op_entry[] = {
+		#define OP_GEN(o, name, arg, ...) &&OP_##o,
+			#include "op.def"
+		#undef OP_GEN
+	};
+
+	if (get_op_entry) {
+		return (ivm_object_t *)op_entry;
+	}
+#endif
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
@@ -79,7 +96,7 @@ ivm_coro_start(ivm_coro_t *coro, ivm_vmstate_t *state,
 		while (1) {
 			ret = IVM_NULL;
 
-IVM_ACTION_INVOKE:
+ACTION_INVOKE:
 
 			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
@@ -88,11 +105,20 @@ IVM_ACTION_INVOKE:
 				tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
 				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+				/* jump to the first op */
+				(tmp_ip != tmp_ip_end ? ({ goto *(tmp_ip->entry); }) : ({ goto END_EXEC; }));
+
+				#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
+					#include "op.def"
+				#undef OP_GEN
+#elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+				/* call each handler */
 				while (tmp_ip != tmp_ip_end) {
 					switch (tmp_ip->proc(state, coro, tmp_stack, tmp_context,
 										 tmp_exec->pool, &tmp_ip)) {
 						case IVM_ACTION_INVOKE:
-							goto IVM_ACTION_INVOKE;
+							goto ACTION_INVOKE;
 						case IVM_ACTION_RETURN:
 							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
 							goto ACTION_RETURN;
@@ -103,6 +129,9 @@ IVM_ACTION_INVOKE:
 					}
 					ivm_vmstate_checkGC(state);
 				}
+#endif
+
+END_EXEC:
 
 				IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
 			}

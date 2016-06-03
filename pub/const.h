@@ -41,4 +41,8 @@
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */
 #define IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD 24
 
+/* only one of the following definition can be 1 */
+#define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
+#define IVM_DISPATCH_METHOD_SUBROUTINE_THREAD 0
+
 #endif

@@ -10,11 +10,23 @@ IVM_COM_HEADER
 
 struct ivm_exec_t_tag;
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+
+typedef struct ivm_instr_t_tag {
+	void *entry;
+	ivm_op_arg_t arg;
+	ivm_byte_t op;
+} ivm_instr_t;
+
+#elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+
 typedef struct ivm_instr_t_tag {
 	ivm_op_proc_t proc;
 	ivm_op_arg_t arg;
 	ivm_byte_t op;
 } ivm_instr_t;
+
+#endif
 
 #define IVM_INSTR_TYPE_N_ARG
 #define IVM_INSTR_TYPE_I_ARG ivm_op_arg_t arg,

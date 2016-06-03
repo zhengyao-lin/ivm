@@ -17,7 +17,7 @@ struct ivm_instr_t_tag;
 #define IVM_OP(name) IVM_OP_##name
 
 typedef enum {
-
+	IVM_OP_FIRST = -1, /* to make NOP the 0 */
 #define OP_GEN(o, name, arg, ...) IVM_OP(o),
 	#include "op.def"
 #undef OP_GEN
@@ -43,6 +43,7 @@ typedef struct {
 	ivm_op_proc_t proc;
 	const char *name;
 	const char *args;
+	void *entry; /* in direct threading */
 } ivm_op_table_t;
 
 ivm_op_proc_t
@@ -51,6 +52,16 @@ const char *
 ivm_op_table_getArg(ivm_opcode_t op);
 const char *
 ivm_op_table_getName(ivm_opcode_t op);
+
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+
+/* must-call when using direct threading */
+void
+ivm_op_table_initOpEntry();
+void *
+ivm_op_table_getEntry(ivm_opcode_t op);
+
+#endif
 
 IVM_COM_END
 

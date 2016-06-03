@@ -36,9 +36,18 @@ ivm_coro_free(ivm_coro_t *coro,
 #define ivm_coro_stackTop(coro) (ivm_vmstack_size(coro->stack))
 
 ivm_object_t *
-ivm_coro_start(ivm_coro_t *coro,
-			   struct ivm_vmstate_t_tag *state,
-			   ivm_function_object_t *root);
+ivm_coro_start_c(ivm_coro_t *coro,
+				 struct ivm_vmstate_t_tag *state,
+				 ivm_function_object_t *root,
+				 ivm_bool_t get_op_entry);
+
+#define ivm_coro_start(coro, state, root) \
+	(ivm_coro_start_c((coro), (state), (root), IVM_FALSE))
+
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	#define ivm_coro_getOpEntry() \
+		((void **)ivm_coro_start_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
+#endif
 
 #define ivm_coro_setRoot(coro, state, root) \
 	((coro)->runtime = ivm_function_createRuntime(ivm_function_object_getFunc(root), (state), \

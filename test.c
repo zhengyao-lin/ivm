@@ -6,6 +6,7 @@
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
+#include "vm/op.h"
 #include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
 #include "vm/std/pool.h"
@@ -107,6 +108,10 @@ int test_vm()
 						"vvv", "www", "xxx", "yyy",
 						"zzz" };
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	ivm_op_table_initOpEntry();
+#endif
+
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
@@ -162,7 +167,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func2");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, INVOKE, 0);
@@ -175,7 +180,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT, "****************end*****************");
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -185,7 +190,7 @@ int test_vm()
 
 	ivm_exec_addOp(exec1, NEW_OBJ);
 
-	for (i = 0; i < 1; i++) {
+	for (i = 0; i < 1000000; i++) {
 		ivm_exec_addOp(exec1, NEW_OBJ);
 		ivm_exec_addOp(exec1, DUP, 1);
 		ivm_exec_addOp(exec1, SET_SLOT, "a");
