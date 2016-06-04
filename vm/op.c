@@ -10,8 +10,8 @@
 #include "instr.h"
 #include "err.h"
 
-#if IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
-	/* code for subroutine threading */
+#if IVM_DISPATCH_METHOD_CALL_THREAD
+	/* code for call threading */
 	#define OP_PROC_NAME(op) ivm_op_proc_##op
 	#define OP_PROC(op) ivm_action_t OP_PROC_NAME(op)(ivm_vmstate_t *__ivm_state__, \
 													  ivm_coro_t *__ivm_coro__, \
@@ -21,7 +21,7 @@
 													  ivm_instr_t **__ivm_instr__)
 													  /* these arguments shouldn't be used directly */
 
-	#include "dispatch/subroutine.h"
+	#include "dispatch/call.h"
 
 	#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), IVM_NULL }
 
@@ -29,7 +29,7 @@
 		#include "op.def"
 	#undef OP_GEN
 #else
-	/* non-subroutine threading: don't need handler/proc */
+	/* non-call threading: don't need handler/proc */
 	#define OP_MAPPING(op, name, args) { IVM_OP(op), IVM_NULL, (name), (args), IVM_NULL }
 #endif
 

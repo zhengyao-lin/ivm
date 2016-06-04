@@ -14,9 +14,9 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 	= buf_size;
 
 	ret->cur = 0;
-	ret->lst = MEM_ALLOC_INIT(sizeof(*ret->lst)
-							  * buf_size,
-							  void **);
+	ret->lst = MEM_ALLOC(sizeof(*ret->lst)
+						 * buf_size,
+						 void **);
 
 	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
 
@@ -37,12 +37,45 @@ ivm_ptlist_free(ivm_ptlist_t *ptlist)
 void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
+	ptlist->alloc <<= 1;
 	ptlist->lst = MEM_REALLOC(ptlist->lst,
 							  sizeof(*ptlist->lst)
-							  * (ptlist->alloc << 1),
+							  * ptlist->alloc,
 							  void **);
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
-	ptlist->alloc <<= 1;
+
+	return;
+}
+
+void
+ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
+				 ivm_size_t size)
+{
+	if (size > ptlist->alloc) {
+		ptlist->alloc = size;
+		ptlist->lst = MEM_REALLOC(ptlist->lst,
+								  sizeof(*ptlist->lst)
+								  * ptlist->alloc,
+								  void **);
+		IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
+	}
+
+	return;
+}
+
+void
+ivm_ptlist_set(ivm_ptlist_t *ptlist,
+			   ivm_size_t i,
+			   void *p)
+{
+	if (i >= ptlist->cur) {
+		ivm_ptlist_incTo(ptlist, i + 1);
+		MEM_INIT(ptlist->lst + ptlist->cur,
+				 sizeof(*ptlist->lst) * (i - ptlist->cur));
+		ptlist->cur = i + 1;
+	}
+
+	ptlist->lst[i] = p;
 
 	return;
 }

@@ -4,6 +4,7 @@
 #include "obj.h"
 #include "slot.h"
 #include "vm.h"
+#include "expr.h"
 #include "err.h"
 #include "gc/gc.h"
 
@@ -23,7 +24,11 @@ ivm_type_new(ivm_type_t type)
 void
 ivm_type_free(ivm_type_t *type)
 {
-	MEM_FREE(type);
+	if (type) {
+		ivm_binary_op_proc_list_free(type->add_table);
+		MEM_FREE(type);
+	}
+	
 	return;
 }
 

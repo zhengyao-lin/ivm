@@ -29,7 +29,7 @@
 		#include "op.def"
 
 	#undef OP_GEN
-#elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+#elif IVM_DISPATCH_METHOD_CALL_THREAD
 	#define OP_GEN(o, name, arg, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 									   ivm_exec_t *exec) \

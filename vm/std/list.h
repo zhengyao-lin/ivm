@@ -18,11 +18,20 @@ typedef struct {
 
 ivm_ptlist_t *
 ivm_ptlist_new_c(ivm_size_t buf_size);
+
 #define ivm_ptlist_new() (ivm_ptlist_new_c(IVM_DEFAULT_PTLIST_BUFFER_SIZE))
+
 void
 ivm_ptlist_free(ivm_ptlist_t *ptlist);
+
 void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist);
+
+void
+ivm_ptlist_incTo(ivm_ptlist_t *ptlist, ivm_size_t size);
+
+void
+ivm_ptlist_set(ivm_ptlist_t *ptlist, ivm_size_t i, void *p);
 
 #define ivm_ptlist_setBufferSize(ptlist, size) ((ptlist)->buf_size = (size))
 
@@ -40,6 +49,7 @@ ivm_ptlist_inc(ivm_ptlist_t *ptlist);
 #define ivm_ptlist_setCur(ptlist, t) ((ptlist)->cur = (t))
 #define ivm_ptlist_incCur(ptlist, t) ((ptlist)->cur += (t))
 #define ivm_ptlist_empty(ptlist) (ivm_ptlist_setCur((ptlist), 0))
+#define ivm_ptlist_has(ptlist, i) ((ptlist)->cur > (i))
 
 void
 ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc);

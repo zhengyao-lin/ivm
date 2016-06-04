@@ -115,7 +115,7 @@ ACTION_INVOKE:
 					#undef OP_GEN
 				}
 
-#elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+#elif IVM_DISPATCH_METHOD_CALL_THREAD
 
 				/* call each handler */
 				while (tmp_ip != tmp_ip_end) {

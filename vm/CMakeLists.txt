@@ -15,7 +15,9 @@ ADD_LIBRARY(vm SHARED
 			runtime.c
 			op.c
 			byte.c
-			dbg.c)
+			dbg.c
+			expr.c
+			proto.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

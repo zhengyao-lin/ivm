@@ -26,7 +26,7 @@
 #define YIELD() IVM_RUNTIME_SET(_RUNTIME, IP, ++tmp_ip); goto ACTION_YIELD
 #define INVOKE() goto ACTION_INVOKE
 
-#define ARG (_INSTR->arg)
+#define _ARG (_INSTR->arg)
 
 #define _STACK (tmp_stack)
 #define STACK_SIZE() (ivm_vmstack_size(_STACK))

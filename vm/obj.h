@@ -7,6 +7,7 @@
 #include "std/list.h"
 #include "type.h"
 #include "slot.h"
+#include "expr.h"
 
 IVM_COM_HEADER
 
@@ -30,6 +31,7 @@ typedef struct ivm_type_t_tag {
 	ivm_type_tag_t tag;
 	const ivm_char_t *name;
 	ivm_size_t size;
+	struct ivm_object_t_tag *proto; /* default prototype */
 
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
@@ -37,7 +39,7 @@ typedef struct ivm_type_t_tag {
 	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 
-	struct ivm_object_t_tag *proto; /* default prototype */
+	ivm_binary_op_proc_list_t *add_table;
 } ivm_type_t;
 
 ivm_type_t *
@@ -49,6 +51,10 @@ ivm_type_free(ivm_type_t *type);
 #define ivm_type_setTag(type, t) ((type)->tag = (t))
 #define ivm_type_setProto(type, p) ((type)->proto = (p))
 #define ivm_type_getProto(type) ((type)->proto)
+#define ivm_type_setAddTable(type, table) ((type)->add_table = (table))
+#define ivm_type_getAddTable(type) ((type)->add_table)
+
+typedef void (*ivm_type_init_proc_t)(ivm_type_t *, struct ivm_vmstate_t_tag *);
 
 typedef ivm_ptlist_t ivm_type_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
@@ -80,6 +86,7 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
 #define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(obj)->mark)
 #define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
+#define IVM_OBJECT_GET_ADD_TABLE(obj) (ivm_type_getAddTable((obj)->type))
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark & 0x1)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
@@ -94,6 +101,11 @@ typedef struct ivm_object_t_tag {
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
 #define IVM_IS_TYPE(obj, type) (IVM_TYPE_TAG_OF(obj) == (type))
+
+/* call the operation proc when obj [op] obj(of type) e.g. obj + num */
+#define IVM_OBJECT_GET_OP_PROC(op1, op, op2) \
+	(ivm_binary_op_proc_list_at(IVM_OBJECT_GET((op1), op##_TABLE), \
+								IVM_OBJECT_GET((op2), TYPE_TAG)))
 
 ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);

@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_DISPATCH_SUBROUTINE_H_
-#define _IVM_VM_DISPATCH_SUBROUTINE_H_
+#ifndef _IVM_VM_DISPATCH_CALL_H_
+#define _IVM_VM_DISPATCH_CALL_H_
 
 #define _CORO (__ivm_coro__)
 #define _RUNTIME (__ivm_coro__->runtime)
@@ -13,7 +13,7 @@
 #define YIELD() (*__ivm_instr__)++; return IVM_ACTION_YIELD
 #define INVOKE() return IVM_ACTION_INVOKE
 
-#define ARG (_INSTR->arg)
+#define _ARG (_INSTR->arg)
 
 #define _STACK (__ivm_stack__)
 #define STACK_SIZE() (ivm_vmstack_size(_STACK))

@@ -18,7 +18,7 @@ typedef struct ivm_instr_t_tag {
 	ivm_byte_t op;
 } ivm_instr_t;
 
-#elif IVM_DISPATCH_METHOD_SUBROUTINE_THREAD
+#elif IVM_DISPATCH_METHOD_CALL_THREAD
 
 typedef struct ivm_instr_t_tag {
 	ivm_op_proc_t proc;

@@ -6,6 +6,9 @@
 #include "coro.h"
 #include "func.h"
 #include "num.h"
+#include "str.h"
+#include "expr.h"
+#include "proto.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
 
@@ -19,16 +22,18 @@ ivm_type_t static_type_list[] = {
 	{
 		IVM_UNDEFINED_T, "undefined",
 			sizeof(ivm_object_t), /* size */
+			IVM_NULL, /* proto */
 			IVM_NULL, /* destructor */
 			IVM_NULL, /* traverser */
 			IVM_FALSE, /* const_bool */
 			ivm_object_alwaysFalse, /* to_bool */
-			IVM_NULL /* proto */
+			IVM_NULL /* add table */
 	},
 
 	{
 		IVM_NULL_T, "null",
 			sizeof(ivm_object_t),
+			IVM_NULL,
 			IVM_NULL,
 			IVM_NULL,
 			IVM_FALSE,
@@ -41,6 +46,7 @@ ivm_type_t static_type_list[] = {
 			sizeof(ivm_object_t),
 			IVM_NULL,
 			IVM_NULL,
+			IVM_NULL,
 			IVM_TRUE,
 			IVM_NULL,
 			IVM_NULL
@@ -49,6 +55,7 @@ ivm_type_t static_type_list[] = {
 	{
 		IVM_NUMERIC_T, "numeric",
 			sizeof(ivm_numeric_t),
+			IVM_NULL,
 			IVM_NULL,
 			IVM_NULL,
 			IVM_TRUE,
@@ -60,6 +67,7 @@ ivm_type_t static_type_list[] = {
 		IVM_STRING_OBJECT_T, "string",
 			sizeof(ivm_string_object_t),
 			IVM_NULL,
+			IVM_NULL,
 			ivm_string_object_traverser,
 			IVM_TRUE,
 			IVM_NULL,
@@ -69,6 +77,7 @@ ivm_type_t static_type_list[] = {
 	{
 		IVM_FUNCTION_OBJECT_T, "function",
 			sizeof(ivm_function_object_t),
+			IVM_NULL,
 			ivm_function_object_destructor,
 			ivm_function_object_traverser,
 			IVM_TRUE,
@@ -87,7 +96,7 @@ ivm_vmstate_new()
 								   ivm_vmstate_t *);
 	ivm_type_t *tmp_type;
 	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
-	ivm_object_t *mproto, *dproto;
+	ivm_type_list_iterator_t titer;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
@@ -107,26 +116,21 @@ ivm_vmstate_new()
 	ret->fr_pool
 	= ivm_frame_pool_new(IVM_DEFAULT_FRAME_POOL_SIZE);
 
-	for (i = 0; i < type_count; i++) {
-		tmp_type = ivm_type_new(static_type_list[i]);
-		ivm_type_list_register(ret->type_list, tmp_type);
-	}
-
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 
 	ivm_vmstate_lockGCFlag(ret);
 
-	mproto = ivm_object_new(ret);
-	SET_TYPE_PROTO(ret, IVM_OBJECT_T, mproto);
+	for (i = 0; i < type_count; i++) {
+		tmp_type = ivm_type_new(static_type_list[i]);
+		ivm_type_list_register(ret->type_list, tmp_type);
+	}
 
-	dproto = ivm_numeric_new(ret, IVM_NUM(0));
-	SET_TYPE_PROTO(ret, IVM_NUMERIC_T, dproto);
-	IVM_OBJECT_SET(dproto, PROTO, mproto);
-
-	dproto = ivm_function_object_new(ret, IVM_NULL, IVM_NULL);
-	SET_TYPE_PROTO(ret, IVM_FUNCTION_OBJECT_T, dproto);
-	IVM_OBJECT_SET(dproto, PROTO, mproto);
+	IVM_TYPE_LIST_EACHPTR(ret->type_list, titer) {
+		tmp_type = IVM_TYPE_LIST_ITER_GET(titer);
+		ivm_binary_op_initType(tmp_type, ret);
+		ivm_proto_initType(tmp_type, ret);
+	}
 
 	ivm_vmstate_unlockGCFlag(ret);
 
