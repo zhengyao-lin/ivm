@@ -1,7 +1,6 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "vm.h"
-#include "err.h"
 #include "obj.h"
 #include "coro.h"
 #include "func.h"
@@ -11,6 +10,7 @@
 #include "proto.h"
 #include "gc/heap.h"
 #include "gc/gc.h"
+#include "err.h"
 
 #define GC(state) ((state)->gc)
 #define HEAP1(state) ((state)->heaps[0])
@@ -27,7 +27,12 @@ ivm_type_t static_type_list[] = {
 			IVM_NULL, /* traverser */
 			IVM_FALSE, /* const_bool */
 			ivm_object_alwaysFalse, /* to_bool */
-			IVM_NULL /* add table */
+			IVM_NULL, /* add table */
+			IVM_NULL, /* sub table */
+			IVM_NULL, /* mul table */
+			IVM_NULL, /* div table */
+			IVM_NULL, /* mod table */
+			IVM_NULL  /* cmp table */
 	},
 
 	{
@@ -38,6 +43,11 @@ ivm_type_t static_type_list[] = {
 			IVM_NULL,
 			IVM_FALSE,
 			ivm_object_alwaysFalse,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
 			IVM_NULL
 	},
 
@@ -48,6 +58,11 @@ ivm_type_t static_type_list[] = {
 			IVM_NULL,
 			IVM_NULL,
 			IVM_TRUE,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
 			IVM_NULL,
 			IVM_NULL
 	},
@@ -60,6 +75,11 @@ ivm_type_t static_type_list[] = {
 			IVM_NULL,
 			IVM_TRUE,
 			ivm_numeric_isTrue,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
 			IVM_NULL
 	},
 
@@ -71,6 +91,11 @@ ivm_type_t static_type_list[] = {
 			ivm_string_object_traverser,
 			IVM_TRUE,
 			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
 			IVM_NULL
 	},
 
@@ -81,6 +106,11 @@ ivm_type_t static_type_list[] = {
 			ivm_function_object_destructor,
 			ivm_function_object_traverser,
 			IVM_TRUE,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
+			IVM_NULL,
 			IVM_NULL,
 			IVM_NULL
 	}
@@ -165,8 +195,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
-	ivm_bool_t add_block;
-	void *ret = ivm_heap_alloc_c(HEAP_CUR(state), size, &add_block);
+	ivm_bool_t add_block = IVM_FALSE;
+	void *ret = ivm_heap_alloc_c((state)->heaps[0], size, &add_block);
 
 	if (add_block) {
 		ivm_vmstate_openGCFlag(state);

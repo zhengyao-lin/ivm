@@ -1,5 +1,5 @@
-#ifndef _IVM_PUB_SYS_H_
-#define _IVM_PUB_SYS_H_
+#ifndef _IVM_VM_SYS_H_
+#define _IVM_VM_SYS_H_
 
 #include <stdlib.h>
 

@@ -1,6 +1,7 @@
 #include "pub/const.h"
 #include "pub/mem.h"
 #include "pub/com.h"
+#include "inline/obj.h"
 #include "obj.h"
 #include "slot.h"
 #include "vm.h"
@@ -28,7 +29,7 @@ ivm_type_free(ivm_type_t *type)
 		ivm_binary_op_proc_list_free(type->add_table);
 		MEM_FREE(type);
 	}
-	
+
 	return;
 }
 
@@ -60,19 +61,6 @@ ivm_object_newUndefined(ivm_vmstate_t *state)
 	ivm_object_init(ret, state, IVM_UNDEFINED_T);
 
 	return ret;
-}
-
-void
-ivm_object_init(ivm_object_t *obj,
-				ivm_vmstate_t *state,
-				ivm_type_tag_t type)
-{
-	obj->type = ivm_vmstate_getType(state, type);
-	obj->slots = IVM_NULL;
-	obj->mark = IVM_MARK_INIT;
-	obj->proto = ivm_type_getProto(obj->type);
-
-	return;
 }
 
 ivm_bool_t

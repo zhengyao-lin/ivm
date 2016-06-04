@@ -1,4 +1,5 @@
 #include "pub/mem.h"
+#include "inline/runtime.h"
 #include "runtime.h"
 #include "context.h"
 #include "call.h"
@@ -15,18 +16,6 @@ ivm_runtime_new(ivm_vmstate_t *state)
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("runtime"));
 
 	return ret;
-}
-
-void
-ivm_runtime_free(ivm_runtime_t *runtime,
-				 ivm_vmstate_t *state)
-{
-	if (runtime) {
-		ivm_ctchain_free(runtime->context, state);
-		MEM_FREE(runtime);
-	}
-	
-	return;
 }
 
 void

@@ -39,7 +39,7 @@ OP_GEN(ADD, "add", N, {
 	ivm_object_t *op1, *op2;
 	ivm_binary_op_proc_t proc;
 
-	CHECK_STACK(1);
+	CHECK_STACK(2);
 
 	op2 = STACK_POP();
 	op1 = STACK_POP();
@@ -51,6 +51,44 @@ OP_GEN(ADD, "add", N, {
 	STACK_PUSH(proc(_STATE, op1, op2));
 
 	NEXT_INSTR();
+})
+
+OP_GEN(SUB, "sub", N, {
+	ivm_object_t *op1, *op2;
+	ivm_binary_op_proc_t proc;
+
+	CHECK_STACK(2);
+
+	op2 = STACK_POP();
+	op1 = STACK_POP();
+	proc = IVM_OBJECT_GET_OP_PROC(op1, SUB, op2);
+
+	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("-", IVM_OBJECT_GET(op1, TYPE_NAME),
+													IVM_OBJECT_GET(op2, TYPE_NAME)));
+
+	STACK_PUSH(proc(_STATE, op1, op2));
+
+	NEXT_INSTR();
+})
+
+OP_GEN(JUMP_LT, "jump_lt", I, {
+	ivm_object_t *op1, *op2;
+	ivm_binary_op_proc_t proc;
+
+	CHECK_STACK(2);
+
+	op2 = STACK_POP();
+	op1 = STACK_POP();
+	proc = IVM_OBJECT_GET_OP_PROC(op1, CMP, op2);
+
+	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("<=>", IVM_OBJECT_GET(op1, TYPE_NAME),
+													IVM_OBJECT_GET(op2, TYPE_NAME)));
+
+	if (ivm_numeric_getValue(proc(_STATE, op1, op2)) < 0) {
+		NEXT_N_INSTR(_ARG);
+	} else {
+		NEXT_INSTR();
+	}
 })
 
 OP_GEN(GET_SLOT, "get_slot", S, {
@@ -184,6 +222,20 @@ OP_GEN(OUT, "out", S, {
 	NEXT_INSTR();
 })
 
+OP_GEN(OUT_NUM, "out_num", N, {
+	ivm_object_t *obj;
+
+	CHECK_STACK(1);
+
+	obj = STACK_POP();
+	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
+		IVM_TRACE("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	else
+		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+
+	NEXT_INSTR();
+})
+
 OP_GEN(INVOKE, "invoke", I, {
 	ivm_function_object_t *obj;
 	ivm_function_t *func;
@@ -219,6 +271,10 @@ OP_GEN(INVOKE, "invoke", I, {
 
 OP_GEN(YIELD, "yield", N, {
 	YIELD();
+})
+
+OP_GEN(RETURN, "return", N, {
+	RETURN();
 })
 
 OP_GEN(JUMP, "jump", I, {

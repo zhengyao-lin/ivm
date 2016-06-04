@@ -1,9 +1,11 @@
 #ifndef _IVM_VM_STD_LIST_H_
 #define _IVM_VM_STD_LIST_H_
 
+#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
+#include "../err.h"
 
 IVM_COM_HEADER
 
@@ -24,20 +26,25 @@ ivm_ptlist_new_c(ivm_size_t buf_size);
 void
 ivm_ptlist_free(ivm_ptlist_t *ptlist);
 
-void
-ivm_ptlist_inc(ivm_ptlist_t *ptlist);
-
-void
-ivm_ptlist_incTo(ivm_ptlist_t *ptlist, ivm_size_t size);
-
-void
-ivm_ptlist_set(ivm_ptlist_t *ptlist, ivm_size_t i, void *p);
-
 #define ivm_ptlist_setBufferSize(ptlist, size) ((ptlist)->buf_size = (size))
 
 #define ivm_ptlist_last(ptlist) ((ptlist)->cur > 0 ? (ptlist)->lst[(ptlist)->cur - 1] : IVM_NULL)
 #define ivm_ptlist_size(ptlist) ((ptlist)->cur)
 #define ivm_ptlist_at(ptlist, i) ((ptlist)->lst[i])
+
+IVM_INLINE
+void
+ivm_ptlist_inc(ivm_ptlist_t *ptlist)
+{
+	ptlist->alloc <<= 1;
+	ptlist->lst = MEM_REALLOC(ptlist->lst,
+							  sizeof(*ptlist->lst)
+							  * ptlist->alloc,
+							  void **);
+	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
+
+	return;
+}
 
 #define ivm_ptlist_push(ptlist, p) \
 	(((ptlist)->cur >= (ptlist)->alloc ? ivm_ptlist_inc(ptlist), 0 : 0), \
@@ -76,6 +83,41 @@ ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr, ivm_ptlist_comparer_t comp
 	(ivm_ptlist_indexOf_c((ptlist), \
 						  (ptr), \
 						  (ivm_ptlist_comparer_t)(comp)))
+
+IVM_INLINE
+void
+ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
+				 ivm_size_t size)
+{
+	if (size > ptlist->alloc) {
+		ptlist->alloc = size;
+		ptlist->lst = MEM_REALLOC(ptlist->lst,
+								  sizeof(*ptlist->lst)
+								  * ptlist->alloc,
+								  void **);
+		IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_ptlist_set(ivm_ptlist_t *ptlist,
+			   ivm_size_t i,
+			   void *p)
+{
+	if (i >= ptlist->cur) {
+		ivm_ptlist_incTo(ptlist, i + 1);
+		MEM_INIT(ptlist->lst + ptlist->cur,
+				 sizeof(*ptlist->lst) * (i - ptlist->cur));
+		ptlist->cur = i + 1;
+	}
+
+	ptlist->lst[i] = p;
+
+	return;
+}
 
 IVM_COM_END
 

@@ -59,49 +59,6 @@ ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap)
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
-ivm_slot_t *
-ivm_slot_table_findSlot(ivm_slot_table_t *table,
-						ivm_vmstate_t *state,
-						const ivm_char_t *key)
-{
-	ivm_hash_val_t hash;
-	ivm_size_t size;
-	ivm_uint_t h1, h2;
-	ivm_uint_t i, j;
-
-	ivm_slot_t *tmp;
-	
-	if (table) {
-		if (table->is_hash) {
-			hash = ivm_hash_fromString(key);
-			size = table->size;
-			h1 = hash % size;
-			h2 = 1 + hash % (size - 1);
-
-			for (i = h1, j = 0;
-				 j < size;
-				 i += h2, j++) {
-				tmp = &table->tabl[i % size];
-				if (IS_EMPTY_SLOT(tmp)) {
-					return IVM_NULL;
-				} else if (strcmp(key, tmp->k) == 0) {
-					return tmp;
-				}
-			}
-		} else {
-			for (i = 0; i < table->size; i++) {
-				if (table->tabl[i].k == IVM_NULL) {
-					return IVM_NULL;
-				} else if (strcmp(key, table->tabl[i].k) == 0) {
-					return &table->tabl[i];
-				}
-			}
-		}
-	}
-
-	return IVM_NULL;
-}
-
 IVM_PRIVATE
 void
 ivm_slot_table_expand(ivm_slot_table_t *table,

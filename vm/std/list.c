@@ -34,52 +34,6 @@ ivm_ptlist_free(ivm_ptlist_t *ptlist)
 	return;
 }
 
-void
-ivm_ptlist_inc(ivm_ptlist_t *ptlist)
-{
-	ptlist->alloc <<= 1;
-	ptlist->lst = MEM_REALLOC(ptlist->lst,
-							  sizeof(*ptlist->lst)
-							  * ptlist->alloc,
-							  void **);
-	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
-
-	return;
-}
-
-void
-ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
-				 ivm_size_t size)
-{
-	if (size > ptlist->alloc) {
-		ptlist->alloc = size;
-		ptlist->lst = MEM_REALLOC(ptlist->lst,
-								  sizeof(*ptlist->lst)
-								  * ptlist->alloc,
-								  void **);
-		IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
-	}
-
-	return;
-}
-
-void
-ivm_ptlist_set(ivm_ptlist_t *ptlist,
-			   ivm_size_t i,
-			   void *p)
-{
-	if (i >= ptlist->cur) {
-		ivm_ptlist_incTo(ptlist, i + 1);
-		MEM_INIT(ptlist->lst + ptlist->cur,
-				 sizeof(*ptlist->lst) * (i - ptlist->cur));
-		ptlist->cur = i + 1;
-	}
-
-	ptlist->lst[i] = p;
-
-	return;
-}
-
 #define VALUE_AT(ptlist, i) ((ptlist)->lst[i])
 
 void

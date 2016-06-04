@@ -40,6 +40,12 @@ typedef struct ivm_type_t_tag {
 	ivm_bool_converter_t to_bool;
 
 	ivm_binary_op_proc_list_t *add_table;
+	ivm_binary_op_proc_list_t *sub_table;
+	ivm_binary_op_proc_list_t *mul_table;
+	ivm_binary_op_proc_list_t *div_table;
+	ivm_binary_op_proc_list_t *mod_table;
+
+	ivm_binary_op_proc_list_t *cmp_table;
 } ivm_type_t;
 
 ivm_type_t *
@@ -51,8 +57,12 @@ ivm_type_free(ivm_type_t *type);
 #define ivm_type_setTag(type, t) ((type)->tag = (t))
 #define ivm_type_setProto(type, p) ((type)->proto = (p))
 #define ivm_type_getProto(type) ((type)->proto)
-#define ivm_type_setAddTable(type, table) ((type)->add_table = (table))
-#define ivm_type_getAddTable(type) ((type)->add_table)
+
+#define ivm_type_setOpTable(type, op, table) ((type)->op##_table = (table))
+#define ivm_type_getOpTable(type, op) ((type)->op##_table)
+
+#define ivm_type_setHeader(type, p) ((type)->header = (p))
+#define ivm_type_getHeader(type) ((type)->header)
 
 typedef void (*ivm_type_init_proc_t)(ivm_type_t *, struct ivm_vmstate_t_tag *);
 
@@ -86,7 +96,9 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
 #define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(obj)->mark)
 #define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
-#define IVM_OBJECT_GET_ADD_TABLE(obj) (ivm_type_getAddTable((obj)->type))
+#define IVM_OBJECT_GET_ADD_TABLE(obj) (ivm_type_getOpTable((obj)->type, add))
+#define IVM_OBJECT_GET_SUB_TABLE(obj) (ivm_type_getOpTable((obj)->type, sub))
+#define IVM_OBJECT_GET_CMP_TABLE(obj) (ivm_type_getOpTable((obj)->type, cmp))
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark & 0x1)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
@@ -116,11 +128,6 @@ ivm_object_newUndefined(struct ivm_vmstate_t_tag *state);
 
 #define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
 #define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
-
-void
-ivm_object_init(ivm_object_t *obj,
-				struct ivm_vmstate_t_tag *state,
-				ivm_type_tag_t type);
 
 #define ivm_object_destruct(obj, state) \
 	if ((obj) && IVM_TYPE_OF(obj) && IVM_OBJECT_GET(obj, TYPE_DES)) { \

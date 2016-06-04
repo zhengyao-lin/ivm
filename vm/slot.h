@@ -3,6 +3,7 @@
 
 #include "pub/com.h"
 #include "type.h"
+#include "std/hash.h"
 
 IVM_COM_HEADER
 
@@ -34,6 +35,7 @@ ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
 ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap);
 
+inline
 ivm_slot_t * /* the return value is not stable and need to be used instantaneously */
 ivm_slot_table_findSlot(ivm_slot_table_t *table,
 						struct ivm_vmstate_t_tag *state,
@@ -56,44 +58,53 @@ typedef ivm_slot_t *ivm_slot_table_iterator_t;
 		 (iter) < ((table)->tabl + (table)->size); \
 		 (iter)++)
 
-#if 0
+#define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
-ivm_slot_table_t *
-ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
-
-ivm_slot_table_t *
-ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap);
-
-#define IVM_SLOT_TABLE_HEAD(table) ((table) ? (table)->head : IVM_NULL)
-#define IVM_SLOT_TABLE_TAIL(table) ((table) ? (table)->tail : IVM_NULL)
-
+IVM_INLINE
 ivm_slot_t *
 ivm_slot_table_findSlot(ivm_slot_table_t *table,
 						struct ivm_vmstate_t_tag *state,
-						const ivm_char_t *key);
-ivm_slot_t *
-ivm_slot_table_addSlot(ivm_slot_table_t *table,
-					   struct ivm_vmstate_t_tag *state,
-					   const ivm_char_t *key,
-					   struct ivm_object_t_tag *obj);
+						const ivm_char_t *key)
+{
+	ivm_hash_val_t hash;
+	ivm_size_t size;
+	ivm_uint_t h1, h2;
+	ivm_uint_t i, j;
 
-void
-ivm_slot_table_foreach(ivm_slot_table_t *table,
-					   ivm_slot_table_foreach_proc_t proc,
-					   void *arg);
+	ivm_slot_t *tmp;
+	
+	if (table) {
+		if (table->is_hash) {
+			hash = ivm_hash_fromString(key);
+			size = table->size;
+			h1 = hash % size;
+			h2 = 1 + hash % (size - 1);
 
-typedef ivm_slot_t *ivm_slot_table_iterator_t;
+			for (i = h1, j = 0;
+				 j < size;
+				 i += h2, j++) {
+				tmp = &table->tabl[i % size];
+				if (IS_EMPTY_SLOT(tmp)) {
+					return IVM_NULL;
+				} else if (!strcmp(key, tmp->k)) {
+					return tmp;
+				}
+			}
+		} else {
+			for (i = 0; i < table->size; i++) {
+				if (!table->tabl[i].k) {
+					return IVM_NULL;
+				} else if (!strcmp(key, table->tabl[i].k)) {
+					return &table->tabl[i];
+				}
+			}
+		}
+	}
 
-#define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
-#define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))
-#define IVM_SLOT_TABLE_ITER_SET(iter, key, val) ((iter)->k = (key), (iter)->v = (val))
-#define IVM_SLOT_TABLE_ITER_GET_KEY(iter) ((iter)->k)
-#define IVM_SLOT_TABLE_ITER_GET_VAL(iter) ((iter)->v)
-#define IVM_SLOT_TABLE_EACHPTR(table, iter) \
-	for ((iter) = IVM_SLOT_TABLE_HEAD(table); \
-		 (iter); (iter) = (iter)->next)
+	return IVM_NULL;
+}
 
-#endif
+#undef IS_EMPTY_SLOT
 
 IVM_COM_END
 

@@ -49,54 +49,6 @@ ivm_heap_free(ivm_heap_t *heap)
 	return;
 }
 
-IVM_PRIVATE
-ivm_size_t
-ivm_heap_addBlock(ivm_heap_t *heap)
-{
-	IVM_OUT("new block added: %ld\n", heap->bcount);
-	heap->curs = MEM_REALLOC(heap->curs,
-							 sizeof(*heap->curs) * ++heap->bcount,
-							 ivm_size_t *);
-	heap->blocks = MEM_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks) * heap->bcount,
-							   ivm_byte_t **);
-
-	heap->curs[heap->bcount - 1] = 0;
-	heap->blocks[heap->bcount - 1] = MEM_ALLOC(heap->bsize,
-											   ivm_byte_t *);
-
-	return heap->bcount;
-}
-
-IVM_PRIVATE
-void *
-ivm_heap_allocAt(ivm_heap_t *heap, ivm_size_t idx, ivm_size_t size)
-{
-	void *ret = OFFSET(heap->blocks[idx], heap->curs[idx]);
-
-	INC_SIZE(heap, idx, size);
-
-	return ret;
-}
-
-void *
-ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
-{
-	ivm_size_t i;
-
-	IVM_ASSERT(size <= heap->bsize,
-			   IVM_ERROR_MSG_SIZE_EXCEEDS_BLOCK_SIZE);
-
-	if (!(i = HAS_SIZE(heap, size))) {
-		i = ivm_heap_addBlock(heap);
-		if (add_block)
-			*add_block = IVM_TRUE;
-	} else if (add_block)
-		*add_block = IVM_FALSE;
-
-	return ivm_heap_allocAt(heap, i - 1, size);
-}
-
 void *
 ivm_heap_addCopy(ivm_heap_t *heap, void *ptr, ivm_size_t size)
 {
@@ -105,20 +57,6 @@ ivm_heap_addCopy(ivm_heap_t *heap, void *ptr, ivm_size_t size)
 	MEM_COPY(new_ptr, ptr, size);
 
 	return new_ptr;
-}
-
-ivm_size_t
-ivm_heap_hasSize(ivm_heap_t *heap, ivm_size_t size)
-{
-	ivm_size_t i;
-
-	for (i = heap->btop; i < heap->bcount; i++) {
-		if (heap->bsize - heap->curs[i] >= size) {
-			return i + 1;
-		}
-	}
-
-	return IVM_FALSE;
 }
 
 void

@@ -1,8 +1,10 @@
 #include "pub/mem.h"
+#include "inline/obj.h"
 #include "str.h"
 #include "type.h"
 #include "vm.h"
 #include "bit.h"
+#include "gc/heap.h"
 #include "gc/gc.h"
 #include "err.h"
 

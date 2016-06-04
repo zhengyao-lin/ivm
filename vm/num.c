@@ -1,4 +1,5 @@
 #include "pub/mem.h"
+#include "inline/obj.h"
 #include "num.h"
 #include "obj.h"
 #include "vm.h"

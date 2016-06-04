@@ -24,6 +24,7 @@
 	} \
 
 #define YIELD() IVM_RUNTIME_SET(_RUNTIME, IP, ++tmp_ip); goto ACTION_YIELD
+#define RETURN() IVM_RUNTIME_SET(_RUNTIME, IP, ++tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define _ARG (_INSTR->arg)

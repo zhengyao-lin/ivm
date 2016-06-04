@@ -7,6 +7,7 @@
 #include "vm.h"
 #include "context.h"
 #include "op.h"
+#include "inline/runtime.h"
 #include "err.h"
 
 ivm_coro_t *
@@ -94,10 +95,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		tmp_stack = coro->stack;
 
 		while (1) {
-			ret = IVM_NULL;
-
 ACTION_INVOKE:
-
+			ret = IVM_NULL;
 			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
@@ -145,8 +144,7 @@ ACTION_RETURN:
 			tmp_frame = ivm_frame_stack_pop(coro->frame_st);
 
 			if (tmp_frame) {
-				if ((ivm_vmstack_size(tmp_stack)
-					 - IVM_FRAME_GET(tmp_frame, STACK_TOP)) > 0) {
+				if (ivm_vmstack_size(tmp_stack) - IVM_FRAME_GET(tmp_frame, STACK_TOP) > 0) {
 					ret = ivm_vmstack_pop(tmp_stack);
 				}
 		

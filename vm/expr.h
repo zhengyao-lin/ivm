@@ -17,7 +17,7 @@ typedef ivm_ptlist_t ivm_binary_op_proc_list_t;
 #define ivm_binary_op_proc_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_BINARY_OP_PROC_LIST_BUFFER_SIZE))
 #define ivm_binary_op_proc_list_free ivm_ptlist_free
 #define ivm_binary_op_proc_list_at(list, i) \
-	((ivm_binary_op_proc_t)(ivm_ptlist_has((list), (i)) ? ivm_ptlist_at((list), (i)) : IVM_NULL))
+	((ivm_binary_op_proc_t)((list) && ivm_ptlist_has((list), (i)) ? ivm_ptlist_at((list), (i)) : IVM_NULL))
 #define ivm_binary_op_proc_list_set(list, i, val) (ivm_ptlist_set((list), (i), (void *)(val)))
 
 void

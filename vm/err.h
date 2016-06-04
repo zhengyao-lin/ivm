@@ -2,21 +2,21 @@
 #define _IVM_PUB_ERR_H_
 
 #include "pub/com.h"
-#include "io.h"
-#include "sys.h"
+#include "vm/io.h"
+#include "vm/sys.h"
 
 IVM_COM_HEADER
 
 #define IVM_OUT(...) \
-	/* (fprintf(IVM_STDOUT, ##__VA_ARGS__)) */
+	/* (fprintf(IVM_STDOUT, __VA_ARGS__)) */
 
 #define IVM_TRACE(...) \
-	(fprintf(IVM_STDERR, ##__VA_ARGS__))
+	(fprintf(IVM_STDERR, __VA_ARGS__))
 
 #define IVM_ASSERT(cond, ...) \
 	if (!(cond)) { \
 		fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
-		fprintf(IVM_STDERR, ##__VA_ARGS__); \
+		fprintf(IVM_STDERR, __VA_ARGS__); \
 		fputc('\n', IVM_STDERR); \
 		IVM_ABORT(); \
 	}

@@ -11,6 +11,7 @@
 #define NEXT_INSTR() (*__ivm_instr__)++; return IVM_ACTION_NONE
 #define NEXT_N_INSTR(n) (*__ivm_instr__) += (n); return IVM_ACTION_NONE
 #define YIELD() (*__ivm_instr__)++; return IVM_ACTION_YIELD
+#define RETURN() (*__ivm_instr__)++; return IVM_ACTION_RETURN
 #define INVOKE() return IVM_ACTION_INVOKE
 
 #define _ARG (_INSTR->arg)

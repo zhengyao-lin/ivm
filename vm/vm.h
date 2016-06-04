@@ -9,13 +9,14 @@
 #include "coro.h"
 #include "context.h"
 #include "std/pool.h"
-#include "gc/heap.h"
-#include "gc/gc.h"
 
 IVM_COM_HEADER
 
+struct ivm_heap_t_tag;
+struct ivm_collector_t_tag;
+
 typedef struct ivm_vmstate_t_tag {
-	ivm_heap_t *heaps[2];
+	struct ivm_heap_t_tag *heaps[2];
 
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
@@ -31,7 +32,7 @@ typedef struct ivm_vmstate_t_tag {
 						  > 0: open
 						  = 0: closed
 						  < 0: locked */
-	ivm_collector_t *gc;
+	struct ivm_collector_t_tag *gc;
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
@@ -128,6 +129,8 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
 #define ivm_vmstate_getTypeProto(state, tag) \
 	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
+#define ivm_vmstate_getTypeHeader(state, tag) \
+	(ivm_type_getHeader(ivm_vmstate_getType((state), (tag))))
 
 #define ivm_vmstate_registerFunc(state, exec) (ivm_func_list_register((state)->func_list, (exec)))
 #define ivm_vmstate_getFunc(state, id) (ivm_func_list_at((state)->func_list, (id)))

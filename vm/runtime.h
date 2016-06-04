@@ -36,10 +36,6 @@ typedef struct ivm_runtime_t_tag {
 ivm_runtime_t *
 ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 
-void
-ivm_runtime_free(ivm_runtime_t *runtime,
-				 struct ivm_vmstate_t_tag *state);
-
 /* just rewrite new environment */
 /* NOTICE: this function will NOT copy the context chain,
  *		   clone the context chain by yourself
