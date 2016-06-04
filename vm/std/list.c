@@ -47,25 +47,6 @@ ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 	return;
 }
 
-ivm_size_t
-ivm_ptlist_push(ivm_ptlist_t *ptlist, void *p)
-{
-	if (ptlist->cur >= ptlist->alloc)
-		ivm_ptlist_inc(ptlist);
-
-	ptlist->lst[ptlist->cur] = p;
-
-	return ptlist->cur++;
-}
-
-void *
-ivm_ptlist_pop(ivm_ptlist_t *ptlist)
-{
-	if (ptlist->cur > 0)
-		return ptlist->lst[--ptlist->cur];
-	return IVM_NULL;
-}
-
 #define VALUE_AT(ptlist, i) ((ptlist)->lst[i])
 
 void

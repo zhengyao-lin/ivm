@@ -30,10 +30,12 @@ ivm_ptlist_inc(ivm_ptlist_t *ptlist);
 #define ivm_ptlist_size(ptlist) ((ptlist)->cur)
 #define ivm_ptlist_at(ptlist, i) ((ptlist)->lst[i])
 
-ivm_size_t
-ivm_ptlist_push(ivm_ptlist_t *ptlist, void *p);
-void *
-ivm_ptlist_pop(ivm_ptlist_t *ptlist);
+#define ivm_ptlist_push(ptlist, p) \
+	(((ptlist)->cur >= (ptlist)->alloc ? ivm_ptlist_inc(ptlist), 0 : 0), \
+	 (ptlist)->lst[(ptlist)->cur] = (p), (ptlist)->cur++)
+
+#define ivm_ptlist_pop(ptlist) \
+	((ptlist)->cur ? (ptlist)->lst[--(ptlist)->cur] : IVM_NULL)
 
 #define ivm_ptlist_setCur(ptlist, t) ((ptlist)->cur = (t))
 #define ivm_ptlist_incCur(ptlist, t) ((ptlist)->cur += (t))

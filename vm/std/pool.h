@@ -29,8 +29,7 @@ ivm_ptpool_free(ivm_ptpool_t *pool);
 void *
 ivm_ptpool_alloc(ivm_ptpool_t *pool);
 
-void
-ivm_ptpool_dump(ivm_ptpool_t *pool, void *ptr);
+#define ivm_ptpool_dump(pool, ptr) (ivm_ptlist_push((pool)->freed, (ptr)))
 
 IVM_COM_END
 

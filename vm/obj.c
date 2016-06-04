@@ -65,7 +65,7 @@ ivm_object_init(ivm_object_t *obj,
 	obj->type = ivm_vmstate_getType(state, type);
 	obj->slots = IVM_NULL;
 	obj->mark = IVM_MARK_INIT;
-	obj->proto = ivm_vmstate_getTypeProto(state, type);
+	obj->proto = ivm_type_getProto(obj->type);
 
 	return;
 }

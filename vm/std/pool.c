@@ -83,10 +83,3 @@ ivm_ptpool_alloc(ivm_ptpool_t *pool)
 
 	return tmp;	
 }
-
-void
-ivm_ptpool_dump(ivm_ptpool_t *pool, void *ptr)
-{
-	ivm_ptlist_push(pool->freed, ptr);
-	return;
-}

@@ -10,7 +10,7 @@ SET(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-variadic-macros -Wno-unused-value -fPIC")
 
 # set flags for different versions
 IF(VERSION STREQUAL "release")
