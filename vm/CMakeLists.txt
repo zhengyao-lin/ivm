@@ -34,4 +34,4 @@ ADD_SUBDIRECTORY(std)
 ADD_DEPENDENCIES(vm vm_gc vm_std)
 
 # link libraries
-TARGET_LINK_LIBRARIES(vm vm_gc vm_std)
+TARGET_LINK_LIBRARIES(vm vm_gc vm_std m)

@@ -98,6 +98,9 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
 #define IVM_OBJECT_GET_ADD_TABLE(obj) (ivm_type_getOpTable((obj)->type, add))
 #define IVM_OBJECT_GET_SUB_TABLE(obj) (ivm_type_getOpTable((obj)->type, sub))
+#define IVM_OBJECT_GET_MUL_TABLE(obj) (ivm_type_getOpTable((obj)->type, mul))
+#define IVM_OBJECT_GET_DIV_TABLE(obj) (ivm_type_getOpTable((obj)->type, div))
+#define IVM_OBJECT_GET_MOD_TABLE(obj) (ivm_type_getOpTable((obj)->type, mod))
 #define IVM_OBJECT_GET_CMP_TABLE(obj) (ivm_type_getOpTable((obj)->type, cmp))
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark & 0x1)
 

@@ -1,3 +1,4 @@
+#include <math.h>
 #include "type.h"
 #include "expr.h"
 #include "obj.h"
@@ -24,6 +25,33 @@ num_sub_num(ivm_vmstate_t *state,
 
 IVM_PRIVATE
 ivm_object_t *
+num_mul_num(ivm_vmstate_t *state,
+			ivm_object_t *op1,
+			ivm_object_t *op2)
+{
+	return ivm_numeric_new(state, ivm_numeric_getValue(op1) * ivm_numeric_getValue(op2));
+}
+
+IVM_PRIVATE
+ivm_object_t *
+num_div_num(ivm_vmstate_t *state,
+			ivm_object_t *op1,
+			ivm_object_t *op2)
+{
+	return ivm_numeric_new(state, ivm_numeric_getValue(op1) / ivm_numeric_getValue(op2));
+}
+
+IVM_PRIVATE
+ivm_object_t *
+num_mod_num(ivm_vmstate_t *state,
+			ivm_object_t *op1,
+			ivm_object_t *op2)
+{
+	return ivm_numeric_new(state, fmod(ivm_numeric_getValue(op1), ivm_numeric_getValue(op2)));
+}
+
+IVM_PRIVATE
+ivm_object_t *
 num_cmp_num(ivm_vmstate_t *state,
 			ivm_object_t *op1,
 			ivm_object_t *op2)
@@ -37,14 +65,23 @@ init_numeric(ivm_type_t *type,
 {
 	ivm_binary_op_proc_list_t *add_table = ivm_binary_op_proc_list_new();
 	ivm_binary_op_proc_list_t *sub_table = ivm_binary_op_proc_list_new();
+	ivm_binary_op_proc_list_t *mul_table = ivm_binary_op_proc_list_new();
+	ivm_binary_op_proc_list_t *div_table = ivm_binary_op_proc_list_new();
+	ivm_binary_op_proc_list_t *mod_table = ivm_binary_op_proc_list_new();
 	ivm_binary_op_proc_list_t *cmp_table = ivm_binary_op_proc_list_new();
 
 	ivm_binary_op_proc_list_set(add_table, IVM_NUMERIC_T, num_add_num); /* num + num */
 	ivm_binary_op_proc_list_set(sub_table, IVM_NUMERIC_T, num_sub_num); /* num - num */
+	ivm_binary_op_proc_list_set(mul_table, IVM_NUMERIC_T, num_mul_num); /* num * num */
+	ivm_binary_op_proc_list_set(div_table, IVM_NUMERIC_T, num_div_num); /* num / num */
+	ivm_binary_op_proc_list_set(mod_table, IVM_NUMERIC_T, num_mod_num); /* num % num */
 	ivm_binary_op_proc_list_set(cmp_table, IVM_NUMERIC_T, num_cmp_num); /* num <=> num */
 
 	ivm_type_setOpTable(type, add, add_table);
 	ivm_type_setOpTable(type, sub, sub_table);
+	ivm_type_setOpTable(type, mul, mul_table);
+	ivm_type_setOpTable(type, div, div_table);
+	ivm_type_setOpTable(type, mod, mod_table);
 	ivm_type_setOpTable(type, cmp, cmp_table);
 
 	return;

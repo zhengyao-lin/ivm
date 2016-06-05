@@ -112,7 +112,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 40);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -146,7 +146,6 @@ int test_fib()
 	ivm_exec_addOp(exec2, ADD);
 	ivm_exec_addOp(exec2, RETURN);
 	/********** fib **********/
-
 
 	ivm_vmstate_unlockGCFlag(state);
 
@@ -504,8 +503,8 @@ int dump()
 
 int main()
 {
-	test_vm();
-	// test_fib();
+	// test_vm();
+	test_fib();
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();
