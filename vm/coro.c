@@ -1,13 +1,15 @@
 #include <stdlib.h>
 #include "pub/const.h"
 #include "pub/mem.h"
+#include "inline/call.h"
+#include "inline/runtime.h"
+#include "inline/obj.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "call.h"
 #include "vm.h"
 #include "context.h"
 #include "op.h"
-#include "inline/runtime.h"
 #include "err.h"
 
 ivm_coro_t *
@@ -29,8 +31,13 @@ void
 ivm_coro_free(ivm_coro_t *coro,
 			  ivm_vmstate_t *state)
 {
+	ivm_frame_stack_iterator_t fsiter;
+
 	if (coro) {
-		ivm_frame_stack_foreach(coro->frame_st, (ivm_stack_foreach_proc_t)ivm_frame_free);
+		IVM_FRAME_STACK_EACHPTR(coro->frame_st, fsiter) {
+			ivm_frame_free(IVM_FRAME_STACK_ITER_GET(fsiter), state);
+		}
+
 		ivm_vmstack_free(coro->stack);
 		ivm_frame_stack_free(coro->frame_st);
 		ivm_runtime_free(coro->runtime, state);

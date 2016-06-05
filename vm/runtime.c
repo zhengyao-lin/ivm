@@ -1,5 +1,6 @@
 #include "pub/mem.h"
 #include "inline/runtime.h"
+#include "inline/call.h"
 #include "runtime.h"
 #include "context.h"
 #include "call.h"

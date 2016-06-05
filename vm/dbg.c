@@ -8,6 +8,8 @@
 #include "exec.h"
 #include "vm.h"
 #include "obj.h"
+#include "coro.h"
+#include "vmstack.h"
 #include "gc/heap.h"
 
 #define STRING_BUF_SIZE 128
@@ -78,6 +80,29 @@ ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp)
 
 	fprintf(fp, "\nempty heap\n");
 	ivm_dbg_printHeap(empty, IVM_DBG_TAB, fp);
+
+	return;
+}
+
+void
+ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
+{
+	ivm_frame_stack_t *frames = IVM_CORO_GET(coro, FRAME_STACK);
+	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
+	ivm_vmstack_iterator_t siter;
+	ivm_object_t *tmp;
+	ivm_size_t i = 1;
+
+	if (stack) {
+		IVM_VMSTACK_EACHPTR(stack, siter) {
+			tmp = IVM_VMSTACK_ITER_GET(siter);
+			fprintf(fp, "%4ld: %p of <%s>\n", i, (void *)tmp,
+					tmp ? IVM_OBJECT_GET(tmp, TYPE_NAME) : "null pointer");
+			i++;
+		}
+	}
+
+	fprintf(fp, "(total of %ld object(s) in the stack)\n", i - 1);
 
 	return;
 }

@@ -34,14 +34,6 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
-ivm_frame_t *
-ivm_frame_new(struct ivm_vmstate_t_tag *state,
-			  struct ivm_runtime_t_tag *runtime,
-			  ivm_size_t st_top);
-void
-ivm_frame_free(ivm_frame_t *frame,
-			   struct ivm_vmstate_t_tag *state);
-
 typedef ivm_stack_t ivm_frame_stack_t;
 typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
 
@@ -58,7 +50,7 @@ typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
 
 #define IVM_FRAME_STACK_ITER_SET(iter, val) (IVM_STACK_ITER_SET((iter), (val)))
 #define IVM_FRAME_STACK_ITER_GET(iter) ((ivm_frame_t *)IVM_STACK_ITER_GET(iter))
-#define IVM_FRAME_STACK_EACHPTR(list, iter) IVM_STACK_EACHPTR((list), (iter), ivm_frame_t *)
+#define IVM_FRAME_STACK_EACHPTR(stack, iter) IVM_STACK_EACHPTR((stack), (iter), ivm_frame_t *)
 
 typedef ivm_ptpool_t ivm_frame_pool_t;
 

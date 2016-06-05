@@ -170,11 +170,13 @@ ivm_object_getSlotValue(ivm_object_t *obj,
 						struct ivm_vmstate_t_tag *state,
 						const ivm_char_t *key);
 
+#if 0
 /* no prototype */
 ivm_object_t *
 ivm_object_getSlotValue_np(ivm_object_t *obj,
 						   struct ivm_vmstate_t_tag *state,
 						   const ivm_char_t *key);
+#endif
 
 void
 ivm_object_printSlots(ivm_object_t *obj);

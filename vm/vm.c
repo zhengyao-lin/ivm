@@ -192,19 +192,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
-void *
-ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
-{
-	ivm_bool_t add_block = IVM_FALSE;
-	void *ret = ivm_heap_alloc_c((state)->heaps[0], size, &add_block);
-
-	if (add_block) {
-		ivm_vmstate_openGCFlag(state);
-	}
-
-	return ret;
-}
-
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 {

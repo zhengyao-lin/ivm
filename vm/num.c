@@ -5,7 +5,8 @@
 #include "vm.h"
 #include "err.h"
 
-ivm_object_t *ivm_numeric_new(ivm_vmstate_t *state, ivm_number_t val)
+ivm_object_t *
+ivm_numeric_new(ivm_vmstate_t *state, ivm_number_t val)
 {
 	ivm_numeric_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 

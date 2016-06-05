@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <time.h>
 #include "pub/const.h"
+#include "vm/inline/obj.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
@@ -111,7 +112,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 40);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -163,6 +164,8 @@ int test_fib()
 #endif
 
 	ivm_dbg_heapState(state, stderr);
+	IVM_TRACE("\nstack state:\n");
+	ivm_dbg_stackState(coro, stderr);
 
 	ivm_coro_free(coro, state);
 	ivm_function_free(top, state);
@@ -286,39 +289,47 @@ int test_vm()
 		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
 	}
 
-	for (i = 0; i < 1; i++) {
-		ivm_exec_addOp(exec1, NEW_STR, "hey!");
-		ivm_exec_addOp(exec1, PRINT_STR);
-	}
+	ivm_exec_addOp(exec1, NEW_NUM_I, 0);
+	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
 
-	for (i = 0; i < 1; i++) {
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, POP);
-	}
-
-	for (i = 0; i < 1; i++) {
+	/* while i < n */
+	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000000);
+	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
+	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
+		/* call test */
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, POP);
-	}
 
-	for (i = 0; i < 1; i++) {
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
 		ivm_exec_addOp(exec1, INVOKE, 1);
 		ivm_exec_addOp(exec1, POP);
-	}
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
-	for (i = 0; i < 1; i++) {
+		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
+		ivm_exec_addOp(exec1, INVOKE, 0);
+		ivm_exec_addOp(exec1, INVOKE, 0);
+		ivm_exec_addOp(exec1, POP);
+
+		/* slot test */
 		ivm_exec_addOp(exec1, NEW_OBJ);
-		ivm_exec_addOp(exec1, DUP, 1);
+		ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
 		ivm_exec_addOp(exec1, SET_SLOT, "a");
 		ivm_exec_addOp(exec1, POP);
-	}
+
+		/* string test */
+		ivm_exec_addOp(exec1, NEW_STR, "hey!");
+		ivm_exec_addOp(exec1, PRINT_STR);
+
+		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
+		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
+		ivm_exec_addOp(exec1, ADD);
+		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+		ivm_exec_addOp(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
+	addr3 = ivm_exec_addOp(exec1, NOP);
+	ivm_exec_setArgAt(exec1, addr2, addr3 - addr2);
+	/* end while */
 
 	ivm_exec_addOp(exec1, OUT, "***************start******************");
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
@@ -493,8 +504,8 @@ int dump()
 
 int main()
 {
-	/* test_vm(); */
-	test_fib();
+	test_vm();
+	// test_fib();
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();
