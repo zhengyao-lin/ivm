@@ -27,6 +27,11 @@ ivm_type_free(ivm_type_t *type)
 {
 	if (type) {
 		ivm_binary_op_proc_list_free(type->add_table);
+		ivm_binary_op_proc_list_free(type->sub_table);
+		ivm_binary_op_proc_list_free(type->mul_table);
+		ivm_binary_op_proc_list_free(type->div_table);
+		ivm_binary_op_proc_list_free(type->mod_table);
+		ivm_binary_op_proc_list_free(type->cmp_table);
 		MEM_FREE(type);
 	}
 

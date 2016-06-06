@@ -42,6 +42,7 @@ typedef ivm_double_t	ivm_number_t;
 #define IVM_NUMERIC_T			3
 #define IVM_STRING_OBJECT_T		4
 #define IVM_FUNCTION_OBJECT_T	5
+#define IVM_TYPE_COUNT			6
 
 typedef ivm_size_t		ivm_pc_t;
 typedef ivm_sint32_t	ivm_op_arg_t;

@@ -115,6 +115,7 @@ ACTION_INVOKE:
 				
 				/* jump to the first op */
 				if (tmp_ip != tmp_ip_end) {
+					// IVM_TRACE("%p\n", tmp_ip);
 					goto *(tmp_ip->entry);
 					#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
 						#include "op.def"

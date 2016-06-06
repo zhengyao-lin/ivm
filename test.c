@@ -105,14 +105,12 @@ int test_fib()
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
 
 	ivm_vmstate_addCoro(state, coro);
-	ivm_coro_setRoot(coro, state,
-					 IVM_AS(ivm_function_object_new_nc(state, IVM_NULL, top), ivm_function_object_t));
 
 	/********** top **********/
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 40);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -147,6 +145,9 @@ int test_fib()
 	ivm_exec_addOp(exec2, RETURN);
 	/********** fib **********/
 
+	ivm_coro_setRoot(coro, state,
+					 IVM_AS(ivm_function_object_new_nc(state, IVM_NULL, top), ivm_function_object_t));
+
 	ivm_vmstate_unlockGCFlag(state);
 
 #if IVM_PERF_PROFILE
@@ -171,6 +172,120 @@ int test_fib()
 	ivm_function_free(fib, state);
 	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
+	ivm_string_pool_free(str_pool);
+	ivm_vmstate_free(state);
+
+	return 0;
+}
+
+int test_call()
+{
+	int i;
+	ivm_vmstate_t *state;
+	ivm_function_t *top, *empty;
+	ivm_exec_t *exec1, *exec2;
+	ivm_string_pool_t *str_pool;
+	ivm_coro_t *coro;
+	ivm_ctchain_t *chain;
+	ivm_size_t addr1, addr2, addr3, addr4;
+
+	char *chartab[] = { "a", "b", "c", "d",
+						"e", "f", "g", "h",
+						"i", "j", "k", "l",
+						"m", "n", "o", "p",
+						"q", "r", "s", "t",
+						"u", "v", "w", "x",
+						"y", "z", "aa", "bb",
+						"cc", "dd", "ee", "ff",
+						"gg", "hh", "ii", "jj",
+						"kk", "ll", "mm", "nn",
+						"oo", "pp", "qq", "rr",
+						"ss", "tt", "uu", "vv",
+						"ww", "xx", "yy", "zz",
+						"aaa", "bbb", "ccc", "ddd",
+						"fff", "ggg", "hhh", "iii",
+						"jjj", "kkk", "lll", "mmm",
+						"nnn", "ooo", "ppp", "qqq",
+						"rrr", "sss", "ttt", "uuu",
+						"vvv", "www", "xxx", "yyy",
+						"zzz" };
+
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	ivm_op_table_initOpEntry();
+#endif
+
+	str_pool = ivm_string_pool_new();
+	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
+
+	exec1 = ivm_exec_new(str_pool);
+
+	top = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
+	empty = ivm_function_new(state, IVM_NULL, IVM_INTSIG_NONE);
+	
+	coro = ivm_coro_new();
+	chain = ivm_ctchain_new(state, 1);
+	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
+
+	ivm_vmstate_addCoro(state, coro);
+
+	/********************** code ***********************/
+
+	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
+		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
+		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
+	}
+	
+
+	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
+	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
+
+	ivm_exec_addOp(exec1, NEW_NUM_I, 0);
+	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+
+	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000000);
+	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
+	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
+
+		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
+		ivm_exec_addOp(exec1, INVOKE, 0);
+		ivm_exec_addOp(exec1, POP);
+
+		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
+		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
+		ivm_exec_addOp(exec1, ADD);
+		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+		ivm_exec_addOp(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
+	addr3 = ivm_exec_addOp(exec1, NOP);
+	ivm_exec_setArgAt(exec1, addr2, addr3 - addr2);
+
+	/********************** code ***********************/
+	ivm_coro_setRoot(coro, state,
+					 IVM_AS(ivm_function_object_new_nc(state, IVM_NULL, top), ivm_function_object_t));
+
+	ivm_vmstate_unlockGCFlag(state);
+
+
+#if IVM_PERF_PROFILE
+	profile_start();
+#endif
+
+	/* start executing */
+	IVM_TRACE("start\n");
+	ivm_vmstate_schedule(state);
+
+#if IVM_PERF_PROFILE
+	profile_output();
+	profile_type();
+#endif
+
+	ivm_dbg_heapState(state, stderr);
+	IVM_TRACE("\nstack state:\n");
+	ivm_dbg_stackState(coro, stderr);
+
+	ivm_coro_free(coro, state);
+	ivm_function_free(top, state);
+	ivm_ctchain_free(chain, state);
+	ivm_exec_free(exec1);
 	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
 
@@ -296,10 +411,11 @@ int test_vm()
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
 	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
 		/* call test */
+
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, POP);
-
+	#if 0
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -320,6 +436,7 @@ int test_vm()
 		/* string test */
 		ivm_exec_addOp(exec1, NEW_STR, "hey!");
 		ivm_exec_addOp(exec1, PRINT_STR);
+	#endif
 
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
@@ -503,6 +620,7 @@ int dump()
 
 int main()
 {
+	// test_call();
 	// test_vm();
 	test_fib();
 
