@@ -2,8 +2,8 @@
 #define _IVM_VM_INSTR_H_
 
 #include "pub/const.h"
+#include "std/string.h"
 #include "type.h"
-#include "str.h"
 #include "op.h"
 
 IVM_COM_HEADER
@@ -39,7 +39,7 @@ typedef struct ivm_instr_t_tag {
 	ivm_instr_t ivm_instr_gen_##op(IVM_INSTR_TYPE_##arg##_ARG \
 								   struct ivm_exec_t_tag *exec);
 
-	#include "op.def"
+	#include "op.def.h"
 
 #undef OP_GEN
 

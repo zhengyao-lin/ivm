@@ -2,13 +2,13 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
+#include "std/hash.h"
+#include "std/string.h"
 #include "slot.h"
 #include "obj.h"
 #include "vm.h"
 #include "bit.h"
 #include "gc/heap.h"
-#include "std/hash.h"
-#include "std/str.h"
 #include "err.h"
 
 #define SET_BIT_FALSE IVM_BIT_SET_FALSE

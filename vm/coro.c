@@ -3,15 +3,15 @@
 #include "pub/mem.h"
 #include "inline/call.h"
 #include "inline/runtime.h"
-#include "inline/obj.h"
 #include "coro.h"
 #include "vmstack.h"
+#include "context.h"
 #include "call.h"
 #include "vm.h"
-#include "context.h"
 #include "op.h"
-#include "std/str.h"
 #include "err.h"
+
+#include "op.req.h"
 
 ivm_coro_t *
 ivm_coro_new()
@@ -74,7 +74,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	static void *op_entry[] = {
 		#define OP_GEN(o, name, arg, ...) &&OP_##o,
-			#include "op.def"
+			#include "op.def.h"
 		#undef OP_GEN
 	};
 
@@ -119,7 +119,7 @@ ACTION_INVOKE:
 					// IVM_TRACE("%p\n", tmp_ip);
 					goto *(tmp_ip->entry);
 					#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
-						#include "op.def"
+						#include "op.def.h"
 					#undef OP_GEN
 				}
 

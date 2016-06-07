@@ -22,6 +22,7 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 
 #define ivm_stack_push ivm_ptlist_push
 #define ivm_stack_pop ivm_ptlist_pop
+#define ivm_stack_at ivm_ptlist_at
 #define ivm_stack_cut(stack, i) (ivm_ptlist_setCur((stack), ivm_ptlist_size(stack) - (i)), \
 								 &ivm_stack_before((stack), -1))
 

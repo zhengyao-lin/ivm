@@ -2,9 +2,9 @@
 #define _IVM_VM_INLINE_OBJ_H_
 
 #include "pub/com.h"
+#include "../std/string.h"
 #include "../obj.h"
 #include "../vm.h"
-#include "../std/str.h"
 
 IVM_COM_HEADER
 

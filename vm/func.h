@@ -2,11 +2,11 @@
 #define _IVM_VM_FUNC_H_
 
 #include "pub/com.h"
+#include "std/pool.h"
 #include "type.h"
 #include "context.h"
 #include "exec.h"
 #include "obj.h"
-#include "std/pool.h"
 
 IVM_COM_HEADER
 

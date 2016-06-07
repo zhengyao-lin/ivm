@@ -3,7 +3,7 @@
 ADD_LIBRARY(vm SHARED
 			obj.c
 			num.c
-			str.c
+			strobj.c
 			slot.c
 			vm.c
 			exec.c

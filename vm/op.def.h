@@ -270,6 +270,11 @@ OP_GEN(PRINT_STR, "print_str", N, {
 	NEXT_INSTR();
 })
 
+OP_GEN(PRINT_STACK, "print_stack", N, {
+	ivm_dbg_stackState(_CORO, stderr);
+	NEXT_INSTR();
+})
+
 OP_GEN(OUT, "out", S, {
 	IVM_TRACE("%s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();

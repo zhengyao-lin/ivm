@@ -1,14 +1,14 @@
 #include "pub/const.h"
 #include "pub/mem.h"
 #include "pub/com.h"
+#include "std/string.h"
 #include "inline/obj.h"
 #include "obj.h"
 #include "slot.h"
 #include "vm.h"
 #include "expr.h"
-#include "err.h"
 #include "gc/gc.h"
-#include "std/str.h"
+#include "err.h"
 
 ivm_type_t *
 ivm_type_new(ivm_type_t type)

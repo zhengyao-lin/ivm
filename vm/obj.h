@@ -5,6 +5,7 @@
 #include "pub/mem.h"
 #include "pub/const.h"
 #include "std/list.h"
+#include "std/string.h"
 #include "type.h"
 #include "slot.h"
 #include "expr.h"

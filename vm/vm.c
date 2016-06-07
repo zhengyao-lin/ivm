@@ -5,7 +5,7 @@
 #include "coro.h"
 #include "func.h"
 #include "num.h"
-#include "str.h"
+#include "strobj.h"
 #include "expr.h"
 #include "proto.h"
 #include "gc/heap.h"

@@ -4,9 +4,8 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "std/list.h"
-#include "std/str.h"
+#include "std/string.h"
 #include "type.h"
-#include "str.h"
 #include "op.h"
 #include "instr.h"
 

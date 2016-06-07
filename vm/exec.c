@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include "pub/mem.h"
 #include "pub/com.h"
-#include "std/str.h"
+#include "std/string.h"
 #include "exec.h"
 #include "byte.h"
 #include "err.h"

@@ -3,11 +3,11 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+#include "std/stack.h"
+#include "std/pool.h"
 #include "type.h"
 #include "instr.h"
 #include "exec.h"
-#include "std/stack.h"
-#include "std/pool.h"
 
 IVM_COM_HEADER
 
@@ -42,6 +42,7 @@ typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
 #define ivm_frame_stack_inc ivm_stack_inc
 #define ivm_frame_stack_push ivm_stack_push
 #define ivm_frame_stack_top(stack) ((ivm_frame_t *)ivm_stack_top(stack))
+#define ivm_frame_stack_at ivm_stack_at
 #define ivm_frame_stack_size ivm_stack_size
 #define ivm_frame_stack_pop(stack) ((ivm_frame_t *)ivm_stack_pop(stack))
 #define ivm_frame_stack_setTop ivm_stack_setTop

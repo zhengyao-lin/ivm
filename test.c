@@ -25,6 +25,8 @@ IVM_NATIVE_FUNC(call_func)
 	ivm_function_object_t *func = IVM_AS(argv[0], ivm_function_object_t);
 	IVM_OUT("call function!!\n");
 
+	// ivm_dbg_stackState(IVM_VMSTATE_GET(state, CUR_CORO), stderr);
+
 	ivm_function_invoke(func->val, state,
 						func->closure, IVM_VMSTATE_GET(state, CUR_CORO));
 	ivm_coro_resume(IVM_VMSTATE_GET(state, CUR_CORO), state, IVM_NULL);
@@ -110,7 +112,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 40);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -373,6 +375,7 @@ int test_vm()
 
 	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
 	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
+
 	ivm_exec_addOp(exec1, ADD);
 	ivm_exec_addOp(exec1, PRINT_NUM);
 
@@ -384,6 +387,7 @@ int test_vm()
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
 
 	// ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
+	//
 
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func3));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func");
@@ -408,7 +412,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
 
 	/* while i < n */
-	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000000);
+	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000001);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
 	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
 		/* call test */
@@ -486,10 +490,10 @@ int test_vm()
 	addr2 = ivm_exec_addOp(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
 
-	ivm_exec_addOp(exec1, JUMP, ivm_exec_cur(exec1) - addr3);
+	ivm_exec_addOp(exec1, JUMP, addr3 - ivm_exec_cur(exec1));
 	addr2 = ivm_exec_addOp(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr4, addr2 - addr4);
-	
+
 	ivm_exec_addOp(exec1, PRINT_OBJ);
 	ivm_exec_addOp(exec1, NEW_OBJ);
 	ivm_exec_addOp(exec1, YIELD);
@@ -621,9 +625,9 @@ int dump()
 
 int main()
 {
-	test_call();
+	// test_call();
 	// test_vm();
-	// test_fib();
+	test_fib();
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();

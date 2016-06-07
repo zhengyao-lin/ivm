@@ -2,9 +2,9 @@
 #define _IVM_VM_OP_H_
 
 #include "pub/com.h"
+#include "std/string.h"
 #include "type.h"
 #include "vmstack.h"
-#include "str.h"
 
 IVM_COM_HEADER
 
@@ -19,7 +19,7 @@ struct ivm_instr_t_tag;
 typedef enum {
 	IVM_OP_FIRST = -1, /* to make NOP the 0 */
 #define OP_GEN(o, name, arg, ...) IVM_OP(o),
-	#include "op.def"
+	#include "op.def.h"
 #undef OP_GEN
 
 } ivm_opcode_t;

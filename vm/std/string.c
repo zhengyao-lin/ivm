@@ -1,8 +1,8 @@
 #include "pub/mem.h"
+#include "string.h"
 #include "type.h"
 #include "vm.h"
 #include "bit.h"
-#include "std/str.h"
 #include "gc/heap.h"
 #include "err.h"
 

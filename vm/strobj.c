@@ -1,6 +1,7 @@
 #include "pub/mem.h"
+#include "std/string.h"
 #include "inline/obj.h"
-#include "str.h"
+#include "strobj.h"
 #include "type.h"
 #include "vm.h"
 #include "bit.h"

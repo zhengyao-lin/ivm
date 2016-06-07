@@ -1,6 +1,6 @@
 #include "pub/mem.h"
+#include "std/string.h"
 #include "byte.h"
-#include "str.h"
 #include "err.h"
 
 const ivm_char_t *

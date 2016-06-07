@@ -1,7 +1,7 @@
 #include "pub/const.h"
 #include "pub/mem.h"
+#include "std/string.h"
 #include "instr.h"
-#include "str.h"
 #include "exec.h"
 #include "err.h"
 
@@ -26,7 +26,7 @@
 			return ret; \
 		}
 
-		#include "op.def"
+		#include "op.def.h"
 
 	#undef OP_GEN
 #elif IVM_DISPATCH_METHOD_CALL_THREAD
@@ -41,7 +41,7 @@
 			return ret; \
 		}
 
-		#include "op.def"
+		#include "op.def.h"
 
 	#undef OP_GEN
 #endif

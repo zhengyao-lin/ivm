@@ -5,10 +5,10 @@
 #include "vmstack.h"
 #include "vm.h"
 #include "call.h"
-#include "byte.h"
-#include "num.h"
 #include "instr.h"
 #include "err.h"
+
+#include "op.req.h"
 
 #if IVM_DISPATCH_METHOD_CALL_THREAD
 	/* code for call threading */
@@ -26,7 +26,7 @@
 	#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), IVM_NULL }
 
 	#define OP_GEN(o, name, arg, ...) OP_PROC(o) __VA_ARGS__
-		#include "op.def"
+		#include "op.def.h"
 	#undef OP_GEN
 #else
 	/* non-call threading: don't need handler/proc */
@@ -38,7 +38,7 @@ ivm_op_table_t
 ivm_op_table[] = {
 
 #define OP_GEN(o, name, arg, ...) OP_MAPPING(o, name, #arg),
-	#include "op.def"
+	#include "op.def.h"
 #undef OP_GEN
 
 };
