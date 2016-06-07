@@ -24,8 +24,7 @@ OP_GEN(NEW_NUM_S, "new_num_s", S, {
 */
 
 OP_GEN(NEW_STR, "new_str", S, {
-	STACK_PUSH(ivm_string_object_new(_STATE, IVM_TRUE,
-									 ivm_string_pool_get(_STRING_POOL, _ARG)));
+	STACK_PUSH(ivm_string_object_new(_STATE, ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 
@@ -184,7 +183,7 @@ OP_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
 })
 
 OP_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
-	const ivm_char_t *key = ivm_string_pool_get(_STRING_POOL, _ARG);
+	const ivm_string_t *key = ivm_string_pool_get(_STRING_POOL, _ARG);
 	ivm_object_t *val;
 
 	CHECK_STACK(1);
@@ -272,7 +271,7 @@ OP_GEN(PRINT_STR, "print_str", N, {
 })
 
 OP_GEN(OUT, "out", S, {
-	IVM_TRACE("%s\n", ivm_string_pool_get(_STRING_POOL, _ARG));
+	IVM_TRACE("%s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 
@@ -362,7 +361,7 @@ OP_GEN(TEST2, "test2", I, {
 
 OP_GEN(TEST3, "test3", S, {
 	IVM_OUT("morning! this is test3\n");
-	IVM_OUT("string argument: %s\n", ivm_string_pool_get(_STRING_POOL, _ARG));
+	IVM_OUT("string argument: %s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 

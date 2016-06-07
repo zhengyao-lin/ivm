@@ -12,13 +12,6 @@ ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size)
 	return (const ivm_char_t *)bytes;
 }
 
-const ivm_char_t *
-ivm_byte_readStringFromPool(ivm_byte_t *bytes,
-							ivm_string_pool_t *pool)
-{
-	return ivm_string_pool_get(pool, ivm_byte_readSInt32(bytes));
-}
-
 ivm_byte_t *
 ivm_byte_newString(const ivm_char_t *str)
 {

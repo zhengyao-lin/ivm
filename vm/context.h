@@ -70,11 +70,6 @@ ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 						  struct ivm_vmstate_t_tag *state,
 						  ivm_context_t *ct);
 
-ivm_object_t *
-ivm_ctchain_search(ivm_ctchain_t *chain,
-				   struct ivm_vmstate_t_tag *state,
-				   const ivm_char_t *key);
-
 ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain,
 				  struct ivm_vmstate_t_tag *state);
@@ -82,16 +77,21 @@ ivm_ctchain_clone(ivm_ctchain_t *chain,
 #define ivm_ctchain_getLocal(chain) (ivm_ctchain_contextStart(chain)->ct)
 #define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextEnd(chain)->ct)
 
+ivm_object_t *
+ivm_ctchain_search(ivm_ctchain_t *chain,
+				   struct ivm_vmstate_t_tag *state,
+				   const ivm_string_t *key);
+
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 struct ivm_vmstate_t_tag *state,
-						 const ivm_char_t *key,
+						 const ivm_string_t *key,
 						 ivm_object_t *val);
 
 ivm_bool_t
 ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 						   struct ivm_vmstate_t_tag *state,
-						   const ivm_char_t *key,
+						   const ivm_string_t *key,
 						   ivm_object_t *val);
 
 void

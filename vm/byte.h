@@ -11,9 +11,6 @@ IVM_COM_HEADER
 
 const ivm_char_t *
 ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size);
-const ivm_char_t *
-ivm_byte_readStringFromPool(ivm_byte_t *bytes,
-							ivm_string_pool_t *pool);
 
 #define ivm_byte_readSInt8(bytes) (*((ivm_sint8_t *)bytes))
 #define ivm_byte_readSInt16(bytes) (*((ivm_sint16_t *)(bytes)))

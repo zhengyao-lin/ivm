@@ -230,11 +230,10 @@ int test_call()
 
 	/********************** code ***********************/
 
-	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
+	/*for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
 		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
 		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
-	}
-	
+	}*/
 
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
@@ -292,6 +291,8 @@ int test_call()
 	return 0;
 }
 
+#define STR(str, pool) (ivm_string_pool_store((pool), (str)))
+
 int test_vm()
 {
 	int i;
@@ -342,9 +343,9 @@ int test_vm()
 	proto = ivm_vmstate_getTypeProto(state, IVM_OBJECT_T);
 
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
-		ivm_object_setSlot(proto, state, chartab[i], obj3);
+		ivm_object_setSlot(proto, state, STR(chartab[i], str_pool), obj3);
 	}
-	ivm_object_setSlot(proto, state, "proto_func", obj3);
+	ivm_object_setSlot(proto, state, STR("proto_func", str_pool), obj3);
 
 	ivm_object_printSlots(proto);
 
@@ -359,11 +360,11 @@ int test_vm()
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
-	ivm_object_setSlot(obj1, state, "a", obj2);
-	ivm_object_setSlot(obj1, state, "call_func", obj3);
-	ivm_object_setSlot(obj2, state, "b", obj1);
-	ivm_object_setSlot(obj2, state, "c", obj1);
-	ivm_object_setSlot(obj2, state, "d", obj1);
+	ivm_object_setSlot(obj1, state, STR("a", str_pool), obj2);
+	ivm_object_setSlot(obj1, state, STR("call_func", str_pool), obj3);
+	ivm_object_setSlot(obj2, state, STR("b", str_pool), obj1);
+	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
+	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
 	/* add opcodes */
 	ivm_exec_addOp(exec3, TEST3, "this is exec3");
@@ -620,9 +621,9 @@ int dump()
 
 int main()
 {
-	// test_call();
+	test_call();
 	// test_vm();
-	test_fib();
+	// test_fib();
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();

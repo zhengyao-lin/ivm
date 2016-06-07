@@ -159,19 +159,19 @@ ivm_object_toBool(ivm_object_t *obj,
 void
 ivm_object_setSlot(ivm_object_t *obj,
 				   struct ivm_vmstate_t_tag *state,
-				   const ivm_char_t *key,
+				   const ivm_string_t *key,
 				   ivm_object_t *value);
 
 ivm_bool_t /* if exist */
 ivm_object_setSlotIfExist(ivm_object_t *obj,
 						  struct ivm_vmstate_t_tag *state,
-						  const ivm_char_t *key,
+						  const ivm_string_t *key,
 						  ivm_object_t *value);
 
 ivm_object_t *
 ivm_object_getSlotValue(ivm_object_t *obj,
 						struct ivm_vmstate_t_tag *state,
-						const ivm_char_t *key);
+						const ivm_string_t *key);
 
 #if 0
 /* no prototype */

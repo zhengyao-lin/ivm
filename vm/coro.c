@@ -10,6 +10,7 @@
 #include "vm.h"
 #include "context.h"
 #include "op.h"
+#include "std/str.h"
 #include "err.h"
 
 ivm_coro_t *

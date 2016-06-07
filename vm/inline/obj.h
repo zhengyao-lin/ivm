@@ -4,16 +4,17 @@
 #include "pub/com.h"
 #include "../obj.h"
 #include "../vm.h"
+#include "../std/str.h"
 
 IVM_COM_HEADER
 
 #define STR_IS_PROTO(str) \
-	str[0] == 'p' && \
-	str[1] == 'r' && \
-	str[2] == 'o' && \
-	str[3] == 't' && \
-	str[4] == 'o' && \
-	str[5] == '\0'
+	(str)[0] == 'p' && \
+	(str)[1] == 'r' && \
+	(str)[2] == 'o' && \
+	(str)[3] == 't' && \
+	(str)[4] == 'o' && \
+	(str)[5] == '\0'
 
 IVM_INLINE
 void
@@ -33,11 +34,13 @@ IVM_INLINE
 ivm_object_t *
 ivm_object_getSlotValue_np(ivm_object_t *obj,
 						   ivm_vmstate_t *state,
-						   const ivm_char_t *key)
+						   const ivm_string_t *key)
 {
+	ivm_char_t *tmp = ivm_string_trimHead(key);
+
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	if (STR_IS_PROTO(key)) {
+	if (STR_IS_PROTO(tmp)) {
 		return IVM_OBJECT_GET(obj, PROTO);
 	}
 

@@ -28,7 +28,7 @@ void
 init_string(ivm_type_t *type,
 			ivm_vmstate_t *state)
 {
-	ivm_object_t *tmp = ivm_string_object_new(state, IVM_TRUE, IVM_NULL);
+	ivm_object_t *tmp = ivm_string_object_new(state, IVM_NULL);
 	ivm_type_setProto(type, tmp);
 	IVM_OBJECT_SET(tmp, PROTO, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 	

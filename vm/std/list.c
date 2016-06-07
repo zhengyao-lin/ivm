@@ -73,12 +73,13 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 }
 
 ivm_size_t
-ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr, ivm_ptlist_comparer_t comp)
+ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr,
+					 ivm_ptlist_comparer_t comp)
 {
 	ivm_size_t i;
 
 	for (i = 0; i < ptlist->cur; i++) {
-		if (!comp(ptr, ptlist->lst[i]))
+		if (!comp(ptlist->lst[i], ptr))
 			return i;
 	}
 

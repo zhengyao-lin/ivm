@@ -14,7 +14,7 @@ IVM_COM_HEADER
 #define MEM_INIT(p, size)				(memset((p), 0x0, (size)))
 #define MEM_FREE(p)						(free(p))
 #define MEM_COPY(dest, src, size)		(memcpy((dest), (src), (size)))
-#define MEM_COMPARE(a, b)				(memcmp((a), (b)))
+#define MEM_COMPARE(a, b, size)			(memcmp((a), (b), (size)))
 
 IVM_COM_END
 

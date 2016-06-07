@@ -8,6 +8,7 @@
 #include "expr.h"
 #include "err.h"
 #include "gc/gc.h"
+#include "std/str.h"
 
 ivm_type_t *
 ivm_type_new(ivm_type_t type)
@@ -104,14 +105,15 @@ ivm_object_toBool(ivm_object_t *obj,
 void
 ivm_object_setSlot(ivm_object_t *obj,
 				   ivm_vmstate_t *state,
-				   const ivm_char_t *key,
+				   const ivm_string_t *key,
 				   ivm_object_t *value)
 {
 	ivm_slot_t *found;
+	ivm_char_t *tmp = ivm_string_trimHead(key);
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (STR_IS_PROTO(key)) {
+	if (STR_IS_PROTO(tmp)) {
 		IVM_OBJECT_SET(obj, PROTO, value);
 	} else {
 		if (!(found = ivm_slot_table_findSlot(obj->slots, state, key))) {
@@ -131,14 +133,15 @@ ivm_object_setSlot(ivm_object_t *obj,
 ivm_bool_t
 ivm_object_setSlotIfExist(ivm_object_t *obj,
 						  ivm_vmstate_t *state,
-						  const ivm_char_t *key,
+						  const ivm_string_t *key,
 						  ivm_object_t *value)
 {
 	ivm_slot_t *found;
+	ivm_char_t *tmp = ivm_string_trimHead(key);
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (STR_IS_PROTO(key)) {
+	if (STR_IS_PROTO(tmp)) {
 		IVM_OBJECT_SET(obj, PROTO, value);
 	} else if ((found = ivm_slot_table_findSlot(obj->slots, state, key))
 			   != IVM_NULL) {
@@ -154,7 +157,7 @@ IVM_PRIVATE
 ivm_object_t *
 ivm_object_searchProtoSlot(ivm_object_t *obj,
 						   ivm_vmstate_t *state,
-						   const ivm_char_t *key)
+						   const ivm_string_t *key)
 {
 	ivm_object_t *i = IVM_OBJECT_GET(obj, PROTO),
 				 *ret = IVM_NULL;
@@ -185,13 +188,14 @@ ivm_object_searchProtoSlot(ivm_object_t *obj,
 ivm_object_t *
 ivm_object_getSlotValue(ivm_object_t *obj,
 						ivm_vmstate_t *state,
-						const ivm_char_t *key)
+						const ivm_string_t *key)
 {
 	ivm_object_t *ret;
+	ivm_char_t *tmp = ivm_string_trimHead(key);
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	if (STR_IS_PROTO(key)) {
+	if (STR_IS_PROTO(tmp)) {
 		return IVM_OBJECT_GET(obj, PROTO);
 	}
 
@@ -218,7 +222,7 @@ ivm_object_printSlots(ivm_object_t *obj)
 		IVM_SLOT_TABLE_EACHPTR(obj->slots, iter) {
 			if (IVM_SLOT_TABLE_ITER_GET_KEY(iter)) {
 				IVM_TRACE("\tkey %s: %p\n",
-						  IVM_SLOT_TABLE_ITER_GET_KEY(iter),
+						  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(iter)),
 						  (void *)IVM_SLOT_TABLE_ITER_GET_VAL(iter));
 			} else {
 				ecount++;

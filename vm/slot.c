@@ -4,11 +4,11 @@
 #include "pub/const.h"
 #include "slot.h"
 #include "obj.h"
-#include "str.h"
 #include "vm.h"
 #include "bit.h"
 #include "gc/heap.h"
 #include "std/hash.h"
+#include "std/str.h"
 #include "err.h"
 
 #define SET_BIT_FALSE IVM_BIT_SET_FALSE
@@ -40,6 +40,7 @@ ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap)
 {
 	ivm_slot_table_t *ret = IVM_NULL;
+	ivm_slot_t *tmp, *end;
 
 	if (table) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
@@ -52,6 +53,13 @@ ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap)
 				 table->tabl,
 				 sizeof(*ret->tabl)
 				 * ret->size);
+
+		for (tmp = ret->tabl,
+			 end = ret->tabl + ret->size;
+			 tmp != end;
+			 tmp++) {
+			tmp->k = ivm_string_copyIfNotConst_heap(tmp->k, heap);
+		}
 	}
 
 	return ret;
@@ -98,7 +106,7 @@ ivm_slot_table_expand(ivm_slot_table_t *table,
 void
 ivm_slot_table_addSlot(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state,
-					   const ivm_char_t *key,
+					   const ivm_string_t *key,
 					   ivm_object_t *obj)
 {
 	ivm_hash_val_t hash;
@@ -106,10 +114,10 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 	ivm_uint_t h1, h2;
 	ivm_uint_t i, j;
 
-	ivm_slot_t *tmp;
+	ivm_slot_t *tmp, *end;
 
 	if (table->is_hash) {
-		hash = ivm_hash_fromString(key);
+		hash = ivm_hash_fromString(ivm_string_trimHead(key));
 		while (1) {
 			size = table->size;
 			h1 = hash % size;
@@ -120,10 +128,10 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 				 i += h2, j++) {
 				tmp = &table->tabl[i % size];
 				if (IS_EMPTY_SLOT(tmp)) {
-					tmp->k = key;
+					tmp->k = ivm_string_copyIfNotConst_state(key, state);
 					tmp->v = obj;
 					return;
-				} else if (strcmp(key, tmp->k) == 0) {
+				} else if (ivm_string_compare(tmp->k, key)) {
 					tmp->v = obj;
 					return;
 				}
@@ -133,20 +141,23 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 			ivm_slot_table_expand(table, state);
 		}
 	} else {
-		for (i = 0; i < table->size; i++) {
-			if (table->tabl[i].k == IVM_NULL) {
-				table->tabl[i].k = key;
-				table->tabl[i].v = obj;
+		for (i = 0, tmp = table->tabl,
+			 end = table->tabl + table->size;
+			 tmp != end; tmp++, i++) {
+			if (tmp->k == IVM_NULL) {
+				tmp->k = ivm_string_copyIfNotConst_state(key, state);
+				tmp->v = obj;
 				return;
-			} else if (strcmp(key, table->tabl[i].k) == 0) {
-				table->tabl[i].v = obj;
+			} else if (ivm_string_compare(tmp->k, key)) {
+				tmp->v = obj;
 				return;
 			}
 		}
 
 		ivm_slot_table_expand(table, state);
-		table->tabl[i].k = key;
-		table->tabl[i].v = obj;
+		tmp = table->tabl + i;
+		tmp->k = ivm_string_copyIfNotConst_state(key, state);
+		tmp->v = obj;
 	}
 
 	return;
