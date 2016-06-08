@@ -88,6 +88,7 @@ ivm_slot_table_expand(ivm_slot_table_t *table,
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	if (dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
 		SET_BIT_TRUE(table->is_hash);
+		// dsize <<= 1;
 	}
 #endif
 

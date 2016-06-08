@@ -62,8 +62,8 @@ ivm_slot_table_findSlot(ivm_slot_table_t *table,
 						const ivm_string_t *key)
 {
 	ivm_hash_val_t hash;
-	ivm_size_t size;
-	register ivm_uint_t h1, h2;
+	register ivm_size_t size;
+	// register ivm_uint_t h1, h2;
 	register ivm_uint_t i, j;
 
 	ivm_slot_t *tmp, *end;
@@ -72,12 +72,11 @@ ivm_slot_table_findSlot(ivm_slot_table_t *table,
 		if (table->is_hash) {
 			hash = ivm_hash_fromString(ivm_string_trimHead(key));
 			size = table->size;
-			h1 = hash % size;
-			h2 = 1; // + hash % (size - 1);
+			// h2 = 1; // + hash % (size - 1);
 
-			for (i = h1, j = 0;
+			for (i = hash % size, j = 0;
 				 j < size;
-				 i += h2, j++) {
+				 i++, j++) {
 				if (i >= size) i = 0;
 				tmp = table->tabl + i;
 				if (IS_EMPTY_SLOT(tmp)) {

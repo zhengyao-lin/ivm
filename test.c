@@ -87,7 +87,7 @@ int test_fib()
 	ivm_string_pool_t *str_pool;
 	ivm_coro_t *coro;
 	ivm_ctchain_t *chain;
-	ivm_size_t addr1, addr2, addr3, addr4;
+	ivm_size_t addr1, addr2;
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	ivm_op_table_initOpEntry();
@@ -112,7 +112,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 40);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -162,12 +162,9 @@ int test_fib()
 
 #if IVM_PERF_PROFILE
 	profile_output();
-	profile_type();
 #endif
 
 	ivm_dbg_heapState(state, stderr);
-	IVM_TRACE("\nstack state:\n");
-	ivm_dbg_stackState(coro, stderr);
 
 	ivm_coro_free(coro, state);
 	ivm_function_free(top, state);
@@ -185,11 +182,11 @@ int test_call()
 	int i;
 	ivm_vmstate_t *state;
 	ivm_function_t *top, *empty;
-	ivm_exec_t *exec1, *exec2;
+	ivm_exec_t *exec1;
 	ivm_string_pool_t *str_pool;
 	ivm_coro_t *coro;
 	ivm_ctchain_t *chain;
-	ivm_size_t addr1, addr2, addr3, addr4;
+	ivm_size_t addr1, addr2, addr3;
 
 	char *chartab[] = { "a", "b", "c", "d",
 						"e", "f", "g", "h",
@@ -210,7 +207,20 @@ int test_call()
 						"nnn", "ooo", "ppp", "qqq",
 						"rrr", "sss", "ttt", "uuu",
 						"vvv", "www", "xxx", "yyy",
-						"zzz" };
+						"zzz", "aaaa", "bbbb", "cccc",
+						"dddd", "eeee", "ffff", "gggg",
+						"hhhh", "iiii", "jjjj", "kkkk",
+						"llll", "mmmm", "nnnn", "oooo",
+						"pppp", "qqqq", "rrrr", "ssss",
+						"tttt", "uuuu", "vvvv", "wwww",
+						"xxxx", "yyyy", "zzzz", "aaaaa",
+						"bbbbb", "ccccc", "ddddd", "eeeee",
+						"fffff", "ggggg", "hhhhh", "iiiii",
+						"jjjjj", "kkkkk", "lllll", "mmmmm",
+						"nnnnn", "ooooo", "ppppp", "qqqqq",
+						"rrrrr", "sssss", "ttttt", "uuuuu",
+						"vvvvv", "wwwww", "xxxxx", "yyyyy",
+						"zzzzz" };
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	ivm_op_table_initOpEntry();
@@ -232,10 +242,10 @@ int test_call()
 
 	/********************** code ***********************/
 
-	/*for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
+	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
 		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
 		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
-	}*/
+	}
 
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
@@ -276,7 +286,6 @@ int test_call()
 
 #if IVM_PERF_PROFILE
 	profile_output();
-	profile_type();
 #endif
 
 	ivm_dbg_heapState(state, stderr);
@@ -543,7 +552,6 @@ int test_vm()
 
 #if IVM_PERF_PROFILE
 	profile_output();
-	profile_type();
 #endif
 
 	ivm_dbg_heapState(state, stderr);
@@ -625,9 +633,11 @@ int dump()
 
 int main()
 {
-	// test_call();
+	test_call();
 	// test_vm();
-	test_fib();
+	// test_fib();
+
+	// profile_type();
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();

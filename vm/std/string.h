@@ -29,7 +29,7 @@ ivm_strdup_heap(const ivm_char_t *src,
 
 typedef struct {
 	ivm_bool_t is_const: 1;
-	ivm_uint16_t len;
+	ivm_uint32_t len;
 } ivm_string_t;
 
 #define IVM_STRING_GET_SIZE(len) \
@@ -64,10 +64,11 @@ ivm_bool_t
 ivm_string_compare(const ivm_string_t *a,
 				   const ivm_string_t *b)
 {
-	return (ivm_string_length(a) == ivm_string_length(b))
-		   && (!MEM_COMPARE(ivm_string_trimHead(a),
-							ivm_string_trimHead(b),
-							ivm_string_length(a)));
+	return (a == b)
+		   || ((ivm_string_length(a) == ivm_string_length(b))
+				&& (!MEM_COMPARE(ivm_string_trimHead(a),
+								 ivm_string_trimHead(b),
+								 ivm_string_length(a))));
 }
 
 ivm_int_t /* same as strcmp */
