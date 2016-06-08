@@ -2,7 +2,10 @@
 #define _IVM_VM_EXPR_H_
 
 #include "pub/const.h"
+
 #include "std/list.h"
+
+IVM_COM_HEADER
 
 struct ivm_type_t_tag;
 struct ivm_object_t_tag;
@@ -23,5 +26,7 @@ typedef ivm_ptlist_t ivm_binary_op_proc_list_t;
 void
 ivm_binary_op_initType(struct ivm_type_t_tag *type,
 					   struct ivm_vmstate_t_tag *state);
+
+IVM_COM_END
 
 #endif

@@ -1,12 +1,13 @@
 #include "pub/const.h"
 #include "pub/com.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "op.h"
 #include "coro.h"
 #include "vmstack.h"
-#include "vm.h"
 #include "call.h"
 #include "instr.h"
-#include "err.h"
 
 #include "op.req.h"
 
@@ -35,7 +36,7 @@
 
 IVM_PRIVATE
 ivm_op_table_t
-ivm_op_table[] = {
+op_table[] = {
 
 #define OP_GEN(o, name, arg, ...) OP_MAPPING(o, name, #arg),
 	#include "op.def.h"
@@ -48,7 +49,7 @@ ivm_op_table[] = {
 #define checkLegal() \
 	IVM_ASSERT(op < IVM_OP_LAST, \
 			   IVM_ERROR_MSG_BAD_OP); \
-	IVM_ASSERT(ivm_op_table[op].op == op, \
+	IVM_ASSERT(op_table[op].op == op, \
 			   IVM_ERROR_MSG_BAD_OP_TABLE);
 
 #else
@@ -61,21 +62,21 @@ ivm_op_proc_t
 ivm_op_table_getProc(ivm_opcode_t op)
 {
 	checkLegal();
-	return ivm_op_table[op].proc;
+	return op_table[op].proc;
 }
 
 const char *
 ivm_op_table_getArg(ivm_opcode_t op)
 {
 	checkLegal();
-	return ivm_op_table[op].args;
+	return op_table[op].args;
 }
 
 const char *
 ivm_op_table_getName(ivm_opcode_t op)
 {
 	checkLegal();
-	return ivm_op_table[op].name;
+	return op_table[op].name;
 }
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
@@ -87,7 +88,7 @@ ivm_op_table_initOpEntry()
 	ivm_int_t i;
 
 	for (i = 0; i <= IVM_OP(LAST); i++) {
-		ivm_op_table[i].entry = table[i];
+		op_table[i].entry = table[i];
 	}
 
 	return;
@@ -97,7 +98,7 @@ void *
 ivm_op_table_getEntry(ivm_opcode_t op)
 {
 	checkLegal();
-	return ivm_op_table[op].entry;
+	return op_table[op].entry;
 }
 
 #endif

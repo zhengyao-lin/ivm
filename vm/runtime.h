@@ -3,7 +3,8 @@
 
 #include "pub/com.h"
 #include "pub/mem.h"
-#include "type.h"
+#include "pub/type.h"
+
 #include "exec.h"
 #include "func.h"
 #include "context.h"

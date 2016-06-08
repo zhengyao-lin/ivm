@@ -1,14 +1,15 @@
 #include "pub/mem.h"
 #include "pub/com.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "inline/obj.h"
+#include "gc/gc.h"
 #include "func.h"
 #include "context.h"
 #include "runtime.h"
-#include "vm.h"
 #include "call.h"
 #include "coro.h"
-#include "gc/gc.h"
-#include "err.h"
 
 #define CLOSURE_CONTEXT(origin, state)  \
 	((origin) \
@@ -142,15 +143,6 @@ ivm_function_invoke(const ivm_function_t *func,
 	return;
 }
 
-ivm_object_t *
-ivm_function_callNative(const ivm_function_t *func,
-						ivm_vmstate_t *state,
-						ivm_ctchain_t *context,
-						IVM_FUNCTION_COMMON_ARG)
-{
-	return func->u.native(state, context, IVM_FUNCTION_COMMON_ARG_PASS);
-}
-
 void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
@@ -173,24 +165,8 @@ ivm_function_object_new(ivm_vmstate_t *state,
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
 	ret->closure = ivm_ctchain_clone(context, state);
-	ret->val = ivm_function_clone(func, state);
-	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
-
-	return IVM_AS_OBJ(ret);
-}
-
-ivm_object_t *
-ivm_function_object_new_nc(ivm_vmstate_t *state,
-						   ivm_ctchain_t *context,
-						   ivm_function_t *func)
-{
-	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
-
-	ret->closure =  ivm_ctchain_clone(context, state);
 	ret->val = func;
-	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
 	return IVM_AS_OBJ(ret);
 }

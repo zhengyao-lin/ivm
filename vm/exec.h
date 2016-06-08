@@ -3,9 +3,10 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+#include "pub/type.h"
+
 #include "std/list.h"
 #include "std/string.h"
-#include "type.h"
 #include "op.h"
 #include "instr.h"
 

@@ -3,14 +3,16 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+#include "pub/type.h"
+
 #include "std/pool.h"
+#include "std/heap.h"
+#include "gc/gc.h"
 #include "obj.h"
 #include "num.h"
 #include "op.h"
 #include "coro.h"
 #include "context.h"
-#include "gc/heap.h"
-#include "gc/gc.h"
 
 IVM_COM_HEADER
 

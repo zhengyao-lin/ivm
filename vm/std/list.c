@@ -1,6 +1,7 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+
 #include "list.h"
-#include "err.h"
 
 ivm_ptlist_t *
 ivm_ptlist_new_c(ivm_size_t buf_size)

@@ -2,8 +2,7 @@
 #define _IVM_VM_BYTE_H_
 
 #include "pub/com.h"
-#include "std/string.h"
-#include "type.h"
+#include "pub/type.h"
 
 IVM_COM_HEADER
 

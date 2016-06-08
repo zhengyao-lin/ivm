@@ -1,7 +1,8 @@
 #include "pub/com.h"
 #include "pub/mem.h"
+#include "pub/err.h"
+
 #include "hash.h"
-#include "err.h"
 
 ivm_hash_table_t *
 ivm_hash_table_new(ivm_size_t tsize,

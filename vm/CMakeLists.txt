@@ -10,14 +10,14 @@ ADD_LIBRARY(vm SHARED
 			instr.c
 			context.c
 			func.c
-			call.c
 			coro.c
 			runtime.c
 			op.c
 			byte.c
 			dbg.c
 			expr.c
-			proto.c)
+			proto.c
+			env.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

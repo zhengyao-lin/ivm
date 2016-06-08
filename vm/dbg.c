@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 #include "pub/com.h"
+#include "pub/vm.h"
+
+#include "std/heap.h"
 #include "dbg.h"
 #include "op.h"
 #include "byte.h"
 #include "instr.h"
 #include "exec.h"
-#include "vm.h"
 #include "obj.h"
 #include "coro.h"
 #include "vmstack.h"
-#include "gc/heap.h"
 
 #define STRING_BUF_SIZE 128
 

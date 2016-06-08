@@ -1,9 +1,10 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "inline/obj.h"
 #include "num.h"
 #include "obj.h"
-#include "vm.h"
-#include "err.h"
 
 ivm_object_t *
 ivm_numeric_new(ivm_vmstate_t *state, ivm_number_t val)

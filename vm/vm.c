@@ -1,5 +1,9 @@
 #include "pub/mem.h"
+#include "pub/err.h"
 #include "pub/com.h"
+
+#include "std/heap.h"
+#include "gc/gc.h"
 #include "vm.h"
 #include "obj.h"
 #include "coro.h"
@@ -8,9 +12,6 @@
 #include "strobj.h"
 #include "expr.h"
 #include "proto.h"
-#include "gc/heap.h"
-#include "gc/gc.h"
-#include "err.h"
 
 #define GC(state) ((state)->gc)
 #define HEAP1(state) ((state)->heaps[0])

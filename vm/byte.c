@@ -1,7 +1,8 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+
 #include "std/string.h"
 #include "byte.h"
-#include "err.h"
 
 const ivm_char_t *
 ivm_byte_readString(ivm_byte_t *bytes, ivm_size_t *size)

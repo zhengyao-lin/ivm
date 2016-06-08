@@ -2,7 +2,8 @@
 #define _IVM_VM_NUM_H_
 
 #include "pub/com.h"
-#include "type.h"
+#include "pub/type.h"
+
 #include "obj.h"
 
 IVM_COM_HEADER

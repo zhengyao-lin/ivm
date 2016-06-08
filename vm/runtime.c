@@ -1,12 +1,13 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "inline/runtime.h"
 #include "inline/call.h"
 #include "runtime.h"
 #include "context.h"
 #include "call.h"
 #include "coro.h"
-#include "vm.h"
-#include "err.h"
 
 ivm_runtime_t *
 ivm_runtime_new(ivm_vmstate_t *state)

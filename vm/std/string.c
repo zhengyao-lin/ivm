@@ -1,10 +1,12 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+#include "pub/type.h"
+
 #include "string.h"
-#include "type.h"
-#include "vm.h"
-#include "bit.h"
-#include "gc/heap.h"
-#include "err.h"
+#include "heap.h"
+
+#include "../bit.h"
 
 ivm_char_t *
 ivm_strdup(const ivm_char_t *src)

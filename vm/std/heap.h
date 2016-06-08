@@ -4,8 +4,7 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
-#include "cell.h"
-#include "../err.h"
+#include "pub/err.h"
 
 IVM_COM_HEADER
 

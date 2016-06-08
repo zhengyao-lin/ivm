@@ -2,8 +2,9 @@
 #define _IVM_VM_INSTR_H_
 
 #include "pub/const.h"
+#include "pub/type.h"
+
 #include "std/string.h"
-#include "type.h"
 #include "op.h"
 
 IVM_COM_HEADER

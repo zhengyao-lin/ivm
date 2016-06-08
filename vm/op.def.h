@@ -29,8 +29,8 @@ OP_GEN(NEW_STR, "new_str", S, {
 })
 
 OP_GEN(NEW_FUNC, "new_func", I, {
-	STACK_PUSH(ivm_function_object_new_nc(_STATE, _CONTEXT,
-										  ivm_vmstate_getFunc(_STATE, _ARG)));
+	STACK_PUSH(ivm_function_object_new(_STATE, _CONTEXT,
+									   ivm_vmstate_getFunc(_STATE, _ARG)));
 	NEXT_INSTR();
 })
 

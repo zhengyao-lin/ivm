@@ -1,9 +1,10 @@
 #include "pub/const.h"
 #include "pub/mem.h"
+#include "pub/err.h"
+
 #include "std/string.h"
 #include "instr.h"
 #include "exec.h"
-#include "err.h"
 
 #define INSTR_TYPE_N_ARG_INIT(instr, exec) \
 	(instr).arg = 0

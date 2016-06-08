@@ -2,6 +2,7 @@
 #define _IVM_VM_STD_HASH_H_
 
 #include "pub/type.h"
+
 #include "list.h"
 
 IVM_COM_HEADER

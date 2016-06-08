@@ -1,9 +1,10 @@
 #include <math.h>
-#include "type.h"
+
+#include "pub/type.h"
+#include "pub/vm.h"
+
 #include "expr.h"
 #include "obj.h"
-#include "vm.h"
-#include "err.h"
 
 IVM_PRIVATE
 ivm_object_t *

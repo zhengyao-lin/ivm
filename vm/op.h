@@ -2,8 +2,9 @@
 #define _IVM_VM_OP_H_
 
 #include "pub/com.h"
+#include "pub/type.h"
+
 #include "std/string.h"
-#include "type.h"
 #include "vmstack.h"
 
 IVM_COM_HEADER

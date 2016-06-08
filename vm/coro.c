@@ -1,15 +1,17 @@
 #include <stdlib.h>
+
 #include "pub/const.h"
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "inline/call.h"
 #include "inline/runtime.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"
 #include "call.h"
-#include "vm.h"
 #include "op.h"
-#include "err.h"
 
 #include "op.req.h"
 

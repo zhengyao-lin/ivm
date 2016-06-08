@@ -1,9 +1,10 @@
 #include "pub/mem.h"
 #include "pub/com.h"
+#include "pub/vm.h"
+#include "pub/err.h"
+
 #include "inline/obj.h"
 #include "context.h"
-#include "vm.h"
-#include "err.h"
 
 #define GET_CONTEXT(chain_sub) ((chain_sub)->ct)
 

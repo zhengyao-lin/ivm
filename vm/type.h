@@ -47,6 +47,8 @@ typedef ivm_double_t	ivm_number_t;
 typedef ivm_size_t		ivm_pc_t;
 typedef ivm_sint32_t	ivm_op_arg_t;
 
+typedef ivm_uint32_t ivm_argc_t;
+
 typedef intptr_t		ivm_mark_t;
 
 #define IVM_MARK_INIT 0

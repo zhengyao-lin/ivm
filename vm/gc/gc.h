@@ -3,9 +3,11 @@
 
 #include "pub/com.h"
 #include "pub/type.h"
+
 #include "cell.h"
-#include "heap.h"
+
 #include "../std/list.h"
+#include "../std/heap.h"
 
 IVM_COM_HEADER
 

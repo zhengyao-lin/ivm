@@ -2,19 +2,14 @@
 #define _IVM_VM_FUNC_H_
 
 #include "pub/com.h"
+#include "pub/type.h"
+
 #include "std/pool.h"
-#include "type.h"
 #include "context.h"
 #include "exec.h"
 #include "obj.h"
 
 IVM_COM_HEADER
-
-#define IVM_FUNCTION_COMMON_ARG ivm_object_t *base, ivm_argc_t argc, ivm_object_t **argv
-#define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
-
-#define IVM_FUNCTION_SET_ARG_2(argc, argv) IVM_NULL, (argc), (argv)
-#define IVM_FUNCTION_SET_ARG_3(base, argc, argv) (base), (argc), (argv)
 
 struct ivm_vmstate_t_tag;
 struct ivm_frame_t_tag;
@@ -22,16 +17,28 @@ struct ivm_coro_t_tag;
 struct ivm_runtime_t_tag;
 struct ivm_traverser_arg_t_tag;
 
-typedef ivm_uint32_t ivm_argc_t;
+typedef struct {
+	ivm_object_t *base;
+	ivm_argc_t argc;
+	ivm_object_t **argv;
+} ivm_function_arg_t;
+
 typedef ivm_uint16_t ivm_signal_mask_t;
 typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											   ivm_ctchain_t *context,
-											   IVM_FUNCTION_COMMON_ARG);
+											   ivm_function_arg_t arg);
+
+#define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
+
+#define IVM_FUNCTION_SET_ARG_2(argc, argv) \
+	(ivm_function_arg_t){ IVM_NULL, (argc), (argv) }
+#define IVM_FUNCTION_SET_ARG_3(base, argc, argv) \
+	(ivm_function_arg_t){ (base), (argc), (argv) }
 
 #define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)( \
 											struct ivm_vmstate_t_tag *state, \
-											ivm_ctchain_t *context, ivm_object_t *base, \
-											ivm_argc_t argc, ivm_object_t **argv)
+											ivm_ctchain_t *context, \
+											ivm_function_arg_t arg)
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
 
 typedef ivm_ptlist_t ivm_param_list_t;
@@ -101,11 +108,8 @@ ivm_function_invoke(const ivm_function_t *func,
 					ivm_ctchain_t *context,
 					struct ivm_coro_t_tag *coro);
 
-ivm_object_t *
-ivm_function_callNative(const ivm_function_t *func,
-						struct ivm_vmstate_t_tag *state,
-						ivm_ctchain_t *context,
-						IVM_FUNCTION_COMMON_ARG);
+#define ivm_function_callNative(func, state, context, arg) \
+	(func)->u.native((state), (context), (arg));
 
 #if 0
 void
@@ -128,11 +132,6 @@ ivm_object_t *
 ivm_function_object_new(struct ivm_vmstate_t_tag *state,
 						ivm_ctchain_t *context,
 						ivm_function_t *func);
-/* no clone */
-ivm_object_t *
-ivm_function_object_new_nc(struct ivm_vmstate_t_tag *state,
-						   ivm_ctchain_t *context,
-						   ivm_function_t *func);
 
 void
 ivm_function_object_traverser(ivm_object_t *obj,

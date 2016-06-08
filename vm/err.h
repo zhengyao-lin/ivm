@@ -1,9 +1,10 @@
-#ifndef _IVM_PUB_ERR_H_
-#define _IVM_PUB_ERR_H_
+#ifndef _IVM_VM_ERR_H_
+#define _IVM_VM_ERR_H_
 
 #include "pub/com.h"
-#include "vm/io.h"
-#include "vm/sys.h"
+
+#include "io.h"
+#include "sys.h"
 
 IVM_COM_HEADER
 

@@ -3,7 +3,8 @@
 
 #include "pub/com.h"
 #include "pub/mem.h"
-#include "../vm.h"
+#include "pub/vm.h"
+
 #include "../runtime.h"
 
 IVM_COM_HEADER

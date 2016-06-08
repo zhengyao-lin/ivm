@@ -2,14 +2,15 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "std/hash.h"
 #include "std/string.h"
+#include "std/heap.h"
 #include "slot.h"
 #include "obj.h"
-#include "vm.h"
 #include "bit.h"
-#include "gc/heap.h"
-#include "err.h"
 
 #define SET_BIT_FALSE IVM_BIT_SET_FALSE
 #define SET_BIT_TRUE IVM_BIT_SET_TRUE

@@ -4,6 +4,9 @@
 /* op handler requirement */
 
 #include "pub/const.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "inline/obj.h"
 #include "inline/call.h"
 #include "inline/runtime.h"
@@ -15,8 +18,6 @@
 #include "context.h"
 #include "call.h"
 #include "func.h"
-#include "vm.h"
 #include "dbg.h"
-#include "err.h"
 
 #endif

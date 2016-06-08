@@ -3,11 +3,12 @@
 
 #include <stdio.h>
 #include "pub/com.h"
-#include "type.h"
+#include "pub/type.h"
+#include "pub/vm.h"
+
+#include "std/heap.h"
 #include "exec.h"
-#include "vm.h"
 #include "coro.h"
-#include "gc/heap.h"
 
 IVM_COM_HEADER
 

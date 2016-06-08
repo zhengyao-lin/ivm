@@ -1,7 +1,8 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+
 #include "pool.h"
 #include "list.h"
-#include "err.h"
 
 ivm_ptpool_t *
 ivm_ptpool_new(ivm_size_t ecount,

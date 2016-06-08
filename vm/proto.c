@@ -1,8 +1,9 @@
+#include "pub/vm.h"
+
 #include "proto.h"
 #include "obj.h"
 #include "strobj.h"
 #include "num.h"
-#include "vm.h"
 
 IVM_PRIVATE
 void

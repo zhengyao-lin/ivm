@@ -1,13 +1,11 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/type.h"
+#include "pub/vm.h"
+
 #include "std/string.h"
 #include "inline/obj.h"
 #include "strobj.h"
-#include "type.h"
-#include "vm.h"
-#include "bit.h"
-#include "gc/heap.h"
-#include "gc/gc.h"
-#include "err.h"
 
 ivm_object_t *ivm_string_object_new(ivm_vmstate_t *state,
 									const ivm_string_t *val)

@@ -2,9 +2,10 @@
 #define _IVM_VM_SLOT_H_
 
 #include "pub/com.h"
+#include "pub/type.h"
+
 #include "std/hash.h"
 #include "std/string.h"
-#include "type.h"
 
 IVM_COM_HEADER
 

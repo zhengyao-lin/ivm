@@ -3,16 +3,17 @@
 #include <assert.h>
 #include <time.h>
 #include "pub/const.h"
+#include "vm/std/pool.h"
+#include "vm/std/chain.h"
+#include "vm/std/hash.h"
+#include "vm/std/heap.h"
 #include "vm/inline/obj.h"
+#include "vm/env.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
 #include "vm/op.h"
-#include "vm/gc/heap.h"
 #include "vm/gc/gc.h"
-#include "vm/std/pool.h"
-#include "vm/std/chain.h"
-#include "vm/std/hash.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -22,7 +23,7 @@ IVM_NATIVE_FUNC(test)
 
 IVM_NATIVE_FUNC(call_func)
 {
-	ivm_function_object_t *func = IVM_AS(argv[0], ivm_function_object_t);
+	ivm_function_object_t *func = IVM_AS(arg.argv[0], ivm_function_object_t);
 	IVM_OUT("call function!!\n");
 
 	// ivm_dbg_stackState(IVM_VMSTATE_GET(state, CUR_CORO), stderr);
@@ -89,10 +90,6 @@ int test_fib()
 	ivm_ctchain_t *chain;
 	ivm_size_t addr1, addr2;
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	ivm_op_table_initOpEntry();
-#endif
-
 	str_pool = ivm_string_pool_new();
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
@@ -112,7 +109,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 15);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -148,7 +145,7 @@ int test_fib()
 	/********** fib **********/
 
 	ivm_coro_setRoot(coro, state,
-					 IVM_AS(ivm_function_object_new_nc(state, IVM_NULL, top), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top), ivm_function_object_t));
 
 	ivm_vmstate_unlockGCFlag(state);
 
@@ -222,10 +219,6 @@ int test_call()
 						"vvvvv", "wwwww", "xxxxx", "yyyyy",
 						"zzzzz" };
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	ivm_op_table_initOpEntry();
-#endif
-
 	str_pool = ivm_string_pool_new();
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
@@ -271,7 +264,7 @@ int test_call()
 
 	/********************** code ***********************/
 	ivm_coro_setRoot(coro, state,
-					 IVM_AS(ivm_function_object_new_nc(state, IVM_NULL, top), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top), ivm_function_object_t));
 
 	ivm_vmstate_unlockGCFlag(state);
 
@@ -336,14 +329,10 @@ int test_vm()
 						"vvv", "www", "xxx", "yyy",
 						"zzz" };
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	ivm_op_table_initOpEntry();
-#endif
-
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
-	obj1 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
+	obj1 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
-	obj3 = ivm_function_object_new_nc(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
+	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
 	str_pool = ivm_string_pool_new();
 
 	exec1 = ivm_exec_new(str_pool);
@@ -429,7 +418,7 @@ int test_vm()
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
 		ivm_exec_addOp(exec1, INVOKE, 0);
 		ivm_exec_addOp(exec1, POP);
-	#if 0
+	#if 1
 		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
 		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
@@ -465,6 +454,7 @@ int test_vm()
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "call_func");
 	ivm_exec_addOp(exec1, INVOKE, 1);
+	ivm_exec_addOp(exec1, POP);
 	ivm_exec_addOp(exec1, OUT, "****************end*****************");
 
 	ivm_exec_addOp(exec1, NEW_OBJ);
@@ -533,9 +523,9 @@ int test_vm()
 	ivm_vmstate_addCoro(state, coro2);
 
 	ivm_coro_setRoot(coro1, state,
-					 IVM_AS(ivm_function_object_new_nc(state, chain, func1), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, chain, func1), ivm_function_object_t));
 	ivm_coro_setRoot(coro2, state,
-					 IVM_AS(ivm_function_object_new_nc(state, chain, func2), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, chain, func2), ivm_function_object_t));
 	/*for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
 	}*/
@@ -628,6 +618,8 @@ strhash(const char *key)
 
 int main()
 {
+	ivm_env_init();
+
 	// test_call();
 	// test_vm();
 	test_fib();

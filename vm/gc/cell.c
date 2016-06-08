@@ -1,7 +1,8 @@
 #include "pub/mem.h"
+#include "pub/err.h"
+#include "pub/vm.h"
+
 #include "cell.h"
-#include "err.h"
-#include "vm.h"
 
 ivm_cell_t *
 ivm_cell_new(ivm_object_t *obj)

@@ -2,9 +2,10 @@
 #define _IVM_VM_CONTEXT_H_
 
 #include "pub/com.h"
+
+#include "std/pool.h"
 #include "obj.h"
 #include "slot.h"
-#include "std/pool.h"
 
 IVM_COM_HEADER
 

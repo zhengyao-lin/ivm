@@ -5,7 +5,7 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
-#include "../err.h"
+#include "pub/err.h"
 
 IVM_COM_HEADER
 

@@ -5,7 +5,8 @@ ADD_LIBRARY(vm_std STATIC
 			chain.c
 			pool.c
 			hash.c
-			string.c)
+			string.c
+			heap.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
