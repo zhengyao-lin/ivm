@@ -63,8 +63,8 @@ ivm_dbg_printHeap(ivm_heap_t *heap,
 		size += curs[i];
 	}
 	fprintf(fp, "%s" IVM_DBG_TAB "(total: %ld in %ld(%.2f%%))\n",
-			prefix, size, bsize,
-			((double)size) / bsize * 100);
+			prefix, size, bsize * bcount,
+			((double)size) / (bsize * bcount) * 100);
 
 	return;
 }

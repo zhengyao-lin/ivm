@@ -112,7 +112,7 @@ int test_fib()
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
+	ivm_exec_addOp(exec1, NEW_NUM_I, 15);
 	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec1, INVOKE, 1);
 	ivm_exec_addOp(exec1, OUT_NUM);
@@ -626,16 +626,11 @@ strhash(const char *key)
 	return hash;
 }
 
-int dump()
-{
-	return 23;
-}
-
 int main()
 {
-	test_call();
+	// test_call();
 	// test_vm();
-	// test_fib();
+	test_fib();
 
 	// profile_type();
 
