@@ -3,6 +3,7 @@
 #include "pub/err.h"
 #include "pub/vm.h"
 
+#include "inline/vm.h"
 #include "op.h"
 #include "coro.h"
 #include "vmstack.h"

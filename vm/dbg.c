@@ -90,28 +90,29 @@ ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
 {
 	ivm_frame_stack_t *frames = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
-	ivm_vmstack_iterator_t siter;
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_object_t *tmp;
-	ivm_size_t i = 1, fi = 0,
+	ivm_size_t i = 0, fi = 0,
+			   end = runtime ? IVM_RUNTIME_GET(runtime, SP) : 0,
 			   size = ivm_frame_stack_size(frames);
 	ivm_frame_t *tmp_fr;
 
 	if (stack) {
 		fprintf(fp, "stack %p in coro %p:\n", (void *)stack, (void *)coro);
-		IVM_VMSTACK_EACHPTR(stack, siter) {
+		while (i < end) {
 			if (frames && fi < size
-				&& IVM_FRAME_GET(tmp_fr = ivm_frame_stack_at(frames, fi), STACK_TOP) == i) {
+				&& IVM_FRAME_GET(tmp_fr = ivm_frame_stack_at(frames, fi), BP) == i) {
 				fprintf(fp, "exec at %p\n", (void *)IVM_FRAME_GET(tmp_fr, EXEC));
 			}
 
-			tmp = IVM_VMSTACK_ITER_GET(siter);
+			tmp = ivm_vmstack_at(stack, i);
 			fprintf(fp, IVM_DBG_TAB "%4ld: %p of <%s>\n", i, (void *)tmp,
 					tmp ? IVM_OBJECT_GET(tmp, TYPE_NAME) : "null pointer");
 			i++;
 		}
 	}
 
-	fprintf(fp, "(total of %ld object(s) in the stack)\n", i - 1);
+	fprintf(fp, "(total of %ld object(s) in the stack)\n", i);
 
 	return;
 }

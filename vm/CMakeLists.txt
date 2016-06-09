@@ -17,7 +17,8 @@ ADD_LIBRARY(vm SHARED
 			dbg.c
 			expr.c
 			proto.c
-			env.c)
+			env.c
+			call.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

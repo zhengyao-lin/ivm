@@ -14,8 +14,12 @@ IVM_COM_HEADER
 
 #define IVM_EXEC_INFO_HEAD \
 	ivm_exec_t *exec; \
+	struct ivm_ctchain_t_tag *context; \
 	ivm_instr_t *ip; \
-	struct ivm_ctchain_t_tag *context;
+	ivm_size_t bp;
+
+#define IVM_EXEC_INFO_HEAD_SIZE \
+	(sizeof(struct { IVM_EXEC_INFO_HEAD } IVM_NOALIGN))
 
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
@@ -23,17 +27,49 @@ struct ivm_runtime_t_tag;
 
 typedef struct ivm_frame_t_tag {
 	IVM_EXEC_INFO_HEAD
-
-	ivm_size_t st_top;
-} ivm_frame_t;
+} IVM_NOALIGN ivm_frame_t;
 
 #define IVM_FRAME_GET_EXEC(frame) ((frame) ? (frame)->exec : IVM_NULL)
-#define IVM_FRAME_GET_STACK_TOP(frame) ((frame) ? (frame)->st_top : 0)
+#define IVM_FRAME_GET_BP(frame) ((frame) ? (frame)->bp : 0)
 #define IVM_FRAME_GET_IP(frame) ((frame) ? (frame)->ip : 0)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame) ? (frame)->context : IVM_NULL)
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
+
+typedef struct {
+	ivm_size_t alloc;
+	ivm_size_t top;
+	ivm_frame_t *frames;
+} ivm_frame_stack_t;
+
+typedef ivm_frame_t * ivm_frame_stack_iterator_t;
+
+ivm_frame_stack_t *
+ivm_frame_stack_new();
+
+void
+ivm_frame_stack_free(ivm_frame_stack_t *stack);
+
+void
+ivm_frame_stack_push(ivm_frame_stack_t *stack,
+					 struct ivm_runtime_t_tag *runtime);
+
+#define ivm_frame_stack_size(stack) ((stack)->top)
+#define ivm_frame_stack_at(stack, i) ((stack)->frames + (i))
+
+ivm_frame_t *
+ivm_frame_stack_pop(ivm_frame_stack_t *stack,
+					struct ivm_runtime_t_tag *runtime);
+
+#define IVM_FRAME_STACK_ITER_SET(iter, val) (*(iter) = (val))
+#define IVM_FRAME_STACK_ITER_GET(iter) (iter)
+#define IVM_FRAME_STACK_EACHPTR(stack, iter) \
+	for ((iter) = (stack)->frames; \
+		 (iter) != (stack)->frames + (stack)->top; \
+		 (iter)++)
+
+#if 0
 
 typedef ivm_stack_t ivm_frame_stack_t;
 typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
@@ -53,6 +89,8 @@ typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
 #define IVM_FRAME_STACK_ITER_SET(iter, val) (IVM_STACK_ITER_SET((iter), (val)))
 #define IVM_FRAME_STACK_ITER_GET(iter) ((ivm_frame_t *)IVM_STACK_ITER_GET(iter))
 #define IVM_FRAME_STACK_EACHPTR(stack, iter) IVM_STACK_EACHPTR((stack), (iter), ivm_frame_t *)
+
+#endif
 
 typedef ivm_ptpool_t ivm_frame_pool_t;
 

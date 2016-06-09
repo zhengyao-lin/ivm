@@ -26,32 +26,10 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_exec_t *exec,
 				   ivm_ctchain_t *context)
 {
-	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->exec = exec;
 	runtime->context = context;
-
-	return;
-}
-
-ivm_frame_t *
-ivm_runtime_getFrame(ivm_runtime_t *runtime,
-					 ivm_vmstate_t *state,
-					 ivm_coro_t *coro)
-{
-	return ivm_frame_new(state,
-						 runtime,
-						 ivm_coro_stackTop(coro));
-}
-
-void
-ivm_runtime_restore(ivm_runtime_t *runtime,
-					ivm_vmstate_t *state,
-					ivm_coro_t *coro,
-					ivm_frame_t *frame)
-{
-	ivm_ctchain_free(runtime->context, state);
-
-	MEM_COPY(runtime, frame, sizeof(*runtime));
+	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
+	runtime->bp = runtime->sp;
 
 	return;
 }

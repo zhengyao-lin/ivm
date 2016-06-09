@@ -6,6 +6,8 @@
 
 #define IVM_INLINE inline __attribute__((always_inline))
 
+#define IVM_NOALIGN __attribute__((packed))
+
 #ifdef __cplusplus
 	#define IVM_COM_HEADER extern "C" {
 	#define IVM_COM_END }

@@ -235,11 +235,11 @@ OP_GEN(PRINT_NUM, "print_num", N, {
 
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
+	obj = STACK_TOP();
 	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
-		IVM_OUT("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+		IVM_TRACE("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
 	else
-		IVM_OUT("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
 
 	NEXT_INSTR();
 })
@@ -265,7 +265,7 @@ OP_GEN(PRINT_STR, "print_str", N, {
 	IVM_ASSERT(IVM_IS_TYPE(str, IVM_STRING_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("string", IVM_OBJECT_GET(str, TYPE_NAME)));
 
-	IVM_OUT("%s\n", str->val);
+	IVM_OUT("%s\n", ivm_string_trimHead(str->val));
 
 	NEXT_INSTR();
 })
@@ -298,7 +298,7 @@ OP_GEN(INVOKE, "invoke", I, {
 	ivm_function_object_t *obj;
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = _ARG;
-	ivm_vmstack_iterator_t args;
+	ivm_object_t **args;
 	ivm_object_t *ret;
 
 	CHECK_STACK(arg_count + 1);
@@ -311,10 +311,12 @@ OP_GEN(INVOKE, "invoke", I, {
 	func = ivm_function_object_getFunc(obj);
 	args = STACK_CUT(arg_count);
 
-	IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1);
+	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
+	SAVE_RUNTIME(_RUNTIME, _INSTR + 1);
 
 	ivm_function_invoke(func, _STATE,
 						ivm_function_object_getClosure(obj), _CORO);
+	UPDATE_STACK();
 
 	if (ivm_function_isNative(func)) {
 		ret = ivm_function_callNative(func, _STATE, _CONTEXT,

@@ -4,6 +4,7 @@
 #include "pub/err.h"
 
 #include "inline/obj.h"
+#include "inline/vm.h"
 #include "context.h"
 
 #define GET_CONTEXT(chain_sub) ((chain_sub)->ct)
@@ -170,48 +171,6 @@ ivm_context_pool_free(ivm_context_pool_t *pool)
 		}
 
 		MEM_FREE(pool);
-	}
-
-	return;
-}
-
-ivm_ctchain_t *
-ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len)
-{
-	ivm_ctchain_t *ret;
-
-	if (len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
-		ret = (ivm_ctchain_t *)
-			  ivm_ptpool_alloc(pool->pools[len]);
-	} else {
-		ret = MEM_ALLOC(ivm_ctchain_getSize(len),
-						ivm_ctchain_t *);
-		IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("context chain"));
-	}
-
-	ret->len = len;
-
-	return ret;
-}
-
-ivm_ctchain_t *
-ivm_context_pool_realloc(ivm_context_pool_t *pool,
-						 ivm_ctchain_t *chain,
-						 ivm_int_t len)
-{
-	return ivm_context_pool_dump(pool, chain),
-		   ivm_context_pool_alloc(pool, len);
-}
-
-void
-ivm_context_pool_dump(ivm_context_pool_t *pool, ivm_ctchain_t *chain)
-{
-	if (pool) {
-		if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
-			ivm_ptpool_dump(pool->pools[chain->len], chain);
-		} else {
-			MEM_FREE(chain);
-		}
 	}
 
 	return;

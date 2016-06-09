@@ -83,6 +83,16 @@ ivm_collector_copyObject(ivm_object_t *obj,
 }
 
 IVM_PRIVATE
+IVM_INLINE
+void
+ivm_collector_updateObject(ivm_object_t **obj,
+						   ivm_traverser_arg_t *arg)
+{
+	*obj = ivm_collector_copyObject(*obj, arg);
+	return;
+}
+
+IVM_PRIVATE
 void
 ivm_collector_travContextChain(ivm_ctchain_t *chain,
 							   ivm_traverser_arg_t *arg)
@@ -93,6 +103,7 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 		IVM_CTCHAIN_EACHPTR(chain, iter) {
 			IVM_CTCHAIN_ITER_SET(iter,
 								 ivm_collector_copyObject(IVM_CTCHAIN_ITER_GET(iter), arg));
+
 		}
 	}
 
@@ -131,13 +142,12 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_vmstack_iterator_t siter;
+	ivm_size_t i, sp;
 	ivm_frame_stack_iterator_t fiter;
 
-	IVM_VMSTACK_EACHPTR(stack, siter) {
-		IVM_VMSTACK_ITER_SET(siter,
-							 ivm_collector_copyObject(IVM_VMSTACK_ITER_GET(siter),
-							 						  arg));
+	for (i = 0, sp = IVM_RUNTIME_GET(runtime, SP);
+		 i < sp; i++) {
+		ivm_collector_updateObject(ivm_vmstack_ptrAt(stack, i), arg);
 	}
 
 	IVM_FRAME_STACK_EACHPTR(frame_st, fiter) {

@@ -21,7 +21,7 @@
 #define STACK_TOP() (ivm_vmstack_top(_STACK))
 #define STACK_POP() (ivm_vmstack_pop(_STACK))
 #define STACK_PUSH(obj) (ivm_vmstack_push(_STACK, (obj)))
-#define STACK_BEFORE(i) (ivm_vmstack_before(_STACK, (i)))
+#define STACK_BEFORE(i) (ivm_vmstack_at(_STACK, (i)))
 #define STACK_CUT(i) (ivm_vmstack_cut(_STACK, (i)))
 #define STACK_INC(i) \
 	(ivm_vmstack_incTop(_STACK, (i)))

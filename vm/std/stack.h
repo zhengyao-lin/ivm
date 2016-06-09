@@ -24,6 +24,8 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_push ivm_ptlist_push
 #define ivm_stack_pop ivm_ptlist_pop
 #define ivm_stack_at ivm_ptlist_at
+#define ivm_stack_ptrAt ivm_ptlist_ptrAt
+#define ivm_stack_set ivm_ptlist_set
 #define ivm_stack_cut(stack, i) (ivm_ptlist_setCur((stack), ivm_ptlist_size(stack) - (i)), \
 								 &ivm_stack_before((stack), -1))
 
@@ -44,6 +46,21 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define IVM_STACK_ITER_SET IVM_PTLIST_ITER_SET
 #define IVM_STACK_ITER_GET IVM_PTLIST_ITER_GET
 #define IVM_STACK_EACHPTR IVM_PTLIST_EACHPTR
+
+IVM_INLINE
+void
+ivm_stack_pushAt(ivm_stack_t *stack,
+				  ivm_size_t i,
+				  void *p)
+{
+	if (i >= stack->alloc) {
+		ivm_stack_inc(stack);
+	}
+
+	stack->lst[i] = p;
+
+	return;
+}
 
 IVM_COM_END
 

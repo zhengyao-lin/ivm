@@ -94,20 +94,6 @@ ivm_function_clone(ivm_function_t *func,
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 
-struct ivm_runtime_t_tag *
-ivm_function_createRuntime(const ivm_function_t *func,
-						   struct ivm_vmstate_t_tag *state,
-						   ivm_ctchain_t *context);
-
-/* 1. save the current state(push frame to frame stack)
- * 2. call runtime_invoke to rewrite environment of the function
- */
-void
-ivm_function_invoke(const ivm_function_t *func,
-					struct ivm_vmstate_t_tag *state,
-					ivm_ctchain_t *context,
-					struct ivm_coro_t_tag *coro);
-
 #define ivm_function_callNative(func, state, context, arg) \
 	(func)->u.native((state), (context), (arg));
 

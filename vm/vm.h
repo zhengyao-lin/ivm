@@ -108,12 +108,6 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state);
 
 #endif
 
-/* context pool */
-#define ivm_vmstate_allocContext(state, len) \
-	(ivm_context_pool_alloc((state)->ct_pool, (len)))
-#define ivm_vmstate_dumpContext(state, ct) \
-	(ivm_context_pool_dump((state)->ct_pool, (ct)))
-
 /* frame pool */
 #if IVM_USE_FRAME_POOL
 

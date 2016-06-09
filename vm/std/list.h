@@ -31,6 +31,8 @@ ivm_ptlist_free(ivm_ptlist_t *ptlist);
 #define ivm_ptlist_last(ptlist) ((ptlist)->cur > 0 ? (ptlist)->lst[(ptlist)->cur - 1] : IVM_NULL)
 #define ivm_ptlist_size(ptlist) ((ptlist)->cur)
 #define ivm_ptlist_at(ptlist, i) ((ptlist)->lst[i])
+#define ivm_ptlist_ptrAt(ptlist, i) ((ptlist)->lst + (i))
+#define ivm_ptlist_set(ptlist, i, val) ((ptlist)->lst[i] = (val))
 
 IVM_INLINE
 void
@@ -103,7 +105,7 @@ ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
 
 IVM_INLINE
 void
-ivm_ptlist_set(ivm_ptlist_t *ptlist,
+ivm_ptlist_insert(ivm_ptlist_t *ptlist,
 			   ivm_size_t i,
 			   void *p)
 {

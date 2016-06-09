@@ -120,17 +120,6 @@ ivm_context_pool_new(ivm_size_t ecount);
 void
 ivm_context_pool_free(ivm_context_pool_t *pool);
 
-ivm_ctchain_t *
-ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len);
-
-ivm_ctchain_t *
-ivm_context_pool_realloc(ivm_context_pool_t *pool,
-						 ivm_ctchain_t *chain,
-						 ivm_int_t len);
-
-void
-ivm_context_pool_dump(ivm_context_pool_t *pool, ivm_ctchain_t *chain);
-
 IVM_COM_END
 
 #endif

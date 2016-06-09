@@ -9,20 +9,6 @@
 
 IVM_COM_HEADER
 
-IVM_INLINE
-void
-ivm_runtime_free(ivm_runtime_t *runtime,
-				 ivm_vmstate_t *state)
-{
-	if (runtime) {
-		ivm_ctchain_free(runtime->context, state);
-		MEM_FREE(runtime);
-	}
-	
-	return;
-}
-
-
 IVM_COM_END
 
 #endif

@@ -6,6 +6,7 @@
 
 #include "../std/string.h"
 #include "../obj.h"
+#include "../slot.h"
 
 IVM_COM_HEADER
 

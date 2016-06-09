@@ -8,6 +8,7 @@
 #include "vm/std/hash.h"
 #include "vm/std/heap.h"
 #include "vm/inline/obj.h"
+#include "vm/inline/func.h"
 #include "vm/env.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
@@ -120,6 +121,7 @@ int test_fib()
 
 	ivm_exec_addOp(exec2, NEW_NUM_I, 1);
 	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
+
 	
 	addr1 = ivm_exec_addOp(exec2, JUMP_LT, 0); /* if (n < 2) */
 
@@ -134,11 +136,15 @@ int test_fib()
 	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec2, INVOKE, 1);
 
+	// ivm_exec_addOp(exec2, PRINT_NUM);
+
 	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
 	ivm_exec_addOp(exec2, NEW_NUM_I, 2);
 	ivm_exec_addOp(exec2, SUB);
 	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addOp(exec2, INVOKE, 1);
+
+	// ivm_exec_addOp(exec2, PRINT_NUM);
 
 	ivm_exec_addOp(exec2, ADD);
 	ivm_exec_addOp(exec2, RETURN);
@@ -234,12 +240,12 @@ int test_call()
 	ivm_vmstate_addCoro(state, coro);
 
 	/********************** code ***********************/
-
+/*
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
 		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
 		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
 	}
-
+*/
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
 

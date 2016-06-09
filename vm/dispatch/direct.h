@@ -23,25 +23,40 @@
 		goto END_EXEC; \
 	} \
 
-#define YIELD() IVM_RUNTIME_SET(_RUNTIME, IP, ++tmp_ip); goto ACTION_YIELD
-#define RETURN() IVM_RUNTIME_SET(_RUNTIME, IP, ++tmp_ip); goto ACTION_RETURN
+#define YIELD() SAVE_RUNTIME(_RUNTIME, ++tmp_ip); goto ACTION_YIELD
+#define RETURN() SAVE_RUNTIME(_RUNTIME, ++tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define _ARG (_INSTR->arg)
 
 #define _STACK (tmp_stack)
-#define STACK_SIZE() (ivm_vmstack_size(_STACK))
-#define STACK_TOP() (ivm_vmstack_top(_STACK))
-#define STACK_POP() (ivm_vmstack_pop(_STACK))
-#define STACK_PUSH(obj) (ivm_vmstack_push(_STACK, (obj)))
-#define STACK_BEFORE(i) (ivm_vmstack_before(_STACK, (i)))
-#define STACK_CUT(i) (ivm_vmstack_cut(_STACK, (i)))
-#define STACK_INC(i) \
-	(ivm_vmstack_incTop(_STACK, (i)))
+#define STACK_SIZE() (tmp_sp)
+#define STACK_TOP() (ivm_vmstack_at(_STACK, tmp_sp - 1))
+#define STACK_POP() (tmp_sp--, ivm_vmstack_at(_STACK, tmp_sp))
+#define STACK_PUSH(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)
+#define STACK_BEFORE(i) (ivm_vmstack_at(_STACK, tmp_sp - 1 - (i)))
+#define STACK_CUT(i) (tmp_sp - (i) >= tmp_bp ? (tmp_sp -= (i), ivm_vmstack_ptrAt(_STACK, tmp_sp)) : IVM_NULL)
+#define STACK_INC(i) (tmp_sp += (i))
 
-#define FRAME_STACK_TOP() (ivm_frame_stack_top(_CORO->frame_st))
-#define AVAIL_STACK (STACK_SIZE() - IVM_FRAME_GET(FRAME_STACK_TOP(), STACK_TOP))
+#define AVAIL_STACK (tmp_sp - tmp_bp)
 #define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
 									IVM_ERROR_MSG_INSUFFICIENT_STACK)
+
+#ifndef SAVE_RUNTIME
+
+#define SAVE_RUNTIME(runtime, ip) \
+	(IVM_RUNTIME_SET((runtime), IP, (ip)), \
+	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
+	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
+
+#endif
+
+#ifndef UPDATE_STACK
+
+#define UPDATE_STACK() \
+	(tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP), \
+	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
+
+#endif
 
 #endif

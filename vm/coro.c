@@ -7,6 +7,8 @@
 
 #include "inline/call.h"
 #include "inline/runtime.h"
+#include "inline/vm.h"
+#include "inline/func.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"
@@ -56,6 +58,17 @@ ivm_coro_free(ivm_coro_t *coro,
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#include "dispatch/direct.h"
+#else
+
+#define SAVE_RUNTIME(runtime, ip) \
+	(IVM_RUNTIME_SET((runtime), IP, (ip)), \
+	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
+	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
+
+#define UPDATE_STACK() \
+	(tmp_bp = IVM_RUNTIME_GET(tmp_runtime, BP), \
+	 tmp_sp = IVM_RUNTIME_GET(tmp_runtime, SP))
+
 #endif
 
 ivm_object_t *
@@ -72,6 +85,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_function_t *tmp_func = IVM_NULL;
 
 	ivm_instr_t *tmp_ip, *tmp_ip_end;
+	ivm_size_t tmp_bp, tmp_sp;
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	static void *op_entry[] = {
@@ -105,6 +119,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		tmp_stack = coro->stack;
 
 		while (1) {
+			UPDATE_STACK();
+
 ACTION_INVOKE:
 			ret = IVM_NULL;
 			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
@@ -134,10 +150,10 @@ ACTION_INVOKE:
 						case IVM_ACTION_INVOKE:
 							goto ACTION_INVOKE;
 						case IVM_ACTION_RETURN:
-							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
+							SAVE_RUNTIME(tmp_runtime, tmp_ip);
 							goto ACTION_RETURN;
 						case IVM_ACTION_YIELD:
-							IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
+							SAVE_RUNTIME(tmp_runtime, tmp_ip);
 							goto ACTION_YIELD;
 						default:;
 					}
@@ -148,27 +164,24 @@ ACTION_INVOKE:
 
 END_EXEC:
 
-				IVM_RUNTIME_SET(tmp_runtime, IP, tmp_ip);
+				SAVE_RUNTIME(tmp_runtime, tmp_ip);
 			}
 ACTION_RETURN:
-			
-			tmp_frame = ivm_frame_stack_pop(coro->frame_st);
 
+			if (tmp_sp - tmp_bp > 0) {
+				ret = ivm_vmstack_at(tmp_stack, --tmp_sp);
+			}
+
+			ivm_runtime_dump(tmp_runtime, state);
+
+			tmp_frame = ivm_frame_stack_pop(coro->frame_st, coro->runtime);
 			if (tmp_frame) {
-				if (ivm_vmstack_size(tmp_stack) - IVM_FRAME_GET(tmp_frame, STACK_TOP) > 0) {
-					ret = ivm_vmstack_pop(tmp_stack);
-				}
-		
-				ivm_runtime_restore(tmp_runtime, state, coro, tmp_frame);
-				ivm_frame_free(tmp_frame, state);
-
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
 
-				ivm_vmstack_push(tmp_stack,
-								 ret ? ret
-								 	 : IVM_NULL_OBJ(state));
+				ivm_vmstack_pushAt(tmp_stack, IVM_RUNTIME_GET(tmp_runtime, SP_INC),
+								   ret ? ret : IVM_NULL_OBJ(state));
 			} else {
 				/* no more callee to restore, end coro */
 				ivm_coro_kill(coro, state);
@@ -176,8 +189,12 @@ ACTION_RETURN:
 			}
 		}
 
+goto ACTION_YIELD_END;
 ACTION_YIELD:
-		ret = ivm_vmstack_pop(tmp_stack);
+		if (tmp_sp - tmp_bp > 0) {
+			ret = ivm_vmstack_at(tmp_stack, IVM_RUNTIME_GET(tmp_runtime, DEC_SP));
+		}
+ACTION_YIELD_END: ;
 	}
 
 END:

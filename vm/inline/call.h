@@ -14,15 +14,13 @@ IVM_COM_HEADER
 IVM_INLINE
 ivm_frame_t *
 ivm_frame_new(ivm_vmstate_t *state,
-			  ivm_runtime_t *runtime,
-			  ivm_size_t st_top)
+			  ivm_runtime_t *runtime)
 {
 	ivm_frame_t *ret = ivm_vmstate_allocFrame(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame"));
 
-	MEM_COPY(ret, runtime, sizeof(*runtime));
-	ret->st_top = st_top;
+	MEM_COPY(ret, runtime, sizeof(IVM_EXEC_INFO_HEAD_SIZE));
 
 	return ret;
 }
