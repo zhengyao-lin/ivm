@@ -76,6 +76,38 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_instr_t *tmp_ip, *tmp_ip_end;
 	ivm_size_t tmp_bp, tmp_sp;
 
+	/*****************************
+	* stack cache(support only 1 or 2 TOS cache)
+	* 
+	* cst = 2:
+	* ----------------------
+	* | stc1 | stc0 | .... |
+	* ----------------------
+	*    ^ stack top
+	*
+	* cst = 1:
+	* ----------------------
+	* | stc0 | .... | .... |
+	* ----------------------
+	*    ^ stack top 
+	*    
+	* cst = 0:
+	* ----------------------
+	* | .... | .... | .... |
+	* ----------------------
+	*    ^ stack top 
+	*
+	*****************************/
+
+#if IVM_STACK_CACHE_N_TOS == 1
+	register ivm_object_t *stc0 = IVM_NULL;
+#elif IVM_STACK_CACHE_N_TOS == 2
+	register ivm_object_t *stc0 = IVM_NULL,
+						  *stc1 = IVM_NULL;
+#endif
+
+	register ivm_int_t cst = 0; /* cache state */
+
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	static void *opcode_entry[] = {
 		#define OPCODE_GEN(o, name, arg, ...) &&OPCODE_##o,

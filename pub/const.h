@@ -45,4 +45,7 @@
 /* only one of the following definition can be 1 */
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
 
+/* the number of stack element(s) cached */
+#define IVM_STACK_CACHE_N_TOS 1
+
 #endif

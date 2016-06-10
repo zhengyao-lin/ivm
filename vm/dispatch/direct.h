@@ -32,27 +32,131 @@
 
 #define _ARG (_INSTR->arg)
 
+#define STACK_TOP_NOCACHE() (ivm_vmstack_at(_STACK, tmp_sp - 1))
+#define STACK_PUSH_NOCACHE(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)
+#define STACK_POP_NOCACHE() (tmp_sp--, ivm_vmstack_at(_STACK, tmp_sp))
+
 #define _STACK (tmp_stack)
-#define STACK_SIZE() (tmp_sp)
-#define STACK_TOP() (ivm_vmstack_at(_STACK, tmp_sp - 1))
-#define STACK_POP() (tmp_sp--, ivm_vmstack_at(_STACK, tmp_sp))
-#define STACK_PUSH(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)
-#define STACK_BEFORE(i) (ivm_vmstack_at(_STACK, tmp_sp - 1 - (i)))
-#define STACK_CUT(i) (tmp_sp - (i) >= tmp_bp ? (tmp_sp -= (i), ivm_vmstack_ptrAt(_STACK, tmp_sp)) : IVM_NULL)
+#define STACK_SIZE() (tmp_sp + cst)
+
 #define STACK_INC(i) (tmp_sp += (i))
 
-#define AVAIL_STACK (tmp_sp - tmp_bp)
+#if IVM_STACK_CACHE_N_TOS == 1
+
+	#define STC_PUSHBACK() \
+		(cst ? (STACK_PUSH_NOCACHE(stc0), cst = 0) : 0)
+
+	#define STACK_TOP() \
+		(cst ? stc0 : STACK_TOP_NOCACHE())
+
+	#define STACK_POP() \
+		(cst ? ((cst = 0), stc0) : STACK_POP_NOCACHE())
+
+	#define STACK_PUSH(obj) \
+		(((cst) ? STC_PUSHBACK() : 0), (stc0 = (obj)), (cst = 1))
+
+	#define STACK_BEFORE(i) \
+		((i) < cst ? stc0 : ivm_vmstack_at(_STACK, tmp_sp - 1 - (i) + cst))
+
+	#define STACK_CUT(i) \
+		((i) ? (STC_PUSHBACK(), (tmp_sp -= (i)), ivm_vmstack_ptrAt(_STACK, tmp_sp)) : IVM_NULL)
+
+#elif IVM_STACK_CACHE_N_TOS == 2
+
+	/* stack cache */
+	#define STC_PUSHBACK() \
+		({if (cst) { \
+			if (cst == 1) { \
+				STACK_PUSH_NOCACHE(stc0); \
+			} else { /* cst == 2 */ \
+				STACK_PUSH_NOCACHE(stc0); \
+				STACK_PUSH_NOCACHE(stc1); \
+			} \
+			cst = 0; \
+		}}) \
+
+	#define _if		((
+	#define _then	)?(
+	#define _else	):(
+	#define _end	))
+
+	#define STACK_TOP() \
+		_if (cst == 2) _then                 \
+			stc1                             \
+		_else                                \
+			_if (cst == 1) _then             \
+				stc0                         \
+			_else                            \
+				STACK_TOP_NOCACHE()          \
+			_end                             \
+		_end
+
+	#define STACK_POP() \
+		_if (cst == 2) _then                 \
+			(cst = 1),                       \
+			stc1                             \
+		_else                                \
+			_if (cst == 1) _then             \
+				(cst = 0),                   \
+				stc0                         \
+			_else                            \
+				STACK_POP_NOCACHE()          \
+			_end                             \
+		_end
+
+	#define STACK_PUSH(obj) \
+		_if (cst == 2) _then                \
+			STC_PUSHBACK(),                 \
+			(cst = 1),                      \
+			(stc0 = (obj))                  \
+		_else                               \
+		  	_if (cst == 1) _then            \
+		  		(cst = 2),                  \
+		  		(stc1 = (obj))              \
+		  	_else                           \
+		  		(cst = 1),                  \
+		  		(stc0 = (obj))              \
+		  	_end                            \
+		_end
+
+	#define STACK_BEFORE(i) \
+		_if ((i) < cst) _then                                \
+			_if (!(i)) _then                                 \
+				STACK_TOP()                                  \
+			_else                                            \
+				stc0                                         \
+			_end                                             \
+		_else                                                \
+			ivm_vmstack_at(_STACK, tmp_sp - 1 - (i) + cst)   \
+		_end
+
+	#define STACK_CUT(i) \
+		_if (i) _then                                        \
+			STC_PUSHBACK(),                                  \
+			(tmp_sp -= (i)),                                 \
+			ivm_vmstack_ptrAt(_STACK, tmp_sp)                \
+		_else                                                \
+			IVM_NULL                                         \
+		_end
+
+#else
+	#error unsupported stack cache number
+#endif
+
+#define AVAIL_STACK (tmp_sp - tmp_bp + cst)
 #define CHECK_STACK(req) \
 	IVM_ASSERT(AVAIL_STACK >= (req), \
 			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
 
 #define SAVE_RUNTIME(runtime, ip) \
-	(IVM_RUNTIME_SET((runtime), IP, (ip)), \
+	(STC_PUSHBACK(), \
+	 IVM_RUNTIME_SET((runtime), IP, (ip)), \
 	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
 	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
 
 #define SAVE_STACK() \
-	(IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp), \
+	(STC_PUSHBACK(), \
+	 IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp), \
 	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define UPDATE_STACK() \

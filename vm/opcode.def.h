@@ -255,7 +255,7 @@ OPCODE_GEN(PRINT_NUM, "print_num", N, {
 
 	CHECK_STACK(1);
 
-	obj = STACK_TOP();
+	obj = STACK_POP();
 	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
 		IVM_TRACE("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
 	else
@@ -270,7 +270,7 @@ OPCODE_GEN(PRINT_TYPE, "print_type", N, {
 	CHECK_STACK(1);
 
 	obj = STACK_POP();
-	IVM_OUT("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
+	IVM_TRACE("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
 	
 	NEXT_INSTR();
 })
@@ -336,12 +336,13 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 
 	ivm_function_invoke(func, _STATE,
 						ivm_function_object_getClosure(obj), _CORO);
+	
 	UPDATE_STACK();
 
 	if (ivm_function_isNative(func)) {
 		ret = ivm_function_callNative(func, _STATE, _CONTEXT,
 									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
-		STACK_PUSH(ret ? ret : IVM_NULL_OBJ(_STATE));
+		STACK_PUSH_NOCACHE(ret ? ret : IVM_NULL_OBJ(_STATE));
 	} else {
 		STACK_INC(arg_count);
 	}

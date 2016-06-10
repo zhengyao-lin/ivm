@@ -33,7 +33,7 @@ IVM_NATIVE_FUNC(call_func)
 						func->closure, IVM_VMSTATE_GET(state, CUR_CORO));
 	ivm_coro_resume(IVM_VMSTATE_GET(state, CUR_CORO), state, IVM_NULL);
 
-	return IVM_NULL;
+	return ivm_numeric_new(state, 10016);
 }
 
 #if IVM_PERF_PROFILE
@@ -107,6 +107,11 @@ int test_fib()
 	ivm_vmstate_addCoro(state, coro);
 
 	/********** top **********/
+
+	/********** top **********/
+
+#if 1
+	/********** top **********/
 	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "fib");
 
@@ -150,6 +155,7 @@ int test_fib()
 	ivm_exec_addInstr(exec2, ADD);
 	ivm_exec_addInstr(exec2, RETURN);
 	/********** fib **********/
+#endif
 
 	ivm_coro_setRoot(coro, state,
 					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top), ivm_function_object_t));
