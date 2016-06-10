@@ -40,13 +40,13 @@ ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro,
 				 struct ivm_vmstate_t_tag *state,
 				 ivm_function_object_t *root,
-				 ivm_bool_t get_op_entry);
+				 ivm_bool_t get_opcode_entry);
 
 #define ivm_coro_start(coro, state, root) \
 	(ivm_coro_start_c((coro), (state), (root), IVM_FALSE))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#define ivm_coro_getOpEntry() \
+	#define ivm_coro_getOpcodeEntry() \
 		((void **)ivm_coro_start_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
 #endif
 

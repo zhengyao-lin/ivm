@@ -5,7 +5,7 @@
 #include "pub/type.h"
 
 #include "std/string.h"
-#include "op.h"
+#include "opcode.h"
 
 IVM_COM_HEADER
 
@@ -15,33 +15,33 @@ struct ivm_exec_t_tag;
 
 typedef struct ivm_instr_t_tag {
 	void *entry;
-	ivm_op_arg_t arg;
-	ivm_byte_t op;
+	ivm_opcode_arg_t arg;
+	ivm_byte_t opc;
 } ivm_instr_t;
 
 #else
 
 typedef struct ivm_instr_t_tag {
-	ivm_byte_t op;
-	ivm_op_arg_t arg;
+	ivm_byte_t opc;
+	ivm_opcode_arg_t arg;
 } ivm_instr_t;
 
 #endif
 
 #define IVM_INSTR_TYPE_N_ARG
-#define IVM_INSTR_TYPE_I_ARG ivm_op_arg_t arg,
+#define IVM_INSTR_TYPE_I_ARG ivm_opcode_arg_t arg,
 #define IVM_INSTR_TYPE_S_ARG const char *str,
 
-#define IVM_INSTR_GEN(op, ...) \
-	(ivm_instr_gen_##op(__VA_ARGS__))
+#define IVM_INSTR_GEN(o, ...) \
+	(ivm_instr_gen_##o(__VA_ARGS__))
 
-#define OP_GEN(op, name, arg, ...) \
-	ivm_instr_t ivm_instr_gen_##op(IVM_INSTR_TYPE_##arg##_ARG \
-								   struct ivm_exec_t_tag *exec);
+#define OPCODE_GEN(o, name, arg, ...) \
+	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
+								  struct ivm_exec_t_tag *exec);
 
-	#include "op.def.h"
+	#include "opcode.def.h"
 
-#undef OP_GEN
+#undef OPCODE_GEN
 
 IVM_COM_END
 

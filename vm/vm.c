@@ -10,7 +10,7 @@
 #include "func.h"
 #include "num.h"
 #include "strobj.h"
-#include "expr.h"
+#include "oprt.h"
 #include "proto.h"
 
 #define GC(state) ((state)->gc)
@@ -21,99 +21,45 @@
 IVM_PRIVATE
 ivm_type_t static_type_list[] = {
 	{
-		IVM_UNDEFINED_T, "undefined",
-			sizeof(ivm_object_t), /* size */
-			IVM_NULL, /* proto */
-			IVM_NULL, /* destructor */
-			IVM_NULL, /* traverser */
-			IVM_FALSE, /* const_bool */
-			ivm_object_alwaysFalse, /* to_bool */
-			IVM_NULL, /* add table */
-			IVM_NULL, /* sub table */
-			IVM_NULL, /* mul table */
-			IVM_NULL, /* div table */
-			IVM_NULL, /* mod table */
-			IVM_NULL  /* cmp table */
+		IVM_UNDEFINED_T, "undefined", sizeof(ivm_object_t),
+
+		.const_bool = IVM_FALSE,
+		.to_bool = ivm_object_alwaysFalse
 	},
 
 	{
-		IVM_NULL_T, "null",
-			sizeof(ivm_object_t),
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_FALSE,
-			ivm_object_alwaysFalse,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL
+		IVM_NULL_T, "null", sizeof(ivm_object_t),
+
+		.const_bool = IVM_FALSE,
+		.to_bool = ivm_object_alwaysFalse
 	},
 
 	{
-		IVM_OBJECT_T, "object",
-			sizeof(ivm_object_t),
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_TRUE,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL
+		IVM_OBJECT_T, "object", sizeof(ivm_object_t),
+
+		.const_bool = IVM_TRUE,
 	},
 
 	{
-		IVM_NUMERIC_T, "numeric",
-			sizeof(ivm_numeric_t),
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_TRUE,
-			ivm_numeric_isTrue,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL
+		IVM_NUMERIC_T, "numeric", sizeof(ivm_numeric_t),
+
+		.const_bool = IVM_TRUE,
+		.to_bool = ivm_numeric_isTrue
 	},
 
 	{
-		IVM_STRING_OBJECT_T, "string",
-			sizeof(ivm_string_object_t),
-			IVM_NULL,
-			IVM_NULL,
-			ivm_string_object_traverser,
-			IVM_TRUE,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL
+		IVM_STRING_OBJECT_T, "string", sizeof(ivm_string_object_t),
+
+		.trav = ivm_string_object_traverser,
+		.const_bool = IVM_TRUE
 	},
 
 	{
-		IVM_FUNCTION_OBJECT_T, "function",
-			sizeof(ivm_function_object_t),
-			IVM_NULL,
-			ivm_function_object_destructor,
-			ivm_function_object_traverser,
-			IVM_TRUE,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL,
-			IVM_NULL
+		IVM_FUNCTION_OBJECT_T, "function", sizeof(ivm_function_object_t),
+
+		.des = ivm_function_object_destructor,
+		.trav = ivm_function_object_traverser,
+		.const_bool = IVM_TRUE
 	}
 };
 
@@ -159,7 +105,7 @@ ivm_vmstate_new()
 
 	IVM_TYPE_LIST_EACHPTR(ret->type_list, titer) {
 		tmp_type = IVM_TYPE_LIST_ITER_GET(titer);
-		ivm_binary_op_initType(tmp_type, ret);
+		ivm_oprt_initType(tmp_type, ret);
 		ivm_proto_initType(tmp_type, ret);
 	}
 

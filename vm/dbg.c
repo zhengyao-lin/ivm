@@ -5,7 +5,7 @@
 
 #include "std/heap.h"
 #include "dbg.h"
-#include "op.h"
+#include "opcode.h"
 #include "byte.h"
 #include "instr.h"
 #include "exec.h"
@@ -28,9 +28,9 @@ ivm_dbg_disAsmExec(ivm_exec_t *exec,
 		instr = ivm_exec_instrAt(exec, pc);
 
 		fprintf(fp, "%s%4ld: %-20s %d",
-				prefix, pc, ivm_op_table_getName(instr.op),
+				prefix, pc, ivm_opcode_table_getName(instr.opc),
 				instr.arg);
-		if (ivm_op_table_getArg(instr.op)[0] == 'S') {
+		if (ivm_opcode_table_getArg(instr.opc)[0] == 'S') {
 			fprintf(fp, "(\"%s\")", ivm_string_trimHead(ivm_exec_getString(exec, instr.arg)));
 		}
 

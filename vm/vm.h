@@ -10,7 +10,6 @@
 #include "gc/gc.h"
 #include "obj.h"
 #include "num.h"
-#include "op.h"
 #include "coro.h"
 #include "context.h"
 

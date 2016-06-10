@@ -13,7 +13,7 @@
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
-#include "vm/op.h"
+#include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
 IVM_NATIVE_FUNC(test)
@@ -107,46 +107,46 @@ int test_fib()
 	ivm_vmstate_addCoro(state, coro);
 
 	/********** top **********/
-	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "fib");
+	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 30);
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "fib");
-	ivm_exec_addOp(exec1, INVOKE, 1);
-	ivm_exec_addOp(exec1, OUT_NUM);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 30);
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "fib");
+	ivm_exec_addInstr(exec1, INVOKE, 1);
+	ivm_exec_addInstr(exec1, OUT_NUM);
 	/********** top **********/
 
 	/********** fib **********/
-	ivm_exec_addOp(exec2, SET_ARG, "n");
+	ivm_exec_addInstr(exec2, SET_ARG, "n");
 
-	ivm_exec_addOp(exec2, NEW_NUM_I, 1);
-	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
+	ivm_exec_addInstr(exec2, NEW_NUM_I, 1);
+	ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "n");
 	
-	addr1 = ivm_exec_addOp(exec2, JUMP_LT, 0); /* if (n < 2) */
+	addr1 = ivm_exec_addInstr(exec2, JUMP_LT, 0); /* if (n < 2) */
 
-		ivm_exec_addOp(exec2, NEW_NUM_I, 1);
-		ivm_exec_addOp(exec2, RETURN);
+		ivm_exec_addInstr(exec2, NEW_NUM_I, 1);
+		ivm_exec_addInstr(exec2, RETURN);
 	
-	addr2 = ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
+	addr2 = ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "n");
 	ivm_exec_setArgAt(exec2, addr1, addr2 - addr1);
 
-	ivm_exec_addOp(exec2, NEW_NUM_I, 1);
-	ivm_exec_addOp(exec2, SUB);
-	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "fib");
-	ivm_exec_addOp(exec2, INVOKE, 1);
+	ivm_exec_addInstr(exec2, NEW_NUM_I, 1);
+	ivm_exec_addInstr(exec2, SUB);
+	ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "fib");
+	ivm_exec_addInstr(exec2, INVOKE, 1);
 
-	// ivm_exec_addOp(exec2, PRINT_NUM);
+	// ivm_exec_addInstr(exec2, PRINT_NUM);
 
-	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
-	ivm_exec_addOp(exec2, NEW_NUM_I, 2);
-	ivm_exec_addOp(exec2, SUB);
-	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "fib");
-	ivm_exec_addOp(exec2, INVOKE, 1);
+	ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "n");
+	ivm_exec_addInstr(exec2, NEW_NUM_I, 2);
+	ivm_exec_addInstr(exec2, SUB);
+	ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "fib");
+	ivm_exec_addInstr(exec2, INVOKE, 1);
 
-	// ivm_exec_addOp(exec2, PRINT_NUM);
+	// ivm_exec_addInstr(exec2, PRINT_NUM);
 
-	ivm_exec_addOp(exec2, ADD);
-	ivm_exec_addOp(exec2, RETURN);
+	ivm_exec_addInstr(exec2, ADD);
+	ivm_exec_addInstr(exec2, RETURN);
 	/********** fib **********/
 
 	ivm_coro_setRoot(coro, state,
@@ -239,32 +239,32 @@ int test_call()
 	ivm_vmstate_addCoro(state, coro);
 
 	/********************** code ***********************/
-
+/*
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
-		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
-		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
+		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, chartab[i]);
 	}
+*/
+	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "do_nothing");
 
-	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 0);
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
 
-	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000000);
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
-	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "do_nothing");
+		ivm_exec_addInstr(exec1, INVOKE, 0);
+		ivm_exec_addInstr(exec1, POP);
 
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, POP);
-
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
-		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
-		ivm_exec_addOp(exec1, ADD);
-		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
-		ivm_exec_addOp(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
-	addr3 = ivm_exec_addOp(exec1, NOP);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 1);
+		ivm_exec_addInstr(exec1, ADD);
+		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
+	addr3 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr2, addr3 - addr2);
 
 	/********************** code ***********************/
@@ -372,148 +372,148 @@ int test_vm()
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
 	/* add opcodes */
-	ivm_exec_addOp(exec3, TEST3, "this is exec3");
-	ivm_exec_addOp(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
-	/* ivm_exec_addOp(exec3, GET_CONTEXT_SLOT, "func2"); */
+	ivm_exec_addInstr(exec3, TEST3, "this is exec3");
+	ivm_exec_addInstr(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
+	/* ivm_exec_addInstr(exec3, GET_CONTEXT_SLOT, "func2"); */
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 
-	ivm_exec_addOp(exec1, ADD);
-	ivm_exec_addOp(exec1, PRINT_NUM);
+	ivm_exec_addInstr(exec1, ADD);
+	ivm_exec_addInstr(exec1, PRINT_NUM);
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1023);
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
-	addr1 = ivm_exec_addOp(exec1, JUMP_LT, 0);
-	ivm_exec_addOp(exec1, OUT, "op1 is greater than or equal op2");
-	addr2 = ivm_exec_addOp(exec1, NOP);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1023);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
+	addr1 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
+	ivm_exec_addInstr(exec1, OUT, "op1 is greater than or equal op2");
+	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
 
-	// ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
+	// ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 	//
 
-	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func3));
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func");
+	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func3));
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "func");
 
-	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "func2");
+	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "func2");
 
-	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
+	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "do_nothing");
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 0);
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
 	for (i = 0; i < 1; i++) {
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
-		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
-		ivm_exec_addOp(exec1, ADD);
-		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 1);
+		ivm_exec_addInstr(exec1, ADD);
+		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 	}
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 0);
-	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
+	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
 	/* while i < n */
-	addr1 = ivm_exec_addOp(exec1, NEW_NUM_I, 1000001);
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
-	addr2 = ivm_exec_addOp(exec1, JUMP_LT, 0);
+	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000001);
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
 		/* call test */
 
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "do_nothing");
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, POP);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "do_nothing");
+		ivm_exec_addInstr(exec1, INVOKE, 0);
+		ivm_exec_addInstr(exec1, POP);
 	#if 1
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
-		ivm_exec_addOp(exec1, NEW_NUM_I, 2);
-		ivm_exec_addOp(exec1, GET_SLOT, "proto_func");
-		ivm_exec_addOp(exec1, INVOKE, 1);
-		ivm_exec_addOp(exec1, POP);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 2);
+		ivm_exec_addInstr(exec1, GET_SLOT, "proto_func");
+		ivm_exec_addInstr(exec1, INVOKE, 1);
+		ivm_exec_addInstr(exec1, POP);
 
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, INVOKE, 0);
-		ivm_exec_addOp(exec1, POP);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
+		ivm_exec_addInstr(exec1, INVOKE, 0);
+		ivm_exec_addInstr(exec1, INVOKE, 0);
+		ivm_exec_addInstr(exec1, POP);
 
 		/* slot test */
-		ivm_exec_addOp(exec1, NEW_OBJ);
-		ivm_exec_addOp(exec1, NEW_NUM_I, 1022);
-		ivm_exec_addOp(exec1, SET_SLOT, "a");
-		ivm_exec_addOp(exec1, POP);
+		ivm_exec_addInstr(exec1, NEW_OBJ);
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
+		ivm_exec_addInstr(exec1, SET_SLOT, "a");
+		ivm_exec_addInstr(exec1, POP);
 
 		/* string test */
-		ivm_exec_addOp(exec1, NEW_STR, "hey!");
-		ivm_exec_addOp(exec1, PRINT_STR);
+		ivm_exec_addInstr(exec1, NEW_STR, "hey!");
+		ivm_exec_addInstr(exec1, PRINT_STR);
 	#endif
 
-		ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "i");
-		ivm_exec_addOp(exec1, NEW_NUM_I, 1);
-		ivm_exec_addOp(exec1, ADD);
-		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "i");
-		ivm_exec_addOp(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
-	addr3 = ivm_exec_addOp(exec1, NOP);
+		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, NEW_NUM_I, 1);
+		ivm_exec_addInstr(exec1, ADD);
+		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
+		ivm_exec_addInstr(exec1, JUMP, addr1 - ivm_exec_cur(exec1));
+	addr3 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr2, addr3 - addr2);
 	/* end while */
 
-	ivm_exec_addOp(exec1, OUT, "***************start******************");
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "call_func");
-	ivm_exec_addOp(exec1, INVOKE, 1);
-	ivm_exec_addOp(exec1, POP);
-	ivm_exec_addOp(exec1, OUT, "****************end*****************");
+	ivm_exec_addInstr(exec1, OUT, "***************start******************");
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "call_func");
+	ivm_exec_addInstr(exec1, INVOKE, 1);
+	ivm_exec_addInstr(exec1, POP);
+	ivm_exec_addInstr(exec1, OUT, "****************end*****************");
 
-	ivm_exec_addOp(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
 
-	ivm_exec_addOp(exec1, NEW_OBJ);
-	ivm_exec_addOp(exec1, NEW_OBJ);
-	ivm_exec_addOp(exec1, NEW_OBJ);
-	ivm_exec_addOp(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
 
 	/*for (i = 0; i < 1000; i++) {
-		ivm_exec_addOp(exec1, NEW_OBJ, "");
-		ivm_exec_addOp(exec1, POP, "");
+		ivm_exec_addInstr(exec1, NEW_OBJ, "");
+		ivm_exec_addInstr(exec1, POP, "");
 	}*/
 
-	ivm_exec_addOp(exec1, NEW_NUM_I, 1002);
-	ivm_exec_addOp(exec1, PRINT_NUM);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1002);
+	ivm_exec_addInstr(exec1, PRINT_NUM);
 	
-	ivm_exec_addOp(exec1, SET_SLOT, "slot_a");
-	ivm_exec_addOp(exec1, GET_SLOT, "slot_a");
-	ivm_exec_addOp(exec1, PRINT_OBJ);
-	ivm_exec_addOp(exec1, GET_SLOT, "slot_a");
+	ivm_exec_addInstr(exec1, SET_SLOT, "slot_a");
+	ivm_exec_addInstr(exec1, GET_SLOT, "slot_a");
+	ivm_exec_addInstr(exec1, PRINT_OBJ);
+	ivm_exec_addInstr(exec1, GET_SLOT, "slot_a");
 
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "c");
-	ivm_exec_addOp(exec1, INVOKE, 0);
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "c");
+	ivm_exec_addInstr(exec1, INVOKE, 0);
 	
-	ivm_exec_addOp(exec1, GET_CONTEXT_SLOT, "func");
-	ivm_exec_addOp(exec1, INVOKE, 0);
+	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
+	ivm_exec_addInstr(exec1, INVOKE, 0);
 
-	addr1 = ivm_exec_addOp(exec1, JUMP, 0);
-	addr3 = ivm_exec_addOp(exec1, NEW_NULL);
-	addr4 = ivm_exec_addOp(exec1, JUMP_FALSE, 0);
-	addr2 = ivm_exec_addOp(exec1, NOP);
+	addr1 = ivm_exec_addInstr(exec1, JUMP, 0);
+	addr3 = ivm_exec_addInstr(exec1, NEW_NULL);
+	addr4 = ivm_exec_addInstr(exec1, JUMP_FALSE, 0);
+	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
 
-	ivm_exec_addOp(exec1, JUMP, addr3 - ivm_exec_cur(exec1));
-	addr2 = ivm_exec_addOp(exec1, NOP);
+	ivm_exec_addInstr(exec1, JUMP, addr3 - ivm_exec_cur(exec1));
+	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr4, addr2 - addr4);
 
-	ivm_exec_addOp(exec1, PRINT_OBJ);
-	ivm_exec_addOp(exec1, NEW_OBJ);
-	ivm_exec_addOp(exec1, YIELD);
-	ivm_exec_addOp(exec1, NEW_NUM_I, 9990);
-	ivm_exec_addOp(exec1, YIELD);
-	ivm_exec_addOp(exec1, TEST1);
+	ivm_exec_addInstr(exec1, PRINT_OBJ);
+	ivm_exec_addInstr(exec1, NEW_OBJ);
+	ivm_exec_addInstr(exec1, YIELD);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 9990);
+	ivm_exec_addInstr(exec1, YIELD);
+	ivm_exec_addInstr(exec1, TEST1);
 
-	ivm_exec_addOp(exec2, NEW_OBJ);
-	ivm_exec_addOp(exec2, PRINT_OBJ);
-	ivm_exec_addOp(exec2, TEST3, "yes, I am");
-	ivm_exec_addOp(exec2, NEW_OBJ);
-	ivm_exec_addOp(exec2, YIELD);
-	ivm_exec_addOp(exec2, NEW_OBJ);
-	ivm_exec_addOp(exec2, YIELD);
-	ivm_exec_addOp(exec2, PRINT_NUM);
-	ivm_exec_addOp(exec2, TEST3, "hello?");
+	ivm_exec_addInstr(exec2, NEW_OBJ);
+	ivm_exec_addInstr(exec2, PRINT_OBJ);
+	ivm_exec_addInstr(exec2, TEST3, "yes, I am");
+	ivm_exec_addInstr(exec2, NEW_OBJ);
+	ivm_exec_addInstr(exec2, YIELD);
+	ivm_exec_addInstr(exec2, NEW_OBJ);
+	ivm_exec_addInstr(exec2, YIELD);
+	ivm_exec_addInstr(exec2, PRINT_NUM);
+	ivm_exec_addInstr(exec2, TEST3, "hello?");
 
 	IVM_TRACE("obj1: %p\n", (void *)obj1);
 	IVM_TRACE("obj2: %p\n", (void *)obj2);

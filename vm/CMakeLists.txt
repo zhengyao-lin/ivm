@@ -12,10 +12,10 @@ ADD_LIBRARY(vm SHARED
 			func.c
 			coro.c
 			runtime.c
-			op.c
+			opcode.c
 			byte.c
 			dbg.c
-			expr.c
+			oprt.c
 			proto.c
 			env.c
 			call.c

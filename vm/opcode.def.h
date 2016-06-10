@@ -1,42 +1,42 @@
-OP_GEN(NOP, "nop", N, {
+OPCODE_GEN(NOP, "nop", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(NEW_NULL, "new_null", N, {
+OPCODE_GEN(NEW_NULL, "new_null", N, {
 	STACK_PUSH(IVM_NULL_OBJ(_STATE));
 	NEXT_INSTR();
 })
 
-OP_GEN(NEW_OBJ, "new_obj", N, {
+OPCODE_GEN(NEW_OBJ, "new_obj", N, {
 	STACK_PUSH(ivm_object_new(_STATE));
 	NEXT_INSTR();
 })
 
-OP_GEN(NEW_NUM_I, "new_num_i", I, {
+OPCODE_GEN(NEW_NUM_I, "new_num_i", I, {
 	STACK_PUSH(ivm_numeric_new(_STATE, _ARG));
 	NEXT_INSTR();
 })
 
 /*
-OP_GEN(NEW_NUM_S, "new_num_s", S, {
+OPCODE_GEN(NEW_NUM_S, "new_num_s", S, {
 	NEXT_INSTR();
 })
 */
 
-OP_GEN(NEW_STR, "new_str", S, {
+OPCODE_GEN(NEW_STR, "new_str", S, {
 	STACK_PUSH(ivm_string_object_new(_STATE, ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 
-OP_GEN(NEW_FUNC, "new_func", I, {
+OPCODE_GEN(NEW_FUNC, "new_func", I, {
 	STACK_PUSH(ivm_function_object_new(_STATE, _CONTEXT,
 									   ivm_vmstate_getFunc(_STATE, _ARG)));
 	NEXT_INSTR();
 })
 
-OP_GEN(ADD, "add", N, {
+OPCODE_GEN(ADD, "add", N, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -52,9 +52,9 @@ OP_GEN(ADD, "add", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(SUB, "sub", N, {
+OPCODE_GEN(SUB, "sub", N, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -70,9 +70,9 @@ OP_GEN(SUB, "sub", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(MUL, "mul", N, {
+OPCODE_GEN(MUL, "mul", N, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -88,9 +88,9 @@ OP_GEN(MUL, "mul", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(DIV, "div", N, {
+OPCODE_GEN(DIV, "div", N, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -106,9 +106,9 @@ OP_GEN(DIV, "div", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(MOD, "mod", N, {
+OPCODE_GEN(MOD, "mod", N, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -124,9 +124,9 @@ OP_GEN(MOD, "mod", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(JUMP_LT, "jump_lt", I, {
+OPCODE_GEN(JUMP_LT, "jump_lt", I, {
 	ivm_object_t *op1, *op2;
-	ivm_binary_op_proc_t proc;
+	ivm_oprt_binary_t proc;
 
 	CHECK_STACK(2);
 
@@ -144,7 +144,7 @@ OP_GEN(JUMP_LT, "jump_lt", I, {
 	}
 })
 
-OP_GEN(GET_SLOT, "get_slot", S, {
+OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -157,7 +157,7 @@ OP_GEN(GET_SLOT, "get_slot", S, {
 	NEXT_INSTR();
 })
 
-OP_GEN(SET_SLOT, "set_slot", S, {
+OPCODE_GEN(SET_SLOT, "set_slot", S, {
 	ivm_object_t *obj;
 
 	CHECK_STACK(2);
@@ -173,7 +173,7 @@ OP_GEN(SET_SLOT, "set_slot", S, {
 	NEXT_INSTR();
 })
 
-OP_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
+OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
 	ivm_object_t *found =
 				  ivm_ctchain_search(_CONTEXT, _STATE,
 									 ivm_string_pool_get(_STRING_POOL, _ARG));
@@ -182,7 +182,7 @@ OP_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
 	NEXT_INSTR();
 })
 
-OP_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
+OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
 	const ivm_string_t *key = ivm_string_pool_get(_STRING_POOL, _ARG);
 	ivm_object_t *val;
 
@@ -197,7 +197,7 @@ OP_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
 	NEXT_INSTR();
 })
 
-OP_GEN(SET_ARG, "set_arg", S, {
+OPCODE_GEN(SET_ARG, "set_arg", S, {
 	ivm_ctchain_setLocalSlot(_CONTEXT, _STATE,
 							 ivm_string_pool_get(_STRING_POOL, _ARG),
 							 AVAIL_STACK >= 1
@@ -207,22 +207,22 @@ OP_GEN(SET_ARG, "set_arg", S, {
 	NEXT_INSTR();
 })
 
-OP_GEN(POP, "pop", N, {
+OPCODE_GEN(POP, "pop", N, {
 	CHECK_STACK(1);
 	STACK_POP();
 
 	NEXT_INSTR();
 })
 
-OP_GEN(DUP, "dup", I, {
-	ivm_op_arg_t i = _ARG;
+OPCODE_GEN(DUP, "dup", I, {
+	ivm_opcode_arg_t i = _ARG;
 	CHECK_STACK(i + 1);
 	STACK_PUSH(STACK_BEFORE(i));
 
 	NEXT_INSTR();
 })
 
-OP_GEN(PRINT_OBJ, "print_obj", N, {
+OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
 	CHECK_STACK(1);
 
 	IVM_OUT("print: %p\n", (void *)STACK_POP());
@@ -230,7 +230,7 @@ OP_GEN(PRINT_OBJ, "print_obj", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(PRINT_NUM, "print_num", N, {
+OPCODE_GEN(PRINT_NUM, "print_num", N, {
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -244,7 +244,7 @@ OP_GEN(PRINT_NUM, "print_num", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(PRINT_TYPE, "print_type", N, {
+OPCODE_GEN(PRINT_TYPE, "print_type", N, {
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -255,7 +255,7 @@ OP_GEN(PRINT_TYPE, "print_type", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(PRINT_STR, "print_str", N, {
+OPCODE_GEN(PRINT_STR, "print_str", N, {
 	ivm_string_object_t *str;
 
 	CHECK_STACK(1);
@@ -270,17 +270,17 @@ OP_GEN(PRINT_STR, "print_str", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(PRINT_STACK, "print_stack", N, {
+OPCODE_GEN(PRINT_STACK, "print_stack", N, {
 	ivm_dbg_stackState(_CORO, stderr);
 	NEXT_INSTR();
 })
 
-OP_GEN(OUT, "out", S, {
+OPCODE_GEN(OUT, "out", S, {
 	IVM_TRACE("%s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 
-OP_GEN(OUT_NUM, "out_num", N, {
+OPCODE_GEN(OUT_NUM, "out_num", N, {
 	ivm_object_t *obj;
 
 	CHECK_STACK(1);
@@ -294,7 +294,7 @@ OP_GEN(OUT_NUM, "out_num", N, {
 	NEXT_INSTR();
 })
 
-OP_GEN(INVOKE, "invoke", I, {
+OPCODE_GEN(INVOKE, "invoke", I, {
 	ivm_function_object_t *obj;
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = _ARG;
@@ -329,19 +329,19 @@ OP_GEN(INVOKE, "invoke", I, {
 	INVOKE();
 })
 
-OP_GEN(YIELD, "yield", N, {
+OPCODE_GEN(YIELD, "yield", N, {
 	YIELD();
 })
 
-OP_GEN(RETURN, "return", N, {
+OPCODE_GEN(RETURN, "return", N, {
 	RETURN();
 })
 
-OP_GEN(JUMP, "jump", I, {
+OPCODE_GEN(JUMP, "jump", I, {
 	NEXT_N_INSTR(_ARG);
 })
 
-OP_GEN(JUMP_TRUE, "jump_true", I, {
+OPCODE_GEN(JUMP_TRUE, "jump_true", I, {
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
 		NEXT_N_INSTR(_ARG);
 	} else {
@@ -349,7 +349,7 @@ OP_GEN(JUMP_TRUE, "jump_true", I, {
 	}
 })
 
-OP_GEN(JUMP_FALSE, "jump_false", I, {
+OPCODE_GEN(JUMP_FALSE, "jump_false", I, {
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
 		NEXT_N_INSTR(_ARG);
 	} else {
@@ -357,22 +357,22 @@ OP_GEN(JUMP_FALSE, "jump_false", I, {
 	}
 })
 
-OP_GEN(TEST1, "test1", N, {
+OPCODE_GEN(TEST1, "test1", N, {
 	IVM_OUT("test1\n");
 	NEXT_INSTR();
 })
 
-OP_GEN(TEST2, "test2", I, { 
+OPCODE_GEN(TEST2, "test2", I, { 
 	NEXT_INSTR();
 })
 
-OP_GEN(TEST3, "test3", S, {
+OPCODE_GEN(TEST3, "test3", S, {
 	IVM_OUT("morning! this is test3\n");
 	IVM_OUT("string argument: %s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
 	NEXT_INSTR();
 })
 
-OP_GEN(LAST, "last", N, {
+OPCODE_GEN(LAST, "last", N, {
 	IVM_ASSERT(0, "last opcode is executed");
 	NEXT_INSTR();
 })

@@ -13,9 +13,9 @@
 #include "vmstack.h"
 #include "context.h"
 #include "call.h"
-#include "op.h"
+#include "opcode.h"
 
-#include "op.req.h"
+#include "opcode.req.h"
 
 ivm_coro_t *
 ivm_coro_new()
@@ -62,7 +62,7 @@ ivm_coro_free(ivm_coro_t *coro,
 
 ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
-				 ivm_function_object_t *root, ivm_bool_t get_op_entry)
+				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_frame_t *tmp_frame;
@@ -77,14 +77,14 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_size_t tmp_bp, tmp_sp;
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	static void *op_entry[] = {
-		#define OP_GEN(o, name, arg, ...) &&OP_##o,
-			#include "op.def.h"
-		#undef OP_GEN
+	static void *opcode_entry[] = {
+		#define OPCODE_GEN(o, name, arg, ...) &&OPCODE_##o,
+			#include "opcode.def.h"
+		#undef OPCODE_GEN
 	};
 
-	if (get_op_entry) {
-		return (ivm_object_t *)op_entry;
+	if (get_opcode_entry) {
+		return (ivm_object_t *)opcode_entry;
 	}
 #endif
 
@@ -121,13 +121,13 @@ ACTION_INVOKE:
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 				
-				/* jump to the first op */
+				/* jump to the first opcode */
 				if (tmp_ip != tmp_ip_end) {
 					// IVM_TRACE("%p\n", tmp_ip);
 					goto *(tmp_ip->entry);
-					#define OP_GEN(o, name, arg, ...) OP_##o: __VA_ARGS__
-						#include "op.def.h"
-					#undef OP_GEN
+					#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
+						#include "opcode.def.h"
+					#undef OPCODE_GEN
 				}
 #else
 				#error require a dispatch method

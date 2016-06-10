@@ -9,7 +9,7 @@
 #include "std/list.h"
 #include "std/string.h"
 #include "slot.h"
-#include "expr.h"
+#include "oprt.h"
 
 IVM_COM_HEADER
 
@@ -41,13 +41,13 @@ typedef struct ivm_type_t_tag {
 	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 
-	ivm_binary_op_proc_list_t *add_table;
-	ivm_binary_op_proc_list_t *sub_table;
-	ivm_binary_op_proc_list_t *mul_table;
-	ivm_binary_op_proc_list_t *div_table;
-	ivm_binary_op_proc_list_t *mod_table;
+	ivm_oprt_binary_table_t *add_table;
+	ivm_oprt_binary_table_t *sub_table;
+	ivm_oprt_binary_table_t *mul_table;
+	ivm_oprt_binary_table_t *div_table;
+	ivm_oprt_binary_table_t *mod_table;
 
-	ivm_binary_op_proc_list_t *cmp_table;
+	ivm_oprt_binary_table_t *cmp_table;
 } ivm_type_t;
 
 ivm_type_t *
@@ -121,8 +121,8 @@ typedef struct ivm_object_t_tag {
 
 /* call the operation proc when obj [op] obj(of type) e.g. obj + num */
 #define IVM_OBJECT_GET_OP_PROC(op1, op, op2) \
-	(ivm_binary_op_proc_list_at(IVM_OBJECT_GET((op1), op##_TABLE), \
-								IVM_OBJECT_GET((op2), TYPE_TAG)))
+	(ivm_oprt_binary_table_get(IVM_OBJECT_GET((op1), op##_TABLE), \
+							   IVM_OBJECT_GET((op2), TYPE_TAG)))
 
 ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);

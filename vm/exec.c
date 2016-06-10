@@ -54,8 +54,8 @@ ivm_exec_expand(ivm_exec_t *exec)
 }
 
 ivm_size_t
-ivm_exec_addInstr(ivm_exec_t *exec,
-				  ivm_instr_t instr)
+ivm_exec_addInstr_c(ivm_exec_t *exec,
+					ivm_instr_t instr)
 {
 	if (exec->next >= exec->alloc) {
 		ivm_exec_expand(exec);

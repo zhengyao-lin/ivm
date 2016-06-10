@@ -1,7 +1,7 @@
-#ifndef _IVM_VM_OP_REQ_H_
-#define _IVM_VM_OP_REQ_H_
+#ifndef _IVM_VM_OPCODE_REQ_H_
+#define _IVM_VM_OPCODE_REQ_H_
 
-/* op handler requirement */
+/* opcode handler requirement */
 
 #include "pub/const.h"
 #include "pub/err.h"
@@ -21,6 +21,7 @@
 #include "context.h"
 #include "call.h"
 #include "func.h"
+#include "oprt.h"
 #include "dbg.h"
 
 #endif

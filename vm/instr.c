@@ -3,45 +3,46 @@
 #include "pub/err.h"
 
 #include "std/string.h"
+#include "opcode.h"
 #include "instr.h"
 #include "exec.h"
 
 #define INSTR_TYPE_N_ARG_INIT(instr, exec) \
-	(instr).arg = 0
+	(0)
 
 #define INSTR_TYPE_I_ARG_INIT(instr, exec) \
-	(instr).arg = arg
+	(arg)
 
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
-	(instr).arg = ivm_exec_registerString((exec), str)
+	(ivm_exec_registerString((exec), str))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#define OP_GEN(o, name, arg, ...) \
+	#define OPCODE_GEN(o, name, arg, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
-									   ivm_exec_t *exec) \
+									  ivm_exec_t *exec) \
 		{ \
-			ivm_instr_t ret; \
-			ret.entry = ivm_op_table_getEntry(IVM_OP(o)); \
-			INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)); \
-			ret.op = IVM_OP(o); \
-			return ret; \
+			return (ivm_instr_t) { \
+				ivm_opcode_table_getEntry(IVM_OPCODE(o)), \
+				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)), \
+				IVM_OPCODE(o) \
+			}; \
 		}
 
-		#include "op.def.h"
+		#include "opcode.def.h"
 
-	#undef OP_GEN
+	#undef OPCODE_GEN
 #else
-	#define OP_GEN(o, name, arg, ...) \
+	#define OPCODE_GEN(o, name, arg, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
-									   ivm_exec_t *exec) \
+									  ivm_exec_t *exec) \
 		{ \
-			ivm_instr_t ret; \
-			ret.op = IVM_OP(o); \
-			INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)); \
-			return ret; \
+			return (ivm_instr_t) { \
+				IVM_OPCODE(o), \
+				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)) \
+			}; \
 		}
 
-		#include "op.def.h"
+		#include "opcode.def.h"
 
-	#undef OP_GEN
+	#undef OPCODE_GEN
 #endif
