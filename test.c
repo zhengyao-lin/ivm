@@ -239,12 +239,12 @@ int test_call()
 	ivm_vmstate_addCoro(state, coro);
 
 	/********************** code ***********************/
-/*
+
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
 		ivm_exec_addOp(exec1, NEW_NUM_I, 0);
 		ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, chartab[i]);
 	}
-*/
+
 	ivm_exec_addOp(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
 	ivm_exec_addOp(exec1, SET_CONTEXT_SLOT, "do_nothing");
 
@@ -625,9 +625,9 @@ int main()
 {
 	ivm_env_init();
 
-	// test_call();
+	test_call();
 	// test_vm();
-	test_fib();
+	// test_fib();
 
 	// profile_type();
 

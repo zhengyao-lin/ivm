@@ -10,9 +10,13 @@ SET(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 SET(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value -fPIC")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value")
 
-IF (CMAKE_C_COMPILER MATCHES ".*clang")
+IF(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+ENDIF()
+
+IF(CMAKE_C_COMPILER MATCHES "clang")
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-gnu-label-as-value")
 ENDIF()
 
@@ -24,7 +28,7 @@ IF(VERSION STREQUAL "release")
 ELSEIF((VERSION STREQUAL "debug") OR (NOT DEFINED VERSION))
 	MESSAGE(STATUS "Compile in debug mode")
 	SET(CMAKE_BUILD_TYPE Debug)
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -g -DIVM_DEBUG=1")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
 ELSE()
 	MESSAGE(FATAL_ERROR "Unknown compile mode '${VERSION}'")
 ENDIF()
