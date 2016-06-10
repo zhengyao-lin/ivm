@@ -1,7 +1,5 @@
 # lib vm.gc
 
-ADD_LIBRARY(vm_gc STATIC cell.c gc.c)
-
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)

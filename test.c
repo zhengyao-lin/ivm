@@ -121,7 +121,6 @@ int test_fib()
 
 	ivm_exec_addOp(exec2, NEW_NUM_I, 1);
 	ivm_exec_addOp(exec2, GET_CONTEXT_SLOT, "n");
-
 	
 	addr1 = ivm_exec_addOp(exec2, JUMP_LT, 0); /* if (n < 2) */
 

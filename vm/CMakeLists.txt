@@ -18,7 +18,9 @@ ADD_LIBRARY(vm SHARED
 			expr.c
 			proto.c
 			env.c
-			call.c)
+			call.c
+			gc/cell.c
+			gc/gc.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
@@ -32,7 +34,7 @@ ADD_SUBDIRECTORY(gc)
 ADD_SUBDIRECTORY(std)
 
 # dependencies
-ADD_DEPENDENCIES(vm vm_gc vm_std)
+ADD_DEPENDENCIES(vm vm_std)
 
 # link libraries
-TARGET_LINK_LIBRARIES(vm vm_gc vm_std m)
+TARGET_LINK_LIBRARIES(vm vm_std m)
