@@ -58,17 +58,6 @@ ivm_coro_free(ivm_coro_t *coro,
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#include "dispatch/direct.h"
-#else
-
-#define SAVE_RUNTIME(runtime, ip) \
-	(IVM_RUNTIME_SET((runtime), IP, (ip)), \
-	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
-	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
-
-#define UPDATE_STACK() \
-	(tmp_bp = IVM_RUNTIME_GET(tmp_runtime, BP), \
-	 tmp_sp = IVM_RUNTIME_GET(tmp_runtime, SP))
-
 #endif
 
 ivm_object_t *
@@ -140,26 +129,8 @@ ACTION_INVOKE:
 						#include "op.def.h"
 					#undef OP_GEN
 				}
-
-#elif IVM_DISPATCH_METHOD_CALL_THREAD
-
-				/* call each handler */
-				while (tmp_ip != tmp_ip_end) {
-					switch (tmp_ip->proc(state, coro, tmp_stack, tmp_context,
-										 tmp_exec->pool, &tmp_ip)) {
-						case IVM_ACTION_INVOKE:
-							goto ACTION_INVOKE;
-						case IVM_ACTION_RETURN:
-							SAVE_RUNTIME(tmp_runtime, tmp_ip);
-							goto ACTION_RETURN;
-						case IVM_ACTION_YIELD:
-							SAVE_RUNTIME(tmp_runtime, tmp_ip);
-							goto ACTION_YIELD;
-						default:;
-					}
-					ivm_vmstate_checkGC(state);
-				}
-
+#else
+				#error require a dispatch method
 #endif
 
 END_EXEC:

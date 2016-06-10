@@ -19,12 +19,11 @@ typedef struct ivm_instr_t_tag {
 	ivm_byte_t op;
 } ivm_instr_t;
 
-#elif IVM_DISPATCH_METHOD_CALL_THREAD
+#else
 
 typedef struct ivm_instr_t_tag {
-	ivm_op_proc_t proc;
-	ivm_op_arg_t arg;
 	ivm_byte_t op;
+	ivm_op_arg_t arg;
 } ivm_instr_t;
 
 #endif

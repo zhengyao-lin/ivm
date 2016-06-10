@@ -30,15 +30,14 @@
 		#include "op.def.h"
 
 	#undef OP_GEN
-#elif IVM_DISPATCH_METHOD_CALL_THREAD
+#else
 	#define OP_GEN(o, name, arg, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 									   ivm_exec_t *exec) \
 		{ \
 			ivm_instr_t ret; \
-			ret.proc = ivm_op_table_getProc(IVM_OP(o)); \
-			INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)); \
 			ret.op = IVM_OP(o); \
+			INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)); \
 			return ret; \
 		}
 

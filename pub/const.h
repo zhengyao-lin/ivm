@@ -44,6 +44,5 @@
 
 /* only one of the following definition can be 1 */
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
-#define IVM_DISPATCH_METHOD_CALL_THREAD 0
 
 #endif

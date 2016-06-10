@@ -12,28 +12,7 @@
 
 #include "op.req.h"
 
-#if IVM_DISPATCH_METHOD_CALL_THREAD
-	/* code for call threading */
-	#define OP_PROC_NAME(op) ivm_op_proc_##op
-	#define OP_PROC(op) ivm_action_t OP_PROC_NAME(op)(ivm_vmstate_t *__ivm_state__, \
-													  ivm_coro_t *__ivm_coro__, \
-													  ivm_vmstack_t *__ivm_stack__, \
-													  ivm_ctchain_t *__ivm_context__, \
-													  ivm_string_pool_t *__ivm_pool__, \
-													  ivm_instr_t **__ivm_instr__)
-													  /* these arguments shouldn't be used directly */
-
-	#include "dispatch/call.h"
-
-	#define OP_MAPPING(op, name, args) { IVM_OP(op), OP_PROC_NAME(op), (name), (args), IVM_NULL }
-
-	#define OP_GEN(o, name, arg, ...) OP_PROC(o) __VA_ARGS__
-		#include "op.def.h"
-	#undef OP_GEN
-#else
-	/* non-call threading: don't need handler/proc */
-	#define OP_MAPPING(op, name, args) { IVM_OP(op), IVM_NULL, (name), (args), IVM_NULL }
-#endif
+#define OP_MAPPING(op, name, args) { IVM_OP(op), IVM_NULL, (name), (args), IVM_NULL }
 
 IVM_PRIVATE
 ivm_op_table_t
