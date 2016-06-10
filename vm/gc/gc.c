@@ -53,8 +53,14 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	ivm_slot_table_t *tmp;
 
 	if (!obj) return IVM_NULL;
-	if (IVM_OBJECT_GET(obj, COPY) != IVM_NULL)
+
+	if (IVM_OBJECT_GET(obj, COPY))
 		return IVM_OBJECT_GET(obj, COPY);
+
+	/*
+	else if (ivm_heap_isIn(arg->heap, obj))
+		return obj;
+	*/
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
@@ -65,12 +71,13 @@ ivm_collector_copyObject(ivm_object_t *obj,
 
 	if (tmp) {
 		IVM_SLOT_TABLE_EACHPTR(tmp, siter) {
-			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-										ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
-																 arg));
+			if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
+				IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+											ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
+																	 arg));
+			}
 		}
 	}
-
 
 	IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
 
@@ -258,7 +265,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	ivm_heap_reset(arg.heap);
 
-	IVM_OUT("***collecting***\n");
+	/* IVM_TRACE("***collecting***\n"); */
 
 	ivm_collector_travState(&arg);
 	ivm_collector_triggerDestructor(collector, state);

@@ -10,7 +10,10 @@
 
 #define NEXT_INSTR() \
 	if (++tmp_ip != tmp_ip_end) { \
-		ivm_vmstate_checkGC(state); \
+		if (ivm_vmstate_checkGC(state)) { \
+			SAVE_STACK(); \
+			ivm_vmstate_doGC(state); \
+		} \
 		goto *(tmp_ip->entry); \
 	} else { \
 		goto END_EXEC; \
@@ -23,8 +26,8 @@
 		goto END_EXEC; \
 	} \
 
-#define YIELD() SAVE_RUNTIME(_RUNTIME, ++tmp_ip); goto ACTION_YIELD
-#define RETURN() SAVE_RUNTIME(_RUNTIME, ++tmp_ip); goto ACTION_RETURN
+#define YIELD() tmp_ip++; SAVE_RUNTIME(_RUNTIME, tmp_ip); goto ACTION_YIELD
+#define RETURN() tmp_ip++; SAVE_RUNTIME(_RUNTIME, tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define _ARG (_INSTR->arg)
@@ -39,24 +42,21 @@
 #define STACK_INC(i) (tmp_sp += (i))
 
 #define AVAIL_STACK (tmp_sp - tmp_bp)
-#define CHECK_STACK(req) IVM_ASSERT(AVAIL_STACK >= (req), \
-									IVM_ERROR_MSG_INSUFFICIENT_STACK)
-
-#ifndef SAVE_RUNTIME
+#define CHECK_STACK(req) \
+	IVM_ASSERT(AVAIL_STACK >= (req), \
+			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
 
 #define SAVE_RUNTIME(runtime, ip) \
 	(IVM_RUNTIME_SET((runtime), IP, (ip)), \
 	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
 	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
 
-#endif
-
-#ifndef UPDATE_STACK
+#define SAVE_STACK() \
+	(IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp), \
+	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define UPDATE_STACK() \
 	(tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP), \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
-
-#endif
 
 #endif

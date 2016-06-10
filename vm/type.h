@@ -2,6 +2,7 @@
 #define _IVM_VM_TYPE_H_
 
 #include <stdint.h>
+#include <stddef.h>
 #include <wchar.h>
 
 typedef int				ivm_bool_t;

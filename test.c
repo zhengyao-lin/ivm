@@ -119,10 +119,12 @@ int test_fib()
 	/********** fib **********/
 	ivm_exec_addInstr(exec2, SET_ARG, "n");
 
-	ivm_exec_addInstr(exec2, NEW_NUM_I, 1);
 	ivm_exec_addInstr(exec2, GET_CONTEXT_SLOT, "n");
+	ivm_exec_addInstr(exec2, NEW_NUM_I, 2);
+
+	ivm_exec_addInstr(exec2, LT);
 	
-	addr1 = ivm_exec_addInstr(exec2, JUMP_LT, 0); /* if (n < 2) */
+	addr1 = ivm_exec_addInstr(exec2, JUMP_FALSE, 0); /* if (n < 2) */
 
 		ivm_exec_addInstr(exec2, NEW_NUM_I, 1);
 		ivm_exec_addInstr(exec2, RETURN);

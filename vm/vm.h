@@ -152,10 +152,11 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #else
 
 #define ivm_vmstate_checkGC(state) \
-	if (ivm_vmstate_isGCFlagOpen(state)) { \
-		ivm_collector_collect((state)->gc, (state), (state)->heaps[0]); \
-		ivm_vmstate_closeGCFlag(state); \
-	}
+	ivm_vmstate_isGCFlagOpen(state)
+
+#define ivm_vmstate_doGC(state) \
+	ivm_collector_collect((state)->gc, (state), (state)->heaps[0]); \
+	ivm_vmstate_closeGCFlag(state);
 
 #endif
 

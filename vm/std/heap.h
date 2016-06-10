@@ -84,8 +84,8 @@ ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {
 	ivm_size_t i;
 
-	IVM_ASSERT(size <= heap->bsize,
-			   IVM_ERROR_MSG_SIZE_EXCEEDS_BLOCK_SIZE);
+	IVM_ASSERT(size && size <= heap->bsize,
+			   IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size));
 
 	if (!(i = HAS_SIZE(heap, size))) {
 		i = _ivm_heap_addBlock(heap);
@@ -94,6 +94,21 @@ ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 	}
 
 	return _ivm_heap_allocAt(heap, i - 1, size);
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_heap_isIn(ivm_heap_t *heap, void *ptr)
+{
+	ivm_size_t i;
+	ptrdiff_t tmp;
+
+	for (i = 0; i < heap->bcount; i++) {
+		tmp = (intptr_t)ptr - (intptr_t)heap->blocks[i];
+		if (tmp > 0 && tmp < heap->bsize) return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
 }
 
 #undef OFFSET

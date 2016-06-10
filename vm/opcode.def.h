@@ -124,6 +124,26 @@ OPCODE_GEN(MOD, "mod", N, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(LT, "lt", N, {
+	ivm_object_t *op1, *op2, *ret;
+	ivm_oprt_binary_t proc;
+
+	CHECK_STACK(2);
+
+	op2 = STACK_POP();
+	op1 = STACK_POP();
+	proc = IVM_OBJECT_GET_OP_PROC(op1, CMP, op2);
+
+	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("<=>", IVM_OBJECT_GET(op1, TYPE_NAME),
+													IVM_OBJECT_GET(op2, TYPE_NAME)));
+
+	ret = proc(_STATE, op1, op2);
+	ivm_numeric_setValue(ret, ivm_numeric_getValue(ret) < 0);
+	STACK_PUSH(ret);
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(JUMP_LT, "jump_lt", I, {
 	ivm_object_t *op1, *op2;
 	ivm_oprt_binary_t proc;
