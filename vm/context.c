@@ -21,16 +21,6 @@ ivm_ctchain_new(ivm_vmstate_t *state, ivm_int_t len)
 	return ret;
 }
 
-void
-ivm_ctchain_free(ivm_ctchain_t *chain, ivm_vmstate_t *state)
-{
-	if (chain) {
-		ivm_vmstate_dumpContext(state, chain);
-	}
-
-	return;
-}
-
 ivm_ctchain_t *
 ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 						  ivm_vmstate_t *state,

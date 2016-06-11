@@ -56,9 +56,6 @@ typedef struct ivm_ctchain_t_tag {
 ivm_ctchain_t *
 ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
 
-void
-ivm_ctchain_free(ivm_ctchain_t *chain, struct ivm_vmstate_t_tag *state);
-
 #if 0
 
 ivm_context_t *

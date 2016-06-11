@@ -5,10 +5,13 @@
 #include "pub/vm.h"
 
 #include "../std/string.h"
+#include "../inline/vm.h"
 #include "../obj.h"
 #include "../context.h"
 
 IVM_COM_HEADER
+
+#define ivm_ctchain_free(chain, state) (ivm_vmstate_dumpContext((state), (chain)))
 
 IVM_INLINE
 ivm_ctchain_t *

@@ -4,6 +4,7 @@
 #include "pub/vm.h"
 
 #include "inline/obj.h"
+#include "inline/context.h"
 #include "gc/gc.h"
 #include "func.h"
 #include "context.h"

@@ -644,8 +644,8 @@ int main()
 	ivm_env_init();
 
 	// test_call();
-	test_vm();
-	// test_fib();
+	// test_vm();
+	test_fib();
 
 	// profile_type();
 
