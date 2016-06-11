@@ -324,6 +324,7 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	CHECK_STACK(arg_count + 1);
 
 	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+	// IVM_TRACE("%p\n", obj);
 
 	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(obj, TYPE_NAME)));

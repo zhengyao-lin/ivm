@@ -11,11 +11,6 @@
 #include "call.h"
 #include "coro.h"
 
-#define CLOSURE_CONTEXT(origin, state)  \
-	((origin) \
-	 ? ivm_ctchain_clone((context), (state)) \
-	 : IVM_NULL)
-
 IVM_PRIVATE
 void
 ivm_function_init(ivm_vmstate_t *state,
@@ -100,11 +95,9 @@ ivm_function_clone(ivm_function_t *func,
 void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
-{
-	ivm_function_object_t *func = IVM_AS(obj, ivm_function_object_t);
-	
-	ivm_ctchain_free(func->closure, state);
-	ivm_function_free(func->val, state);
+{	
+	ivm_ctchain_free(IVM_AS(obj, ivm_function_object_t)->closure, state);
+	// ivm_function_free(func->val, state);
 
 	return;
 }
@@ -118,7 +111,7 @@ ivm_function_object_new(ivm_vmstate_t *state,
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ret->closure = ivm_ctchain_clone(context, state);
+	ret->closure = ivm_ctchain_addRef(context);
 	ret->val = func;
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 

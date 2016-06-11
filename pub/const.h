@@ -14,6 +14,8 @@
 #define IVM_DEFAULT_CONTEXT_POOL_SIZE 32
 #define IVM_DEFAULT_FRAME_POOL_SIZE 32
 
+#define IVM_CONTEXT_POOL_MAX_CACHE_LEN 10
+
 /* size of a single heap in GC */
 #define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 18)
 

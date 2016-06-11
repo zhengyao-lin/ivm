@@ -67,6 +67,7 @@ ivm_heap_reset(ivm_heap_t *heap)
 	MEM_FREE(heap->curs);
 	heap->curs = MEM_ALLOC_INIT(sizeof(*heap->curs) * heap->bcount,
 								ivm_size_t *);
+	heap->btop = 0;
 	return;
 }
 

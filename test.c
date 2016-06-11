@@ -9,6 +9,7 @@
 #include "vm/std/heap.h"
 #include "vm/inline/obj.h"
 #include "vm/inline/func.h"
+#include "vm/inline/context.h"
 #include "vm/env.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
@@ -39,6 +40,7 @@ IVM_NATIVE_FUNC(call_func)
 #if IVM_PERF_PROFILE
 
 extern clock_t ivm_perf_gc_time;
+extern ivm_size_t ivm_perf_gc_count;
 clock_t ivm_perf_program_start;
 
 void profile_start()
@@ -54,8 +56,10 @@ void profile_output()
 
 	IVM_TRACE("\n***performance profile***\n\n");
 	IVM_TRACE("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
+	IVM_TRACE("gc times: %ld\n", ivm_perf_gc_count);
 	IVM_TRACE("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
 	IVM_TRACE("gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
+	IVM_TRACE("gc per time: %.3f ticks\n", (double)ivm_perf_gc_time / ivm_perf_gc_count);
 	IVM_TRACE("\n***performance profile***\n\n");
 
 	return;
@@ -103,6 +107,7 @@ int test_fib()
 	coro = ivm_coro_new();
 	chain = ivm_ctchain_new(state, 1);
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro(state, coro);
 
@@ -243,6 +248,7 @@ int test_call()
 	coro = ivm_coro_new();
 	chain = ivm_ctchain_new(state, 1);
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro(state, coro);
 
@@ -370,6 +376,9 @@ int test_vm()
 	chain = ivm_ctchain_new(state, 2);
 	ivm_ctchain_setAt(chain, 0, obj1);
 	ivm_ctchain_setAt(chain, 1, obj2);
+	ivm_ctchain_addRef(chain);
+
+	IVM_TRACE("context top: %p\n", chain);
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
@@ -432,6 +441,7 @@ int test_vm()
 		ivm_exec_addInstr(exec1, INVOKE, 0);
 		ivm_exec_addInstr(exec1, POP);
 	#if 1
+		
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addInstr(exec1, NEW_NUM_I, 2);
 		ivm_exec_addInstr(exec1, GET_SLOT, "proto_func");
@@ -634,8 +644,8 @@ int main()
 	ivm_env_init();
 
 	// test_call();
-	// test_vm();
-	test_fib();
+	test_vm();
+	// test_fib();
 
 	// profile_type();
 

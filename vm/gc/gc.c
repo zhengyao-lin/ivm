@@ -56,11 +56,8 @@ ivm_collector_copyObject(ivm_object_t *obj,
 
 	if (IVM_OBJECT_GET(obj, COPY))
 		return IVM_OBJECT_GET(obj, COPY);
-
-	/*
 	else if (ivm_heap_isIn(arg->heap, obj))
 		return obj;
-	*/
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
@@ -72,6 +69,7 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	if (tmp) {
 		IVM_SLOT_TABLE_EACHPTR(tmp, siter) {
 			if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
+				// IVM_TRACE("copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
 				IVM_SLOT_TABLE_ITER_SET_VAL(siter,
 											ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
 																	 arg));
@@ -105,6 +103,7 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 							   ivm_traverser_arg_t *arg)
 {
 	ivm_ctchain_iterator_t iter;
+
 
 	if (chain) {
 		IVM_CTCHAIN_EACHPTR(chain, iter) {
@@ -243,6 +242,7 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state
 #if IVM_PERF_PROFILE
 
 clock_t ivm_perf_gc_time = 0;
+ivm_size_t ivm_perf_gc_count = 0;
 
 #endif
 
@@ -254,6 +254,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 #if IVM_PERF_PROFILE
 	clock_t time_st = clock(), time_taken;
+	ivm_perf_gc_count++;
 #endif
 
 	ivm_traverser_arg_t arg;
@@ -265,7 +266,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	ivm_heap_reset(arg.heap);
 
-	/* IVM_TRACE("***collecting***\n"); */
+	// IVM_TRACE("***collecting***\n");
 
 	ivm_collector_travState(&arg);
 	ivm_collector_triggerDestructor(collector, state);

@@ -2,6 +2,7 @@
 #define _IVM_VM_CONTEXT_H_
 
 #include "pub/com.h"
+#include "pub/const.h"
 
 #include "std/pool.h"
 #include "obj.h"
@@ -24,7 +25,8 @@ struct ivm_ctchain_sub_t_tag {
 };
 
 typedef struct ivm_ctchain_t_tag {
-	ivm_int_t len;
+	ivm_uint_t ref;
+	ivm_uint_t len;
 } ivm_ctchain_t;
 
 #define ivm_ctchain_getSize(len) \
@@ -35,22 +37,25 @@ typedef struct ivm_ctchain_t_tag {
 
 #define ivm_ctchain_contextStart(chain) \
 	((struct ivm_ctchain_sub_t_tag *) \
-	 (&((ivm_ctchain_t *)(chain))[1]))
+	 (((ivm_ctchain_t *)(chain)) + 1))
 
 #define ivm_ctchain_contextEnd(chain) \
-	(&((struct ivm_ctchain_sub_t_tag *) \
-	   (&((ivm_ctchain_t *)(chain))[1]))[(chain)->len - 1])
+	(((struct ivm_ctchain_sub_t_tag *) \
+	   (((ivm_ctchain_t *)(chain)) + 1))+ ((chain)->len - 1))
 
 #define ivm_ctchain_contextAt(chain, i) \
-	(&(((struct ivm_ctchain_sub_t_tag *) \
-		 (&((ivm_ctchain_t *) \
-			(chain))[1]))[i]))
+	((((struct ivm_ctchain_sub_t_tag *) \
+		 (((ivm_ctchain_t *) \
+			(chain)) + 1)) + (i)))
 
 #define ivm_ctchain_setAt(chain, i, context) \
 	(ivm_ctchain_contextAt((chain), (i))->ct = (context))
 
+#define ivm_ctchain_addRef(chain) ((chain) ? (chain)->ref++, (chain) : (chain))
+
 ivm_ctchain_t *
 ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
+
 void
 ivm_ctchain_free(ivm_ctchain_t *chain, struct ivm_vmstate_t_tag *state);
 
@@ -107,8 +112,6 @@ typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 #define IVM_CTCHAIN_EACHPTR(chain, ptr) \
 	for ((ptr) = ivm_ctchain_contextStart(chain); \
 		 (ptr) <= ivm_ctchain_contextEnd(chain); (ptr)++)
-
-#define IVM_CONTEXT_POOL_MAX_CACHE_LEN 10
 
 typedef struct {
 	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1];
