@@ -8,26 +8,59 @@
 #define _STRING_POOL (tmp_exec->pool)
 #define _INSTR (tmp_ip)
 
+#if IVM_STACK_CACHE_N_TOS == 1
+
+	#define DBG_RUNTIME() \
+		((ivm_dbg_runtime_t) {          \
+			.stc0 = stc0,               \
+			.cst = cst,                 \
+			.exec = tmp_exec,           \
+			.ip = tmp_ip,               \
+			.bp = tmp_bp,               \
+			.sp = tmp_sp,               \
+			.state = _STATE,            \
+			.coro = _CORO,              \
+			.stack = _STACK             \
+		})
+
+#elif IVM_STACK_CACHE_N_TOS == 2
+	#define DBG_RUNTIME() \
+		((ivm_dbg_runtime_t) {          \
+			.stc0 = stc0,               \
+			.stc1 = stc1,               \
+			.cst = cst,                 \
+			.exec = tmp_exec,           \
+			.ip = tmp_ip,               \
+			.bp = tmp_bp,               \
+			.sp = tmp_sp,               \
+			.state = _STATE,            \
+			.coro = _CORO,              \
+			.stack = _STACK             \
+		})
+#endif
+
 #define NEXT_INSTR() \
-	if (++tmp_ip != tmp_ip_end) { \
-		if (ivm_vmstate_checkGC(state)) { \
-			SAVE_STACK(); \
-			ivm_vmstate_doGC(state); \
-		} \
-		goto *(tmp_ip->entry); \
-	} else { \
-		goto END_EXEC; \
+	if (++tmp_ip != tmp_ip_end) {                 \
+		IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
+		if (ivm_vmstate_checkGC(state)) {         \
+			SAVE_STACK();                         \
+			ivm_vmstate_doGC(state);              \
+		}                                         \
+		goto *(tmp_ip->entry);                    \
+	} else {                                      \
+		goto END_EXEC;                            \
 	}
 
 #define NEXT_N_INSTR(n) \
-	if ((tmp_ip += (n)) != tmp_ip_end) { \
-		goto *(tmp_ip->entry); \
-	} else { \
-		goto END_EXEC; \
-	} \
+	if ((tmp_ip += (n)) != tmp_ip_end) {          \
+		IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
+		goto *(tmp_ip->entry);                    \
+	} else {                                      \
+		goto END_EXEC;                            \
+	}                                             \
 
-#define YIELD() tmp_ip++; SAVE_RUNTIME(_RUNTIME, tmp_ip); goto ACTION_YIELD
-#define RETURN() tmp_ip++; SAVE_RUNTIME(_RUNTIME, tmp_ip); goto ACTION_RETURN
+#define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
+#define RETURN() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define _ARG (_INSTR->arg)
@@ -148,11 +181,8 @@
 	IVM_ASSERT(AVAIL_STACK >= (req), \
 			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
 
-#define SAVE_RUNTIME(runtime, ip) \
-	(STC_PUSHBACK(), \
-	 IVM_RUNTIME_SET((runtime), IP, (ip)), \
-	 IVM_RUNTIME_SET((runtime), BP, tmp_bp), \
-	 IVM_RUNTIME_SET((runtime), SP, tmp_sp))
+#define SAVE_RUNTIME(ip) \
+	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())
 
 #define SAVE_STACK() \
 	(STC_PUSHBACK(), \

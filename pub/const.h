@@ -1,7 +1,7 @@
 #ifndef _IVM_PUB_CONST_H_
 #define _IVM_PUB_CONST_H_
 
-#define IVM_PERF_PROFILE 1
+#define IVM_USE_PERF_PROFILE 1
 
 /* triggers of pools */
 #define IVM_USE_FUNCTION_POOL 1
@@ -49,5 +49,7 @@
 
 /* the number of stack element(s) cached */
 #define IVM_STACK_CACHE_N_TOS 1
+
+#define IVM_PER_INSTR_DBG(runtime) // (ivm_dbg_printRuntime(runtime))
 
 #endif

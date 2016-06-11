@@ -1,6 +1,7 @@
 #ifndef _IVM_VM_OPRT_H_
 #define _IVM_VM_OPRT_H_
 
+#include "pub/com.h"
 #include "pub/const.h"
 
 #include "std/list.h"

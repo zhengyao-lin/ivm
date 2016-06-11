@@ -101,10 +101,10 @@ ivm_bool_t
 ivm_heap_isIn(ivm_heap_t *heap, void *ptr)
 {
 	ivm_size_t i;
-	ptrdiff_t tmp;
+	ivm_ptrdiff_t tmp;
 
 	for (i = 0; i < heap->bcount; i++) {
-		tmp = (intptr_t)ptr - (intptr_t)heap->blocks[i];
+		tmp = (ivm_ptr_t)ptr - (ivm_ptr_t)heap->blocks[i];
 		if (tmp >= 0 && tmp < heap->bsize) return IVM_TRUE;
 	}
 

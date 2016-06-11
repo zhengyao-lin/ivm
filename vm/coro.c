@@ -74,7 +74,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_function_t *tmp_func = IVM_NULL;
 
 	ivm_instr_t *tmp_ip, *tmp_ip_end;
-	ivm_size_t tmp_bp, tmp_sp;
+	register ivm_size_t tmp_bp, tmp_sp;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
@@ -153,10 +153,13 @@ ACTION_INVOKE:
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 				
-				/* jump to the first opcode */
 				if (tmp_ip != tmp_ip_end) {
-					// IVM_TRACE("%p\n", tmp_ip);
+					/* for single line debug */
+					IVM_PER_INSTR_DBG(DBG_RUNTIME());
+
+					/* jump to the first opcode */
 					goto *(tmp_ip->entry);
+
 					#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
 						#include "opcode.def.h"
 					#undef OPCODE_GEN
@@ -167,13 +170,15 @@ ACTION_INVOKE:
 
 END_EXEC:
 
-				SAVE_RUNTIME(tmp_runtime, tmp_ip);
+				SAVE_RUNTIME(tmp_ip);
 			}
 ACTION_RETURN:
 
-			if (tmp_sp - tmp_bp > 0) {
-				ret = ivm_vmstack_at(tmp_stack, --tmp_sp);
+			if (AVAIL_STACK > 0) {
+				ret = STACK_POP();
 			}
+
+			SAVE_STACK();
 
 			ivm_runtime_dump(tmp_runtime, state);
 
@@ -182,9 +187,7 @@ ACTION_RETURN:
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
-
-				ivm_vmstack_pushAt(tmp_stack, IVM_RUNTIME_GET(tmp_runtime, SP_INC),
-								   ret ? ret : IVM_NULL_OBJ(state));
+				STACK_PUSH(ret ? ret : IVM_NULL_OBJ(state));
 			} else {
 				/* no more callee to restore, end coro */
 				ivm_coro_kill(coro, state);
@@ -194,8 +197,8 @@ ACTION_RETURN:
 
 goto ACTION_YIELD_END;
 ACTION_YIELD:
-		if (tmp_sp - tmp_bp > 0) {
-			ret = ivm_vmstack_at(tmp_stack, IVM_RUNTIME_GET(tmp_runtime, DEC_SP));
+		if (AVAIL_STACK > 0) {
+			ret = STACK_POP();
 		}
 ACTION_YIELD_END: ;
 	}

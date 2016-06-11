@@ -14,6 +14,7 @@
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
+#include "vm/perf.h"
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
@@ -37,34 +38,6 @@ IVM_NATIVE_FUNC(call_func)
 	return ivm_numeric_new(state, 10016);
 }
 
-#if IVM_PERF_PROFILE
-
-extern clock_t ivm_perf_gc_time;
-extern ivm_size_t ivm_perf_gc_count;
-clock_t ivm_perf_program_start;
-
-void profile_start()
-{
-	ivm_perf_program_start = clock();
-	return;
-}
-
-void profile_output()
-{
-	clock_t now = clock();
-	clock_t prog = now - ivm_perf_program_start;
-
-	IVM_TRACE("\n***performance profile***\n\n");
-	IVM_TRACE("program: %ld ticks(%fs)\n", prog, (double)prog / CLOCKS_PER_SEC);
-	IVM_TRACE("gc times: %ld\n", ivm_perf_gc_count);
-	IVM_TRACE("gc: %ld ticks(%fs)\n", ivm_perf_gc_time, (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
-	IVM_TRACE("gc per program: %.4f%%\n", (double)ivm_perf_gc_time / prog * 100);
-	IVM_TRACE("gc per time: %.3f ticks\n", (double)ivm_perf_gc_time / ivm_perf_gc_count);
-	IVM_TRACE("\n***performance profile***\n\n");
-
-	return;
-}
-
 #define print_type(type) (IVM_TRACE(#type ": %ld\n", sizeof(type)))
 
 void profile_type()
@@ -82,8 +55,6 @@ void profile_type()
 
 	return;
 }
-
-#endif
 
 int test_fib()
 {
@@ -167,17 +138,14 @@ int test_fib()
 
 	ivm_vmstate_unlockGCFlag(state);
 
-#if IVM_PERF_PROFILE
-	profile_start();
-#endif
+	ivm_perf_startProfile();
 
 	/* start executing */
 	IVM_TRACE("start\n");
 	ivm_vmstate_schedule(state);
 
-#if IVM_PERF_PROFILE
-	profile_output();
-#endif
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 
@@ -289,18 +257,14 @@ int test_call()
 
 	ivm_vmstate_unlockGCFlag(state);
 
-
-#if IVM_PERF_PROFILE
-	profile_start();
-#endif
+	ivm_perf_startProfile();
 
 	/* start executing */
 	IVM_TRACE("start\n");
 	ivm_vmstate_schedule(state);
 
-#if IVM_PERF_PROFILE
-	profile_output();
-#endif
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 	IVM_TRACE("\nstack state:\n");
@@ -432,7 +396,7 @@ int test_vm()
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
 	/* while i < n */
-	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000001);
+	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
 	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
 		/* call test */
@@ -555,38 +519,36 @@ int test_vm()
 
 	ivm_vmstate_unlockGCFlag(state);
 
-#if IVM_PERF_PROFILE
-	profile_start();
-#endif
+
+	ivm_perf_startProfile();
 
 	/* start executing */
 	IVM_TRACE("start\n");
 	ivm_vmstate_schedule(state);
 
-#if IVM_PERF_PROFILE
-	profile_output();
-#endif
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 
 #if 0
 	IVM_TRACE("disasm exec1:\n");
-	ivm_dbg_disAsmExec(exec1, "  ", stderr);
+	ivm_dbg_printExec(exec1, "  ", stderr);
 
 	IVM_TRACE("\n");
 
 	IVM_TRACE("disasm exec2:\n");
-	ivm_dbg_disAsmExec(exec2, "  ", stderr);
+	ivm_dbg_printExec(exec2, "  ", stderr);
 
 	IVM_TRACE("\n");
 
 	IVM_TRACE("disasm exec3:\n");
-	ivm_dbg_disAsmExec(exec3, "  ", stderr);
+	ivm_dbg_printExec(exec3, "  ", stderr);
 
 	IVM_TRACE("\n");
 
 	IVM_TRACE("disasm exec4:\n");
-	ivm_dbg_disAsmExec(exec4, "  ", stderr);
+	ivm_dbg_printExec(exec4, "  ", stderr);
 #endif
 
 	ivm_coro_free(coro1, state); ivm_coro_free(coro2, state);

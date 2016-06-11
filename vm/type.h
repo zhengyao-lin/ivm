@@ -12,6 +12,10 @@ typedef unsigned int	ivm_uint_t;
 typedef long			ivm_long_t;
 typedef unsigned long	ivm_ulong_t;
 
+typedef intptr_t		ivm_ptr_t;
+typedef uintptr_t		ivm_uptr_t;
+typedef ptrdiff_t		ivm_ptrdiff_t;
+
 typedef int8_t			ivm_sint8_t;
 typedef int16_t			ivm_sint16_t;
 typedef int32_t			ivm_sint32_t;
@@ -52,7 +56,7 @@ typedef ivm_sint32_t	ivm_opcode_arg_t;
 
 typedef ivm_uint32_t	ivm_argc_t;
 
-typedef intptr_t		ivm_mark_t;
+typedef ivm_ptr_t		ivm_mark_t;
 
 #define IVM_MARK_INIT 0
 

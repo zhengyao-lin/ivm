@@ -243,9 +243,12 @@ OPCODE_GEN(DUP, "dup", I, {
 })
 
 OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
+	ivm_object_t *obj;
+
 	CHECK_STACK(1);
 
-	IVM_OUT("print: %p\n", (void *)STACK_POP());
+	obj = STACK_POP();
+	IVM_OUT("print: %p\n", (void *)obj);
 
 	NEXT_INSTR();
 })
@@ -333,7 +336,7 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	args = STACK_CUT(arg_count);
 
 	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
-	SAVE_RUNTIME(_RUNTIME, _INSTR + 1);
+	SAVE_RUNTIME(_INSTR + 1);
 
 	ivm_function_invoke(func, _STATE,
 						ivm_function_object_getClosure(obj), _CORO);
@@ -343,7 +346,7 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	if (ivm_function_isNative(func)) {
 		ret = ivm_function_callNative(func, _STATE, _CONTEXT,
 									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
-		STACK_PUSH_NOCACHE(ret ? ret : IVM_NULL_OBJ(_STATE));
+		STACK_PUSH(ret ? ret : IVM_NULL_OBJ(_STATE));
 	} else {
 		STACK_INC(arg_count);
 	}

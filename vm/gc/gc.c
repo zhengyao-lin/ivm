@@ -1,5 +1,3 @@
-#include <time.h>
-
 #include "pub/mem.h"
 #include "pub/const.h"
 #include "pub/com.h"
@@ -15,6 +13,7 @@
 #include "../coro.h"
 #include "../call.h"
 #include "../context.h"
+#include "../perf.h"
 
 ivm_collector_t *
 ivm_collector_new()
@@ -239,10 +238,10 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state
 	return;
 }
 
-#if IVM_PERF_PROFILE
+#if IVM_USE_PERF_PROFILE
 
-clock_t ivm_perf_gc_time = 0;
-ivm_size_t ivm_perf_gc_count = 0;
+extern clock_t ivm_perf_gc_time;
+extern ivm_size_t ivm_perf_gc_count;
 
 #endif
 
@@ -252,9 +251,8 @@ ivm_collector_collect(ivm_collector_t *collector,
 					  ivm_heap_t *heap)
 {
 
-#if IVM_PERF_PROFILE
-	clock_t time_st = clock(), time_taken;
-	ivm_perf_gc_count++;
+#if IVM_USE_PERF_PROFILE
+	clock_t time_st = clock();
 #endif
 
 	ivm_traverser_arg_t arg;
@@ -275,12 +273,10 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	ivm_vmstate_closeGCFlag(state);
 
-#if IVM_PERF_PROFILE
-	time_taken = clock() - time_st;
-	ivm_perf_gc_time += time_taken;
+#if IVM_USE_PERF_PROFILE
+	ivm_perf_gc_time += clock() - time_st;
+	ivm_perf_gc_count++;
 #endif
-
-	/* IVM_OUT("***collection end: %ld ticks taken***\n", time_taken); */
 
 	return;
 }
