@@ -265,9 +265,11 @@ int test_call()
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
-	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
-	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
-	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
+	addr1 = ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
+	ivm_exec_addInstr(exec1, LT);
+
+	addr2 = ivm_exec_addInstr(exec1, JUMP_FALSE, 0);
 
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "do_nothing");
 		ivm_exec_addInstr(exec1, INVOKE, 0);
@@ -377,8 +379,6 @@ int test_vm()
 	ivm_ctchain_setAt(chain, 0, obj1);
 	ivm_ctchain_setAt(chain, 1, obj2);
 	ivm_ctchain_addRef(chain);
-
-	IVM_TRACE("context top: %p\n", chain);
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
