@@ -18,17 +18,21 @@ IVM_PRIVATE
 void
 _ivm_dbg_printInstr(ivm_exec_t *exec,
 					ivm_instr_t *ip,
-					const char *prefix,
+					const char *format,
 					FILE *fp)
 {
+	char buffer[50];
 	ivm_ptrdiff_t pc = (ivm_ptr_t)ip - (ivm_ptr_t)ivm_exec_instrPtrStart(exec);
 
+	sprintf(buffer, format, pc / sizeof(*ip));
+	// "%4ld: "
+
 	if (ivm_opcode_table_getArg(ip->opc)[0] == 'N') {
-		fprintf(fp, "%s%4ld: %s",
-				prefix, pc / sizeof(*ip), ivm_opcode_table_getName(ip->opc));
+		fprintf(fp, "%s%s",
+				buffer, ivm_opcode_table_getName(ip->opc));
 	} else {
-		fprintf(fp, "%s%4ld: %-20s %d",
-				prefix, pc / sizeof(*ip), ivm_opcode_table_getName(ip->opc),
+		fprintf(fp, "%s%-20s %d",
+				buffer, ivm_opcode_table_getName(ip->opc),
 				ip->arg);
 		if (ivm_opcode_table_getArg(ip->opc)[0] == 'S') {
 			fprintf(fp, "(\"%s\")", ivm_string_trimHead(ivm_exec_getString(exec, ip->arg)));
@@ -47,7 +51,8 @@ ivm_dbg_printExec(ivm_exec_t *exec,
 				*end = ivm_exec_instrPtrEnd(exec);
 
 	for (; ip != end; ip++) {
-		_ivm_dbg_printInstr(exec, ip, prefix, fp);
+		fprintf(fp, "%s", prefix);
+		_ivm_dbg_printInstr(exec, ip, "%4ld: ", fp);
 		fprintf(fp, "\n");
 	}
 
@@ -150,6 +155,8 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_int_t i, tmp_cst = runtime.cst;
 	ivm_vmstack_t *stack = runtime.stack;
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);
+	ivm_uptr_t exec_id;
+	char buffer[100];
 
 	IVM_TRACE("\nstack state(sp: %ld, bp: %ld, cst: %d):\n",
 			  runtime.sp, runtime.bp, runtime.cst);
@@ -213,9 +220,32 @@ DRAW_END:
 
 	IVM_TRACE("\n");
 
-	ivm_dbg_heapState(runtime.state, stderr);
-	IVM_TRACE("\n");
-	_ivm_dbg_printInstr(runtime.exec, runtime.ip, "> ", stderr);
+	// ivm_dbg_heapState(runtime.state, stderr);
+	// IVM_TRACE("\n");
+
+	switch (runtime.action) {
+		case IVM_CORO_ACTION_NONE:
+			exec_id = (ivm_uptr_t)runtime.exec
+					  << ((sizeof(ivm_uptr_t) - sizeof(char)) * 8)
+					  >> ((sizeof(ivm_uptr_t) - sizeof(char)) * 8);
+			sprintf(buffer, "%p:%%ld> ", (void *)exec_id);
+			_ivm_dbg_printInstr(runtime.exec, runtime.ip, buffer, stderr);
+			break;
+		case IVM_CORO_ACTION_INVOKE:
+			if (!runtime.retval)
+				IVM_TRACE("****** ACTION: INVOKE ******");
+			else
+				IVM_TRACE("****** ACTION: INVOKE NATIVE ******");
+			break;
+		case IVM_CORO_ACTION_YIELD:
+			IVM_TRACE("****** ACTION: YIELD(%s) ******", TYPE_NAME_OF(runtime.retval));
+			break;
+		case IVM_CORO_ACTION_RETURN:
+			IVM_TRACE("****** ACTION: RETURN(%s) ******", TYPE_NAME_OF(runtime.retval));
+			break;
+	}
+
 	getc(stdin);
+	
 	return;
 }

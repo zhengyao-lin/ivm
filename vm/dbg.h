@@ -17,13 +17,18 @@ IVM_COM_HEADER
 #define IVM_DBG_TAB "   "
 
 typedef struct {
+	ivm_coro_action_t action;
+
+	ivm_object_t *retval;
+
 #if IVM_STACK_CACHE_N_TOS == 1
 	ivm_object_t *stc0;
+	ivm_int_t cst;
 #elif IVM_STACK_CACHE_N_TOS == 2
 	ivm_object_t *stc0, *stc1;
+	ivm_int_t cst;
 #endif
 
-	ivm_int_t cst;
 	ivm_exec_t *exec;
 	ivm_instr_t *ip;
 	ivm_size_t bp, sp;

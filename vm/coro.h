@@ -21,6 +21,13 @@ typedef struct ivm_coro_t_tag {
 	ivm_runtime_t *runtime;
 } ivm_coro_t;
 
+typedef enum {
+	IVM_CORO_ACTION_NONE = 0,
+	IVM_CORO_ACTION_INVOKE,
+	IVM_CORO_ACTION_RETURN,
+	IVM_CORO_ACTION_YIELD
+} ivm_coro_action_t;
+
 #define IVM_CORO_GET_STACK(coro) ((coro)->stack)
 #define IVM_CORO_GET_FRAME_STACK(coro) ((coro)->frame_st)
 #define IVM_CORO_GET_RUNTIME(coro) ((coro)->runtime)

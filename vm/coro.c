@@ -73,7 +73,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_ctchain_t *tmp_context;
 	ivm_function_t *tmp_func = IVM_NULL;
 
-	ivm_instr_t *tmp_ip, *tmp_ip_end;
+	ivm_instr_t *tmp_ip = IVM_NULL,
+				*tmp_ip_end = IVM_NULL;
 	register ivm_size_t tmp_bp, tmp_sp;
 
 	/*****************************
@@ -173,10 +174,11 @@ END_EXEC:
 				SAVE_RUNTIME(tmp_ip);
 			}
 ACTION_RETURN:
-
 			if (AVAIL_STACK > 0) {
 				ret = STACK_POP();
 			}
+
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, ret));
 
 			SAVE_STACK();
 
@@ -200,6 +202,8 @@ ACTION_YIELD:
 		if (AVAIL_STACK > 0) {
 			ret = STACK_POP();
 		}
+
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, ret));
 ACTION_YIELD_END: ;
 	}
 

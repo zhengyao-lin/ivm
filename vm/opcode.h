@@ -25,19 +25,12 @@ typedef enum {
 
 } ivm_opcode_t;
 
-typedef enum {
-	IVM_ACTION_NONE = 0,
-	IVM_ACTION_INVOKE,
-	IVM_ACTION_RETURN,
-	IVM_ACTION_YIELD
-} ivm_action_t;
-
-typedef ivm_action_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
-											 struct ivm_coro_t_tag *coro,
-											 ivm_vmstack_t *stack,
-											 struct ivm_ctchain_t_tag *context,
-											 ivm_string_pool_t *pool,
-											 struct ivm_instr_t_tag **instr);
+typedef ivm_int_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
+										  struct ivm_coro_t_tag *coro,
+										  ivm_vmstack_t *stack,
+										  struct ivm_ctchain_t_tag *context,
+										  ivm_string_pool_t *pool,
+										  struct ivm_instr_t_tag **instr);
 
 typedef struct {
 	ivm_opcode_t opc;

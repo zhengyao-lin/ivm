@@ -344,10 +344,14 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	UPDATE_STACK();
 
 	if (ivm_function_isNative(func)) {
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
+
 		ret = ivm_function_callNative(func, _STATE, _CONTEXT,
 									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
 		STACK_PUSH(ret ? ret : IVM_NULL_OBJ(_STATE));
 	} else {
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+
 		STACK_INC(arg_count);
 	}
 

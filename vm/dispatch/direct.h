@@ -8,36 +8,42 @@
 #define _STRING_POOL (tmp_exec->pool)
 #define _INSTR (tmp_ip)
 
+#define _DBG_RUNTIME_DEFAULT \
+	.exec = tmp_exec,           \
+	.ip = tmp_ip,               \
+	.bp = tmp_bp,               \
+	.sp = tmp_sp,               \
+	.state = _STATE,            \
+	.coro = _CORO,              \
+	.stack = _STACK             \
+
 #if IVM_STACK_CACHE_N_TOS == 1
-
-	#define DBG_RUNTIME() \
-		((ivm_dbg_runtime_t) {          \
-			.stc0 = stc0,               \
-			.cst = cst,                 \
-			.exec = tmp_exec,           \
-			.ip = tmp_ip,               \
-			.bp = tmp_bp,               \
-			.sp = tmp_sp,               \
-			.state = _STATE,            \
-			.coro = _CORO,              \
-			.stack = _STACK             \
-		})
-
+	#define _DBG_RUNTIME_CACHE \
+		.stc0 = stc0,               \
+		.cst = cst
 #elif IVM_STACK_CACHE_N_TOS == 2
-	#define DBG_RUNTIME() \
-		((ivm_dbg_runtime_t) {          \
-			.stc0 = stc0,               \
-			.stc1 = stc1,               \
-			.cst = cst,                 \
-			.exec = tmp_exec,           \
-			.ip = tmp_ip,               \
-			.bp = tmp_bp,               \
-			.sp = tmp_sp,               \
-			.state = _STATE,            \
-			.coro = _CORO,              \
-			.stack = _STACK             \
-		})
+	#define _DBG_RUNTIME_CACHE \
+		.stc0 = stc0,               \
+		.stc1 = stc1,               \
+		.cst = cst
 #endif
+
+#define DBG_RUNTIME() \
+	((ivm_dbg_runtime_t) {                        \
+		.action = IVM_CORO_ACTION_NONE,           \
+		.retval = IVM_NULL,                       \
+		_DBG_RUNTIME_CACHE,                       \
+		_DBG_RUNTIME_DEFAULT                      \
+	})
+
+#define DBG_RUNTIME_ACTION(a, ret) \
+	((ivm_dbg_runtime_t) {                        \
+		.action = IVM_CORO_ACTION_##a,            \
+		.retval = (ivm_object_t *)(ret),          \
+		_DBG_RUNTIME_CACHE,                       \
+		_DBG_RUNTIME_DEFAULT                      \
+	})
+
 
 #define NEXT_INSTR() \
 	if (++tmp_ip != tmp_ip_end) {                 \
