@@ -26,13 +26,13 @@ ivm_type_new(ivm_type_t type)
 void
 ivm_type_free(ivm_type_t *type)
 {
+	ivm_int_t i;
+
 	if (type) {
-		ivm_oprt_binary_table_free(type->add_table);
-		ivm_oprt_binary_table_free(type->sub_table);
-		ivm_oprt_binary_table_free(type->mul_table);
-		ivm_oprt_binary_table_free(type->div_table);
-		ivm_oprt_binary_table_free(type->mod_table);
-		ivm_oprt_binary_table_free(type->cmp_table);
+		for (i = 0; i < IVM_BINOP_COUNT; i++) {
+			ivm_binop_table_free(type->binops[i]);
+		}
+
 		MEM_FREE(type);
 	}
 

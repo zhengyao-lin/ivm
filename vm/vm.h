@@ -15,11 +15,9 @@
 
 IVM_COM_HEADER
 
-struct ivm_heap_t_tag;
-struct ivm_collector_t_tag;
-
 typedef struct ivm_vmstate_t_tag {
-	struct ivm_heap_t_tag *heaps[2];
+	ivm_heap_t *cur_heap;
+	ivm_heap_t *empty_heap;
 
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
@@ -35,14 +33,14 @@ typedef struct ivm_vmstate_t_tag {
 						  > 0: open
 						  = 0: closed
 						  < 0: locked */
-	struct ivm_collector_t_tag *gc;
+	ivm_collector_t *gc;
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
 #define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
-#define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps[0])
-#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->heaps[1])
+#define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->cur_heap)
+#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->empty_heap)
 
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
@@ -61,8 +59,6 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 #define ivm_vmstate_lockGCFlag(state) ((state)->gc_flag = -1)
 #define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)
 
-#define ivm_vmstate_resetHeap(state, hp) (ivm_heap_free((state)->heap), (state)->heap = (hp))
-
 #if 0
 
 #define ivm_vmstate_curHeap(state) ((state)->heap_count > 0 ? (state)->heaps[(state)->heap_count - 1] : IVM_NULL)
@@ -78,7 +74,7 @@ void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
 	ivm_bool_t add_block = IVM_FALSE;
-	void *ret = ivm_heap_alloc_c((state)->heaps[0], size, &add_block);
+	void *ret = ivm_heap_alloc_c((state)->cur_heap, size, &add_block);
 
 	if (add_block) {
 		ivm_vmstate_openGCFlag(state);
@@ -87,8 +83,16 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 	return ret;
 }
 
+IVM_INLINE
 void
-ivm_vmstate_swapHeap(ivm_vmstate_t *state);
+ivm_vmstate_swapHeap(ivm_vmstate_t *state)
+{
+	ivm_heap_t *tmp = state->cur_heap;
+	state->cur_heap = state->empty_heap;
+	state->empty_heap = tmp;
+
+	return;
+}
 
 /* function pool */
 #if IVM_USE_FUNCTION_POOL
@@ -147,7 +151,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #if 0 && IVM_DEBUG
 
-#define ivm_vmstate_checkGC(state) (ivm_collector_collect((state)->gc, (state), (state)->heaps[0]))
+#define ivm_vmstate_checkGC(state) (ivm_collector_collect((state)->gc, (state), (state)->cur_heap))
 
 #else
 
@@ -155,7 +159,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 	ivm_vmstate_isGCFlagOpen(state)
 
 #define ivm_vmstate_doGC(state) \
-	ivm_collector_collect((state)->gc, (state), (state)->heaps[0]); \
+	ivm_collector_collect((state)->gc, (state), (state)->cur_heap); \
 	ivm_vmstate_closeGCFlag(state);
 
 #endif
@@ -168,14 +172,6 @@ ivm_vmstate_schedule(ivm_vmstate_t *state);
 /*
 ivm_object_t *
 ivm_vmstate_execute();
-*/
-
-/*
-#define ivm_vmstate_alloc(state) ((state) ? ivm_heap_alloc((state)->heaps) : IVM_NULL)
-#define ivm_vmstate_freeObject(state, obj) \
-	if (state) { \
-		ivm_heap_freeObject((state), (state)->heaps, (obj)); \
-	}
 */
 
 IVM_COM_END

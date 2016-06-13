@@ -24,4 +24,44 @@
 #include "oprt.h"
 #include "dbg.h"
 
+#define DEFAULT_BINOP_HANDLER(op, op_name) \
+	{                                                                                          \
+		ivm_object_t *op1, *op2;                                                               \
+		ivm_binop_proc_t proc;                                                                 \
+                                                                                               \
+		CHECK_STACK(2);                                                                        \
+                                                                                               \
+		op2 = STACK_POP();                                                                     \
+		op1 = STACK_POP();                                                                     \
+		proc = IVM_OBJECT_GET_BINOP_PROC(op1, op, op2);                                        \
+                                                                                               \
+		IVM_ASSERT(proc,                                                                       \
+				   IVM_ERROR_MSG_NO_OPERATION_FOR(op_name, IVM_OBJECT_GET(op1, TYPE_NAME),     \
+												  IVM_OBJECT_GET(op2, TYPE_NAME)));            \
+                                                                                               \
+		STACK_PUSH(proc(_STATE, op1, op2));                                                    \
+		NEXT_INSTR();                                                                          \
+	}
+
+#define CMP_BINOP_HANDLER(todo) \
+	{                                                                                          \
+		ivm_object_t *op1, *op2;                                                               \
+		ivm_ptr_t _RETVAL;                                                                     \
+		ivm_binop_proc_t proc;                                                                 \
+                                                                                               \
+		CHECK_STACK(2);                                                                        \
+                                                                                               \
+		op2 = STACK_POP();                                                                     \
+		op1 = STACK_POP();                                                                     \
+		proc = IVM_OBJECT_GET_BINOP_PROC(op1, CMP, op2);                                       \
+                                                                                               \
+		IVM_ASSERT(proc,                                                                       \
+				   IVM_ERROR_MSG_NO_OPERATION_FOR("<=>", IVM_OBJECT_GET(op1, TYPE_NAME),       \
+												  IVM_OBJECT_GET(op2, TYPE_NAME)));            \
+                                                                                               \
+		_RETVAL = (ivm_ptr_t)proc(_STATE, op1, op2);                                           \
+		todo;                                                                                  \
+		NEXT_INSTR();                                                                          \
+	}
+
 #endif

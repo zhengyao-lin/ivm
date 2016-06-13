@@ -41,13 +41,7 @@ typedef struct ivm_type_t_tag {
 	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 
-	ivm_oprt_binary_table_t *add_table;
-	ivm_oprt_binary_table_t *sub_table;
-	ivm_oprt_binary_table_t *mul_table;
-	ivm_oprt_binary_table_t *div_table;
-	ivm_oprt_binary_table_t *mod_table;
-
-	ivm_oprt_binary_table_t *cmp_table;
+	ivm_binop_table_t *binops[IVM_BINOP_COUNT];
 } ivm_type_t;
 
 ivm_type_t *
@@ -60,8 +54,8 @@ ivm_type_free(ivm_type_t *type);
 #define ivm_type_setProto(type, p) ((type)->proto = (p))
 #define ivm_type_getProto(type) ((type)->proto)
 
-#define ivm_type_setOpTable(type, op, table) ((type)->op##_table = (table))
-#define ivm_type_getOpTable(type, op) ((type)->op##_table)
+#define ivm_type_setOpTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
+#define ivm_type_getOpTable(type, op) ((type)->binops[IVM_BINOP_ID(op)])
 
 #define ivm_type_setHeader(type, p) ((type)->header = (p))
 #define ivm_type_getHeader(type) ((type)->header)
@@ -98,12 +92,6 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_MARK(obj) ((obj)->mark)
 #define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(obj)->mark)
 #define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
-#define IVM_OBJECT_GET_ADD_TABLE(obj) (ivm_type_getOpTable((obj)->type, add))
-#define IVM_OBJECT_GET_SUB_TABLE(obj) (ivm_type_getOpTable((obj)->type, sub))
-#define IVM_OBJECT_GET_MUL_TABLE(obj) (ivm_type_getOpTable((obj)->type, mul))
-#define IVM_OBJECT_GET_DIV_TABLE(obj) (ivm_type_getOpTable((obj)->type, div))
-#define IVM_OBJECT_GET_MOD_TABLE(obj) (ivm_type_getOpTable((obj)->type, mod))
-#define IVM_OBJECT_GET_CMP_TABLE(obj) (ivm_type_getOpTable((obj)->type, cmp))
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark & 0x1)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
@@ -115,14 +103,16 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
 
+#define IVM_OBJECT_GET_BINOP(obj, op) (ivm_type_getOpTable((obj)->type, op))
+
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
 #define IVM_IS_TYPE(obj, type) (IVM_TYPE_TAG_OF(obj) == (type))
 
 /* call the operation proc when obj [op] obj(of type) e.g. obj + num */
-#define IVM_OBJECT_GET_OP_PROC(op1, op, op2) \
-	(ivm_oprt_binary_table_get(IVM_OBJECT_GET((op1), op##_TABLE), \
-							   IVM_OBJECT_GET((op2), TYPE_TAG)))
+#define IVM_OBJECT_GET_BINOP_PROC(op1, op, op2) \
+	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
+						 IVM_OBJECT_GET((op2), TYPE_TAG)))
 
 ivm_object_t *
 ivm_object_new(struct ivm_vmstate_t_tag *state);

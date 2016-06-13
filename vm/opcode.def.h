@@ -34,135 +34,24 @@ OPCODE_GEN(NEW_FUNC, "new_func", I, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(ADD, "add", N, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
+OPCODE_GEN(ADD, "add", N, DEFAULT_BINOP_HANDLER(ADD, "+"))
+OPCODE_GEN(SUB, "sub", N, DEFAULT_BINOP_HANDLER(SUB, "-"))
+OPCODE_GEN(MUL, "mul", N, DEFAULT_BINOP_HANDLER(MUL, "*"))
+OPCODE_GEN(DIV, "div", N, DEFAULT_BINOP_HANDLER(DIV, "/"))
+OPCODE_GEN(MOD, "mod", N, DEFAULT_BINOP_HANDLER(MOD, "%"))
 
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, ADD, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("+", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	STACK_PUSH(proc(_STATE, op1, op2));
-
+OPCODE_GEN(LT, "lt", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, _RETVAL < 0));
 	NEXT_INSTR();
-})
+))
 
-OPCODE_GEN(SUB, "sub", N, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, SUB, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("-", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	STACK_PUSH(proc(_STATE, op1, op2));
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(MUL, "mul", N, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, MUL, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("*", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	STACK_PUSH(proc(_STATE, op1, op2));
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(DIV, "div", N, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, DIV, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("/", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	STACK_PUSH(proc(_STATE, op1, op2));
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(MOD, "mod", N, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, MOD, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("%", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	STACK_PUSH(proc(_STATE, op1, op2));
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(LT, "lt", N, {
-	ivm_object_t *op1, *op2, *ret;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, CMP, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("<=>", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	ret = proc(_STATE, op1, op2);
-	ivm_numeric_setValue(ret, ivm_numeric_getValue(ret) < 0);
-	STACK_PUSH(ret);
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(JUMP_LT, "jump_lt", I, {
-	ivm_object_t *op1, *op2;
-	ivm_oprt_binary_t proc;
-
-	CHECK_STACK(2);
-
-	op2 = STACK_POP();
-	op1 = STACK_POP();
-	proc = IVM_OBJECT_GET_OP_PROC(op1, CMP, op2);
-
-	IVM_ASSERT(proc, IVM_ERROR_MSG_NO_OPERATION_FOR("<=>", IVM_OBJECT_GET(op1, TYPE_NAME),
-													IVM_OBJECT_GET(op2, TYPE_NAME)));
-
-	if (ivm_numeric_getValue(proc(_STATE, op1, op2)) < 0) {
+OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
+	if (_RETVAL < 0) {
 		NEXT_N_INSTR(_ARG);
 	} else {
 		NEXT_INSTR();
 	}
-})
+))
 
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	ivm_object_t *obj;

@@ -14,8 +14,8 @@
 #include "proto.h"
 
 #define GC(state) ((state)->gc)
-#define HEAP1(state) ((state)->heaps[0])
-#define HEAP2(state) ((state)->heaps[1])
+#define HEAP1(state) ((state)->cur_heap)
+#define HEAP2(state) ((state)->empty_heap)
 #define HEAP_CUR HEAP1
 
 IVM_PRIVATE
@@ -77,8 +77,8 @@ ivm_vmstate_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
-	ret->heaps[0] = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
-	ret->heaps[1] = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
+	ret->cur_heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
+	ret->empty_heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE);
 
 	ret->cur_coro = 0;
 	ret->coro_list = ivm_coro_list_new();
@@ -105,9 +105,10 @@ ivm_vmstate_new()
 
 	IVM_TYPE_LIST_EACHPTR(ret->type_list, titer) {
 		tmp_type = IVM_TYPE_LIST_ITER_GET(titer);
-		ivm_oprt_initType(tmp_type, ret);
 		ivm_proto_initType(tmp_type, ret);
 	}
+
+	ivm_oprt_initType(ret);
 
 	ivm_vmstate_unlockGCFlag(ret);
 
@@ -135,16 +136,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		MEM_FREE(state);
 	}
-
-	return;
-}
-
-void
-ivm_vmstate_swapHeap(ivm_vmstate_t *state)
-{
-	ivm_heap_t *tmp = HEAP1(state);
-	HEAP1(state) = HEAP2(state);
-	HEAP2(state) = tmp;
 
 	return;
 }
