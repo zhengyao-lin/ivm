@@ -19,6 +19,7 @@ ivm_type_new(ivm_type_t type)
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
 
 	MEM_COPY(ret, &type, sizeof(*ret));
+	ivm_uniop_table_init(ret->uniops);
 
 	return ret;
 }

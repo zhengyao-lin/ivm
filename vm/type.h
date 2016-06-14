@@ -43,13 +43,15 @@ typedef ivm_int_t		ivm_type_tag_t;
 
 typedef ivm_double_t	ivm_number_t;
 
-#define IVM_UNDEFINED_T			0
-#define IVM_NULL_T				1
-#define IVM_OBJECT_T			2
-#define IVM_NUMERIC_T			3
-#define IVM_STRING_OBJECT_T		4
-#define IVM_FUNCTION_OBJECT_T	5
-#define IVM_TYPE_COUNT			6
+enum {
+	IVM_UNDEFINED_T = 0,
+	IVM_NULL_T,
+	IVM_OBJECT_T,
+	IVM_NUMERIC_T,
+	IVM_STRING_OBJECT_T,
+	IVM_FUNCTION_OBJECT_T,
+	IVM_TYPE_COUNT
+};
 
 typedef ivm_size_t		ivm_pc_t;
 typedef ivm_sint32_t	ivm_opcode_arg_t;

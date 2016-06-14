@@ -3,6 +3,7 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+#include "pub/mem.h"
 #include "pub/type.h"
 
 #include "std/list.h"
@@ -13,11 +14,20 @@ struct ivm_type_t_tag;
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
 
-typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *state,
-													 struct ivm_object_t_tag *opr1,
-													 struct ivm_object_t_tag *opr2);
+typedef struct ivm_object_t_tag *(*ivm_uniop_proc_t)(struct ivm_vmstate_t_tag *state,
+													 struct ivm_object_t_tag *op1);
 
+typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *state,
+													 struct ivm_object_t_tag *op1,
+													 struct ivm_object_t_tag *op2);
+
+#define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
+
+enum {
+	IVM_UNIOP_ID(NOT) = 0,
+	IVM_UNIOP_COUNT
+};
 
 enum {
 	IVM_BINOP_ID(ADD) = 0,
@@ -28,6 +38,12 @@ enum {
 	IVM_BINOP_ID(CMP),
 	IVM_BINOP_COUNT
 };
+
+typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
+
+#define ivm_uniop_table_init(table) (MEM_INIT((table), sizeof(ivm_uniop_table_t)))
+#define ivm_uniop_table_get(table, i) ((table)[i])
+#define ivm_uniop_table_set(table, i, proc) ((table)[i] = (proc))
 
 typedef struct {
 	ivm_size_t alloc;

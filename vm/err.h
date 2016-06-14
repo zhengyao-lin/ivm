@@ -37,7 +37,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_NOT_TYPE(t1, t2)					"expecting type <" t1 "> instead of <%s>", (t2)
 #define IVM_ERROR_MSG_NULL_PTR(name)					("null pointer given to " name)
 #define IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR(name, val)	"'%ld' is too small for " name, (val)
-#define IVM_ERROR_MSG_NO_OPERATION_FOR(op, t1, t2)		"there is no operation for <%s> %s <%s>", (t1), (op), (t2)
+#define IVM_ERROR_MSG_NO_UNIOP_FOR(op, t)				"the unary operation %s of <%s> is not defined", (op), (t)
+#define IVM_ERROR_MSG_NO_BINOP_FOR(t1, op, t2)			"the binary operation of <%s> %s <%s> is not defined", (t1), (op), (t2)
 
 IVM_COM_END
 

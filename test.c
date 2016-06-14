@@ -357,6 +357,10 @@ int test_vm()
 	ivm_exec_addInstr(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	/* ivm_exec_addInstr(exec3, GET_CONTEXT_SLOT, "func2"); */
 
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
+	ivm_exec_addInstr(exec1, NOT);
+	ivm_exec_addInstr(exec1, PRINT_NUM);
+
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 
@@ -396,7 +400,7 @@ int test_vm()
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
 	/* while i < n */
-	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 10000000);
+	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
 	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
 		/* call test */
@@ -606,8 +610,8 @@ int main()
 	ivm_env_init();
 
 	// test_call();
-	test_vm();
-	// test_fib();
+	// test_vm();
+	test_fib();
 
 	// profile_type();
 

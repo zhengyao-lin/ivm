@@ -1,3 +1,7 @@
+UNIOP_GEN(NOT, NUMERIC, {
+	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
+})
+
 BINOP_GEN(NUMERIC, ADD, NUMERIC, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) + ivm_numeric_getValue(_OP2));
 })
