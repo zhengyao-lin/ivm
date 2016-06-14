@@ -25,17 +25,26 @@ typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *s
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
 
 enum {
-	IVM_UNIOP_ID(NOT) = 0,
+	IVM_UNIOP_ID(FIRST) = -1,
+	
+#define UNIOP_GEN(op, t, ...) IVM_UNIOP_ID(op),
+#define BINOP_GEN(t1, op, t2, ...) 
+	#include "oprt.def.h"
+#undef UNIOP_GEN
+#undef BINOP_GEN
+
 	IVM_UNIOP_COUNT
 };
 
 enum {
-	IVM_BINOP_ID(ADD) = 0,
-	IVM_BINOP_ID(SUB),
-	IVM_BINOP_ID(MUL),
-	IVM_BINOP_ID(DIV),
-	IVM_BINOP_ID(MOD),
-	IVM_BINOP_ID(CMP),
+	IVM_BINOP_ID(FIRST) = -1,
+
+#define UNIOP_GEN(op, t, ...)
+#define BINOP_GEN(t1, op, t2, ...) IVM_BINOP_ID(op),
+	#include "oprt.def.h"
+#undef UNIOP_GEN
+#undef BINOP_GEN
+
 	IVM_BINOP_COUNT
 };
 
