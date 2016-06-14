@@ -34,8 +34,10 @@ OPCODE_GEN(NEW_FUNC, "new_func", I, {
 	NEXT_INSTR();
 })
 
+/* unary operations */
 OPCODE_GEN(NOT, "not", N, DEFAULT_UNIOP_HANDLER(NOT, "!"))
 
+/* binary operations */
 OPCODE_GEN(ADD, "add", N, DEFAULT_BINOP_HANDLER(ADD, "+"))
 OPCODE_GEN(SUB, "sub", N, DEFAULT_BINOP_HANDLER(SUB, "-"))
 OPCODE_GEN(MUL, "mul", N, DEFAULT_BINOP_HANDLER(MUL, "*"))

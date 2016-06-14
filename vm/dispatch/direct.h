@@ -104,15 +104,15 @@
 
 	/* stack cache */
 	#define STC_PUSHBACK() \
-		({if (cst) { \
-			if (cst == 1) { \
-				STACK_PUSH_NOCACHE(stc0); \
-			} else { /* cst == 2 */ \
-				STACK_PUSH_NOCACHE(stc0); \
-				STACK_PUSH_NOCACHE(stc1); \
-			} \
-			cst = 0; \
-		}}) \
+		({if (cst) {                         \
+			if (cst == 1) {                  \
+				STACK_PUSH_NOCACHE(stc0);    \
+			} else { /* cst == 2 */          \
+				STACK_PUSH_NOCACHE(stc0);    \
+				STACK_PUSH_NOCACHE(stc1);    \
+			}                                \
+			cst = 0;                         \
+		}})
 
 	#define _if		((
 	#define _then	)?(
@@ -191,8 +191,8 @@
 	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())
 
 #define SAVE_STACK() \
-	(STC_PUSHBACK(), \
-	 IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp), \
+	(STC_PUSHBACK(),                          \
+	 IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp),   \
 	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define UPDATE_STACK() \
