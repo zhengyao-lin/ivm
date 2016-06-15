@@ -357,6 +357,13 @@ int test_vm()
 	ivm_exec_addInstr(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	/* ivm_exec_addInstr(exec3, GET_CONTEXT_SLOT, "func2"); */
 
+	for (i = 0; i < 1; i++) {
+		ivm_exec_addInstr(exec1, NEW_STR, "hello, ");
+		ivm_exec_addInstr(exec1, NEW_STR, "world");
+		ivm_exec_addInstr(exec1, ADD);
+		ivm_exec_addInstr(exec1, POP);
+	}
+
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 	ivm_exec_addInstr(exec1, NOT);
 	ivm_exec_addInstr(exec1, PRINT_NUM);

@@ -21,6 +21,8 @@ typedef struct {
 ivm_object_t *ivm_string_object_new(struct ivm_vmstate_t_tag *state,
 									const ivm_string_t *val);
 
+#define ivm_string_object_getValue(obj) (IVM_AS((obj), ivm_string_object_t)->val)
+
 void
 ivm_string_object_traverser(ivm_object_t *obj,
 							struct ivm_traverser_arg_t_tag *arg);

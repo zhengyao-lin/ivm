@@ -28,6 +28,7 @@
 #define _OP1 (__op1__)
 #define _OP2 (__op2__)
 
+	#include "oprt.req.h"
 	#include "oprt.def.h"
 
 #undef _STATE

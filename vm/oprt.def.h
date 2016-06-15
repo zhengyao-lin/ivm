@@ -25,3 +25,21 @@ BINOP_GEN(NUMERIC, MOD, NUMERIC, {
 BINOP_GEN(NUMERIC, CMP, NUMERIC, {
 	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) - ivm_numeric_getValue(_OP2));
 })
+
+BINOP_GEN(STRING_OBJECT, ADD, STRING_OBJECT, {
+	// TODO: optimize: don't need to prealloc string
+	const ivm_string_t *str1 = ivm_string_object_getValue(_OP1);
+	const ivm_string_t *str2 = ivm_string_object_getValue(_OP2);
+	ivm_size_t len1 = ivm_string_length(str1);
+	ivm_size_t len2 = ivm_string_length(str2);
+	ivm_size_t size = len1 + len2; 
+	ivm_string_t *ret = ivm_string_pool_prealloc(IVM_VMSTATE_GET(_STATE, CONST_POOL),
+												 IVM_TRUE, size);
+	ivm_char_t *data = ivm_string_trimHead(ret);
+
+	MEM_COPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+	MEM_COPY(data + len1, ivm_string_trimHead(str2), len2 * sizeof(ivm_char_t));
+	data[size] = '\0';
+
+	return ivm_string_object_new(_STATE, ret);
+})

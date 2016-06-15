@@ -102,7 +102,7 @@ typedef struct ivm_string_pool_t_tag {
 
 	ivm_bool_t is_fixed;
 	ivm_size_t size;
-	ivm_string_t **table;
+	const ivm_string_t **table;
 } ivm_string_pool_t;
 
 ivm_string_pool_t *
@@ -114,6 +114,11 @@ ivm_string_pool_free(ivm_string_pool_t *pool);
 ivm_ptr_t
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str);
+
+/* no copy */
+ivm_ptr_t
+ivm_string_pool_register_nc(ivm_string_pool_t *pool,
+							const ivm_string_t *str);
 
 ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
@@ -129,6 +134,11 @@ ivm_string_pool_store(ivm_string_pool_t *pool,
 	ivm_size_t i = ivm_string_pool_registerRaw(pool, str);
 	return ivm_string_pool_get(pool, i);
 }
+
+ivm_string_t *
+ivm_string_pool_prealloc(ivm_string_pool_t *pool,
+						 ivm_bool_t is_const,
+						 ivm_size_t len);
 
 IVM_COM_END
 

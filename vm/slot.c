@@ -114,14 +114,11 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 	ivm_hash_val_t hash;
 	ivm_size_t osize;
 
-	ivm_slot_t *i, *tmp, *end;
+	register ivm_slot_t *i, *tmp, *end;
 
 	if (table->is_hash) {
 		hash = ivm_hash_fromString(ivm_string_trimHead(key));
 		while (1) {
-			// h1 = hash % size;
-			// h2 = 1 + hash % (size - 1);
-
 			tmp = table->tabl + hash % table->size;
 			end = table->tabl + table->size;
 
