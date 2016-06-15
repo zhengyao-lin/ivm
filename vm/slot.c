@@ -112,29 +112,41 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 					   ivm_object_t *obj)
 {
 	ivm_hash_val_t hash;
-	ivm_size_t size;
-	ivm_uint_t h1, h2;
-	ivm_uint_t i, j;
+	ivm_size_t osize;
 
-	ivm_slot_t *tmp, *end;
+	ivm_slot_t *i, *tmp, *end;
 
 	if (table->is_hash) {
 		hash = ivm_hash_fromString(ivm_string_trimHead(key));
 		while (1) {
-			size = table->size;
-			h1 = hash % size;
-			h2 = 1 + hash % (size - 1);
+			// h1 = hash % size;
+			// h2 = 1 + hash % (size - 1);
 
-			for (i = h1, j = 0;
-				 j < size;
-				 i += h2, j++) {
-				tmp = &table->tabl[i % size];
-				if (IS_EMPTY_SLOT(tmp)) {
-					tmp->k = ivm_string_copyIfNotConst_pool(key, state);
-					tmp->v = obj;
+			tmp = table->tabl + hash % table->size;
+			end = table->tabl + table->size;
+
+			for (i = tmp;
+				 i != end;
+				 i++) {
+				if (IS_EMPTY_SLOT(i)) {
+					i->k = ivm_string_copyIfNotConst_pool(key, state);
+					i->v = obj;
 					return;
-				} else if (ivm_string_compare(tmp->k, key)) {
-					tmp->v = obj;
+				} else if (ivm_string_compare(i->k, key)) {
+					i->v = obj;
+					return;
+				}
+			}
+
+			for (i = table->tabl;
+				 i != tmp;
+				 i++) {
+				if (IS_EMPTY_SLOT(i)) {
+					i->k = ivm_string_copyIfNotConst_pool(key, state);
+					i->v = obj;
+					return;
+				} else if (ivm_string_compare(i->k, key)) {
+					i->v = obj;
 					return;
 				}
 			}
@@ -143,21 +155,22 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 			ivm_slot_table_expand(table, state);
 		}
 	} else {
-		for (i = 0, tmp = table->tabl,
+		for (i = table->tabl,
 			 end = table->tabl + table->size;
-			 tmp != end; tmp++, i++) {
-			if (tmp->k == IVM_NULL) {
-				tmp->k = ivm_string_copyIfNotConst_pool(key, state);
-				tmp->v = obj;
+			 i != end; i++) {
+			if (i->k == IVM_NULL) {
+				i->k = ivm_string_copyIfNotConst_pool(key, state);
+				i->v = obj;
 				return;
-			} else if (ivm_string_compare(tmp->k, key)) {
-				tmp->v = obj;
+			} else if (ivm_string_compare(i->k, key)) {
+				i->v = obj;
 				return;
 			}
 		}
 
+		osize = table->size;
 		ivm_slot_table_expand(table, state);
-		tmp = table->tabl + i;
+		tmp = table->tabl + osize;
 		tmp->k = ivm_string_copyIfNotConst_pool(key, state);
 		tmp->v = obj;
 	}

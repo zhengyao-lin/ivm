@@ -63,27 +63,30 @@ ivm_slot_table_findSlot(ivm_slot_table_t *table,
 						const ivm_string_t *key)
 {
 	ivm_hash_val_t hash;
-	register ivm_size_t size;
 	// register ivm_uint_t h1, h2;
-	register ivm_uint_t i, j;
-
-	ivm_slot_t *tmp, *end;
+	register ivm_slot_t *i, *tmp, *end;
 	
 	if (table) {
 		if (table->is_hash) {
-			hash = ivm_hash_fromString(ivm_string_trimHead(key));
-			size = table->size;
+			hash = ivm_hash_fromString(ivm_string_trimHead(key)) % table->size;
 			// h2 = 1; // + hash % (size - 1);
 
-			for (i = hash % size, j = 0;
-				 j < size;
-				 i++, j++) {
-				if (i >= size) i = 0;
-				tmp = table->tabl + i;
-				if (IS_EMPTY_SLOT(tmp)) {
+			tmp = table->tabl + hash;
+			end = table->tabl + table->size;
+
+			for (i = tmp; i != end; i++) {
+				if (IS_EMPTY_SLOT(i)) {
 					return IVM_NULL;
-				} else if (ivm_string_compare(tmp->k, key)) {
-					return tmp;
+				} else if (ivm_string_compare(i->k, key)) {
+					return i;
+				}
+			}
+
+			for (i = table->tabl; i != tmp; i++) {
+				if (IS_EMPTY_SLOT(i)) {
+					return IVM_NULL;
+				} else if (ivm_string_compare(i->k, key)) {
+					return i;
 				}
 			}
 		} else {

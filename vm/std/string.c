@@ -115,11 +115,11 @@ ivm_string_copyIfNotConst_state(const ivm_string_t *str,
 		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 		ret = ivm_vmstate_alloc(state, size);
 		MEM_COPY(ret, str, size);
-	} else {
-		return str;
+
+		return ret;
 	}
 
-	return ret;
+	return str;
 }
 
 const ivm_string_t *
@@ -133,11 +133,11 @@ ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 		ret = ivm_heap_alloc(heap, size);
 		MEM_COPY(ret, str, size);
-	} else {
-		return str;
+
+		return ret;
 	}
 
-	return ret;
+	return str;
 }
 
 const ivm_string_t *
@@ -244,10 +244,11 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 #define HASH(hashee, cmp, copy) \
 	{                                                                               \
 		ivm_hash_val_t hash;                                                        \
-		ivm_string_t **i, **end = pool->table + pool->size;                         \
+		ivm_string_t **i, **end, **tmp;                                             \
 		ivm_ptr_t ret;                                                              \
 	                                                                                \
 		if (pool->is_fixed) {                                                       \
+			end = pool->table + pool->size;                                         \
 			for (ret = 0, i = pool->table; i != end;                                \
 				 i++, ret++) {                                                      \
 				if (!*i) {                                                          \
@@ -262,10 +263,13 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 			pool->table[ret]                                                        \
 			= copy;                                                                 \
 		} else {                                                                    \
-			hash = ivm_hash_fromString(hashee) % pool->size;                        \
+			hash = ivm_hash_fromString(hashee);                                     \
 	                                                                                \
 			while (1) {                                                             \
-				for (i = pool->table + hash; i != end; i++) {                       \
+				end = pool->table + pool->size;                                     \
+				tmp = pool->table + hash % pool->size;                              \
+                                                                                    \
+				for (i = tmp; i != end; i++) {                                      \
 					if (!*i) {                                                      \
 						*i = copy;                                                  \
 						return (ivm_ptr_t)*i;                                       \
@@ -274,8 +278,8 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 					}                                                               \
 				}                                                                   \
 	                                                                                \
-				for (i = pool->table, end = pool->table + hash;                     \
-					 i != end; i++) {                                               \
+				for (i = pool->table;                                               \
+					 i != tmp; i++) {                                               \
 					if (!*i) {                                                      \
 						*i = copy;                                                  \
 						return (ivm_ptr_t)*i;                                       \
