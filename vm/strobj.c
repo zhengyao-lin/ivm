@@ -14,7 +14,7 @@ ivm_object_t *ivm_string_object_new(ivm_vmstate_t *state,
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
 
-	ret->val = ivm_string_copyIfNotConst_state(val, state);
+	ret->val = ivm_string_copyIfNotConst_pool(val, state);
 
 	return IVM_AS_OBJ(ret);
 }

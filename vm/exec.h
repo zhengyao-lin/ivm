@@ -33,7 +33,7 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_addInstr(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN(__VA_ARGS__, (exec))))
 
-#define ivm_exec_registerString(exec, str) (ivm_string_pool_register((exec)->pool, (str)))
+#define ivm_exec_registerString(exec, str) (ivm_string_pool_registerRaw((exec)->pool, (str)))
 #define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
 
 #define ivm_exec_length(exec) ((exec)->next)

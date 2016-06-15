@@ -4,13 +4,13 @@
 
 #include "hash.h"
 
-ivm_hash_table_t *
-ivm_hash_table_new(ivm_size_t tsize,
-				   ivm_hash_table_comparer_t cmp,
-				   ivm_hash_function_t hash)
+ivm_c_hash_table_t *
+ivm_c_hash_table_new(ivm_size_t tsize,
+					 ivm_hash_table_comparer_t cmp,
+					 ivm_hash_function_t hash)
 {
-	ivm_hash_table_t *ret = MEM_ALLOC(sizeof(*ret),
-									  ivm_hash_table_t *);
+	ivm_c_hash_table_t *ret = MEM_ALLOC(sizeof(*ret),
+									  ivm_c_hash_table_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("hash table"));
 	IVM_ASSERT(tsize > 1, IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR("hash table init size", tsize));
@@ -31,7 +31,7 @@ ivm_hash_table_new(ivm_size_t tsize,
 }
 
 void
-ivm_hash_table_free(ivm_hash_table_t *table)
+ivm_c_hash_table_free(ivm_c_hash_table_t *table)
 {
 	if (table) {
 		MEM_FREE(table->table);
@@ -45,7 +45,7 @@ ivm_hash_table_free(ivm_hash_table_t *table)
 
 IVM_PRIVATE
 void
-ivm_hash_table_expand(ivm_hash_table_t *table) /* includes rehashing */
+ivm_c_hash_table_expand(ivm_c_hash_table_t *table) /* includes rehashing */
 {
 	ivm_size_t osize = table->tsize,
 			   dsize = osize << 1; /* dest size */
@@ -61,7 +61,7 @@ ivm_hash_table_expand(ivm_hash_table_t *table) /* includes rehashing */
 
 	for (i = 0; i < osize; i++) {
 		if (otable[i].k != IVM_NULL)
-			ivm_hash_table_insert(table, otable[i].k, otable[i].v);
+			ivm_c_hash_table_insert(table, otable[i].k, otable[i].v);
 	}
 
 	MEM_FREE(otable);
@@ -70,8 +70,8 @@ ivm_hash_table_expand(ivm_hash_table_t *table) /* includes rehashing */
 }
 
 void
-ivm_hash_table_insert(ivm_hash_table_t *table,
-					  void *key, void *value)
+ivm_c_hash_table_insert(ivm_c_hash_table_t *table,
+						void *key, void *value)
 {
 	ivm_hash_val_t hash = table->hash(key);
 	ivm_size_t size;
@@ -100,7 +100,7 @@ ivm_hash_table_insert(ivm_hash_table_t *table,
 		}
 
 		/* allocate new space */
-		ivm_hash_table_expand(table);
+		ivm_c_hash_table_expand(table);
 	}
 
 END:
@@ -112,8 +112,8 @@ END:
 #define SET_FAILED(flag) ((flag) ? *(flag) = IVM_FALSE : IVM_FALSE)
 
 void *
-ivm_hash_table_getValue(ivm_hash_table_t *table,
-						void *key, ivm_bool_t *suc)
+ivm_c_hash_table_getValue(ivm_c_hash_table_t *table,
+						  void *key, ivm_bool_t *suc)
 {
 	ivm_hash_val_t hash = table->hash(key);
 	ivm_size_t size;

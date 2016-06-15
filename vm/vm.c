@@ -93,6 +93,9 @@ ivm_vmstate_new()
 	ret->fr_pool
 	= ivm_frame_pool_new(IVM_DEFAULT_FRAME_POOL_SIZE);
 
+	ret->const_pool
+	= ivm_string_pool_new(IVM_FALSE);
+
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 
@@ -130,6 +133,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);
 		ivm_frame_pool_free(state->fr_pool);
+
+		ivm_string_pool_free(state->const_pool);
 
 		ivm_type_list_foreach(state->type_list, ivm_type_free);
 		ivm_type_list_free(state->type_list);

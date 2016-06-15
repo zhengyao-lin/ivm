@@ -13,6 +13,7 @@ IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 struct ivm_heap_t_tag;
+struct ivm_string_pool_t_tag;
 
 #define IVM_STRDUP ivm_strdup
 #define IVM_STRCMP strcmp
@@ -55,6 +56,15 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 							   struct ivm_heap_t_tag *heap);
 
+ivm_ptr_t
+ivm_string_pool_register(struct ivm_string_pool_t_tag *pool,
+						 const ivm_string_t *str);
+
+/* if the length of string is bigger than IVM_DEFAULT_CONST_THRESHOLD, alloc in the state; else in the pool */
+const ivm_string_t *
+ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
+							   struct ivm_vmstate_t_tag *state);
+
 #define ivm_string_length(str) \
 	((str)->len)
 
@@ -87,26 +97,38 @@ typedef ivm_ptlist_t ivm_string_list_t;
 #define ivm_string_list_at(list, i) ((ivm_string_t *)ivm_ptlist_at((list), (i)))
 #define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (void *)(str), ivm_string_compareToRaw))
 
-typedef struct {
+typedef struct ivm_string_pool_t_tag {
 	struct ivm_heap_t_tag *heap;
-	ivm_string_list_t *set;
+
+	ivm_bool_t is_fixed;
+	ivm_size_t size;
+	ivm_string_t **table;
 } ivm_string_pool_t;
 
 ivm_string_pool_t *
-ivm_string_pool_new();
+ivm_string_pool_new(ivm_bool_t is_fixed);
 
 void
 ivm_string_pool_free(ivm_string_pool_t *pool);
 
-ivm_size_t
+ivm_ptr_t
 ivm_string_pool_register(ivm_string_pool_t *pool,
-						 const ivm_char_t *str);
+						 const ivm_string_t *str);
 
+ivm_ptr_t
+ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
+							const ivm_char_t *str);
+
+#define ivm_string_pool_get(pool, i) ((pool)->table[i])
+
+IVM_INLINE
 const ivm_string_t *
 ivm_string_pool_store(ivm_string_pool_t *pool,
-					  const ivm_char_t *str);
-
-#define ivm_string_pool_get(pool, i) (ivm_string_list_at((pool)->set, (i)))
+					  const ivm_char_t *str)
+{
+	ivm_size_t i = ivm_string_pool_registerRaw(pool, str);
+	return ivm_string_pool_get(pool, i);
+}
 
 IVM_COM_END
 

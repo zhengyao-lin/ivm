@@ -66,7 +66,7 @@ int test_fib()
 	ivm_ctchain_t *chain;
 	ivm_size_t addr1, addr2;
 
-	str_pool = ivm_string_pool_new();
+	str_pool = ivm_string_pool_new(IVM_TRUE);
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
 	exec1 = ivm_exec_new(str_pool);
@@ -205,7 +205,7 @@ int test_call()
 						"vvvvv", "wwwww", "xxxxx", "yyyyy",
 						"zzzzz" };
 
-	str_pool = ivm_string_pool_new();
+	str_pool = ivm_string_pool_new(IVM_TRUE);
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
 	exec1 = ivm_exec_new(str_pool);
@@ -318,7 +318,7 @@ int test_vm()
 	obj1 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
 	obj2 = ivm_numeric_new(state, 110);
 	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
-	str_pool = ivm_string_pool_new();
+	str_pool = ivm_string_pool_new(IVM_TRUE);
 
 	exec1 = ivm_exec_new(str_pool);
 	exec2 = ivm_exec_new(str_pool);
@@ -610,10 +610,49 @@ int main()
 	ivm_env_init();
 
 	// test_call();
-	// test_vm();
-	test_fib();
+	test_vm();
+	// test_fib();
 
 	// profile_type();
+
+#if 0
+	ivm_string_pool_t *pool = ivm_string_pool_new(IVM_FALSE);
+	ivm_string_t *ret;
+	char *chartab[] = { "a", "b", "c", "d",
+						"e", "f", "g", "h",
+						"i", "j", "k", "l",
+						"m", "n", "o", "p",
+						"q", "r", "s", "t",
+						"u", "v", "w", "x",
+						"y", "z", "aa", "bb",
+						"cc", "dd", "ee", "ff",
+						"gg", "hh", "ii", "jj",
+						"kk", "ll", "mm", "nn",
+						"oo", "pp", "qq", "rr",
+						"ss", "tt", "uu", "vv",
+						"ww", "xx", "yy", "zz",
+						"aaa", "bbb", "ccc", "ddd",
+						"fff", "ggg", "hhh", "iii",
+						"jjj", "kkk", "lll", "mmm",
+						"nnn", "ooo", "ppp", "qqq",
+						"rrr", "sss", "ttt", "uuu",
+						"vvv", "www", "xxx", "yyy",
+						"zzz" };
+
+	for (int i = 0; i < sizeof(chartab) / sizeof(char *); i++) {
+		ivm_string_pool_registerRaw(pool, chartab[i]);
+	}
+
+
+	for (int i = 0; i < 1000000; i++) {
+		ret = (ivm_string_t *)ivm_string_pool_registerRaw(pool, "r");
+	}
+
+	printf("%s\n", ivm_string_trimHead(ret));
+
+	ivm_string_pool_free(pool);
+
+#endif
 
 #if 0
 	ivm_ptchain_t *chain = ivm_ptchain_new();

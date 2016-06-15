@@ -6,6 +6,7 @@
 #include "pub/type.h"
 
 #include "std/pool.h"
+#include "std/string.h"
 #include "std/heap.h"
 #include "gc/gc.h"
 #include "obj.h"
@@ -29,6 +30,8 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_context_pool_t *ct_pool;
 	ivm_frame_pool_t *fr_pool;
 
+	ivm_string_pool_t *const_pool;
+
 	ivm_int_t gc_flag; /* gc flag:
 						  > 0: open
 						  = 0: closed
@@ -39,6 +42,7 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
 #define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
+#define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->cur_heap)
 #define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->empty_heap)
 

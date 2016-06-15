@@ -23,23 +23,23 @@ typedef struct {
 
 	ivm_hash_table_comparer_t cmp;
 	ivm_hash_function_t hash;
-} ivm_hash_table_t;
+} ivm_c_hash_table_t; /* closed(open addressing) */
 
-ivm_hash_table_t *
-ivm_hash_table_new(ivm_size_t tsize,
-				   ivm_hash_table_comparer_t cmp,
-				   ivm_hash_function_t hash);
-
-void
-ivm_hash_table_free(ivm_hash_table_t *table);
+ivm_c_hash_table_t *
+ivm_c_hash_table_new(ivm_size_t tsize,
+					 ivm_hash_table_comparer_t cmp,
+					 ivm_hash_function_t hash);
 
 void
-ivm_hash_table_insert(ivm_hash_table_t *table,
-					  void *key, void *value);
+ivm_c_hash_table_free(ivm_c_hash_table_t *table);
+
+void
+ivm_c_hash_table_insert(ivm_c_hash_table_t *table,
+						void *key, void *value);
 
 void *
-ivm_hash_table_getValue(ivm_hash_table_t *table,
-						void *key, ivm_bool_t *suc);
+ivm_c_hash_table_getValue(ivm_c_hash_table_t *table,
+						  void *key, ivm_bool_t *suc);
 
 /* hash functions */
 

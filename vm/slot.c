@@ -130,7 +130,7 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 				 i += h2, j++) {
 				tmp = &table->tabl[i % size];
 				if (IS_EMPTY_SLOT(tmp)) {
-					tmp->k = ivm_string_copyIfNotConst_state(key, state);
+					tmp->k = ivm_string_copyIfNotConst_pool(key, state);
 					tmp->v = obj;
 					return;
 				} else if (ivm_string_compare(tmp->k, key)) {
@@ -147,7 +147,7 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 			 end = table->tabl + table->size;
 			 tmp != end; tmp++, i++) {
 			if (tmp->k == IVM_NULL) {
-				tmp->k = ivm_string_copyIfNotConst_state(key, state);
+				tmp->k = ivm_string_copyIfNotConst_pool(key, state);
 				tmp->v = obj;
 				return;
 			} else if (ivm_string_compare(tmp->k, key)) {
@@ -158,7 +158,7 @@ ivm_slot_table_addSlot(ivm_slot_table_t *table,
 
 		ivm_slot_table_expand(table, state);
 		tmp = table->tabl + i;
-		tmp->k = ivm_string_copyIfNotConst_state(key, state);
+		tmp->k = ivm_string_copyIfNotConst_pool(key, state);
 		tmp->v = obj;
 	}
 
