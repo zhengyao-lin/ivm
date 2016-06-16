@@ -3,10 +3,11 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+#include "pub/type.h"
 
 #include "std/stack.h"
 #include "std/pool.h"
-#include "type.h"
+
 #include "instr.h"
 #include "exec.h"
 

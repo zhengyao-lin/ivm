@@ -4,7 +4,8 @@
 #include "pub/com.h"
 #include "pub/vm.h"
 
-#include "../std/string.h"
+#include "std/string.h"
+
 #include "../obj.h"
 #include "../context.h"
 #include "../func.h"

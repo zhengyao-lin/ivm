@@ -5,6 +5,7 @@
 #include "pub/type.h"
 
 #include "std/string.h"
+
 #include "opcode.h"
 
 IVM_COM_HEADER

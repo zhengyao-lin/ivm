@@ -2,11 +2,9 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/type.h"
 
 #include "heap.h"
-
-#include "../type.h"
-#include "../obj.h"
 
 #define OFFSET(ptr, size) (&(ptr)[size])
 #define HAS_SIZE ivm_heap_hasSize

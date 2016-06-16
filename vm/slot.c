@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
@@ -8,6 +9,7 @@
 #include "std/hash.h"
 #include "std/string.h"
 #include "std/heap.h"
+
 #include "slot.h"
 #include "obj.h"
 #include "bit.h"

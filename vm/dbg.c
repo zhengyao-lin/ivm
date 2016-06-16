@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/vm.h"
 
 #include "std/heap.h"
+
 #include "dbg.h"
 #include "opcode.h"
 #include "byte.h"

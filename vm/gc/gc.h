@@ -4,10 +4,10 @@
 #include "pub/com.h"
 #include "pub/type.h"
 
-#include "cell.h"
+#include "std/list.h"
+#include "std/heap.h"
 
-#include "../std/list.h"
-#include "../std/heap.h"
+#include "cell.h"
 
 IVM_COM_HEADER
 

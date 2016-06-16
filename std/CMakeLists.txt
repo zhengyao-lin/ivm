@@ -1,6 +1,6 @@
-# lib vm.std
+# lib std
 
-ADD_LIBRARY(vm_std SHARED
+ADD_LIBRARY(std SHARED
 			list.c
 			chain.c
 			pool.c

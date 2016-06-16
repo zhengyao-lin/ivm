@@ -2,6 +2,7 @@
 #include "pub/err.h"
 
 #include "std/string.h"
+
 #include "byte.h"
 
 const ivm_char_t *

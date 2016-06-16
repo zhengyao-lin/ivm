@@ -2,11 +2,14 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+
 #include "pub/const.h"
-#include "vm/std/pool.h"
-#include "vm/std/chain.h"
-#include "vm/std/hash.h"
-#include "vm/std/heap.h"
+
+#include "std/pool.h"
+#include "std/chain.h"
+#include "std/hash.h"
+#include "std/heap.h"
+
 #include "vm/inline/obj.h"
 #include "vm/inline/func.h"
 #include "vm/inline/context.h"
@@ -409,7 +412,7 @@ int test_vm()
 		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "s");
 		// ivm_exec_addInstr(exec1, POP);
 
-	#if 0
+	#if 1
 		/* call test */
 
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "do_nothing");
@@ -620,6 +623,10 @@ int main()
 	// test_fib();
 
 	// profile_type();
+
+#if 0
+	ivm_ptlist_free(_ivm_parser_getTokens("hi wow hey 2.3 yeah 2.3"));
+#endif
 
 #if 0
 	ivm_string_pool_t *pool = ivm_string_pool_new(IVM_FALSE);

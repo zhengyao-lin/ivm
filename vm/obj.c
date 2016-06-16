@@ -5,6 +5,7 @@
 #include "pub/vm.h"
 
 #include "std/string.h"
+
 #include "inline/obj.h"
 #include "gc/gc.h"
 #include "obj.h"

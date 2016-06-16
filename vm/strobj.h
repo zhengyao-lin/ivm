@@ -2,6 +2,7 @@
 #define _IVM_VM_STROBJ_H_
 
 #include <string.h>
+
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"

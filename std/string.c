@@ -2,12 +2,11 @@
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/type.h"
+#include "pub/bit.h"
 
 #include "string.h"
 #include "heap.h"
 #include "hash.h"
-
-#include "../bit.h"
 
 ivm_char_t *
 ivm_strdup(const ivm_char_t *src)
@@ -199,7 +198,7 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 	ret->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
 	ret->table = MEM_ALLOC_INIT(sizeof(*ret->table)
 								* IVM_DEFAULT_STRING_POOL_BUFFER_SIZE,
-								ivm_string_t **);
+								const ivm_string_t **);
 
 	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
 
@@ -224,14 +223,14 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 {
 	ivm_size_t osize = pool->size;
 	ivm_size_t ret = 0;
-	ivm_string_t **otable;
-	ivm_string_t **i, **end;
+	const ivm_string_t **otable;
+	const ivm_string_t **i, **end;
 
 	if (pool->is_fixed) {
 		pool->size <<= 1;
 		pool->table = MEM_REALLOC(pool->table,
 								  sizeof(*pool->table) * pool->size,
-								  ivm_string_t **);
+								  const ivm_string_t **);
 
 		IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
 
@@ -242,7 +241,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 
 		pool->size <<= 1;
 		pool->table = MEM_ALLOC_INIT(sizeof(*pool->table) * pool->size,
-									 ivm_string_t **);
+									 const ivm_string_t **);
 
 		for (i = otable, end = otable + osize;
 			 i != end; i++) {
@@ -258,7 +257,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 #define HASH(hashee, cmp, copy) \
 	{                                                                               \
 		ivm_hash_val_t hash;                                                        \
-		ivm_string_t **i, **end, **tmp;                                             \
+		const ivm_string_t **i, **end, **tmp;                                       \
 		ivm_ptr_t ret;                                                              \
 	                                                                                \
 		if (pool->is_fixed) {                                                       \

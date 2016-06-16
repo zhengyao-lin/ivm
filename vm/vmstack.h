@@ -3,6 +3,7 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
+
 #include "std/stack.h"
 
 IVM_COM_HEADER

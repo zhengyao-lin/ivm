@@ -2,12 +2,14 @@
 #define _IVM_VM_DBG_H_
 
 #include <stdio.h>
+
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/vm.h"
 
 #include "std/heap.h"
+
 #include "exec.h"
 #include "instr.h"
 #include "coro.h"
