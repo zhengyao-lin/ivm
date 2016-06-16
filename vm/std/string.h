@@ -48,6 +48,11 @@ ivm_string_new_heap(ivm_bool_t is_const,
 					const ivm_char_t *str,
 					struct ivm_heap_t_tag *heap);
 
+void
+ivm_string_initHead(ivm_string_t *str,
+					ivm_bool_t is_const,
+					ivm_size_t len);
+
 const ivm_string_t *
 ivm_string_copyIfNotConst_state(const ivm_string_t *str,
 								struct ivm_vmstate_t_tag *state);

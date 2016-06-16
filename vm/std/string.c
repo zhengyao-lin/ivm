@@ -88,6 +88,18 @@ ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
+void
+ivm_string_initHead(ivm_string_t *str,
+					ivm_bool_t is_const,
+					ivm_size_t len)
+{
+	if (is_const) IVM_BIT_SET_TRUE(str->is_const);
+	else IVM_BIT_SET_FALSE(str->is_const);
+	str->len = len;
+	
+	return;
+}
+
 IVM_INLINE
 ivm_string_t *
 _ivm_string_copy_heap(ivm_bool_t is_const,

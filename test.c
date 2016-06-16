@@ -396,13 +396,6 @@ int test_vm()
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
-	for (i = 0; i < 1; i++) {
-		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
-		ivm_exec_addInstr(exec1, NEW_NUM_I, 1);
-		ivm_exec_addInstr(exec1, ADD);
-		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
-	}
-
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "i");
 
@@ -410,12 +403,18 @@ int test_vm()
 	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
 	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
+		ivm_exec_addInstr(exec1, NEW_STR, "hello, ");
+		ivm_exec_addInstr(exec1, NEW_STR, "world");
+		ivm_exec_addInstr(exec1, ADD);
+		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "s");
+		// ivm_exec_addInstr(exec1, POP);
+
+	#if 0
 		/* call test */
 
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "do_nothing");
 		ivm_exec_addInstr(exec1, INVOKE, 0);
 		ivm_exec_addInstr(exec1, POP);
-	#if 1
 		
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "func");
 		ivm_exec_addInstr(exec1, NEW_NUM_I, 2);
