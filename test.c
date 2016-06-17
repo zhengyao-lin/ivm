@@ -21,6 +21,8 @@
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
+#include "util/parser.h"
+
 IVM_NATIVE_FUNC(test)
 {
 	IVM_OUT("from native!!\n");
@@ -625,7 +627,7 @@ int main()
 	// profile_type();
 
 #if 0
-	ivm_ptlist_free(_ivm_parser_getTokens("hi wow hey 2.3 yeah 2.3"));
+	ivm_list_free(_ivm_parser_getTokens("h\"i wow \"s2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
 #endif
 
 #if 0

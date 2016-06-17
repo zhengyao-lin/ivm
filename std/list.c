@@ -86,3 +86,33 @@ ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr,
 
 	return -1;
 }
+
+ivm_list_t *
+ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
+{
+	ivm_list_t *ret = MEM_ALLOC(sizeof(*ret),
+								ivm_list_t *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list"));
+
+	ret->esize = esize;
+	ret->alloc = buf_size;
+	ret->cur = 0;
+	ret->lst = MEM_ALLOC(esize * buf_size,
+						 ivm_byte_t *);
+
+	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
+
+	return ret;
+}
+
+void
+ivm_list_free(ivm_list_t *list)
+{
+	if (list) {
+		MEM_FREE(list->lst);
+		MEM_FREE(list);
+	}
+
+	return;
+}

@@ -121,6 +121,49 @@ ivm_ptlist_insert(ivm_ptlist_t *ptlist,
 	return;
 }
 
+typedef struct {
+	ivm_size_t esize;
+
+	ivm_size_t alloc;
+	ivm_size_t cur;
+	ivm_byte_t *lst;
+} ivm_list_t;
+
+ivm_list_t *
+ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size);
+
+#define ivm_list_new(type) (ivm_list_new_c(sizeof(type), IVM_DEFAULT_LIST_BUFFER_SIZE))
+
+void
+ivm_list_free(ivm_list_t *list);
+
+IVM_INLINE
+void
+_ivm_list_expand(ivm_list_t *list)
+{
+	list->alloc <<= 1;
+	list->lst = MEM_REALLOC(list->lst,
+							list->esize * list->alloc,
+							ivm_byte_t *);
+	return;
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_list_push(ivm_list_t *list, void *e)
+{
+	if (list->cur >= list->alloc) {
+		_ivm_list_expand(list);
+	}
+
+	MEM_COPY(list->lst + (list->cur * list->esize),
+			 e, list->esize);
+
+	return list->cur++;
+}
+
+#define ivm_list_at(list, i) ((void *)((list)->lst + ((i) * (list)->esize)))
+
 IVM_COM_END
 
 #endif
