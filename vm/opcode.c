@@ -3,6 +3,8 @@
 #include "pub/err.h"
 #include "pub/vm.h"
 
+#include "std/string.h"
+
 #include "inline/vm.h"
 #include "opcode.h"
 #include "coro.h"
@@ -38,19 +40,21 @@ opcode_table[] = {
 
 #endif
 
-const char *
+const ivm_char_t *
 ivm_opcode_table_getArg(ivm_opcode_t opc)
 {
 	checkLegal(opc);
 	return opcode_table[opc].args;
 }
 
-const char *
+const ivm_char_t *
 ivm_opcode_table_getName(ivm_opcode_t opc)
 {
 	checkLegal(opc);
 	return opcode_table[opc].name;
 }
+
+#define TABLE_SIZE (sizeof(opcode_table) / sizeof(*opcode_table))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
@@ -60,7 +64,7 @@ ivm_opcode_table_initOpEntry()
 	void **table = ivm_coro_getOpcodeEntry();
 	ivm_int_t i;
 
-	for (i = 0; i <= IVM_OPCODE(LAST); i++) {
+	for (i = 0; i < TABLE_SIZE; i++) {
 		opcode_table[i].entry = table[i];
 	}
 
@@ -75,3 +79,17 @@ ivm_opcode_table_getEntry(ivm_opcode_t opc)
 }
 
 #endif
+
+ivm_opcode_t
+ivm_opcode_searchOp(const ivm_char_t *name)
+{
+	ivm_int_t i;
+
+	for (i = 0; i < TABLE_SIZE; i++) {
+		if (!IVM_STRCMP(opcode_table[i].name, name)) {
+			return opcode_table[i].opc;
+		}
+	}
+
+	return IVM_OPCODE(LAST);
+}

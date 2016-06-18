@@ -16,8 +16,8 @@ struct ivm_exec_t_tag;
 
 typedef struct ivm_instr_t_tag {
 	void *entry;
-	ivm_opcode_arg_t arg;
 	ivm_byte_t opc;
+	ivm_opcode_arg_t arg;
 } ivm_instr_t;
 
 #else
@@ -29,8 +29,19 @@ typedef struct ivm_instr_t_tag {
 
 #endif
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+
+#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(opc), .opc = (opc), ##__VA_ARGS__ })
+
+#else
+
+#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .opc = (opc), ##__VA_ARGS__ })
+
+#endif
+
 #define IVM_INSTR_TYPE_N_ARG
-#define IVM_INSTR_TYPE_I_ARG ivm_opcode_arg_t arg,
+#define IVM_INSTR_TYPE_I_ARG ivm_long_t arg,
+#define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,
 #define IVM_INSTR_TYPE_S_ARG const char *str,
 
 #define IVM_INSTR_GEN(o, ...) \

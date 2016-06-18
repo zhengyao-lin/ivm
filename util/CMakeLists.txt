@@ -9,3 +9,6 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # add include files
 INCLUDE_DIRECTORIES(${IVM_PUB_HEAD_DIR})
+
+# link libraries
+TARGET_LINK_LIBRARIES(util m)

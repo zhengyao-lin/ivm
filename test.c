@@ -534,7 +534,6 @@ int test_vm()
 
 	ivm_vmstate_unlockGCFlag(state);
 
-
 	ivm_perf_startProfile();
 
 	/* start executing */
@@ -616,6 +615,12 @@ strhash(const char *key)
 	return hash;
 }
 
+struct token_t {
+	ivm_int_t id;
+	ivm_size_t len;
+	const ivm_char_t *val;
+};
+
 int main()
 {
 	ivm_env_init();
@@ -627,7 +632,31 @@ int main()
 	// profile_type();
 
 #if 0
-	ivm_list_free(_ivm_parser_getTokens("h\"i wow \"s2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
+	const char num[] = "0b1010101";
+	const char str[] = "\\\"sdssd\\p\\n";
+	ivm_bool_t err = IVM_FALSE;
+	ivm_list_t *tokens;
+	ivm_exec_t *exec;
+
+	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
+
+	IVM_TRACE("%f %d\n",
+			  _ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
+
+	ivm_perf_startProfile();
+
+	tokens = _ivm_parser_getTokens("get_slot \"hi\"\npop");
+	exec = ivm_parser_tokenToExec(tokens);
+
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
+
+	IVM_TRACE("\nresult:\n");
+	ivm_dbg_printExec(exec, "  ", stderr);
+
+	ivm_list_free(tokens);
+	ivm_string_pool_free(exec->pool);
+	ivm_exec_free(exec);
 #endif
 
 #if 0

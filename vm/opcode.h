@@ -23,7 +23,7 @@ typedef enum {
 #define OPCODE_GEN(o, name, arg, ...) IVM_OPCODE(o),
 	#include "opcode.def.h"
 #undef OPCODE_GEN
-
+	IVM_OPCODE(LAST)
 } ivm_opcode_t;
 
 typedef ivm_int_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
@@ -35,14 +35,14 @@ typedef ivm_int_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
 
 typedef struct {
 	ivm_opcode_t opc;
-	const char *name;
-	const char *args;
+	const ivm_char_t *name;
+	const ivm_char_t *args;
 	void *entry; /* in direct threading */
 } ivm_opcode_entry_t;
 
-const char *
+const ivm_char_t *
 ivm_opcode_table_getArg(ivm_opcode_t opc);
-const char *
+const ivm_char_t *
 ivm_opcode_table_getName(ivm_opcode_t opc);
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
@@ -54,6 +54,10 @@ void *
 ivm_opcode_table_getEntry(ivm_opcode_t opc);
 
 #endif
+
+/* return LAST if the name is not found */
+ivm_opcode_t
+ivm_opcode_searchOp(const ivm_char_t *name);
 
 IVM_COM_END
 

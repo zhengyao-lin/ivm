@@ -9,13 +9,16 @@
 #include "exec.h"
 
 #define INSTR_TYPE_N_ARG_INIT(instr, exec) \
-	(0)
+	ivm_opcode_arg_fromInt(0)
 
 #define INSTR_TYPE_I_ARG_INIT(instr, exec) \
-	(arg)
+	ivm_opcode_arg_fromInt(arg)
+
+#define INSTR_TYPE_F_ARG_INIT(instr, exec) \
+	ivm_opcode_arg_fromFloat(arg)
 
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
-	(ivm_exec_registerString((exec), str))
+	ivm_opcode_arg_fromInt(ivm_exec_registerString((exec), str))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#define OPCODE_GEN(o, name, arg, ...) \
@@ -24,8 +27,8 @@
 		{ \
 			return (ivm_instr_t) { \
 				ivm_opcode_table_getEntry(IVM_OPCODE(o)), \
-				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)), \
-				IVM_OPCODE(o) \
+				IVM_OPCODE(o), \
+				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)) \
 			}; \
 		}
 

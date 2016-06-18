@@ -28,17 +28,29 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 
 	sprintf(buffer, format, pc / sizeof(*ip));
 	// "%4ld: "
-
-	if (ivm_opcode_table_getArg(ip->opc)[0] == 'N') {
-		fprintf(fp, "%s%s",
-				buffer, ivm_opcode_table_getName(ip->opc));
-	} else {
-		fprintf(fp, "%s%-20s %d",
-				buffer, ivm_opcode_table_getName(ip->opc),
-				ip->arg);
-		if (ivm_opcode_table_getArg(ip->opc)[0] == 'S') {
-			fprintf(fp, "(\"%s\")", ivm_string_trimHead(ivm_exec_getString(exec, ip->arg)));
-		}
+	// 
+	switch (ivm_opcode_table_getArg(ip->opc)[0]) {
+		case 'N':
+			fprintf(fp, "%s%s",
+					buffer, ivm_opcode_table_getName(ip->opc));
+			break;
+		case 'I':
+			fprintf(fp, "%s%-20s %f",
+					buffer, ivm_opcode_table_getName(ip->opc),
+					ivm_opcode_arg_toFloat(ip->arg));
+			break;
+		case 'F':
+			fprintf(fp, "%s%-20s %ld",
+					buffer, ivm_opcode_table_getName(ip->opc),
+					ivm_opcode_arg_toInt(ip->arg));
+			break;
+		case 'S':
+			fprintf(fp, "%s%-20s #%ld",
+					buffer, ivm_opcode_table_getName(ip->opc),
+					ivm_opcode_arg_toInt(ip->arg));
+			fprintf(fp, "(\"%s\")",
+					ivm_string_trimHead(ivm_exec_getString(exec, ivm_opcode_arg_toInt(ip->arg))));
+			break;
 	}
 
 	return;

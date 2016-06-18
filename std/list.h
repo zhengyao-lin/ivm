@@ -132,7 +132,7 @@ typedef struct {
 ivm_list_t *
 ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size);
 
-#define ivm_list_new(type) (ivm_list_new_c(sizeof(type), IVM_DEFAULT_LIST_BUFFER_SIZE))
+#define ivm_list_new(size) (ivm_list_new_c((size), IVM_DEFAULT_LIST_BUFFER_SIZE))
 
 void
 ivm_list_free(ivm_list_t *list);
@@ -159,10 +159,11 @@ ivm_list_push(ivm_list_t *list, void *e)
 	MEM_COPY(list->lst + (list->cur * list->esize),
 			 e, list->esize);
 
-	return list->cur++;
+	return ++list->cur;
 }
 
 #define ivm_list_at(list, i) ((void *)((list)->lst + ((i) * (list)->esize)))
+#define ivm_list_size(list) ((list)->cur)
 
 IVM_COM_END
 

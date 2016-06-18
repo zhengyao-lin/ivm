@@ -45,7 +45,7 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_instrPtrStart(exec) ((exec)->instrs)
 #define ivm_exec_instrPtrEnd(exec) ((exec)->instrs + (exec)->next)
 
-#define ivm_exec_setArgAt(exec, i, val) ((exec)->instrs[i].arg = (val))
+#define ivm_exec_setArgAt(exec, i, val) ((exec)->instrs[i].arg = ivm_opcode_arg_fromInt(val))
 
 #define ivm_exec_argAt(exec, i) ((exec)->instrs[i].arg)
 #define ivm_exec_opcAt(exec, i) ((exec)->instrs[i].opc)

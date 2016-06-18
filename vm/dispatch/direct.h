@@ -69,7 +69,8 @@
 #define RETURN() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
-#define _ARG (_INSTR->arg)
+#define _ARG (ivm_opcode_arg_toInt(_INSTR->arg))
+#define _FARG (ivm_opcode_arg_toFloat(_INSTR->arg))
 
 #define STACK_TOP_NOCACHE() (ivm_vmstack_at(_STACK, tmp_sp - 1))
 #define STACK_PUSH_NOCACHE(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)

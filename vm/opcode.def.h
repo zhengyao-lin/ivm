@@ -17,6 +17,11 @@ OPCODE_GEN(NEW_NUM_I, "new_num_i", I, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(NEW_NUM_F, "new_num_f", F, {
+	STACK_PUSH(ivm_numeric_new(_STATE, _FARG));
+	NEXT_INSTR();
+})
+
 /*
 OPCODE_GEN(NEW_NUM_S, "new_num_s", S, {
 	NEXT_INSTR();
@@ -128,7 +133,7 @@ OPCODE_GEN(POP, "pop", N, {
 })
 
 OPCODE_GEN(DUP, "dup", I, {
-	ivm_opcode_arg_t i = _ARG;
+	ivm_size_t i = _ARG;
 	CHECK_STACK(i + 1);
 	STACK_PUSH(STACK_BEFORE(i));
 
@@ -291,10 +296,5 @@ OPCODE_GEN(TEST2, "test2", I, {
 OPCODE_GEN(TEST3, "test3", S, {
 	IVM_OUT("morning! this is test3\n");
 	IVM_OUT("string argument: %s\n", ivm_string_trimHead(ivm_string_pool_get(_STRING_POOL, _ARG)));
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(LAST, "last", N, {
-	IVM_ASSERT(0, "last opcode is executed");
 	NEXT_INSTR();
 })
