@@ -12,58 +12,52 @@
 #include "call.h"
 #include "coro.h"
 
-IVM_PRIVATE
+IVM_INLINE
 void
-ivm_function_init(ivm_vmstate_t *state,
-				  ivm_function_t *func,
-				  ivm_exec_t *body,
-				  ivm_signal_mask_t intsig)
+_ivm_function_init(ivm_vmstate_t *state,
+				   ivm_function_t *func,
+				   ivm_exec_t *body)
 {
 	func->is_native = IVM_FALSE;
-	func->u.f.body = body;
-	func->intsig = intsig;
+	func->u.body = body;
 
 	return;
 }
 
-IVM_PRIVATE
+IVM_INLINE
 void
-ivm_function_initNative(ivm_vmstate_t *state,
-					    ivm_function_t *func,
-						ivm_native_function_t native,
-						ivm_signal_mask_t intsig)
+_ivm_function_initNative(ivm_vmstate_t *state,
+						 ivm_function_t *func,
+						 ivm_native_function_t native)
 {
 	func->is_native = IVM_TRUE;
 	func->u.native = native;
-	func->intsig = intsig;
 
 	return;
 }
 
 ivm_function_t *
 ivm_function_new(ivm_vmstate_t *state,
-				 ivm_exec_t *body,
-				 ivm_signal_mask_t intsig)
+				 ivm_exec_t *body)
 {
 	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
 
-	ivm_function_init(state, ret, body, intsig);
+	_ivm_function_init(state, ret, body);
 
 	return ret;
 }
 
 ivm_function_t *
 ivm_function_newNative(ivm_vmstate_t *state,
-					   ivm_native_function_t func,
-					   ivm_signal_mask_t intsig)
+					   ivm_native_function_t func)
 {
 	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("native function"));
 
-	ivm_function_initNative(state, ret, func, intsig);
+	_ivm_function_initNative(state, ret, func);
 
 	return ret;
 }

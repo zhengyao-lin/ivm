@@ -13,7 +13,6 @@
 #include "vm/inline/obj.h"
 #include "vm/inline/func.h"
 #include "vm/inline/context.h"
-#include "vm/env.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
@@ -22,6 +21,7 @@
 #include "vm/gc/gc.h"
 
 #include "util/parser.h"
+#include "util/env.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -77,8 +77,8 @@ int test_fib()
 	exec1 = ivm_exec_new(str_pool);
 	exec2 = ivm_exec_new(str_pool);
 
-	top = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
-	fib = ivm_function_new(state, exec2, IVM_INTSIG_NONE);
+	top = ivm_function_new(state, exec1);
+	fib = ivm_function_new(state, exec2);
 	
 	coro = ivm_coro_new();
 	chain = ivm_ctchain_new(state, 1);
@@ -215,8 +215,8 @@ int test_call()
 
 	exec1 = ivm_exec_new(str_pool);
 
-	top = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
-	empty = ivm_function_new(state, IVM_NULL, IVM_INTSIG_NONE);
+	top = ivm_function_new(state, exec1);
+	empty = ivm_function_new(state, IVM_NULL);
 	
 	coro = ivm_coro_new();
 	chain = ivm_ctchain_new(state, 1);
@@ -320,9 +320,9 @@ int test_vm()
 						"zzz" };
 
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
-	obj1 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test), IVM_INTSIG_NONE));
+	obj1 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test)));
 	obj2 = ivm_numeric_new(state, 110);
-	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func), IVM_INTSIG_NONE));
+	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func)));
 	str_pool = ivm_string_pool_new(IVM_TRUE);
 
 	exec1 = ivm_exec_new(str_pool);
@@ -339,10 +339,10 @@ int test_vm()
 
 	ivm_object_printSlots(proto);
 
-	func1 = ivm_function_new(state, exec1, IVM_INTSIG_NONE);
-	func2 = ivm_function_new(state, exec2, IVM_INTSIG_NONE);
-	func3 = ivm_function_new(state, exec3, IVM_INTSIG_NONE);
-	func4 = ivm_function_new(state, exec4, IVM_INTSIG_NONE);
+	func1 = ivm_function_new(state, exec1);
+	func2 = ivm_function_new(state, exec2);
+	func3 = ivm_function_new(state, exec3);
+	func4 = ivm_function_new(state, exec4);
 	
 	chain = ivm_ctchain_new(state, 2);
 	ivm_ctchain_setAt(chain, 0, obj1);

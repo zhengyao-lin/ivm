@@ -31,7 +31,7 @@ typedef struct ivm_instr_t_tag {
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
-#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(opc), .opc = (opc), ##__VA_ARGS__ })
+#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(opc), .opc = (opc), __VA_ARGS__ })
 
 #else
 

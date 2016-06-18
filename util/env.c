@@ -1,7 +1,7 @@
 #include "pub/const.h"
+#include "pub/vm.h"
 
 #include "env.h"
-#include "opcode.h"
 
 int
 ivm_env_init()

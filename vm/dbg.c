@@ -152,8 +152,7 @@ ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
 
 IVM_PRIVATE
 const char
-stack_border[] = "--------------",
-stack_split[] = "| ";
+stack_border[] = "--------------";
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX_CELL_COUNT 10

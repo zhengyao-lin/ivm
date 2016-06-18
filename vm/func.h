@@ -67,23 +67,19 @@ enum {
 typedef struct ivm_function_t_tag {
 	ivm_bool_t is_native;
 	union {
-		struct {
-			ivm_exec_t *body;
-		} f;
+		ivm_exec_t *body;
 		ivm_native_function_t native;
 	} u;
-	ivm_signal_mask_t intsig;
+	// ivm_signal_mask_t intsig;
 } ivm_function_t;
 
 ivm_function_t *
 ivm_function_new(struct ivm_vmstate_t_tag *state,
-				 ivm_exec_t *body,
-				 ivm_signal_mask_t intsig);
+				 ivm_exec_t *body);
 
 ivm_function_t *
 ivm_function_newNative(struct ivm_vmstate_t_tag *state,
-					   ivm_native_function_t func,
-					   ivm_signal_mask_t intsig);
+					   ivm_native_function_t func);
 
 void
 ivm_function_free(ivm_function_t *func,

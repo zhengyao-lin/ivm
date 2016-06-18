@@ -26,7 +26,7 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 	} else {
 		context = ivm_ctchain_appendContext(context, state,
 											ivm_context_new(state));
-		ivm_runtime_invoke(runtime, state, func->u.f.body, context);
+		ivm_runtime_invoke(runtime, state, func->u.body, context);
 	}
 
 	return;

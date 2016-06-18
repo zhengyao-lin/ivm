@@ -17,7 +17,6 @@ ADD_LIBRARY(vm SHARED
 			dbg.c
 			oprt.c
 			proto.c
-			env.c
 			call.c
 			perf.c
 			gc/cell.c

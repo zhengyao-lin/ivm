@@ -167,7 +167,7 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 
 
 	#define NEXT_INIT ((struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS })
-	#define CUR_INIT ((struct token_t) { .len = 0, .val = c--, .line = LINE, .pos = POS })
+	#define CUR_INIT (c--, (struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS + 1 })
 	#define LINE (line)
 	#define POS ((ivm_ptr_t)c - col)
 
