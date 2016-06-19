@@ -284,8 +284,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
                                                                                     \
 				for (i = tmp; i != end; i++) {                                      \
 					if (!*i) {                                                      \
-						*i = copy;                                                  \
-						return (ivm_ptr_t)*i;                                       \
+						return (ivm_ptr_t)(*i = copy);                              \
 					} else if (cmp) {                                               \
 						return (ivm_ptr_t)*i;                                       \
 					}                                                               \
@@ -294,8 +293,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 				for (i = pool->table;                                               \
 					 i != tmp; i++) {                                               \
 					if (!*i) {                                                      \
-						*i = copy;                                                  \
-						return (ivm_ptr_t)*i;                                       \
+						return (ivm_ptr_t)(*i = copy);                              \
 					} else if (cmp) {                                               \
 						return (ivm_ptr_t)*i;                                       \
 					}                                                               \

@@ -14,11 +14,14 @@
 #define INSTR_TYPE_I_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromInt(arg)
 
+#define INSTR_TYPE_X_ARG_INIT(instr, exec) \
+	ivm_opcode_arg_fromInt(arg)
+
 #define INSTR_TYPE_F_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromFloat(arg)
 
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
-	ivm_opcode_arg_fromInt(ivm_exec_registerString((exec), str))
+	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#define OPCODE_GEN(o, name, arg, ...) \

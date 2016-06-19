@@ -18,7 +18,6 @@ ADD_LIBRARY(vm SHARED
 			oprt.c
 			proto.c
 			call.c
-			perf.c
 			gc/cell.c
 			gc/gc.c)
 

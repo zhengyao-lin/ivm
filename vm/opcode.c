@@ -41,10 +41,10 @@ opcode_table[] = {
 #endif
 
 const ivm_char_t *
-ivm_opcode_table_getArg(ivm_opcode_t opc)
+ivm_opcode_table_getParam(ivm_opcode_t opc)
 {
 	checkLegal(opc);
-	return opcode_table[opc].args;
+	return opcode_table[opc].param;
 }
 
 const ivm_char_t *

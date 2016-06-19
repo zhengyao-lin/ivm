@@ -11,6 +11,15 @@ typedef struct {
 	ivm_exec_list_t *exec_list;
 } ivm_gen_env_t;
 
+ivm_gen_env_t *
+ivm_gen_env_new();
+
+void
+ivm_gen_env_free(ivm_gen_env_t *env);
+
+ivm_exec_t *
+ivm_gen_env_newExec(ivm_gen_env_t *env);
+
 int
 ivm_env_init();
 

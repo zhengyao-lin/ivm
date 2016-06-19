@@ -5,7 +5,7 @@
 #define _RUNTIME (tmp_runtime)
 #define _CONTEXT (tmp_context)
 #define _STATE (state)
-#define _STRING_POOL (tmp_exec->pool)
+#define _EXEC (tmp_exec)
 #define _INSTR (tmp_ip)
 
 #define _DBG_RUNTIME_DEFAULT \
@@ -52,7 +52,7 @@
 			SAVE_STACK();                         \
 			ivm_vmstate_doGC(state);              \
 		}                                         \
-		goto *(tmp_ip->entry);                    \
+		goto *(ivm_instr_entry(tmp_ip));          \
 	} else {                                      \
 		goto END_EXEC;                            \
 	}
@@ -60,7 +60,7 @@
 #define NEXT_N_INSTR(n) \
 	if ((tmp_ip += (n)) != tmp_ip_end) {          \
 		IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
-		goto *(tmp_ip->entry);                    \
+		goto *(ivm_instr_entry(tmp_ip));          \
 	} else {                                      \
 		goto END_EXEC;                            \
 	}                                             \
@@ -69,8 +69,12 @@
 #define RETURN() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
-#define _ARG (ivm_opcode_arg_toInt(_INSTR->arg))
-#define _FARG (ivm_opcode_arg_toFloat(_INSTR->arg))
+#define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
+#define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))
+// #define SARG() (ivm_exec_getString(_EXEC, ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR))))
+#define PARG(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg(_INSTR)))
+#define SARG() (PARG(const ivm_string_t *))
+#define XARG() (ivm_vmstate_getFunc(_STATE, IARG()))
 
 #define STACK_TOP_NOCACHE() (ivm_vmstack_at(_STACK, tmp_sp - 1))
 #define STACK_PUSH_NOCACHE(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)

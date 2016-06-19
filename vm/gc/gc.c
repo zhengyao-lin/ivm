@@ -4,8 +4,7 @@
 #include "pub/err.h"
 #include "pub/vm.h"
 
-#include "gc.h"
-#include "cell.h"
+#include "util/perf.h"
 
 #include "../slot.h"
 #include "../obj.h"
@@ -13,7 +12,8 @@
 #include "../coro.h"
 #include "../call.h"
 #include "../context.h"
-#include "../perf.h"
+
+#include "gc.h"
 
 ivm_collector_t *
 ivm_collector_new()

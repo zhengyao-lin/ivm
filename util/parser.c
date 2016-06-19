@@ -550,7 +550,7 @@ RULE(instr_end)
 RULE(instr)
 {
 	ivm_opcode_t opc;
-	const ivm_char_t *arg_def;
+	const ivm_char_t *param;
 	struct token_t *tmp_token;
 	struct rule_val_t ret;
 
@@ -567,11 +567,11 @@ RULE(instr)
 			tmp_str[tmp_token->len] = '\0';
 
 			opc = ivm_opcode_searchOp(tmp_str);
-			arg_def = ivm_opcode_table_getArg(opc);
+			param = ivm_opcode_table_getParam(opc);
 
-			if (arg_def[0] != ret.u.arg.type) {
+			if (param[0] != ret.u.arg.type) {
 				PARSER_ERR_LP(ret.line, ret.pos,
-							  PARSER_ERR_MSG_UNMATCHED_ARGUMENT(tmp_str, ret.u.arg.type, arg_def[0]));
+							  PARSER_ERR_MSG_UNMATCHED_ARGUMENT(tmp_str, ret.u.arg.type, param[0]));
 			}
 
 			ivm_exec_addInstr_c(_ENV->exec, ivm_instr_build(opc, ret.u.arg.val));
@@ -586,14 +586,14 @@ RULE(instr)
 			tmp_str[tmp_token->len] = '\0';
 
 			opc = ivm_opcode_searchOp(tmp_str);
-			arg_def = ivm_opcode_table_getArg(opc);
+			param = ivm_opcode_table_getParam(opc);
 
-			if (arg_def[0] != 'N') {
+			if (param[0] != 'N') {
 				PARSER_ERR_LP(tmp_token->line, tmp_token->pos,
-							  PARSER_ERR_MSG_UNMATCHED_ARGUMENT(tmp_str, 'N', arg_def[0]));
+							  PARSER_ERR_MSG_UNMATCHED_ARGUMENT(tmp_str, 'N', param[0]));
 			}
 
-			ivm_exec_addInstr_c(_ENV->exec, ivm_instr_build(opc, { 0 }));
+			ivm_exec_addInstr_c(_ENV->exec, ivm_instr_build(opc, ivm_opcode_arg_fromInt(0)));
 		})
 	);
 

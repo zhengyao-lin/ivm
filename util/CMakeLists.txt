@@ -2,7 +2,8 @@
 
 ADD_LIBRARY(util STATIC
 			parser.c
-			env.c)
+			env.c
+			perf.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

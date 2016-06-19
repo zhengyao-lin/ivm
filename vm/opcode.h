@@ -36,12 +36,12 @@ typedef ivm_int_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
 typedef struct {
 	ivm_opcode_t opc;
 	const ivm_char_t *name;
-	const ivm_char_t *args;
+	const ivm_char_t *param;
 	void *entry; /* in direct threading */
 } ivm_opcode_entry_t;
 
 const ivm_char_t *
-ivm_opcode_table_getArg(ivm_opcode_t opc);
+ivm_opcode_table_getParam(ivm_opcode_t opc);
 const ivm_char_t *
 ivm_opcode_table_getName(ivm_opcode_t opc);
 

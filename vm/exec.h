@@ -13,7 +13,10 @@
 
 IVM_COM_HEADER
 
+struct ivm_vmstate_t_tag;
+
 typedef struct ivm_exec_t_tag {
+	ivm_byte_t cached;
 	ivm_string_pool_t *pool;
 
 	ivm_size_t alloc;
@@ -49,6 +52,12 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 
 #define ivm_exec_argAt(exec, i) ((exec)->instrs[i].arg)
 #define ivm_exec_opcAt(exec, i) ((exec)->instrs[i].opc)
+
+#define ivm_exec_cached(exec) ((exec)->cached)
+	
+void
+ivm_exec_preproc(ivm_exec_t *exec,
+				 struct ivm_vmstate_t_tag *state);
 
 typedef ivm_size_t ivm_exec_id_t;
 typedef ivm_ptlist_t ivm_exec_list_t;

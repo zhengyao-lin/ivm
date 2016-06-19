@@ -15,6 +15,15 @@ clock_t ivm_perf_program_start;
 clock_t ivm_perf_program_duration = 0;
 
 void
+ivm_perf_reset()
+{
+	ivm_perf_gc_time = 0;
+	ivm_perf_gc_count = 0;
+	ivm_perf_program_duration = 0;
+	return;
+}
+
+void
 ivm_perf_startProfile()
 {
 	ivm_perf_program_start = clock();

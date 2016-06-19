@@ -16,12 +16,12 @@
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
-#include "vm/perf.h"
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
 #include "util/parser.h"
 #include "util/env.h"
+#include "util/perf.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -150,7 +150,6 @@ int test_fib()
 	ivm_vmstate_schedule(state);
 
 	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 
@@ -269,7 +268,6 @@ int test_call()
 	ivm_vmstate_schedule(state);
 
 	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 	IVM_TRACE("\nstack state:\n");
@@ -541,7 +539,6 @@ int test_vm()
 	ivm_vmstate_schedule(state);
 
 	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
 
 	ivm_dbg_heapState(state, stderr);
 
@@ -625,10 +622,11 @@ int main()
 {
 	ivm_env_init();
 
-	// test_call();
+	test_call();
 	test_vm();
-	// test_fib();
+	test_fib();
 
+	ivm_perf_printElapsed();
 	// profile_type();
 
 #if 0

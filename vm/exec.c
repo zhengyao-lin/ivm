@@ -3,6 +3,7 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/err.h"
+#include "pub/vm.h"
 
 #include "std/string.h"
 
@@ -16,6 +17,7 @@ ivm_exec_new(ivm_string_pool_t *pool)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
+	ret->cached = IVM_FALSE;
 	ret->pool = pool;
 	ret->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
 	ret->next = 0;
@@ -66,4 +68,36 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 	exec->instrs[exec->next] = instr;
 
 	return exec->next++;
+}
+
+void
+ivm_exec_preproc(ivm_exec_t *exec,
+				 ivm_vmstate_t *state)
+{
+	ivm_instr_t *i, *end;
+
+	if (!exec->cached) {
+		exec->cached = IVM_TRUE;
+		for (i = exec->instrs, end = i + exec->next;
+			 i != end; i++) {
+			switch (ivm_opcode_table_getParam(ivm_instr_opcode(i))[0]) {
+				case 'S':
+					/* string pool idx -> string pointer */
+					ivm_instr_setArg(i,
+						ivm_opcode_arg_fromPointer(
+							ivm_exec_getString(exec, /**/
+								ivm_opcode_arg_toInt(
+									ivm_instr_arg(
+										i
+									)
+								)
+							)
+						)
+					);
+					break;
+			}
+		}
+	}
+
+	return;
 }

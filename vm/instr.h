@@ -33,14 +33,21 @@ typedef struct ivm_instr_t_tag {
 
 #define ivm_instr_build(opc, ...) ((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(opc), .opc = (opc), __VA_ARGS__ })
 
+#define ivm_instr_entry(instr) ((instr)->entry)
+
 #else
 
 #define ivm_instr_build(opc, ...) ((ivm_instr_t) { .opc = (opc), ##__VA_ARGS__ })
 
 #endif
 
+#define ivm_instr_arg(instr) ((instr)->arg)
+#define ivm_instr_setArg(instr, val) ((instr)->arg = (val))
+#define ivm_instr_opcode(instr) ((instr)->opc)
+
 #define IVM_INSTR_TYPE_N_ARG
 #define IVM_INSTR_TYPE_I_ARG ivm_long_t arg,
+#define IVM_INSTR_TYPE_X_ARG ivm_long_t arg,
 #define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,
 #define IVM_INSTR_TYPE_S_ARG const char *str,
 

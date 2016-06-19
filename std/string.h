@@ -61,10 +61,6 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 							   struct ivm_heap_t_tag *heap);
 
-ivm_ptr_t
-ivm_string_pool_register(struct ivm_string_pool_t_tag *pool,
-						 const ivm_string_t *str);
-
 /* if the length of string is bigger than IVM_DEFAULT_CONST_THRESHOLD, alloc in the state; else in the pool */
 const ivm_string_t *
 ivm_string_copyIfNotConst_pool(const ivm_string_t *str,

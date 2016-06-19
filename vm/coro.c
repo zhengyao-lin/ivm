@@ -149,6 +149,9 @@ ACTION_INVOKE:
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
 			if (tmp_exec) {
+				if (!ivm_exec_cached(tmp_exec))
+					ivm_exec_preproc(tmp_exec, state);
+
 				tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
 				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
 
@@ -159,7 +162,7 @@ ACTION_INVOKE:
 					IVM_PER_INSTR_DBG(DBG_RUNTIME());
 
 					/* jump to the first opcode */
-					goto *(tmp_ip->entry);
+					goto *(ivm_instr_entry(tmp_ip));
 
 					#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
 						#include "opcode.def.h"

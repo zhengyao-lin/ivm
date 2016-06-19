@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_PERF_H_
-#define _IVM_VM_PERF_H_
+#ifndef _IVM_UTIL_PERF_H_
+#define _IVM_UTIL_PERF_H_
 
 #include <time.h>
 
@@ -13,6 +13,9 @@ IVM_COM_HEADER
 
 extern clock_t ivm_perf_gc_time;
 extern ivm_size_t ivm_perf_gc_count;
+
+void
+ivm_perf_reset();
 
 void
 ivm_perf_startProfile();

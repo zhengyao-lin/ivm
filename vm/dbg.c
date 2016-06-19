@@ -29,27 +29,27 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 	sprintf(buffer, format, pc / sizeof(*ip));
 	// "%4ld: "
 	// 
-	switch (ivm_opcode_table_getArg(ip->opc)[0]) {
+	switch (ivm_opcode_table_getParam(ivm_instr_opcode(ip))[0]) {
 		case 'N':
 			fprintf(fp, "%s%s",
-					buffer, ivm_opcode_table_getName(ip->opc));
+					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)));
 			break;
 		case 'I':
 			fprintf(fp, "%s%-20s %f",
-					buffer, ivm_opcode_table_getName(ip->opc),
-					ivm_opcode_arg_toFloat(ip->arg));
+					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+					ivm_opcode_arg_toFloat(ivm_instr_arg(ip)));
 			break;
 		case 'F':
 			fprintf(fp, "%s%-20s %ld",
-					buffer, ivm_opcode_table_getName(ip->opc),
-					ivm_opcode_arg_toInt(ip->arg));
+					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+					ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
 			break;
 		case 'S':
 			fprintf(fp, "%s%-20s #%ld",
-					buffer, ivm_opcode_table_getName(ip->opc),
-					ivm_opcode_arg_toInt(ip->arg));
+					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+					ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
 			fprintf(fp, "(\"%s\")",
-					ivm_string_trimHead(ivm_exec_getString(exec, ivm_opcode_arg_toInt(ip->arg))));
+					ivm_string_trimHead(ivm_exec_getString(exec, ivm_opcode_arg_toInt(ivm_instr_arg(ip)))));
 			break;
 	}
 

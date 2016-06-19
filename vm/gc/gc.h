@@ -7,8 +7,6 @@
 #include "std/list.h"
 #include "std/heap.h"
 
-#include "cell.h"
-
 IVM_COM_HEADER
 
 #define IVM_DEFAULT_DESTRUCT_LIST_BUFFER_SIZE 128
