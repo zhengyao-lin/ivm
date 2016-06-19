@@ -622,9 +622,9 @@ int main()
 {
 	ivm_env_init();
 
-	test_call();
+	// test_call();
 	test_vm();
-	test_fib();
+	// test_fib();
 
 	ivm_perf_printElapsed();
 	// profile_type();

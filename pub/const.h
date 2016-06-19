@@ -17,7 +17,7 @@
 #define IVM_CONTEXT_POOL_MAX_CACHE_LEN 10
 
 /* size of a single heap in GC */
-#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 18)
+#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 19)
 
 /* list buffer sizes */
 #define IVM_DEFAULT_PTLIST_BUFFER_SIZE 32

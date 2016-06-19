@@ -22,6 +22,12 @@ IVM_COM_HEADER
 		IVM_ABORT(); \
 	}
 
+#define IVM_FATAL(...) \
+	fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
+	fprintf(IVM_STDERR, __VA_ARGS__); \
+	fputc('\n', IVM_STDERR); \
+	IVM_ABORT();
+
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)			("failed to allocate new room for new " name)
 #define IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED(op)			(op " slot of undefined object")
 #define IVM_ERROR_MSG_INSERT_CELL_TO_NON_SUC_CELL		("insert cell into non-successive cells")
@@ -39,6 +45,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR(name, val)	"'%ld' is too small for " name, (val)
 #define IVM_ERROR_MSG_NO_UNIOP_FOR(op, t)				"the unary operation %s of <%s> is not defined", (op), (t)
 #define IVM_ERROR_MSG_NO_BINOP_FOR(t1, op, t2)			"the binary operation of <%s> %s <%s> is not defined", (t1), (op), (t2)
+#define IVM_ERROR_MSG_UNEXPECTED_ARG_TYPE(t)			"unexpected param type %c", (t)
 
 IVM_COM_END
 

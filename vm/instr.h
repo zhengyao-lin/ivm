@@ -45,11 +45,11 @@ typedef struct ivm_instr_t_tag {
 #define ivm_instr_setArg(instr, val) ((instr)->arg = (val))
 #define ivm_instr_opcode(instr) ((instr)->opc)
 
-#define IVM_INSTR_TYPE_N_ARG
-#define IVM_INSTR_TYPE_I_ARG ivm_long_t arg,
-#define IVM_INSTR_TYPE_X_ARG ivm_long_t arg,
-#define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,
-#define IVM_INSTR_TYPE_S_ARG const char *str,
+#define IVM_INSTR_TYPE_N_ARG 						/* none */
+#define IVM_INSTR_TYPE_I_ARG ivm_long_t arg,		/* int */
+#define IVM_INSTR_TYPE_X_ARG ivm_long_t arg,		/* exec */
+#define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,		/* float */
+#define IVM_INSTR_TYPE_S_ARG const char *str,		/* string */
 
 #define IVM_INSTR_GEN(o, ...) \
 	(ivm_instr_gen_##o(__VA_ARGS__))

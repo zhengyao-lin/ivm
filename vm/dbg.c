@@ -23,34 +23,45 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 					const char *format,
 					FILE *fp)
 {
+	char t;
 	char buffer[50];
 	ivm_ptrdiff_t pc = (ivm_ptr_t)ip - (ivm_ptr_t)ivm_exec_instrPtrStart(exec);
 
 	sprintf(buffer, format, pc / sizeof(*ip));
 	// "%4ld: "
 	// 
-	switch (ivm_opcode_table_getParam(ivm_instr_opcode(ip))[0]) {
+	switch (t = ivm_opcode_table_getParam(ivm_instr_opcode(ip))[0]) {
 		case 'N':
 			fprintf(fp, "%s%s",
 					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)));
 			break;
 		case 'I':
-			fprintf(fp, "%s%-20s %f",
-					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
-					ivm_opcode_arg_toFloat(ivm_instr_arg(ip)));
-			break;
-		case 'F':
+		case 'X':
 			fprintf(fp, "%s%-20s %ld",
 					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
 					ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
 			break;
-		case 'S':
-			fprintf(fp, "%s%-20s #%ld",
+		case 'F':
+			fprintf(fp, "%s%-20s %f",
 					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
-					ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
-			fprintf(fp, "(\"%s\")",
-					ivm_string_trimHead(ivm_exec_getString(exec, ivm_opcode_arg_toInt(ivm_instr_arg(ip)))));
+					ivm_opcode_arg_toFloat(ivm_instr_arg(ip)));
 			break;
+		case 'S':
+			if (ivm_exec_cached(exec)) {
+				fprintf(fp, "%s%-20s #?(\"%s\")",
+						buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+						ivm_string_trimHead(
+							(const ivm_string_t *)ivm_opcode_arg_toPointer(ivm_instr_arg(ip))
+						));
+			} else {
+				fprintf(fp, "%s%-20s #%ld",
+						buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+						ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
+				fprintf(fp, "(\"%s\")",
+						ivm_string_trimHead(ivm_exec_getString(exec, ivm_opcode_arg_toInt(ivm_instr_arg(ip)))));
+			}
+			break;
+		default: IVM_FATAL(IVM_ERROR_MSG_UNEXPECTED_ARG_TYPE(t));
 	}
 
 	return;
