@@ -5,6 +5,7 @@
 #include "pub/const.h"
 
 #include "std/pool.h"
+#include "std/ref.h"
 
 #include "obj.h"
 #include "slot.h"
@@ -26,7 +27,7 @@ struct ivm_ctchain_sub_t_tag {
 };
 
 typedef struct ivm_ctchain_t_tag {
-	ivm_uint_t ref;
+	IVM_REF_HEADER
 	ivm_uint_t len;
 } ivm_ctchain_t;
 
@@ -52,7 +53,7 @@ typedef struct ivm_ctchain_t_tag {
 #define ivm_ctchain_setAt(chain, i, context) \
 	(ivm_ctchain_contextAt((chain), (i))->ct = (context))
 
-#define ivm_ctchain_addRef(chain) ((chain) ? (chain)->ref++, (chain) : (chain))
+#define ivm_ctchain_addRef(chain) ((chain) ? ivm_ref_inc(chain), (chain) : (chain))
 
 ivm_ctchain_t *
 ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);

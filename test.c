@@ -22,6 +22,7 @@
 #include "util/parser.h"
 #include "util/env.h"
 #include "util/perf.h"
+#include "util/gen.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -158,7 +159,6 @@ int test_fib()
 	ivm_function_free(fib, state);
 	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
-	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
 
 	return 0;
@@ -277,7 +277,6 @@ int test_call()
 	ivm_function_free(top, state);
 	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1);
-	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
 
 	return 0;
@@ -574,7 +573,6 @@ int test_vm()
 	ivm_exec_free(exec3);
 	ivm_exec_free(exec4);
 
-	ivm_string_pool_free(str_pool);
 	ivm_vmstate_free(state);
 
 	return 0;
@@ -622,6 +620,8 @@ int main()
 {
 	ivm_env_init();
 
+#if 1
+
 	// test_call();
 	test_vm();
 	// test_fib();
@@ -629,32 +629,59 @@ int main()
 	ivm_perf_printElapsed();
 	// profile_type();
 
+#endif
+
 #if 0
 	const char num[] = "0b1010101";
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
 	ivm_list_t *tokens;
 	ivm_exec_t *exec;
+	ivm_gen_env_t *env;
+	ivm_vmstate_t *state;
 
 	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
 
 	IVM_TRACE("%f %d\n",
-			  _ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
+			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
 
 	ivm_perf_startProfile();
 
-	tokens = _ivm_parser_getTokens("get_slot \"hi\"\npop");
-	exec = ivm_parser_tokenToExec(tokens);
+	// tokens = _ivm_parser_getTokens("hi{}\n");
+	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
+	tokens = _ivm_parser_getTokens("root { \
+		out \"hello, ivm!\"; \
+		new_num_f 10.23; \
+		set_context_slot \"a\"; \
+		get_context_slot \"a\"; \
+		out_num; \
+		new_func a; \
+		invoke 0; \
+	} a { \
+		out \"this is a\"; \
+		jump hey; \
+		out \"no!!!\"; \
+		hey: out \"yeah!!!\"; \
+	}");
+	env = ivm_parser_tokenToEnv(tokens);
+
+	state = ivm_gen_env_generateVM(env);
+
+	ivm_gen_env_free(env);
+
+	ivm_vmstate_schedule(state);
 
 	ivm_perf_stopProfile();
 	ivm_perf_printElapsed();
 
 	IVM_TRACE("\nresult:\n");
-	ivm_dbg_printExec(exec, "  ", stderr);
 
 	ivm_list_free(tokens);
+	/*
+	ivm_dbg_printExec(exec, "  ", stderr);
+
 	ivm_string_pool_free(exec->pool);
-	ivm_exec_free(exec);
+	ivm_exec_free(exec);*/
 #endif
 
 #if 0

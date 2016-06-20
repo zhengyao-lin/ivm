@@ -3,6 +3,8 @@
 #include "pub/vm.h"
 #include "pub/err.h"
 
+#include "std/ref.h"
+
 #include "inline/obj.h"
 #include "inline/vm.h"
 #include "context.h"
@@ -50,7 +52,7 @@ ivm_ctchain_clone(ivm_ctchain_t *chain,
 
 	if (chain) {
 		ret = ivm_vmstate_allocContext(state, chain->len);
-		ret->ref = 0;
+		ivm_ref_init(ret);
 		MEM_COPY(ivm_ctchain_contextStart(ret),
 				 ivm_ctchain_contextStart(chain),
 				 ivm_ctchain_getContextSize(chain));

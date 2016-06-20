@@ -96,6 +96,7 @@ ivm_vmstate_new()
 
 	ret->const_pool
 	= ivm_string_pool_new(IVM_FALSE);
+	ivm_ref_inc(ret->const_pool);
 
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);

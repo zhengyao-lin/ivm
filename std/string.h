@@ -6,8 +6,10 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
+#include "pub/mem.h"
 
 #include "list.h"
+#include "ref.h"
 
 IVM_COM_HEADER
 
@@ -20,6 +22,15 @@ struct ivm_string_pool_t_tag;
 #define IVM_STRLEN strlen
 #define IVM_STRDUP_STATE(str, state) (ivm_strdup_state((str), (state)))
 #define IVM_STRDUP_HEAP(str, heap) (ivm_strdup_heap((str), (heap)))
+
+IVM_INLINE
+ivm_int_t
+IVM_STRNCMP(const ivm_char_t *a, ivm_size_t alen,
+			const ivm_char_t *b, ivm_size_t blen)
+{
+	if (alen != blen) return alen - blen;
+	return MEM_COMPARE(a, b, alen);
+}
 
 ivm_char_t *
 ivm_strdup(const ivm_char_t *src);
@@ -88,6 +99,11 @@ ivm_int_t /* same as strcmp */
 ivm_string_compareToRaw(const ivm_string_t *a,
 						const ivm_char_t *b);
 
+ivm_int_t
+ivm_string_compareToRaw_n(const ivm_string_t *a,
+						  const ivm_char_t *b,
+						  ivm_size_t len);
+
 typedef ivm_ptlist_t ivm_string_list_t;
 
 #define ivm_string_list_new ivm_ptlist_new
@@ -99,6 +115,8 @@ typedef ivm_ptlist_t ivm_string_list_t;
 #define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (void *)(str), ivm_string_compareToRaw))
 
 typedef struct ivm_string_pool_t_tag {
+	IVM_REF_HEADER
+
 	struct ivm_heap_t_tag *heap;
 
 	ivm_bool_t is_fixed;
@@ -124,6 +142,11 @@ ivm_string_pool_register_nc(ivm_string_pool_t *pool,
 ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str);
+
+ivm_ptr_t
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len);
 
 #define ivm_string_pool_get(pool, i) ((pool)->table[i])
 

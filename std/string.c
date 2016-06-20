@@ -87,6 +87,24 @@ ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
+ivm_string_t *
+ivm_string_new_heap_n(ivm_bool_t is_const,
+					  const ivm_char_t *str,
+					  ivm_heap_t *heap,
+					  ivm_size_t len)
+{
+	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
+
+	if (is_const) IVM_BIT_SET_TRUE(ret->is_const);
+	else IVM_BIT_SET_FALSE(ret->is_const);
+	ret->len = len;
+	MEM_COPY(ivm_string_trimHead(ret), str,
+			 sizeof(ivm_char_t) * (len));
+	ivm_string_trimHead(ret)[len] = '\0';
+
+	return ret;
+}
+
 void
 ivm_string_initHead(ivm_string_t *str,
 					ivm_bool_t is_const,
@@ -184,6 +202,16 @@ ivm_string_compareToRaw(const ivm_string_t *a,
 	return IVM_STRCMP(ivm_string_trimHead(a), b);
 }
 
+ivm_int_t
+ivm_string_compareToRaw_n(const ivm_string_t *a,
+						  const ivm_char_t *b,
+						  ivm_size_t len)
+{
+	return IVM_STRNCMP(ivm_string_trimHead(a),
+					   ivm_string_length(a),
+					   b, len);
+}
+
 ivm_string_pool_t *
 ivm_string_pool_new(ivm_bool_t is_fixed)
 {
@@ -192,6 +220,7 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
 
+	ivm_ref_init(ret);
 	ret->heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
 	
 	ret->is_fixed = is_fixed;
@@ -208,7 +237,7 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 void
 ivm_string_pool_free(ivm_string_pool_t *pool)
 {
-	if (pool) {
+	if (pool && !ivm_ref_dec(pool)) {
 		ivm_heap_free(pool->heap);
 		MEM_FREE(pool->table);
 		MEM_FREE(pool);
@@ -324,6 +353,13 @@ ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)
 HASH(str, !ivm_string_compareToRaw(*i, str),
 	 ivm_string_new_heap(IVM_TRUE, str, pool->heap))
+
+ivm_ptr_t
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len)
+HASH(str, !ivm_string_compareToRaw_n(*i, str, len),
+	 ivm_string_new_heap_n(IVM_TRUE, str, pool->heap, len))
 
 ivm_string_t *
 ivm_string_pool_prealloc(ivm_string_pool_t *pool,

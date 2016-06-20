@@ -29,7 +29,7 @@ ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len)
 		IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("context chain"));
 	}
 
-	ret->ref = 0;
+	ivm_ref_init(ret);
 	ret->len = len;
 
 	return ret;
@@ -41,7 +41,7 @@ ivm_context_pool_dump(ivm_context_pool_t *pool,
 					  ivm_ctchain_t *chain)
 {
 	if (pool && chain) {
-		if (!--chain->ref) {
+		if (!ivm_ref_dec(chain)) {
 			if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
 				ivm_ptpool_dump(pool->pools[chain->len], chain);
 			} else {

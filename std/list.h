@@ -166,11 +166,12 @@ ivm_list_push(ivm_list_t *list, void *e)
 #define ivm_list_size(list) ((list)->cur)
 
 #define IVM_LIST_ITER_TYPE(elem_type) elem_type *
-#define IVM_LIST_ITER_SET(iter, val) (*(iter) = val)
-#define IVM_LIST_ITER_GET(iter) (*(iter))
+#define IVM_LIST_ITER_SET(iter, val, type) (*((type *)(iter)) = val)
+#define IVM_LIST_ITER_GET(iter, type) (*((type *)(iter)))
+#define IVM_LIST_ITER_GET_PTR(iter, type) ((type *)(iter))
 #define IVM_LIST_EACHPTR(list, iter, type) \
 	for ((iter) = (type *)((list)->lst); \
-		 (iter) != ((type *)(list)->lst) + (ptlist)->cur; \
+		 (iter) != ((type *)(list)->lst) + (list)->cur; \
 		 (iter)++)
 
 IVM_COM_END

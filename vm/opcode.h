@@ -59,6 +59,10 @@ ivm_opcode_table_getEntry(ivm_opcode_t opc);
 ivm_opcode_t
 ivm_opcode_searchOp(const ivm_char_t *name);
 
+ivm_opcode_t
+ivm_opcode_searchOp_len(const ivm_char_t *name,
+						ivm_size_t len);
+
 IVM_COM_END
 
 #endif

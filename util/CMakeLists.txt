@@ -3,7 +3,8 @@
 ADD_LIBRARY(util STATIC
 			parser.c
 			env.c
-			perf.c)
+			perf.c
+			gen.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

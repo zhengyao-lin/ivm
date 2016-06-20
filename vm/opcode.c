@@ -93,3 +93,20 @@ ivm_opcode_searchOp(const ivm_char_t *name)
 
 	return IVM_OPCODE(LAST);
 }
+
+ivm_opcode_t
+ivm_opcode_searchOp_len(const ivm_char_t *name,
+						ivm_size_t len)
+{
+	ivm_int_t i;
+
+	for (i = 0; i < TABLE_SIZE; i++) {
+		if (!IVM_STRNCMP(opcode_table[i].name,
+						 IVM_STRLEN(opcode_table[i].name),
+						 name, len)) {
+			return opcode_table[i].opc;
+		}
+	}
+
+	return IVM_OPCODE(LAST);
+}

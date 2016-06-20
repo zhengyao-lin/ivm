@@ -6,6 +6,7 @@
 #include "pub/vm.h"
 
 #include "std/string.h"
+#include "std/ref.h"
 
 #include "exec.h"
 #include "byte.h"
@@ -19,6 +20,7 @@ ivm_exec_new(ivm_string_pool_t *pool)
 
 	ret->cached = IVM_FALSE;
 	ret->pool = pool;
+	ivm_ref_inc(pool);
 	ret->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
 	ret->next = 0;
 	ret->instrs = MEM_ALLOC(sizeof(*ret->instrs)
@@ -34,6 +36,7 @@ void
 ivm_exec_free(ivm_exec_t *exec)
 {
 	if (exec) {
+		ivm_string_pool_free(exec->pool);
 		MEM_FREE(exec->instrs);
 		MEM_FREE(exec);
 	}
