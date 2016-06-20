@@ -7,6 +7,7 @@
 
 #include "std/list.h"
 #include "std/string.h"
+#include "std/pool.h"
 
 #include "opcode.h"
 #include "instr.h"
@@ -58,6 +59,13 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 void
 ivm_exec_preproc(ivm_exec_t *exec,
 				 struct ivm_vmstate_t_tag *state);
+
+typedef ivm_ptpool_t ivm_exec_pool_t;
+
+#define ivm_exec_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_exec_t)))
+#define ivm_exec_pool_free ivm_ptpool_free
+#define ivm_exec_pool_alloc(pool) ((ivm_exec_t *)ivm_ptpool_alloc(pool))
+#define ivm_exec_pool_dump ivm_ptpool_dump
 
 typedef ivm_size_t ivm_exec_id_t;
 typedef ivm_ptlist_t ivm_exec_list_t;

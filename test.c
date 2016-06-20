@@ -620,7 +620,7 @@ int main()
 {
 	ivm_env_init();
 
-#if 1
+#if 0
 
 	// test_call();
 	test_vm();
@@ -631,7 +631,7 @@ int main()
 
 #endif
 
-#if 0
+#if 1
 	const char num[] = "0b1010101";
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
@@ -645,37 +645,55 @@ int main()
 	IVM_TRACE("%f %d\n",
 			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
 
+	ivm_perf_reset();
 	ivm_perf_startProfile();
 
 	// tokens = _ivm_parser_getTokens("hi{}\n");
 	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
 	tokens = _ivm_parser_getTokens("root { \
-		out \"hello, ivm!\"; \
-		new_num_f 10.23; \
-		set_context_slot \"a\"; \
-		get_context_slot \"a\"; \
-		out_num; \
-		new_func a; \
-		invoke 0; \
-	} a { \
-		out \"this is a\"; \
-		jump hey; \
-		out \"no!!!\"; \
-		hey: out \"yeah!!!\"; \
+		new_func fib; \
+		set_context_slot \"fib\"; \
+		new_num_i 15; \
+		get_context_slot \"fib\"; \
+		invoke 1; \
+	} fib { \
+		set_arg \"n\"; \
+		get_context_slot \"n\"; \
+		new_num_i 2; \
+		lt; \
+		jump_false else; \
+			new_num_i 1; \
+			return; \
+		else:\n \
+			get_context_slot \"n\"; \
+			new_num_i 1; \
+			sub; \
+			get_context_slot \"fib\"; \
+			invoke 1; \
+			get_context_slot \"n\"; \
+			new_num_i 2; \
+			sub; \
+			get_context_slot \"fib\"; \
+			invoke 1; \
+			add; \
+			return; \
 	}");
 	env = ivm_parser_tokenToEnv(tokens);
-
 	state = ivm_gen_env_generateVM(env);
-
 	ivm_gen_env_free(env);
+
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
+
+	ivm_perf_reset();
+	ivm_perf_startProfile();
 
 	ivm_vmstate_schedule(state);
 
 	ivm_perf_stopProfile();
 	ivm_perf_printElapsed();
 
-	IVM_TRACE("\nresult:\n");
-
+	ivm_vmstate_free(state);
 	ivm_list_free(tokens);
 	/*
 	ivm_dbg_printExec(exec, "  ", stderr);

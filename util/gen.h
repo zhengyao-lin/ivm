@@ -6,6 +6,7 @@
 #include "pub/vm.h"
 
 #include "std/list.h"
+#include "std/pool.h"
 
 IVM_COM_HEADER
 
