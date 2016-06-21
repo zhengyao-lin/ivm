@@ -260,6 +260,20 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	INVOKE();
 })
 
+OPCODE_GEN(FORK, "fork", N, {
+	ivm_function_object_t *obj;
+
+	CHECK_STACK(1);
+	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+
+	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(obj, TYPE_NAME)));
+
+	ivm_vmstate_addCoro(_STATE, obj);
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(YIELD, "yield", N, {
 	YIELD();
 })

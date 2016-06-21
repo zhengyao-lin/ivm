@@ -3,18 +3,204 @@
 /***** a brilliant comment *****/
 
 // another great comment /***//***/8/***
+b2 {
+	out "coro2"
+	yield
+	out "coro2 end"
+}
+
+b1 {
+	out "coro1"
+	new_func b2
+	fork
+	yield
+}
+
+do_something {
+	yield
+}
+
+coro_test1 {
+	new_func do_something
+	set_context_slot "do_something"
+	new_num_i 0
+	set_context_slot "i"
+
+loop: /************************************/
+	get_context_slot "i"
+	new_num_i 10000
+	lt
+
+	jump_false end
+
+	get_context_slot "i"
+	new_num_i 1000
+	mod
+
+	jump_true no_print
+
+	get_context_slot "i"
+	out_num
+
+no_print:
+
+	get_context_slot "do_something"
+	fork
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	set_context_slot "i"
+
+	jump loop
+
+end:
+	yield
+}
+
+fib_producer {
+	set_arg "n"
+
+	new_num_i 0
+	set_context_slot "a"
+
+	new_num_i 1
+	dup 0
+	set_context_slot "b"
+
+	out_num
+
+	new_num_i 0
+	set_context_slot "i"
+
+loop:
+	get_context_slot "i"
+	get_context_slot "n"
+	lt
+
+	jump_false end
+
+	// c = a + b
+	get_context_slot "a"
+	get_context_slot "b"
+	add
+	set_context_slot "c"
+
+	// a = b
+	get_context_slot "b"
+	set_context_slot "a"
+
+	// b = c
+	get_context_slot "c"
+	dup 0
+	set_context_slot "b"
+
+	yield
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	set_context_slot "i"
+
+	jump loop
+end:
+
+	new_null
+	yield
+}
+
+fib_consumer {
+loop:
+	dup 0
+	jump_false end
+	out_num
+	new_num_i 1
+	yield
+	jump loop
+end:
+}
+
+coro_test2 {
+	new_func fib_producer
+	fork
+	new_func fib_consumer
+	fork
+
+	new_num_i 30
+
+	// wait for other coro to stop
+loop:
+	dup 0
+	jump_false end
+	yield
+	jump loop
+end:
+}
+
+slow_fib {
+	set_arg "n"
+
+	get_context_slot "n"
+	new_num_i 2
+	lt
+	jump_false else
+		new_num_i 1
+		return
+	else:
+	
+	get_context_slot "n"
+	new_num_i 1
+	sub
+	get_context_slot "fib"
+	invoke 1
+	get_context_slot "n"
+	new_num_i 2
+	sub
+	get_context_slot "fib"
+	invoke 1
+	add
+
+	return
+}
 
 root {
 	out "hi" /* wo */
 	new_func `a ss`
 	invoke 0
 
+	out "\n*** call test ***\n"
 	new_func call
 	invoke 0
 
-	`out` "\nhey\n"
+	out "\n*** yield test ***\n"
+	new_func b1
+	fork
+
+	yield
+	out "hey!"
+	yield
+
+	out "\n*** coro creating ***\n"
+
+	new_func coro_test1
+	invoke 0
+
+	out "\n*** p/c fib ***\n"
+
+	new_func coro_test2
+	invoke 0
+
+	out "\n*** slow fib ***\n"
+
+	new_num_i 30
+	new_func slow_fib
+	dup 0
+	set_context_slot "fib"
+	invoke 1
+
+	out_num
 }
-/*
+
 `a ss` {
 	out "this is a"
 	jump c
@@ -27,7 +213,7 @@ c:	out "c"
 	jump a
 end:
 	out "end";;
-}*/
+}
 
 do_nothing {}
 
@@ -51,7 +237,9 @@ loop:/************************************/
 	get_context_slot "i"
 	new_num_i 1
 	add
+	dup 0
 	set_context_slot "i"
+	pop
 
 	jump loop
 
