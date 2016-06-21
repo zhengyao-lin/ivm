@@ -6,7 +6,8 @@ ADD_LIBRARY(std SHARED
 			pool.c
 			hash.c
 			string.c
-			heap.c)
+			heap.c
+			io.c)
 
 # reset output dir
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

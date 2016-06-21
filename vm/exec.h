@@ -69,12 +69,18 @@ typedef ivm_ptpool_t ivm_exec_pool_t;
 
 typedef ivm_size_t ivm_exec_id_t;
 typedef ivm_ptlist_t ivm_exec_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_exec_t *) ivm_exec_list_iterator_t;
 
 #define ivm_exec_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE))
 #define ivm_exec_list_free ivm_ptlist_free
-#define ivm_exec_list_register ivm_ptlist_push
+#define ivm_exec_list_push ivm_ptlist_push
 #define ivm_exec_list_size ivm_ptlist_size
 #define ivm_exec_list_at(list, i) ((ivm_exec_t *)ivm_ptlist_at((list), (i)))
+#define ivm_exec_list_empty ivm_ptlist_empty
+
+#define IVM_EXEC_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
+#define IVM_EXEC_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
+#define IVM_EXEC_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_exec_t *)
 
 IVM_COM_END
 

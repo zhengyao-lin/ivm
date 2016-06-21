@@ -70,7 +70,8 @@ typedef ivm_list_t ivm_gen_block_list_t;
 typedef IVM_LIST_ITER_TYPE(ivm_gen_block_t) ivm_gen_block_list_iterator_t;
 
 #define ivm_gen_block_list_new() (ivm_list_new(sizeof(ivm_gen_block_t)))
-#define ivm_gen_block_list_free ivm_list_free
+void
+ivm_gen_block_list_free(ivm_gen_block_list_t *list);
 #define ivm_gen_block_list_push(list, block) (ivm_list_push((list), (block)))
 
 #define IVM_GEN_BLOCK_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_gen_block_t)
@@ -118,20 +119,24 @@ void
 ivm_gen_label_free(ivm_gen_label_t *label);
 
 typedef ivm_ptlist_t ivm_gen_label_list_t;
-typedef IVM_LIST_ITER_TYPE(ivm_gen_label_t *) ivm_gen_label_list_iterator_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_gen_label_t *) ivm_gen_label_list_iterator_t;
 
 #define ivm_gen_label_list_new() (ivm_ptlist_new())
 #define ivm_gen_label_list_free ivm_ptlist_free
 #define ivm_gen_label_list_add(list, label) (ivm_ptlist_push((list), (label)))
+#define ivm_gen_label_list_empty ivm_ptlist_empty
 
-#define IVM_GEN_LABEL_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
-#define IVM_GEN_LABEL_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
+#define IVM_GEN_LABEL_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_GEN_LABEL_LIST_ITER_GET(iter) ((ivm_gen_label_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_GEN_LABEL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_gen_label_t *)
 
 typedef struct {
 	ivm_string_pool_t *str_pool;
 	ivm_gen_block_list_t *block_list;
+
+	/* caches */
 	ivm_gen_label_list_t *jmp_table;
+	ivm_exec_list_t *exec_list;
 } ivm_gen_env_t;
 
 ivm_gen_env_t *

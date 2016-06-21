@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_STD_STACK_H_
-#define _IVM_VM_STD_STACK_H_
+#ifndef _IVM_STD_STACK_H_
+#define _IVM_STD_STACK_H_
 
 #include "pub/com.h"
 #include "pub/const.h"

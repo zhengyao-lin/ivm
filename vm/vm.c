@@ -4,6 +4,7 @@
 
 #include "std/heap.h"
 
+#include "inline/func.h"
 #include "gc/gc.h"
 #include "vm.h"
 #include "obj.h"
@@ -123,13 +124,20 @@ ivm_vmstate_new()
 void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
+	ivm_coro_list_iterator_t citer;
+
 	if (state) {
 		ivm_collector_free(GC(state), state);
 
 		ivm_heap_free(HEAP1(state));
 		ivm_heap_free(HEAP2(state));
 
+
+		IVM_CORO_LIST_EACHPTR(state->coro_list, citer) {
+			ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
+		}
 		ivm_coro_list_free(state->coro_list);
+
 		ivm_func_list_free(state->func_list);
 
 		ivm_function_pool_free(state->func_pool);
@@ -171,6 +179,15 @@ ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
 	}
 
 	return ret;
+}
+
+ivm_size_t
+ivm_vmstate_addCoro(ivm_vmstate_t *state,
+					ivm_function_object_t *func)
+{
+	ivm_coro_t *coro = ivm_coro_new();
+	ivm_coro_setRoot(coro, state, func);
+	return ivm_coro_list_add(state->coro_list, coro);
 }
 
 void

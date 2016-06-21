@@ -19,6 +19,8 @@
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
+#include "std/io.h"
+
 #include "util/parser.h"
 #include "util/env.h"
 #include "util/perf.h"
@@ -86,7 +88,7 @@ int test_fib()
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
-	ivm_vmstate_addCoro(state, coro);
+	ivm_vmstate_addCoro_c(state, coro);
 
 	/********** top **********/
 
@@ -140,7 +142,8 @@ int test_fib()
 #endif
 
 	ivm_coro_setRoot(coro, state,
-					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top),
+					 		ivm_function_object_t));
 
 	ivm_vmstate_unlockGCFlag(state);
 
@@ -154,7 +157,6 @@ int test_fib()
 
 	ivm_dbg_heapState(state, stderr);
 
-	ivm_coro_free(coro, state);
 	ivm_function_free(top, state);
 	ivm_function_free(fib, state);
 	ivm_ctchain_free(chain, state);
@@ -222,7 +224,7 @@ int test_call()
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
-	ivm_vmstate_addCoro(state, coro);
+	ivm_vmstate_addCoro_c(state, coro);
 
 	/********************** code ***********************/
 /*
@@ -257,7 +259,8 @@ int test_call()
 
 	/********************** code ***********************/
 	ivm_coro_setRoot(coro, state,
-					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top),
+					 ivm_function_object_t));
 
 	ivm_vmstate_unlockGCFlag(state);
 
@@ -273,7 +276,6 @@ int test_call()
 	IVM_TRACE("\nstack state:\n");
 	ivm_dbg_stackState(coro, stderr);
 
-	ivm_coro_free(coro, state);
 	ivm_function_free(top, state);
 	ivm_ctchain_free(chain, state);
 	ivm_exec_free(exec1);
@@ -518,13 +520,15 @@ int test_vm()
 	coro2 = ivm_coro_new();
 
 	/* add coroutines to vm state */
-	ivm_vmstate_addCoro(state, coro1);
-	ivm_vmstate_addCoro(state, coro2);
+	ivm_vmstate_addCoro_c(state, coro1);
+	ivm_vmstate_addCoro_c(state, coro2);
 
 	ivm_coro_setRoot(coro1, state,
-					 IVM_AS(ivm_function_object_new(state, chain, func1), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, chain, func1),
+					 		ivm_function_object_t));
 	ivm_coro_setRoot(coro2, state,
-					 IVM_AS(ivm_function_object_new(state, chain, func2), ivm_function_object_t));
+					 IVM_AS(ivm_function_object_new(state, chain, func2),
+					 		ivm_function_object_t));
 	/*for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
 	}*/
@@ -561,7 +565,6 @@ int test_vm()
 	ivm_dbg_printExec(exec4, "  ", stderr);
 #endif
 
-	ivm_coro_free(coro1, state); ivm_coro_free(coro2, state);
 	ivm_function_free(func1, state);
 	ivm_function_free(func2, state);
 	ivm_function_free(func3, state);
@@ -616,7 +619,7 @@ struct token_t {
 	const ivm_char_t *val;
 };
 
-int main()
+int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
@@ -636,26 +639,16 @@ int main()
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
 	ivm_list_t *tokens;
-	ivm_exec_t *exec;
 	ivm_gen_env_t *env;
 	ivm_vmstate_t *state;
-
-	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
-
-	IVM_TRACE("%f %d\n",
-			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
-
-	ivm_perf_reset();
-	ivm_perf_startProfile();
-
-	// tokens = _ivm_parser_getTokens("hi{}\n");
-	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
-	tokens = _ivm_parser_getTokens("root { \
+	ivm_file_t *file;
+	ivm_char_t *src = "root { \
 		new_func fib; \
 		set_context_slot \"fib\"; \
-		new_num_i 15; \
+		new_num_i 30; \
 		get_context_slot \"fib\"; \
 		invoke 1; \
+		out_num; \
 	} fib { \
 		set_arg \"n\"; \
 		get_context_slot \"n\"; \
@@ -677,26 +670,50 @@ int main()
 			invoke 1; \
 			add; \
 			return; \
-	}");
+	}";
+
+	if (argc == 2) {
+		file = ivm_file_new(argv[1], "r");
+		src = ivm_file_readAll(file);
+		ivm_file_free(file);
+
+		IVM_TRACE("%s\n", src);
+	}
+
+	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
+
+	IVM_TRACE("%f %d\n",
+			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
+
+ivm_perf_reset();
+ivm_perf_startProfile();
+
+	// tokens = _ivm_parser_getTokens("hi{}\n");
+	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
+	tokens = _ivm_parser_getTokens(src);
 	env = ivm_parser_tokenToEnv(tokens);
 	state = ivm_gen_env_generateVM(env);
-	ivm_gen_env_free(env);
 
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
+ivm_perf_stopProfile();
+ivm_perf_printElapsed();
 
-	ivm_perf_reset();
-	ivm_perf_startProfile();
+ivm_perf_reset();
+ivm_perf_startProfile();
 
 	ivm_vmstate_schedule(state);
 
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
+ivm_perf_stopProfile();
+ivm_perf_printElapsed();
 
 	ivm_vmstate_free(state);
 	ivm_list_free(tokens);
+	ivm_gen_env_free(env);
+
+	if (argc == 2) {
+		MEM_FREE(src);
+	}
+
 	/*
-	ivm_dbg_printExec(exec, "  ", stderr);
 
 	ivm_string_pool_free(exec->pool);
 	ivm_exec_free(exec);*/

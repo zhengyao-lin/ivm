@@ -4,16 +4,10 @@
 #include "pub/com.h"
 #include "pub/type.h"
 
-#include "io.h"
-#include "sys.h"
+#include "std/io.h"
+#include "std/sys.h"
 
 IVM_COM_HEADER
-
-#define IVM_OUT(...) \
-	/* (fprintf(IVM_STDOUT, __VA_ARGS__)) */
-
-#define IVM_TRACE(...) \
-	(fprintf(IVM_STDERR, __VA_ARGS__))
 
 #define IVM_ASSERT(cond, ...) \
 	if (!(cond)) { \
@@ -28,15 +22,6 @@ IVM_COM_HEADER
 	fprintf(IVM_STDERR, __VA_ARGS__); \
 	fputc('\n', IVM_STDERR); \
 	IVM_ABORT();
-
-IVM_INLINE
-void
-ivm_fputs_n(FILE *fp, const ivm_char_t *str, ivm_size_t len)
-{
-	const ivm_char_t *end = str + len;
-	while (str != end) fputc(*str++, fp);
-	return;
-}
 
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)			("failed to allocate new room for new " name)
 #define IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED(op)			(op " slot of undefined object")

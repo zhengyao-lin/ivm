@@ -169,7 +169,11 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
 
-#define ivm_vmstate_addCoro(state, coro) (ivm_coro_list_add((state)->coro_list, (coro)))
+#define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add((state)->coro_list, (coro)))
+
+ivm_size_t
+ivm_vmstate_addCoro(ivm_vmstate_t *state,
+					ivm_function_object_t *func);
 
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state);

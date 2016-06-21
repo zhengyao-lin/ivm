@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_STD_LIST_H_
-#define _IVM_VM_STD_LIST_H_
+#ifndef _IVM_STD_LIST_H_
+#define _IVM_STD_LIST_H_
 
 #include "pub/mem.h"
 #include "pub/com.h"
@@ -164,6 +164,7 @@ ivm_list_push(ivm_list_t *list, void *e)
 
 #define ivm_list_at(list, i) ((void *)((list)->lst + ((i) * (list)->esize)))
 #define ivm_list_size(list) ((list)->cur)
+#define ivm_list_empty(list) ((list)->cur = 0)
 
 #define IVM_LIST_ITER_TYPE(elem_type) elem_type *
 #define IVM_LIST_ITER_SET(iter, val, type) (*((type *)(iter)) = val)

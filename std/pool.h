@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_STD_POOL_H_
-#define _IVM_VM_STD_POOL_H_
+#ifndef _IVM_STD_POOL_H_
+#define _IVM_STD_POOL_H_
 
 #include "pub/mem.h"
 #include "pub/com.h"

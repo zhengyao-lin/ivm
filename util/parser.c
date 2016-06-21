@@ -100,6 +100,8 @@ enum state_t {
 	ST_INIT = 0,
 	ST_UNEXP,
 	ST_IN_ID,
+	ST_IN_STR_ID,
+	ST_IN_ID_STR_ESC,
 	ST_IN_STR,
 	ST_IN_STR_ESC,
 	ST_IN_NUM_INT,
@@ -154,7 +156,6 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 {
 	ivm_list_t *ret = ivm_list_new(sizeof(struct token_t));
 	enum state_t state = ST_INIT;
-	char tmp_buf[100];
 
 	struct trans_entry_t
 	trans_map[STATE_COUNT][20] = {
@@ -176,6 +177,7 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 								{ "=\r", ST_INIT, T_NEWL },
 
 								{ "=\"", ST_IN_STR, .ign = IVM_TRUE },
+								{ "=`", ST_IN_STR_ID, .ign = IVM_TRUE },
 								{ "= ", ST_INIT, .ign = IVM_TRUE },
 								{ "=\t", ST_INIT, .ign = IVM_TRUE },
 
@@ -192,6 +194,16 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 								{ "=_", ST_IN_ID },
 								{ "-09", ST_IN_ID },
 								{ ".", ST_INIT, T_ID } /* revert one char */
+							},
+
+		/* IN_STR_ID */		{
+								{ "=`", ST_INIT, T_ID, .exc = IVM_TRUE },
+								{ "=\\", ST_IN_ID_STR_ESC },
+								{ ".", ST_IN_STR_ID }
+							},
+
+		/* IN_ID_STR_ESC */	{
+								{ ".", ST_IN_STR_ID }
 							},
 
 		/* IN_STR */		{
@@ -222,21 +234,26 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 
 
 	#define NEXT_INIT ((struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS })
-	#define CUR_INIT (c--, (struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS + 1 })
+	#define CUR_INIT (c--, has_exc = IVM_TRUE, (struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS + 1 })
 	#define LINE (line)
-	#define POS ((ivm_ptr_t)c - col)
+	#define POS ((ivm_ptr_t)c - col + 1)
 
 	const ivm_char_t *c = src;
 	struct trans_entry_t *tmp_entry;
 	ivm_size_t line = 1;
 	ivm_ptr_t col = (ivm_ptr_t)c;
+	ivm_bool_t has_exc = IVM_FALSE;
 	struct token_t tmp_token = (struct token_t) { .len = 0, .val = c, .line = LINE, .pos = POS };
 
 	do {
 		// IVM_TRACE("matching %c state %d\n", *c, state);
-		if (*c == '\n' || *c == '\r') {
-			line++;
-			col = (ivm_ptr_t)c;
+		if (!has_exc) {
+			if (*c == '\n') {
+				line++;
+				col = (ivm_ptr_t)c;
+			}
+		} else {
+			has_exc = IVM_FALSE;
 		}
 
 		for (tmp_entry = trans_map[state];
@@ -252,9 +269,8 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 					if (tmp_entry->to_state == state)
 						tmp_token.len++;
 
-					MEM_COPY(tmp_buf, tmp_token.val, tmp_token.len);
-					tmp_buf[tmp_token.len] = '\0';
-					IVM_TRACE("token %d, value '%s'(len %ld)\n", tmp_entry->save, tmp_buf, tmp_token.len);
+					IVM_TRACE("token %d, value '%.*s'(len %ld)\n",
+							  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
 
 					tmp_token.id = tmp_entry->save;
 					ivm_list_push(ret, &tmp_token);
@@ -699,6 +715,18 @@ RULE(instr)
 		)
 
 		SUB_RULE(
+			EXPECT_TOKEN(T_ID) EXPECT_TOKEN(T_COLON)
+			{
+				label = TOKEN_AT(0);
+
+				_RETVAL.instr = ivm_gen_instr_build(
+					label->line, label->pos,
+					label->val, label->len, 0
+				);
+			}
+		)
+
+		SUB_RULE(
 			EXPECT_TOKEN(T_ID) EXPECT_RULE(arg)
 			{
 				tmp_token = TOKEN_AT(0);
@@ -781,15 +809,15 @@ RULE(instr_list)
 	 */
 	SUB_RULE_SET(
 		SUB_RULE(
+			EXPECT_RULE(instr_end_opt)
 			EXPECT_RULE_LIST(instr, {
-				ivm_gen_instr_list_add(list, &RULE_RET_AT(0).u.instr);
+				ivm_gen_instr_list_add(list, &RULE_RET_AT(1).u.instr);
 			} EXPECT_RULE_NORET(instr_end))
 
 			{
 				_RETVAL.instr_list = list;
 			}
 		)
-		SUB_RULE(EXPECT_RULE(instr_end_opt))
 	);
 
 	FAILED({
@@ -811,14 +839,14 @@ RULE(block)
 	SUB_RULE_SET(
 		SUB_RULE(
 			EXPECT_TOKEN(T_ID) EXPECT_TOKEN(T_LBRAC)
-				EXPECT_RULE(instr_end_opt)
+				EXPECT_RULE(instr_list) {
+					list = RULE_RET_AT(0).u.instr_list;
+				}
 			EXPECT_TOKEN(T_RBRAC)
 		)
 		SUB_RULE(
 			EXPECT_TOKEN(T_ID) EXPECT_TOKEN(T_LBRAC)
-				EXPECT_RULE(instr_list) {
-					list = RULE_RET_AT(0).u.instr_list;
-				}
+				EXPECT_RULE(instr_end_opt)
 			EXPECT_TOKEN(T_RBRAC)
 		)
 	);
@@ -887,15 +915,15 @@ RULE(block_list)
 	 */
 	SUB_RULE_SET(
 		SUB_RULE(
+			EXPECT_RULE(block_end_opt)
 			EXPECT_RULE_LIST(block, {
-				ivm_gen_block_list_push(list, &RULE_RET_AT(0).u.block);
+				ivm_gen_block_list_push(list, &RULE_RET_AT(1).u.block);
 			} EXPECT_RULE_NORET(block_end_opt))
 
 			{
 				_RETVAL.block_list = list;
 			}
 		)
-		SUB_RULE(EXPECT_RULE(block_end_opt))
 	);
 
 	FAILED({
@@ -918,7 +946,7 @@ RULE(trans_unit)
 		{
 			_RETVAL.env = ivm_gen_env_new(RULE_RET_AT(0).u.block_list);
 		})
-		SUB_RULE(EXPECT_RULE_LIST(block_end_opt, 0))
+		SUB_RULE(EXPECT_RULE(block_end_opt))
 	);
 
 	FAILED({ POP_ERR(); });

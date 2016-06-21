@@ -1,0 +1,53 @@
+root {
+	out "hi"
+	new_func `a ss`
+	invoke 0
+
+	new_func call
+	invoke 0
+
+	`out` "\nhey\n"
+}
+
+`a ss` {
+	out "this is a"
+	jump c
+a:	wola
+	out "a"
+	jump b
+b:	out "b"
+	jump end
+c:	out "c"
+	jump a
+end:
+	out "end";;
+}
+
+do_nothing {}
+
+call {
+	new_func do_nothing
+	set_context_slot "do_nothing"
+	new_num_i 0
+	set_context_slot "i"
+
+loop:
+	get_context_slot "i"
+	new_num_i 1000000
+	lt
+
+	jump_false end
+
+	get_context_slot "do_nothing"
+	invoke 0
+	pop
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	set_context_slot "i"
+
+	jump loop
+
+end:
+}

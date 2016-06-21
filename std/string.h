@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_STD_STRING_H_
-#define _IVM_VM_STD_STRING_H_
+#ifndef _IVM_STD_STRING_H_
+#define _IVM_STD_STRING_H_
 
 #include <string.h>
 

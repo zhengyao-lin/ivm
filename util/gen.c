@@ -10,6 +10,8 @@
 #include "parser.h"
 #include "gen.h"
 
+#include "vm/dbg.h"
+
 #define GEN_ERR(p, ...) \
 	IVM_TRACE("generator: at line %ld pos %ld: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
@@ -33,17 +35,43 @@ ivm_gen_env_new(ivm_gen_block_list_t *block_list)
 	ivm_ref_inc(ret->str_pool);
 	ret->block_list = block_list;
 	ret->jmp_table = ivm_gen_label_list_new();
+	ret->exec_list = ivm_exec_list_new();
 
 	return ret;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_gen_env_cleanJumpTable(ivm_gen_env_t *env)
+{
+	ivm_gen_label_list_iterator_t liter;
+
+	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, liter) {
+		ivm_gen_label_free(IVM_GEN_LABEL_LIST_ITER_GET(liter));
+	}
+	ivm_gen_label_list_empty(env->jmp_table);
+
+	return;
 }
 
 void
 ivm_gen_env_free(ivm_gen_env_t *env)
 {
+	ivm_exec_list_iterator_t eiter;
+
 	if (env) {
 		ivm_string_pool_free(env->str_pool);
 		ivm_gen_block_list_free(env->block_list);
+		
+		_ivm_gen_env_cleanJumpTable(env);
 		ivm_gen_label_list_free(env->jmp_table);
+
+		IVM_EXEC_LIST_EACHPTR(env->exec_list, eiter) {
+			ivm_exec_free(IVM_EXEC_LIST_ITER_GET(eiter));
+		}
+		ivm_exec_list_free(env->exec_list);
+
 		MEM_FREE(env);
 	}
 
@@ -83,6 +111,23 @@ ivm_gen_label_free(ivm_gen_label_t *label)
 {
 	if (label) {
 		ivm_gen_label_ref_list_free(label->refs);
+		MEM_FREE(label);
+	}
+
+	return;
+}
+
+void
+ivm_gen_block_list_free(ivm_gen_block_list_t *list)
+{
+	ivm_gen_block_list_iterator_t iter;
+
+	if (list) {
+		IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) {
+			ivm_gen_instr_list_free(IVM_GEN_BLOCK_LIST_ITER_GET(iter).instrs);
+		}
+
+		ivm_list_free(list);
 	}
 
 	return;
@@ -214,10 +259,17 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 									  const ivm_char_t param,
 									  ivm_bool_t *failed)
 {
+	ivm_size_t tmp_arg;
+	ivm_char_t *tmp_str;
+	ivm_opcode_arg_t tmp_ret;
+
+#define SET_FAILED() \
+	if (failed) *failed = IVM_TRUE;
+
 #define UNMATCHED() \
 	GEN_ERR(arg.pos, \
 			GEN_ERR_MSG_UNMATCHED_ARGUMENT(instr.opcode, instr.olen, arg.type, param)); \
-	if (failed) *failed = IVM_TRUE; \
+	SET_FAILED(); \
 	return ivm_opcode_arg_fromInt(0); \
 
 	switch (arg.type) {
@@ -241,7 +293,10 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 		case 'S':
 			switch (param) {
 				case 'S':
-					return ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw_n(env->str_pool, arg.val, arg.len));
+					tmp_str = ivm_parser_parseStr(arg.val, arg.len);
+					tmp_ret = ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw(env->str_pool, tmp_str));
+					MEM_FREE(tmp_str);
+					return tmp_ret;
 				default: UNMATCHED();
 			}
 		case 'D':
@@ -255,7 +310,11 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 							)
 						);
 				case 'X':
-					return ivm_opcode_arg_fromInt(_ivm_gen_env_getBlockID(env, arg.pos, arg.val, arg.len));
+					tmp_arg = _ivm_gen_env_getBlockID(env, arg.pos, arg.val, arg.len);
+					if (tmp_arg == (ivm_size_t)-1) {
+						SET_FAILED();
+					}
+					return ivm_opcode_arg_fromInt(tmp_arg);
 				default: UNMATCHED();
 			}
 	}
@@ -278,31 +337,50 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 	const ivm_char_t *param;
 	ivm_gen_instr_list_iterator_t iter;
 	ivm_exec_t *ret = ivm_exec_new(env->str_pool);
+	ivm_bool_t failed = IVM_FALSE;
 
-	IVM_GEN_INSTR_LIST_EACHPTR(block->instrs, iter) {
-		instr = IVM_GEN_INSTR_LIST_ITER_GET(iter);
-		opc = ivm_opcode_searchOp_len(instr.opcode, instr.olen);
-		if (opc == IVM_OPCODE(LAST)) {
-			GEN_ERR(instr.pos,
-					GEN_ERR_MSG_UNKNOWN_OPCODE(instr.opcode, instr.olen));
-			opc = IVM_OPCODE(NOP);
+	ivm_exec_list_push(env->exec_list, ret);
+
+	if (block->instrs) {
+		IVM_GEN_INSTR_LIST_EACHPTR(block->instrs, iter) {
+			instr = IVM_GEN_INSTR_LIST_ITER_GET(iter);
+
+			if (instr.label) {
+				_ivm_gen_env_addLabel(
+					env, ret, instr.label, instr.llen,
+					instr.pos, ivm_exec_cur(ret)
+				);
+			}
+
+			if (instr.opcode) {
+				opc = ivm_opcode_searchOp_len(instr.opcode, instr.olen);
+				if (opc == IVM_OPCODE(LAST)) {
+					GEN_ERR(instr.pos,
+							GEN_ERR_MSG_UNKNOWN_OPCODE(instr.opcode, instr.olen));
+					opc = IVM_OPCODE(NOP);
+				}
+
+				param = ivm_opcode_table_getParam(opc);
+				arg =
+				_ivm_gen_opcode_arg_generateOpcodeArg(
+					instr.arg, instr, ret,
+					env, param[0], &failed
+				);
+
+				if (failed) {
+					opc = IVM_OPCODE(NOP);
+				}
+			} else {
+				opc = IVM_OPCODE(NOP);
+			}
+
+			ivm_exec_addInstr_c(ret, ivm_instr_build(opc, arg));
 		}
-
-		if (instr.label) {
-			_ivm_gen_env_addLabel(
-				env, ret, instr.label, instr.llen,
-				instr.pos, ivm_exec_cur(ret)
-			);
-		}
-
-		param = ivm_opcode_table_getParam(opc);
-		arg =
-		_ivm_gen_opcode_arg_generateOpcodeArg(
-			instr.arg, instr, ret,
-			env, param[0], IVM_NULL
-		);
-		ivm_exec_addInstr_c(ret, ivm_instr_build(opc, arg));
 	}
+
+	_ivm_gen_env_cleanJumpTable(env);
+
+	ivm_dbg_printExec(ret, "  ", stderr);
 
 	return ret;
 }
@@ -316,7 +394,6 @@ ivm_gen_env_generateVM(ivm_gen_env_t *env)
 	ivm_gen_block_t *block;
 	ivm_function_t *func;
 	ivm_function_t *root = IVM_NULL;
-	ivm_coro_t *coro;
 
 	IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
 		block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
@@ -326,14 +403,14 @@ ivm_gen_env_generateVM(ivm_gen_env_t *env)
 
 		if (!IVM_STRNCMP("root", IVM_STRLEN("root"), block->label, block->len))
 			root = func;
+
+		ivm_exec_preproc(exec, state);
 	}
 
 	if (root) {
-		coro = ivm_coro_new();
-		ivm_coro_setRoot(coro, state,
-						 IVM_AS(ivm_function_object_new(state, IVM_NULL, root),
-								ivm_function_object_t));
-		ivm_vmstate_addCoro(state, coro);
+		ivm_vmstate_addCoro(state,
+							IVM_AS(ivm_function_object_new(state, IVM_NULL, root),
+								   ivm_function_object_t));
 	}
 
 	return state;

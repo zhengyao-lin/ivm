@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_STD_CHAIN_H_
-#define _IVM_VM_STD_CHAIN_H_
+#ifndef _IVM_STD_CHAIN_H_
+#define _IVM_STD_CHAIN_H_
 
 #include "pub/com.h"
 

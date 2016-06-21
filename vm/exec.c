@@ -11,6 +11,26 @@
 #include "exec.h"
 #include "byte.h"
 
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_exec_init(ivm_exec_t *exec,
+			   ivm_string_pool_t *pool)
+{
+	exec->cached = IVM_FALSE;
+	exec->pool = pool;
+	ivm_ref_inc(pool);
+	exec->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
+	exec->next = 0;
+	exec->instrs = MEM_ALLOC(sizeof(*exec->instrs)
+							* IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE,
+							ivm_instr_t *);
+
+	IVM_ASSERT(exec->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
+
+	return;
+}
+
 ivm_exec_t *
 ivm_exec_new(ivm_string_pool_t *pool)
 {
@@ -18,16 +38,7 @@ ivm_exec_new(ivm_string_pool_t *pool)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
-	ret->cached = IVM_FALSE;
-	ret->pool = pool;
-	ivm_ref_inc(pool);
-	ret->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
-	ret->next = 0;
-	ret->instrs = MEM_ALLOC(sizeof(*ret->instrs)
-							* IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE,
-							ivm_instr_t *);
-
-	IVM_ASSERT(ret->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
+	_ivm_exec_init(ret, pool);
 
 	return ret;
 }
