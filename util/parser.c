@@ -99,14 +99,26 @@ struct token_t {
 enum state_t {
 	ST_INIT = 0,
 	ST_UNEXP,
+
+	ST_TRY_COMMENT12,
+
+	ST_IN_COMMENT1,
+	ST_OUT_COMMENT1,
+
+	ST_IN_COMMENT2,
+
 	ST_IN_ID,
+	
 	ST_IN_STR_ID,
 	ST_IN_ID_STR_ESC,
+	
 	ST_IN_STR,
 	ST_IN_STR_ESC,
+	
 	ST_IN_NUM_INT,
 	ST_IN_NUM_DOT,
 	ST_IN_NUM_DEC,
+
 	STATE_COUNT,
 	STATE_ERR
 };
@@ -181,11 +193,34 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 								{ "= ", ST_INIT, .ign = IVM_TRUE },
 								{ "=\t", ST_INIT, .ign = IVM_TRUE },
 
+								{ "=/", ST_TRY_COMMENT12 },
+
 								{ "=\0", ST_INIT, T_EOF }
 							},
 
 		/* UNEXP */			{
 								{ ".", ST_INIT, .ign = IVM_TRUE }
+							},
+
+		/* TRY_COMMENT12 */	{
+								{ "=*", ST_IN_COMMENT1 },
+								{ "=/", ST_IN_COMMENT2 }
+							},
+
+		/* IN_COMMENT1 */	{
+								{ "=*", ST_OUT_COMMENT1 },
+								{ ".", ST_IN_COMMENT1 }
+							},
+
+		/* OUT_COMMENT1 */	{
+								{ "=/", ST_INIT, .ign = IVM_TRUE },
+								{ ".", ST_IN_COMMENT1 }
+							},
+
+		/* IN_COMMENT2 */	{
+								{ "=\n", ST_INIT, .ign = IVM_TRUE },
+								{ "=\r", ST_INIT, .ign = IVM_TRUE },
+								{ ".", ST_IN_COMMENT2 }
 							},
 
 		/* IN_ID */			{
@@ -919,15 +954,12 @@ RULE(block_list)
 			EXPECT_RULE_LIST(block, {
 				ivm_gen_block_list_push(list, &RULE_RET_AT(1).u.block);
 			} EXPECT_RULE_NORET(block_end_opt))
-
-			{
-				_RETVAL.block_list = list;
-			}
 		)
 	);
 
 	FAILED({
 		ivm_gen_block_list_free(list);
+		_RETVAL.block_list = IVM_NULL;
 	});
 
 	MATCHED({
@@ -942,18 +974,20 @@ RULE(trans_unit)
 	 * 			  | block_end_opt
 	 */
 	SUB_RULE_SET(
-		SUB_RULE(EXPECT_RULE(block_list)
-		{
-			_RETVAL.env = ivm_gen_env_new(RULE_RET_AT(0).u.block_list);
-		})
+		SUB_RULE(EXPECT_RULE(block_list))
 		SUB_RULE(EXPECT_RULE(block_end_opt))
 	);
 
-	FAILED({ POP_ERR(); });
+	FAILED({
+		_RETVAL.env = ivm_gen_env_new(IVM_NULL);
+		POP_ERR();
+	});
+
 	MATCHED({
 		if (HAS_NEXT_TOKEN()) {
 			POP_ERR();
 		}
+		_RETVAL.env = ivm_gen_env_new(RULE_RET_AT(0).u.block_list);
 	});
 }
 

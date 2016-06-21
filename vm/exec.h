@@ -67,7 +67,6 @@ typedef ivm_ptpool_t ivm_exec_pool_t;
 #define ivm_exec_pool_alloc(pool) ((ivm_exec_t *)ivm_ptpool_alloc(pool))
 #define ivm_exec_pool_dump ivm_ptpool_dump
 
-typedef ivm_size_t ivm_exec_id_t;
 typedef ivm_ptlist_t ivm_exec_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_exec_t *) ivm_exec_list_iterator_t;
 

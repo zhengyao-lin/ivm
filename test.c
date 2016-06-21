@@ -682,8 +682,12 @@ int main(int argc, const char **argv)
 
 	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
 
+	IVM_TRACE("****************************************\n");
+
 	IVM_TRACE("%f %d\n",
 			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
+
+	IVM_TRACE("****************************************\n");
 
 ivm_perf_reset();
 ivm_perf_startProfile();

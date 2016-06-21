@@ -71,10 +71,10 @@
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
 #define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))
+#define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR)))
 // #define SARG() (ivm_exec_getString(_EXEC, ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR))))
 #define PARG(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg(_INSTR)))
 #define SARG() (PARG(const ivm_string_t *))
-#define XARG() (ivm_vmstate_getFunc(_STATE, IARG()))
 
 #define STACK_TOP_NOCACHE() (ivm_vmstack_at(_STACK, tmp_sp - 1))
 #define STACK_PUSH_NOCACHE(obj) (ivm_vmstack_pushAt(_STACK, tmp_sp, (obj)), ++tmp_sp)

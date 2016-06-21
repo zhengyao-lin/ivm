@@ -225,13 +225,13 @@ _ivm_gen_env_addLabel(ivm_gen_env_t *env,
 }
 
 IVM_PRIVATE
-ivm_size_t
+ivm_function_id_t
 _ivm_gen_env_getBlockID(ivm_gen_env_t *env,
 						ivm_gen_pos_t pos,
 						const ivm_char_t *label,
 						ivm_size_t len)
 {
-	ivm_size_t ret = 0;
+	ivm_function_id_t ret = 0;
 	ivm_gen_block_list_iterator_t iter;
 	ivm_gen_block_t *tmp;
 
@@ -247,7 +247,7 @@ _ivm_gen_env_getBlockID(ivm_gen_env_t *env,
 
 	GEN_ERR(pos, GEN_ERR_MSG_UNDEFINED_BLOCK(label, len));
 
-	return (ivm_size_t)-1;
+	return (ivm_function_id_t)-1;
 }
 
 IVM_PRIVATE
@@ -259,7 +259,7 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 									  const ivm_char_t param,
 									  ivm_bool_t *failed)
 {
-	ivm_size_t tmp_arg;
+	ivm_function_id_t tmp_id;
 	ivm_char_t *tmp_str;
 	ivm_opcode_arg_t tmp_ret;
 
@@ -287,7 +287,7 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 				case 'F':
 					return ivm_opcode_arg_fromFloat(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
 				case 'X':
-					return ivm_opcode_arg_fromInt(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
+					return ivm_opcode_arg_fromFunc(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
 				default: UNMATCHED();
 			}
 		case 'S':
@@ -310,11 +310,11 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 							)
 						);
 				case 'X':
-					tmp_arg = _ivm_gen_env_getBlockID(env, arg.pos, arg.val, arg.len);
-					if (tmp_arg == (ivm_size_t)-1) {
+					tmp_id = _ivm_gen_env_getBlockID(env, arg.pos, arg.val, arg.len);
+					if (tmp_id == (ivm_function_id_t)-1) {
 						SET_FAILED();
 					}
-					return ivm_opcode_arg_fromInt(tmp_arg);
+					return ivm_opcode_arg_fromFunc(tmp_id);
 				default: UNMATCHED();
 			}
 	}
@@ -395,16 +395,18 @@ ivm_gen_env_generateVM(ivm_gen_env_t *env)
 	ivm_function_t *func;
 	ivm_function_t *root = IVM_NULL;
 
-	IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
-		block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
-		
-		exec = _ivm_gen_block_generateExec(block, env);
-		ivm_vmstate_registerFunc(state, (func = ivm_function_new(state, exec)));
+	if (env->block_list) {
+		IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
+			block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
+			
+			exec = _ivm_gen_block_generateExec(block, env);
+			ivm_vmstate_registerFunc(state, (func = ivm_function_new(state, exec)));
 
-		if (!IVM_STRNCMP("root", IVM_STRLEN("root"), block->label, block->len))
-			root = func;
+			if (!IVM_STRNCMP("root", IVM_STRLEN("root"), block->label, block->len))
+				root = func;
 
-		ivm_exec_preproc(exec, state);
+			ivm_exec_preproc(exec, state);
+		}
 	}
 
 	if (root) {

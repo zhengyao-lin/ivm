@@ -34,7 +34,12 @@ OPCODE_GEN(NEW_STR, "new_str", S, {
 })
 
 OPCODE_GEN(NEW_FUNC, "new_func", X, {
-	STACK_PUSH(ivm_function_object_new(_STATE, _CONTEXT, XARG()));
+	STACK_PUSH(
+		ivm_function_object_new(
+			_STATE, _CONTEXT,
+			ivm_vmstate_getFunc(_STATE, XARG())
+		)
+	);
 	NEXT_INSTR();
 })
 

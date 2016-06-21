@@ -45,6 +45,8 @@ typedef ivm_int_t		ivm_type_tag_t;
 
 typedef ivm_double_t	ivm_number_t;
 
+typedef ivm_size_t		ivm_function_id_t;
+
 enum {
 	IVM_UNDEFINED_T = 0,
 	IVM_NULL_T,
@@ -58,15 +60,18 @@ enum {
 typedef ivm_size_t		ivm_pc_t;
 typedef union {
 	ivm_long_t iarg;
+	ivm_function_id_t xarg;
 	ivm_double_t farg;
 	ivm_ptr_t parg;
 } ivm_opcode_arg_t;
 
 #define ivm_opcode_arg_toInt(arg) (arg.iarg)
+#define ivm_opcode_arg_toFunc(arg) (arg.xarg)
 #define ivm_opcode_arg_toFloat(arg) (arg.farg)
 #define ivm_opcode_arg_toPointer(arg) (arg.parg)
 
 #define ivm_opcode_arg_fromInt(i) ((ivm_opcode_arg_t) { .iarg = (ivm_long_t)(i) })
+#define ivm_opcode_arg_fromFunc(x) ((ivm_opcode_arg_t) { .xarg = (ivm_function_id_t)(x) })
 #define ivm_opcode_arg_fromFloat(f) ((ivm_opcode_arg_t) { .farg = (ivm_double_t)(f) })
 #define ivm_opcode_arg_fromPointer(p) ((ivm_opcode_arg_t) { .parg = (ivm_ptr_t)(p) })
 
