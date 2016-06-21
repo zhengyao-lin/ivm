@@ -20,8 +20,8 @@
 #define GEN_ERR_MSG_UNKNOWN_OPCODE(instr, len)							"unknown opcode '%.*s'", (int)(len), (instr)
 #define GEN_ERR_MSG_UNMATCHED_ARGUMENT(instr, len, arg, exp)			"unmatched argument type for instruction '%.*s'(expecting %c, %c given)", (int)(len), (instr), (exp), (arg)
 #define GEN_ERR_MSG_UNKNOWN_ARGUMENT_TYPE(t)							"unknown argument type '%c'", (t)
-#define GEN_ERR_MSG_UNDEFINED_BLOCK(label, len)							"undefined block %.*s", (int)(len), (label)
-#define GEN_ERR_MSG_REDEF_LABEL(label, len)								"redefinition of label %.*s", (int)(len), (label)
+#define GEN_ERR_MSG_UNDEFINED_BLOCK(label, len)							"undefined block '%.*s'", (int)(len), (label)
+#define GEN_ERR_MSG_REDEF_LABEL(label, len)								"redefinition of label '%.*s'", (int)(len), (label)
 
 ivm_gen_env_t *
 ivm_gen_env_new(ivm_gen_block_list_t *block_list)
@@ -337,7 +337,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 	const ivm_char_t *param;
 	ivm_gen_instr_list_iterator_t iter;
 	ivm_exec_t *ret = ivm_exec_new(env->str_pool);
-	ivm_bool_t failed = IVM_FALSE;
+	ivm_bool_t failed;
 
 	ivm_exec_list_push(env->exec_list, ret);
 
@@ -361,6 +361,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 				}
 
 				param = ivm_opcode_table_getParam(opc);
+				failed = IVM_FALSE;
 				arg =
 				_ivm_gen_opcode_arg_generateOpcodeArg(
 					instr.arg, instr, ret,
