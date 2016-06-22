@@ -65,7 +65,7 @@ fib_producer {
 	set_context_slot "a"
 
 	new_num_i 1
-	dup 0
+	dup
 	set_context_slot "b"
 
 	out_num
@@ -92,7 +92,7 @@ loop:
 
 	// b = c
 	get_context_slot "c"
-	dup 0
+	dup
 	set_context_slot "b"
 
 	yield
@@ -111,7 +111,7 @@ end:
 
 fib_consumer {
 loop:
-	dup 0
+	dup
 	jump_false end
 	out_num
 	new_num_i 1
@@ -130,7 +130,7 @@ coro_test2 {
 
 	// wait for other coro to stop
 loop:
-	dup 0
+	dup
 	jump_false end
 	yield
 	jump loop
@@ -164,7 +164,7 @@ slow_fib {
 }
 
 root {
-	out "hi" /* wo */
+	out "hi"
 	new_func `a ss`
 	invoke 0
 
@@ -194,7 +194,7 @@ root {
 
 	new_num_i 30
 	new_func slow_fib
-	dup 0
+	dup
 	set_context_slot "fib"
 	invoke 1
 
@@ -237,7 +237,7 @@ loop:/************************************/
 	get_context_slot "i"
 	new_num_i 1
 	add
-	dup 0
+	dup
 	set_context_slot "i"
 	pop
 

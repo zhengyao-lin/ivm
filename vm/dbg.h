@@ -25,11 +25,11 @@ typedef struct {
 
 #if IVM_STACK_CACHE_N_TOS == 1
 	ivm_object_t *stc0;
-	ivm_int_t cst;
 #elif IVM_STACK_CACHE_N_TOS == 2
 	ivm_object_t *stc0, *stc1;
-	ivm_int_t cst;
 #endif
+
+	ivm_int_t cst;
 
 	ivm_exec_t *exec;
 	ivm_instr_t *ip;

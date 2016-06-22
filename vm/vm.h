@@ -30,6 +30,7 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_function_pool_t *func_pool;
 	ivm_context_pool_t *ct_pool;
 	ivm_frame_pool_t *fr_pool;
+	ivm_coro_pool_t *cr_pool;
 
 	ivm_string_pool_t *const_pool;
 
@@ -130,6 +131,23 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 	(MEM_ALLOC(sizeof(ivm_frame_t), ivm_frame_t *))
 #define ivm_vmstate_dumpFrame(state, fr) \
 	(MEM_FREE(fr))
+
+#endif
+
+/* coro pool */
+#if IVM_USE_CORO_POOL
+
+#define ivm_vmstate_allocCoro(state) \
+	(ivm_coro_pool_alloc((state)->cr_pool))
+#define ivm_vmstate_dumpCoro(state, cr) \
+	(ivm_coro_pool_dump((state)->cr_pool, (cr)))
+
+#else
+
+#define ivm_vmstate_allocCoro(state) \
+	(MEM_ALLOC(sizeof(ivm_coro_t), ivm_coro_t *))
+#define ivm_vmstate_dumpCoro(state, cr) \
+	(MEM_FREE(cr))
 
 #endif
 

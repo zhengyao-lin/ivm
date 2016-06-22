@@ -15,15 +15,10 @@
 #include "call.h"
 #include "opcode.h"
 
-#include "opcode.req.h"
-
 ivm_coro_t *
-ivm_coro_new()
+ivm_coro_new(ivm_vmstate_t *state)
 {
-	ivm_coro_t *ret = MEM_ALLOC(sizeof(*ret),
-								ivm_coro_t *);
-
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("coroutine"));
+	ivm_coro_t *ret = ivm_vmstate_allocCoro(state);
 
 	ret->stack = ivm_vmstack_new();
 	ret->frame_st = ivm_frame_stack_new();
@@ -46,7 +41,8 @@ ivm_coro_free(ivm_coro_t *coro,
 		ivm_vmstack_free(coro->stack);
 		ivm_frame_stack_free(coro->frame_st);
 		ivm_runtime_free(coro->runtime, state);
-		MEM_FREE(coro);
+
+		ivm_vmstate_dumpCoro(state, coro);
 	}
 
 	return;
@@ -56,9 +52,7 @@ ivm_coro_free(ivm_coro_t *coro,
 	ivm_runtime_free((coro)->runtime, (state)); \
 	(coro)->runtime = IVM_NULL;
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#include "dispatch/direct.h"
-#endif
+#include "opcode.req.h"
 
 ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
@@ -76,6 +70,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_instr_t *tmp_ip = IVM_NULL,
 				*tmp_ip_end = IVM_NULL;
 	register ivm_size_t tmp_bp, tmp_sp;
+
+	register ivm_object_t *tmp_obj;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
@@ -107,7 +103,9 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 						  *stc1 = IVM_NULL;
 #endif
 
+#if IVM_STACK_CACHE_N_TOS != 0
 	register ivm_int_t cst = 0; /* cache state */
+#endif
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	static void *opcode_entry[] = {
@@ -140,9 +138,9 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		tmp_runtime = coro->runtime;
 		tmp_stack = coro->stack;
 
-		while (1) {
-			UPDATE_STACK();
+		UPDATE_STACK();
 
+		while (1) {
 ACTION_INVOKE:
 			ret = IVM_NULL;
 			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
@@ -192,6 +190,7 @@ ACTION_RETURN:
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
+				UPDATE_STACK();
 				STACK_PUSH(ret ? ret : IVM_NULL_OBJ(state));
 			} else {
 				/* no more callee to restore, end coro */
@@ -204,6 +203,7 @@ goto ACTION_YIELD_END;
 ACTION_YIELD:
 		if (AVAIL_STACK > 0) {
 			ret = STACK_POP();
+			SAVE_STACK();
 		}
 
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, ret));

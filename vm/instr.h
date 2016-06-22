@@ -18,6 +18,7 @@ typedef struct ivm_instr_t_tag {
 	void *entry;
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
+	ivm_opcode_cache_t cache;
 } ivm_instr_t;
 
 #else
@@ -25,6 +26,7 @@ typedef struct ivm_instr_t_tag {
 typedef struct ivm_instr_t_tag {
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
+	ivm_opcode_cache_t cache;
 } ivm_instr_t;
 
 #endif

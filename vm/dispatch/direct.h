@@ -17,7 +17,10 @@
 	.coro = _CORO,              \
 	.stack = _STACK             \
 
-#if IVM_STACK_CACHE_N_TOS == 1
+#if IVM_STACK_CACHE_N_TOS == 0
+	#define _DBG_RUNTIME_CACHE \
+		.cst = 0
+#elif IVM_STACK_CACHE_N_TOS == 1
 	#define _DBG_RUNTIME_CACHE \
 		.stc0 = stc0,               \
 		.cst = cst
@@ -81,11 +84,35 @@
 #define STACK_POP_NOCACHE() (tmp_sp--, ivm_vmstack_at(_STACK, tmp_sp))
 
 #define _STACK (tmp_stack)
-#define STACK_SIZE() (tmp_sp + cst)
+
+#if IVM_STACK_CACHE_N_TOS != 0
+
+	#define STACK_SIZE() (tmp_sp + cst)
+
+#else
+
+	#define STACK_SIZE() (tmp_sp)
+
+#endif
 
 #define STACK_INC(i) (tmp_sp += (i))
 
-#if IVM_STACK_CACHE_N_TOS == 1
+#if IVM_STACK_CACHE_N_TOS == 0
+
+	#define STC_PUSHBACK() 0
+
+	#define STACK_TOP() (STACK_TOP_NOCACHE())
+
+	#define STACK_POP() (STACK_POP_NOCACHE())
+
+	#define STACK_PUSH(obj) (STACK_PUSH_NOCACHE(obj))
+
+	#define STACK_BEFORE(i) (ivm_vmstack_at(_STACK, tmp_sp - 1 - (i)))
+
+	#define STACK_CUT(i) \
+		((tmp_sp -= (i)), ivm_vmstack_ptrAt(_STACK, tmp_sp))
+
+#elif IVM_STACK_CACHE_N_TOS == 1
 
 	#define STC_PUSHBACK() \
 		(cst ? (STACK_PUSH_NOCACHE(stc0), cst = 0) : 0)
@@ -106,29 +133,30 @@
 		((i) ? (STC_PUSHBACK(), (tmp_sp -= (i)), ivm_vmstack_ptrAt(_STACK, tmp_sp)) : IVM_NULL)
 
 #elif IVM_STACK_CACHE_N_TOS == 2
-
-	/* stack cache */
-	#define STC_PUSHBACK() \
-		({if (cst) {                         \
-			if (cst == 1) {                  \
-				STACK_PUSH_NOCACHE(stc0);    \
-			} else { /* cst == 2 */          \
-				STACK_PUSH_NOCACHE(stc0);    \
-				STACK_PUSH_NOCACHE(stc1);    \
-			}                                \
-			cst = 0;                         \
-		}})
-
 	#define _if		((
 	#define _then	)?(
 	#define _else	):(
 	#define _end	))
 
+	/* stack cache */
+	#define STC_PUSHBACK() \
+		_if (cst) _then                       \
+			_if (cst == 1) _then              \
+				STACK_PUSH_NOCACHE(stc0)      \
+			_else                             \
+				STACK_PUSH_NOCACHE(stc0),     \
+				STACK_PUSH_NOCACHE(stc1)      \
+			_end,                             \
+			(cst = 0)                         \
+		_else                                 \
+			0                                 \
+		_end
+
 	#define STACK_TOP() \
 		_if (cst == 2) _then                 \
 			stc1                             \
 		_else                                \
-			_if (cst == 1) _then             \
+			_if (cst) _then                  \
 				stc0                         \
 			_else                            \
 				STACK_TOP_NOCACHE()          \
@@ -140,7 +168,7 @@
 			(cst = 1),                       \
 			stc1                             \
 		_else                                \
-			_if (cst == 1) _then             \
+			_if (cst) _then                  \
 				(cst = 0),                   \
 				stc0                         \
 			_else                            \
@@ -150,11 +178,11 @@
 
 	#define STACK_PUSH(obj) \
 		_if (cst == 2) _then                \
-			STC_PUSHBACK(),                 \
-			(cst = 1),                      \
-			(stc0 = (obj))                  \
+			STACK_PUSH_NOCACHE(stc0),       \
+			stc0 = stc1,                    \
+			stc1 = (obj)                    \
 		_else                               \
-		  	_if (cst == 1) _then            \
+		  	_if (cst) _then                 \
 		  		(cst = 2),                  \
 		  		(stc1 = (obj))              \
 		  	_else                           \
@@ -165,9 +193,13 @@
 
 	#define STACK_BEFORE(i) \
 		_if ((i) < cst) _then                                \
-			_if (!(i)) _then                                 \
-				STACK_TOP()                                  \
-			_else                                            \
+			_if (cst == 2) _then                             \
+				_if (i) _then                                \
+					stc0                                     \
+				_else                                        \
+					stc1                                     \
+				_end                                         \
+			_else /* cst == 1 -> i must be 0 */              \
 				stc0                                         \
 			_end                                             \
 		_else                                                \
@@ -187,7 +219,16 @@
 	#error unsupported stack cache number
 #endif
 
-#define AVAIL_STACK (tmp_sp - tmp_bp + cst)
+#if IVM_STACK_CACHE_N_TOS != 0
+
+	#define AVAIL_STACK (tmp_sp - tmp_bp + cst)
+
+#else
+
+	#define AVAIL_STACK (tmp_sp - tmp_bp)
+
+#endif
+
 #define CHECK_STACK(req) \
 	IVM_ASSERT(AVAIL_STACK >= (req), \
 			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
@@ -203,5 +244,7 @@
 #define UPDATE_STACK() \
 	(tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP), \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
+
+#define _TMP_OBJ (tmp_obj)
 
 #endif

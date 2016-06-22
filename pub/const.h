@@ -6,13 +6,16 @@
 /* triggers of pools */
 #define IVM_USE_FUNCTION_POOL 1
 #define IVM_USE_FRAME_POOL 1
+#define IVM_USE_CORO_POOL 1
 
 /* if defined 1, a slot table will turn from list to hash table when having too many elements */
 #define IVM_USE_HASH_TABLE_AS_SLOT_TABLE 1
 
-#define IVM_DEFAULT_FUNCTION_POOL_SIZE 32
 #define IVM_DEFAULT_CONTEXT_POOL_SIZE 32
+
+#define IVM_DEFAULT_FUNCTION_POOL_SIZE 32
 #define IVM_DEFAULT_FRAME_POOL_SIZE 32
+#define IVM_DEFAULT_CORO_POOL_SIZE 64
 
 #define IVM_CONTEXT_POOL_MAX_CACHE_LEN 10
 
@@ -51,7 +54,7 @@
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
 
 /* the number of stack element(s) cached */
-#define IVM_STACK_CACHE_N_TOS 1
+#define IVM_STACK_CACHE_N_TOS 2
 
 #define IVM_PER_INSTR_DBG(runtime) // (ivm_dbg_printRuntime(runtime))
 

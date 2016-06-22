@@ -57,13 +57,14 @@ enum {
 	IVM_TYPE_COUNT
 };
 
-typedef ivm_size_t		ivm_pc_t;
 typedef union {
 	ivm_long_t iarg;
 	ivm_function_id_t xarg;
 	ivm_double_t farg;
 	ivm_ptr_t parg;
 } ivm_opcode_arg_t;
+
+typedef ivm_ptr_t ivm_opcode_cache_t;
 
 #define ivm_opcode_arg_toInt(arg) (arg.iarg)
 #define ivm_opcode_arg_toFunc(arg) (arg.xarg)

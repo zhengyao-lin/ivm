@@ -213,9 +213,9 @@ DRAW_BORDER:
 #elif IVM_STACK_CACHE_N_TOS == 2
 	if (tmp_cst == 2) {
 		IVM_TRACE("|>");
-		IVM_TRACE("%" CONTENT_WIDTH_STR "s", TYPE_NAME_OF(runtime.stc0));
-		IVM_TRACE("|>");
 		IVM_TRACE("%" CONTENT_WIDTH_STR "s", TYPE_NAME_OF(runtime.stc1));
+		IVM_TRACE("|>");
+		IVM_TRACE("%" CONTENT_WIDTH_STR "s", TYPE_NAME_OF(runtime.stc0));
 	} else if (tmp_cst == 1) {
 		IVM_TRACE("|>");
 		IVM_TRACE("%" CONTENT_WIDTH_STR "s", TYPE_NAME_OF(runtime.stc0));

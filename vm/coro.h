@@ -36,7 +36,7 @@ typedef enum {
 #define IVM_CORO_SET(obj, member, val) IVM_SET((obj), IVM_CORO, member, (val))
 
 ivm_coro_t *
-ivm_coro_new();
+ivm_coro_new(struct ivm_vmstate_t_tag *state);
 void
 ivm_coro_free(ivm_coro_t *coro,
 			  struct ivm_vmstate_t_tag *state);
@@ -81,6 +81,13 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define IVM_CORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_CORO_LIST_ITER_GET(iter) ((ivm_coro_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_coro_t *)
+
+typedef ivm_ptpool_t ivm_coro_pool_t;
+
+#define ivm_coro_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_coro_t)))
+#define ivm_coro_pool_free ivm_ptpool_free
+#define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
+#define ivm_coro_pool_dump ivm_ptpool_dump
 
 IVM_COM_END
 

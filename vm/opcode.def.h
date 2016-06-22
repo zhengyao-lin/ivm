@@ -67,53 +67,47 @@ OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
 ))
 
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(1);
 
-	obj = ivm_object_getSlotValue(STACK_POP(), _STATE,
-								  SARG());
+	_TMP_OBJ = ivm_object_getSlotValue(STACK_POP(), _STATE,
+									   SARG());
 	
-	STACK_PUSH(obj ? obj : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(SET_SLOT, "set_slot", S, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(2);
 
-	obj = STACK_POP();
+	_TMP_OBJ = STACK_POP();
 	
-	ivm_object_setSlot(obj, _STATE,
+	ivm_object_setSlot(_TMP_OBJ, _STATE,
 					   SARG(),
 					   STACK_POP());
 	
-	STACK_PUSH(obj);
+	STACK_PUSH(_TMP_OBJ);
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
-	ivm_object_t *found =
-				  ivm_ctchain_search(_CONTEXT, _STATE,
+	_TMP_OBJ = ivm_ctchain_search(_CONTEXT, _STATE,
 									 SARG());
 
-	STACK_PUSH(found ? found : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
 	const ivm_string_t *key = SARG();
-	ivm_object_t *val;
 
 	CHECK_STACK(1);
 
-	val = STACK_POP();
+	_TMP_OBJ = STACK_POP();
 
-	if (!ivm_ctchain_setSlotIfExist(_CONTEXT, _STATE, key, val)) {
-		ivm_ctchain_setLocalSlot(_CONTEXT, _STATE, key, val);
+	if (!ivm_ctchain_setSlotIfExist(_CONTEXT, _STATE, key, _TMP_OBJ)) {
+		ivm_ctchain_setLocalSlot(_CONTEXT, _STATE, key, _TMP_OBJ);
 	}
 
 	NEXT_INSTR();
@@ -136,46 +130,52 @@ OPCODE_GEN(POP, "pop", N, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(DUP, "dup", I, {
+OPCODE_GEN(DUP_N, "dup_n", I, {
 	ivm_size_t i = IARG();
+
 	CHECK_STACK(i + 1);
-	STACK_PUSH(STACK_BEFORE(i));
+
+	_TMP_OBJ = STACK_BEFORE(i);
+	STACK_PUSH(_TMP_OBJ);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(DUP, "dup", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	STACK_PUSH(_TMP_OBJ);
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
-	IVM_OUT("print: %p\n", (void *)obj);
+	_TMP_OBJ = STACK_POP();
+	IVM_OUT("print: %p\n", (void *)_TMP_OBJ);
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(PRINT_NUM, "print_num", N, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
-	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
-		IVM_TRACE("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	_TMP_OBJ = STACK_POP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T)
+		IVM_TRACE("print num: %f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
 	else
-		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(PRINT_TYPE, "print_type", N, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
-	IVM_TRACE("type: %s\n", obj ? IVM_OBJECT_GET(obj, TYPE_NAME) : "empty pointer");
+	_TMP_OBJ = STACK_POP();
+	IVM_TRACE("type: %s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "empty pointer");
 	
 	NEXT_INSTR();
 })
@@ -206,21 +206,18 @@ OPCODE_GEN(OUT, "out", S, {
 })
 
 OPCODE_GEN(OUT_NUM, "out_num", N, {
-	ivm_object_t *obj;
-
 	CHECK_STACK(1);
 
-	obj = STACK_POP();
-	if (IVM_OBJECT_GET(obj, TYPE_TAG) == IVM_NUMERIC_T)
-		IVM_TRACE("print num: %f\n", IVM_AS(obj, ivm_numeric_t)->val);
+	_TMP_OBJ = STACK_POP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T)
+		IVM_TRACE("print num: %f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
 	else
-		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(obj, TYPE_NAME));
+		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(INVOKE, "invoke", I, {
-	ivm_function_object_t *obj;
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
 	ivm_object_t **args;
@@ -228,20 +225,23 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 
 	CHECK_STACK(arg_count + 1);
 
-	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+	_TMP_OBJ = STACK_POP();
 	// IVM_TRACE("%p\n", obj);
 
-	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(obj, TYPE_NAME)));
+	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));
 	
-	func = ivm_function_object_getFunc(obj);
+	func = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
 	args = STACK_CUT(arg_count);
 
 	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
 	SAVE_RUNTIME(_INSTR + 1);
 
 	ivm_function_invoke(func, _STATE,
-						ivm_function_object_getClosure(obj), _CORO);
+						ivm_function_object_getClosure(
+							IVM_AS(_TMP_OBJ, ivm_function_object_t)
+						),
+						_CORO);
 	
 	UPDATE_STACK();
 
@@ -261,15 +261,16 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 })
 
 OPCODE_GEN(FORK, "fork", N, {
-	ivm_function_object_t *obj;
-
 	CHECK_STACK(1);
-	obj = IVM_AS(STACK_POP(), ivm_function_object_t);
+	_TMP_OBJ = STACK_POP();
 
-	IVM_ASSERT(IVM_IS_TYPE(obj, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(obj, TYPE_NAME)));
+	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));
 
-	ivm_vmstate_addCoro(_STATE, obj);
+	ivm_vmstate_addCoro(
+		_STATE,
+		IVM_AS(_TMP_OBJ, ivm_function_object_t)
+	);
 
 	NEXT_INSTR();
 })

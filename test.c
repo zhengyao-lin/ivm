@@ -83,7 +83,7 @@ int test_fib()
 	top = ivm_function_new(state, exec1);
 	fib = ivm_function_new(state, exec2);
 	
-	coro = ivm_coro_new();
+	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
@@ -219,7 +219,7 @@ int test_call()
 	top = ivm_function_new(state, exec1);
 	empty = ivm_function_new(state, IVM_NULL);
 	
-	coro = ivm_coro_new();
+	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
 	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
@@ -516,8 +516,8 @@ int test_vm()
 
 	/* init coroutines */
 
-	coro1 = ivm_coro_new();
-	coro2 = ivm_coro_new();
+	coro1 = ivm_coro_new(state);
+	coro2 = ivm_coro_new(state);
 
 	/* add coroutines to vm state */
 	ivm_vmstate_addCoro_c(state, coro1);
@@ -625,9 +625,9 @@ int main(int argc, const char **argv)
 
 #if 0
 
-	// test_call();
+	test_call();
 	test_vm();
-	// test_fib();
+	test_fib();
 
 	ivm_perf_printElapsed();
 	// profile_type();

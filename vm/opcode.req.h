@@ -84,4 +84,8 @@
 		NEXT_INSTR();                                                                          \
 	}
 
+#if IVM_DISPATCH_METHOD_DIRECT_THREAD
+	#include "dispatch/direct.h"
+#endif
+
 #endif
