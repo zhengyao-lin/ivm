@@ -7,6 +7,11 @@
 #define _STATE (state)
 #define _EXEC (tmp_exec)
 #define _INSTR (tmp_ip)
+#define _INSTR_CACHE (&(_INSTR->cache))
+#define _INSTR_CACHE_DATA (_INSTR->cache.data)
+
+#define CLEAR_INSTR_CACHE() \
+	(*_INSTR_CACHE = ivm_instr_cache_build(IVM_NULL, IVM_NULL))
 
 #define _DBG_RUNTIME_DEFAULT \
 	.exec = tmp_exec,           \
@@ -246,5 +251,41 @@
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
 #define _TMP_OBJ (tmp_obj)
+
+#if IVM_USE_INLINE_CACHE
+
+	/* return to _TMP_OBJ */
+	#define GET_SLOT(a, key) \
+		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                            \
+			_TMP_OBJ = ivm_object_getCacheSlotValue(_STATE, _INSTR_CACHE);              \
+		} else {                                                                        \
+			CLEAR_INSTR_CACHE();                                                        \
+			_TMP_OBJ = ivm_object_getSlotValue_cc(                                      \
+				(a), _STATE,                                                            \
+				(key), _INSTR_CACHE                                                     \
+			);                                                                          \
+		}
+	
+	/* a[key] = b */
+	#define SET_SLOT(a, key, b) \
+		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                      \
+			ivm_object_setCacheSlotValue(_STATE, _INSTR_CACHE, (b));              \
+		} else {                                                                  \
+			CLEAR_INSTR_CACHE();                                                  \
+			ivm_object_setSlot_cc(                                                \
+				(a), _STATE, (key),                                               \
+				(b), _INSTR_CACHE                                                 \
+			);                                                                    \
+		}
+
+#else
+
+	#define GET_SLOT(a, key) \
+		(_TMP_OBJ = ivm_object_getSlotValue((a), _STATE, (key)))
+
+	#define SET_SLOT(a, key, b) \
+		(ivm_object_setSlot((a), _STATE, (key), (b)))
+
+#endif
 
 #endif

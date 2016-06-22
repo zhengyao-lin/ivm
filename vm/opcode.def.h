@@ -69,9 +69,8 @@ OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ = ivm_object_getSlotValue(STACK_POP(), _STATE,
-									   SARG());
-	
+	_TMP_OBJ = STACK_POP();
+	GET_SLOT(_TMP_OBJ, SARG());
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
@@ -81,19 +80,15 @@ OPCODE_GEN(SET_SLOT, "set_slot", S, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ = STACK_POP();
-	
-	ivm_object_setSlot(_TMP_OBJ, _STATE,
-					   SARG(),
-					   STACK_POP());
-	
+	SET_SLOT(_TMP_OBJ, SARG(), STACK_POP());
 	STACK_PUSH(_TMP_OBJ);
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
-	_TMP_OBJ = ivm_ctchain_search(_CONTEXT, _STATE,
-									 SARG());
+	_TMP_OBJ = ivm_ctchain_search_cc(_CONTEXT, _STATE,
+									 SARG(), _INSTR_CACHE);
 
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 	NEXT_INSTR();
@@ -106,19 +101,26 @@ OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
 
 	_TMP_OBJ = STACK_POP();
 
-	if (!ivm_ctchain_setSlotIfExist(_CONTEXT, _STATE, key, _TMP_OBJ)) {
-		ivm_ctchain_setLocalSlot(_CONTEXT, _STATE, key, _TMP_OBJ);
+	if (!ivm_ctchain_setSlotIfExist_cc(
+			_CONTEXT, _STATE, key,
+			_TMP_OBJ, _INSTR_CACHE
+		)) {
+		ivm_ctchain_setLocalSlot_cc(
+			_CONTEXT, _STATE, key,
+			_TMP_OBJ, _INSTR_CACHE
+		);
 	}
 
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(SET_ARG, "set_arg", S, {
-	ivm_ctchain_setLocalSlot(_CONTEXT, _STATE,
-							 SARG(),
-							 AVAIL_STACK >= 1
-							 ? STACK_POP()
-							 : IVM_UNDEFINED(_STATE));
+	ivm_ctchain_setLocalSlot_cc(_CONTEXT, _STATE,
+								SARG(),
+								AVAIL_STACK >= 1
+								? STACK_POP()
+								: IVM_UNDEFINED(_STATE),
+								_INSTR_CACHE);
 
 	NEXT_INSTR();
 })

@@ -8,6 +8,7 @@
 #include "std/pool.h"
 #include "std/string.h"
 #include "std/heap.h"
+#include "std/uid.h"
 
 #include "gc/gc.h"
 #include "obj.h"
@@ -39,6 +40,8 @@ typedef struct ivm_vmstate_t_tag {
 						  = 0: closed
 						  < 0: locked */
 	ivm_collector_t *gc;
+
+	ivm_uid_gen_t uid_gen;
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
@@ -195,6 +198,8 @@ ivm_vmstate_addCoro(ivm_vmstate_t *state,
 
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state);
+
+#define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
 
 /*
 ivm_object_t *

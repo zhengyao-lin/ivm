@@ -63,7 +63,10 @@ ivm_collector_copyObject(ivm_object_t *obj,
 	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
 	IVM_OBJECT_SET(obj, COPY, ret);
 
-	IVM_OBJECT_SET(ret, SLOTS, tmp = ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->heap));
+	IVM_OBJECT_SET(
+		ret, SLOTS,
+		tmp = ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->state, arg->heap)
+	);
 
 	if (tmp) {
 		IVM_SLOT_TABLE_EACHPTR(tmp, siter) {

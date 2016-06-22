@@ -87,17 +87,37 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_string_t *key);
 
+ivm_object_t *
+ivm_ctchain_search_cc(ivm_ctchain_t *chain,
+					  struct ivm_vmstate_t_tag *state,
+					  const ivm_string_t *key,
+					  ivm_instr_cache_t *cache);
+
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 struct ivm_vmstate_t_tag *state,
 						 const ivm_string_t *key,
 						 ivm_object_t *val);
 
+void
+ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
+							struct ivm_vmstate_t_tag *state,
+							const ivm_string_t *key,
+							ivm_object_t *val,
+							ivm_instr_cache_t *cache);
+
 ivm_bool_t
 ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 						   struct ivm_vmstate_t_tag *state,
 						   const ivm_string_t *key,
 						   ivm_object_t *val);
+
+ivm_bool_t
+ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
+							  struct ivm_vmstate_t_tag *state,
+							  const ivm_string_t *key,
+							  ivm_object_t *val,
+							  ivm_instr_cache_t *cache);
 
 void
 ivm_ctchain_foreach(ivm_ctchain_t *chain,

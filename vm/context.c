@@ -67,11 +67,11 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 				   const ivm_string_t *key)
 {
 	ivm_object_t *ret = IVM_NULL;
-	ivm_ctchain_sub_t *i;
-	ivm_int_t len;
+	ivm_ctchain_sub_t *i, *end;
 
-	for (i = ivm_ctchain_contextStart(chain), len = 0;
-		 len < chain->len; i++, len++) {
+	for (i = ivm_ctchain_contextStart(chain),
+		 end = i + chain->len;
+		 i != end; i++) {
 		ret = ivm_object_getSlotValue_np(GET_CONTEXT(i), state, key);
 		if (ret) break;
 	}
@@ -79,6 +79,39 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 	return ret;
 }
 
+ivm_object_t *
+ivm_ctchain_search_cc(ivm_ctchain_t *chain,
+					  ivm_vmstate_t *state,
+					  const ivm_string_t *key,
+					  ivm_instr_cache_t *cache)
+{
+	ivm_object_t *ret = IVM_NULL;
+	ivm_ctchain_sub_t *i, *end;
+
+	for (i = ivm_ctchain_contextStart(chain),
+		 end = i + chain->len;
+		 i != end; i++) {
+
+#if IVM_USE_INLINE_CACHE
+
+		if (ivm_object_checkCacheValid(GET_CONTEXT(i), cache)) {
+			ret = ivm_object_getCacheSlotValue(state, cache);
+		} else {
+			ret = ivm_object_getSlotValue_np_cc(
+				GET_CONTEXT(i), state,
+				key, cache
+			);
+		}
+
+#else
+		ret = ivm_object_getSlotValue_np(GET_CONTEXT(i), state, key);
+#endif
+
+		if (ret) break;
+	}
+
+	return ret;
+}
 
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
@@ -86,16 +119,42 @@ ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 const ivm_string_t *key,
 						 ivm_object_t *val)
 {
-	ivm_context_t *local = ivm_ctchain_getLocal(chain);
+	ivm_object_setSlot(
+		ivm_context_toObject(
+			ivm_ctchain_getLocal(chain)
+		),
+		state, key, val
+	);
 
-#if 0
-	if (!local) {
-		local = ivm_ctchain_addContext(chain, state, ivm_context_new(state));
+	return;
+}
+
+void
+ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
+							ivm_vmstate_t *state,
+							const ivm_string_t *key,
+							ivm_object_t *val,
+							ivm_instr_cache_t *cache)
+{
+	ivm_object_t *obj
+	= ivm_context_toObject(
+		ivm_ctchain_getLocal(chain)
+	);
+
+#if IVM_USE_INLINE_CACHE
+
+	if (ivm_object_checkCacheValid(obj, cache)) {
+		ivm_object_setCacheSlotValue(state, cache, val);
+	} else {
+		ivm_object_setSlot_cc(
+			obj, state, key,
+			val, cache
+		);
 	}
-#endif
 
-	ivm_object_setSlot(ivm_context_toObject(local),
-					   state, key, val);
+#else
+	ivm_object_setSlot(obj, state, key, val);
+#endif
 
 	return;
 }
@@ -107,13 +166,48 @@ ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 						   ivm_object_t *val)
 {
 	ivm_bool_t ret = IVM_FALSE;
-	ivm_ctchain_sub_t *i;
-	ivm_int_t len;
+	ivm_ctchain_sub_t *i, *end;
 
-	for (i = ivm_ctchain_contextStart(chain), len = 0;
-		 len < chain->len; i++, len++) {
+	for (i = ivm_ctchain_contextStart(chain),
+		 end = i + chain->len;
+		 i != end; i++) {
 		ret = ivm_object_setSlotIfExist(GET_CONTEXT(i),
 										state, key, val);
+		if (ret) break;
+	}
+
+	return ret;
+}
+
+ivm_bool_t
+ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
+							  struct ivm_vmstate_t_tag *state,
+							  const ivm_string_t *key,
+							  ivm_object_t *val,
+							  ivm_instr_cache_t *cache)
+{
+	ivm_bool_t ret = IVM_FALSE;
+	ivm_ctchain_sub_t *i, *end;
+
+	for (i = ivm_ctchain_contextStart(chain),
+		 end = i + chain->len;
+		 i != end; i++) {
+
+#if IVM_USE_INLINE_CACHE
+		if (ivm_object_checkCacheValid(GET_CONTEXT(i), cache)) {
+			ivm_object_setCacheSlotValue(state, cache, val);
+			ret = IVM_TRUE;
+		} else {
+			ret = ivm_object_setSlotIfExist_cc(
+				GET_CONTEXT(i), state,
+				key, val, cache
+			);
+		}
+#else
+		ret = ivm_object_setSlotIfExist(GET_CONTEXT(i),
+										state, key, val);
+#endif
+
 		if (ret) break;
 	}
 

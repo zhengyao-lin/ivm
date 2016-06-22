@@ -6,6 +6,7 @@
 
 #include "std/string.h"
 
+#include "../instr.h"
 #include "../obj.h"
 #include "../slot.h"
 
@@ -47,8 +48,31 @@ ivm_object_getSlotValue_np(ivm_object_t *obj,
 		return IVM_OBJECT_GET(obj, PROTO);
 	}
 
-	return ivm_slot_getValue(ivm_slot_table_findSlot(obj->slots, state, key),
-							 state);
+	return ivm_slot_getValue(
+		ivm_slot_table_findSlot(obj->slots, state, key),
+		state
+	);
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_getSlotValue_np_cc(ivm_object_t *obj,
+							  ivm_vmstate_t *state,
+							  const ivm_string_t *key,
+							  ivm_instr_cache_t *cache)
+{
+	ivm_char_t *tmp = ivm_string_trimHead(key);
+
+	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
+
+	if (STR_IS_PROTO(tmp)) {
+		return IVM_OBJECT_GET(obj, PROTO);
+	}
+
+	return ivm_slot_getValue(
+		ivm_slot_table_findSlot_cc(obj->slots, state, key, cache),
+		state
+	);
 }
 
 #undef STR_IS_PROTO

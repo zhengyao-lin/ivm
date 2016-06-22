@@ -3,6 +3,7 @@
 #include "pub/com.h"
 
 #include "std/heap.h"
+#include "std/uid.h"
 
 #include "inline/func.h"
 #include "gc/gc.h"
@@ -119,6 +120,8 @@ ivm_vmstate_new()
 	ivm_oprt_initType(ret);
 
 	ivm_vmstate_unlockGCFlag(ret);
+
+	ivm_uid_gen_init(&ret->uid_gen);
 
 	return ret;
 }

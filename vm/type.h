@@ -64,8 +64,6 @@ typedef union {
 	ivm_ptr_t parg;
 } ivm_opcode_arg_t;
 
-typedef ivm_ptr_t ivm_opcode_cache_t;
-
 #define ivm_opcode_arg_toInt(arg) (arg.iarg)
 #define ivm_opcode_arg_toFunc(arg) (arg.xarg)
 #define ivm_opcode_arg_toFloat(arg) (arg.farg)

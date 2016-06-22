@@ -5,6 +5,7 @@
 #include "pub/type.h"
 
 #include "std/string.h"
+#include "std/uid.h"
 
 #include "opcode.h"
 
@@ -12,13 +13,23 @@ IVM_COM_HEADER
 
 struct ivm_exec_t_tag;
 
+typedef struct {
+	ivm_uid_t id;
+	ivm_ptr_t data;
+} ivm_instr_cache_t;
+
+#define ivm_instr_cache_build(id, data) ((ivm_instr_cache_t) { (ivm_uid_t)(id), (ivm_ptr_t)(data) })
+
+#define ivm_instr_cache_id(cache) ((cache)->id)
+#define ivm_instr_cache_data(cache) ((cache)->data)
+
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
 typedef struct ivm_instr_t_tag {
 	void *entry;
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
-	ivm_opcode_cache_t cache;
+	ivm_instr_cache_t cache;
 } ivm_instr_t;
 
 #else
@@ -26,7 +37,7 @@ typedef struct ivm_instr_t_tag {
 typedef struct ivm_instr_t_tag {
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
-	ivm_opcode_cache_t cache;
+	ivm_instr_cache_t cache;
 } ivm_instr_t;
 
 #endif

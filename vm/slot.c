@@ -29,6 +29,7 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 #endif
 
 	ret->size = IVM_DEFAULT_SLOT_TABLE_SIZE;
+	ret->uid = ivm_vmstate_genUID(state);
 	ret->tabl = ivm_vmstate_alloc(state,
 								  sizeof(*ret->tabl)
 								  * IVM_DEFAULT_SLOT_TABLE_SIZE);
@@ -40,7 +41,9 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 }
 
 ivm_slot_table_t *
-ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap)
+ivm_slot_table_copy(ivm_slot_table_t *table,
+					ivm_vmstate_t *state,
+					ivm_heap_t *heap)
 {
 	ivm_slot_table_t *ret = IVM_NULL;
 	ivm_slot_t *tmp, *end;
@@ -49,6 +52,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table, struct ivm_heap_t_tag *heap)
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
 		ret->is_hash = table->is_hash;
 		ret->size = table->size;
+		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_heap_alloc(heap,
 								   sizeof(*ret->tabl)
 								   * ret->size);
@@ -80,6 +84,7 @@ ivm_slot_table_expand(ivm_slot_table_t *table,
 	ivm_slot_t *otable = table->tabl;
 	ivm_size_t i;
 
+	table->uid = ivm_vmstate_genUID(state);
 	table->tabl = ivm_vmstate_alloc(state,
 									sizeof(*table->tabl)
 									* dsize);
@@ -107,72 +112,93 @@ ivm_slot_table_expand(ivm_slot_table_t *table,
 	return;
 }
 
+#define ADD_SLOT(e1, e2) \
+	{                                                                            \
+		ivm_hash_val_t hash;                                                     \
+		ivm_size_t osize;                                                        \
+                                                                                 \
+		register ivm_slot_t *i, *tmp, *end;                                      \
+                                                                                 \
+		if (table->is_hash) {                                                    \
+			hash = ivm_hash_fromString(ivm_string_trimHead(key));                \
+			while (1) {                                                          \
+				tmp = table->tabl + hash % table->size;                          \
+				end = table->tabl + table->size;                                 \
+                                                                                 \
+				for (i = tmp;                                                    \
+					 i != end;                                                   \
+					 i++) {                                                      \
+					if (IS_EMPTY_SLOT(i)) {                                      \
+						i->k = ivm_string_copyIfNotConst_pool(key, state);       \
+						i->v = obj;                                              \
+						e1;                                                      \
+						return;                                                  \
+					} else if (ivm_string_compare(i->k, key)) {                  \
+						i->v = obj;                                              \
+						e1;                                                      \
+						return;                                                  \
+					}                                                            \
+				}                                                                \
+                                                                                 \
+				for (i = table->tabl;                                            \
+					 i != tmp;                                                   \
+					 i++) {                                                      \
+					if (IS_EMPTY_SLOT(i)) {                                      \
+						i->k = ivm_string_copyIfNotConst_pool(key, state);       \
+						i->v = obj;                                              \
+						e1;                                                      \
+						return;                                                  \
+					} else if (ivm_string_compare(i->k, key)) {                  \
+						i->v = obj;                                              \
+						e1;                                                      \
+						return;                                                  \
+					}                                                            \
+				}                                                                \
+                                                                                 \
+				/* allocate new space */                                         \
+				ivm_slot_table_expand(table, state);                             \
+			}                                                                    \
+		} else {                                                                 \
+			for (i = table->tabl,                                                \
+				 end = table->tabl + table->size;                                \
+				 i != end; i++) {                                                \
+				if (i->k == IVM_NULL) {                                          \
+					i->k = ivm_string_copyIfNotConst_pool(key, state);           \
+					i->v = obj;                                                  \
+					e1;                                                          \
+					return;                                                      \
+				} else if (ivm_string_compare(i->k, key)) {                      \
+					i->v = obj;                                                  \
+					e1;                                                          \
+					return;                                                      \
+				}                                                                \
+			}                                                                    \
+                                                                                 \
+			osize = table->size;                                                 \
+			ivm_slot_table_expand(table, state);                                 \
+			tmp = table->tabl + osize;                                           \
+			tmp->k = ivm_string_copyIfNotConst_pool(key, state);                 \
+			tmp->v = obj;                                                        \
+			e2;                                                                  \
+		}                                                                        \
+                                                                                 \
+		return;                                                                  \
+	}
+
+void
+ivm_slot_table_addSlot_cc(ivm_slot_table_t *table,
+						  ivm_vmstate_t *state,
+						  const ivm_string_t *key,
+						  ivm_object_t *obj,
+						  ivm_instr_cache_t *cache)
+ADD_SLOT(
+	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)i),
+	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)tmp)
+)
+
 void
 ivm_slot_table_addSlot(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state,
 					   const ivm_string_t *key,
 					   ivm_object_t *obj)
-{
-	ivm_hash_val_t hash;
-	ivm_size_t osize;
-
-	register ivm_slot_t *i, *tmp, *end;
-
-	if (table->is_hash) {
-		hash = ivm_hash_fromString(ivm_string_trimHead(key));
-		while (1) {
-			tmp = table->tabl + hash % table->size;
-			end = table->tabl + table->size;
-
-			for (i = tmp;
-				 i != end;
-				 i++) {
-				if (IS_EMPTY_SLOT(i)) {
-					i->k = ivm_string_copyIfNotConst_pool(key, state);
-					i->v = obj;
-					return;
-				} else if (ivm_string_compare(i->k, key)) {
-					i->v = obj;
-					return;
-				}
-			}
-
-			for (i = table->tabl;
-				 i != tmp;
-				 i++) {
-				if (IS_EMPTY_SLOT(i)) {
-					i->k = ivm_string_copyIfNotConst_pool(key, state);
-					i->v = obj;
-					return;
-				} else if (ivm_string_compare(i->k, key)) {
-					i->v = obj;
-					return;
-				}
-			}
-
-			/* allocate new space */
-			ivm_slot_table_expand(table, state);
-		}
-	} else {
-		for (i = table->tabl,
-			 end = table->tabl + table->size;
-			 i != end; i++) {
-			if (i->k == IVM_NULL) {
-				i->k = ivm_string_copyIfNotConst_pool(key, state);
-				i->v = obj;
-				return;
-			} else if (ivm_string_compare(i->k, key)) {
-				i->v = obj;
-				return;
-			}
-		}
-
-		osize = table->size;
-		ivm_slot_table_expand(table, state);
-		tmp = table->tabl + osize;
-		tmp->k = ivm_string_copyIfNotConst_pool(key, state);
-		tmp->v = obj;
-	}
-
-	return;
-}
+ADD_SLOT(0, 0)

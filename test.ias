@@ -129,10 +129,14 @@ coro_test2 {
 	new_num_i 30
 
 	// wait for other coro to stop
-loop:
+	get_context_slot "wait_for_coro"
+	invoke 1
+}
+
+wait_for_coro {
+loop: yield
 	dup
 	jump_false end
-	yield
 	jump loop
 end:
 }
@@ -164,6 +168,10 @@ slow_fib {
 }
 
 root {
+	
+	new_func wait_for_coro
+	set_context_slot "wait_for_coro"
+
 	out "hi"
 	new_func `a ss`
 	invoke 0
@@ -198,6 +206,117 @@ root {
 	set_context_slot "fib"
 	invoke 1
 
+	out_num
+
+	new_func slot_test1
+	invoke 0
+
+	new_func context_test1
+	invoke 0
+}
+
+context_test1 {
+	new_num_i 7
+	new_num_i 6
+	new_num_i 5
+	new_num_i 4
+	new_num_i 3
+	new_num_i 2
+	new_num_i 1
+	set_context_slot "wowowowa"
+	set_context_slot "wowowowb"
+	set_context_slot "wowowowc"
+	set_context_slot "wowowowd"
+	set_context_slot "wowowowe"
+	set_context_slot "wowowowf"
+	set_context_slot "wowowowg"
+
+	new_num_i 0
+	set_context_slot "i"
+
+loop:/************************************/
+	get_context_slot "i"
+	new_num_i 10000000
+	lt
+
+	jump_false end
+
+	get_context_slot "wowowowg"
+	pop
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	dup
+	set_context_slot "i"
+	pop
+
+	jump loop
+
+end:
+}
+
+slot_test1 {
+	new_num_i 7
+	new_num_i 6
+	new_num_i 5
+	new_num_i 4
+	new_num_i 3
+	new_num_i 2
+	new_num_i 1
+	new_obj
+	set_slot "wowowowa"
+	set_slot "wowowowb"
+	set_slot "wowowowc"
+	set_slot "wowowowd"
+	set_slot "wowowowe"
+	set_slot "wowowowf"
+	set_slot "wowowowg"
+
+	new_num_i 0
+	set_context_slot "i"
+
+
+loop:/************************************/
+	get_context_slot "i"
+	new_num_i 10000000
+	lt
+
+	jump_false end
+
+	dup
+	get_slot "wowowowg"
+
+	get_context_slot "i"
+	dup
+	new_num_i 10000
+	mod
+	jump_true no_set
+
+	dup_n 2
+	set_slot "wowowowg"
+
+	pop
+	pop
+
+	jump end1
+
+no_set: pop; pop
+end1:
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	dup
+	set_context_slot "i"
+	pop
+
+	jump loop
+
+end:
+
+	dup
+	get_slot "wowowowg"
 	out_num
 }
 

@@ -9,6 +9,7 @@
 #include "std/list.h"
 #include "std/string.h"
 
+#include "instr.h"
 #include "slot.h"
 #include "oprt.h"
 
@@ -162,16 +163,46 @@ ivm_object_setSlot(ivm_object_t *obj,
 				   const ivm_string_t *key,
 				   ivm_object_t *value);
 
+void
+ivm_object_setSlot_cc(ivm_object_t *obj,
+					  struct ivm_vmstate_t_tag *state,
+					  const ivm_string_t *key,
+					  ivm_object_t *value,
+					  ivm_instr_cache_t *cache);
+
 ivm_bool_t /* if exist */
 ivm_object_setSlotIfExist(ivm_object_t *obj,
 						  struct ivm_vmstate_t_tag *state,
 						  const ivm_string_t *key,
 						  ivm_object_t *value);
 
+ivm_bool_t
+ivm_object_setSlotIfExist_cc(ivm_object_t *obj,
+							 struct ivm_vmstate_t_tag *state,
+							 const ivm_string_t *key,
+							 ivm_object_t *value,
+							 ivm_instr_cache_t *cache);
+
 ivm_object_t *
 ivm_object_getSlotValue(ivm_object_t *obj,
 						struct ivm_vmstate_t_tag *state,
 						const ivm_string_t *key);
+
+ivm_object_t *
+ivm_object_getSlotValue_cc(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state,
+						   const ivm_string_t *key,
+						   ivm_instr_cache_t *cache);
+
+#define ivm_object_checkCacheValid(obj, cache) \
+	(ivm_slot_table_checkCacheValid((obj)->slots, (cache)))
+
+/* use checkCacheValid to check validity before using it */
+#define ivm_object_getCacheSlotValue(state, cache) \
+	(ivm_slot_getValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state)))
+
+#define ivm_object_setCacheSlotValue(state, cache, value) \
+	(ivm_slot_setValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state), (value)))
 
 #if 0
 /* no prototype */

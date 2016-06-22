@@ -8,6 +8,8 @@
 #define IVM_USE_FRAME_POOL 1
 #define IVM_USE_CORO_POOL 1
 
+#define IVM_USE_INLINE_CACHE 1
+
 /* if defined 1, a slot table will turn from list to hash table when having too many elements */
 #define IVM_USE_HASH_TABLE_AS_SLOT_TABLE 1
 
