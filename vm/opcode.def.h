@@ -223,7 +223,6 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
 	ivm_object_t **args;
-	ivm_object_t *ret;
 
 	CHECK_STACK(arg_count + 1);
 
@@ -250,9 +249,9 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	if (ivm_function_isNative(func)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
-		ret = ivm_function_callNative(func, _STATE, _CONTEXT,
+		_TMP_OBJ = ivm_function_callNative(func, _STATE, _CONTEXT,
 									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
-		STACK_PUSH(ret ? ret : IVM_NULL_OBJ(_STATE));
+		STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_NULL_OBJ(_STATE));
 	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
 

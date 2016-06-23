@@ -79,7 +79,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_exec_t *) ivm_exec_list_iterator_t;
 
 #define IVM_EXEC_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
 #define IVM_EXEC_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
-#define IVM_EXEC_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_exec_t *)
+#define IVM_EXEC_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_exec_t *)
 
 IVM_COM_END
 

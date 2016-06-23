@@ -17,7 +17,6 @@ typedef ivm_ptlist_foreach_proc_t ivm_stack_foreach_proc_t;
 #define ivm_stack_free ivm_ptlist_free
 #define ivm_stack_inc ivm_ptlist_inc
 
-#define ivm_stack_top ivm_ptlist_last
 #define ivm_stack_before(stack, i) (ivm_ptlist_at((stack), ivm_ptlist_size(stack) - 1 - (i)))
 #define ivm_stack_size ivm_ptlist_size
 

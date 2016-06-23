@@ -19,9 +19,6 @@ typedef struct {
 	const ivm_string_t *val;
 } ivm_string_object_t;
 
-ivm_object_t *ivm_string_object_new(struct ivm_vmstate_t_tag *state,
-									const ivm_string_t *val);
-
 #define ivm_string_object_getValue(obj) (IVM_AS((obj), ivm_string_object_t)->val)
 
 void

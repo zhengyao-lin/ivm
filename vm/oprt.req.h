@@ -3,6 +3,7 @@
 
 #include "pub/vm.h"
 #include "pub/err.h"
+#include "pub/inlines.h"
 
 #include "std/string.h"
 

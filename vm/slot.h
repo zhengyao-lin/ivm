@@ -24,8 +24,26 @@ typedef struct ivm_slot_t_tag {
 	struct ivm_object_t_tag *v;
 } ivm_slot_t;
 
-#define ivm_slot_setValue(slot, state, obj) (slot ? slot->v = obj : IVM_NULL)
-#define ivm_slot_getValue(slot, state) (slot ? slot->v : IVM_NULL)
+IVM_INLINE
+void
+ivm_slot_setValue(ivm_slot_t *slot,
+				  struct ivm_vmstate_t_tag *state,
+				  struct ivm_object_t_tag *obj)
+{
+	if (slot) {
+		slot->v = obj;
+	}
+
+	return;
+}
+
+IVM_INLINE
+struct ivm_object_t_tag *
+ivm_slot_getValue(ivm_slot_t *slot,
+				  struct ivm_vmstate_t_tag *state)
+{
+	return slot ? slot->v : IVM_NULL;
+}
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_bool_t is_hash: 1;
@@ -50,14 +68,21 @@ typedef ivm_slot_t *ivm_slot_table_iterator_t;
 #define IVM_SLOT_TABLE_ITER_GET_KEY(iter) ((iter)->k)
 #define IVM_SLOT_TABLE_ITER_GET_VAL(iter) ((iter)->v)
 #define IVM_SLOT_TABLE_EACHPTR(table, iter) \
-	for ((iter) = (table)->tabl; \
-		 (iter) < ((table)->tabl + (table)->size); \
+	ivm_slot_t *__sl_end_##iter##__; \
+	for ((iter) = (table)->tabl, \
+		 __sl_end_##iter##__ = (iter) + (table)->size; \
+		 (iter) < __sl_end_##iter##__; \
 		 (iter)++)
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
-#define ivm_slot_table_checkCacheValid(table, cache) \
-	((table) && ivm_instr_cache_id(cache) == (table)->uid)
+IVM_INLINE
+ivm_bool_t
+ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
+							   ivm_instr_cache_t *cache)
+{
+	return table && ivm_instr_cache_id(cache) == table->uid;
+}
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 

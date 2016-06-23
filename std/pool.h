@@ -7,18 +7,16 @@
 
 #include "chain.h"
 #include "list.h"
+#include "heap.h"
 
 #include "../err.h"
 
 IVM_COM_HEADER
 
 typedef struct {
-	ivm_size_t ecount; /* element count */
 	ivm_size_t esize; /* element size */
 
-	ivm_size_t bcount; /* block count */
-	ivm_size_t bcur; /* current element */
-	ivm_byte_t **blocks; /* preallocated room */
+	ivm_heap_t *heap;
 
 	ivm_ptlist_t *freed; /* freed ptrs */
 } ivm_ptpool_t;
@@ -34,6 +32,17 @@ IVM_INLINE
 void *
 ivm_ptpool_alloc(ivm_ptpool_t *pool)
 {
+	ivm_byte_t *tmp;
+
+	if (!(tmp = ivm_ptlist_pop(pool->freed))) {
+		return ivm_heap_alloc(pool->heap, pool->esize);
+	}
+
+	return tmp;
+}
+
+
+#if 0
 	ivm_byte_t *tmp;
 	ivm_size_t i, ecount, esize;
 
@@ -64,8 +73,8 @@ ivm_ptpool_alloc(ivm_ptpool_t *pool)
 		tmp = &pool->blocks[pool->bcount - 1][i];
 	}
 
-	return tmp;	
-}
+	return tmp;
+#endif
 
 #define ivm_ptpool_dump(pool, ptr) (ivm_ptlist_push((pool)->freed, (ptr)))
 

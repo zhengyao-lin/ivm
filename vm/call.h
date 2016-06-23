@@ -44,7 +44,7 @@ typedef struct {
 	ivm_frame_t *frames;
 } ivm_frame_stack_t;
 
-typedef ivm_frame_t * ivm_frame_stack_iterator_t;
+typedef ivm_frame_t *ivm_frame_stack_iterator_t;
 
 ivm_frame_stack_t *
 ivm_frame_stack_new();
@@ -66,32 +66,11 @@ ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 #define IVM_FRAME_STACK_ITER_SET(iter, val) (*(iter) = (val))
 #define IVM_FRAME_STACK_ITER_GET(iter) (iter)
 #define IVM_FRAME_STACK_EACHPTR(stack, iter) \
-	for ((iter) = (stack)->frames; \
-		 (iter) != (stack)->frames + (stack)->top; \
+	ivm_frame_stack_iterator_t __fs_end_##iter##__; \
+	for ((iter) = (stack)->frames, \
+		 __fs_end_##iter##__ = (iter) + (stack)->top; \
+		 (iter) != __fs_end_##iter##__; \
 		 (iter)++)
-
-#if 0
-
-typedef ivm_stack_t ivm_frame_stack_t;
-typedef IVM_STACK_ITER_TYPE(ivm_frame_t *) ivm_frame_stack_iterator_t;
-
-#define ivm_frame_stack_new() (ivm_stack_new_c(IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE))
-#define ivm_frame_stack_free ivm_stack_free
-#define ivm_frame_stack_inc ivm_stack_inc
-#define ivm_frame_stack_push ivm_stack_push
-#define ivm_frame_stack_top(stack) ((ivm_frame_t *)ivm_stack_top(stack))
-#define ivm_frame_stack_at ivm_stack_at
-#define ivm_frame_stack_size ivm_stack_size
-#define ivm_frame_stack_pop(stack) ((ivm_frame_t *)ivm_stack_pop(stack))
-#define ivm_frame_stack_setTop ivm_stack_setTop
-#define ivm_frame_stack_foreach ivm_stack_foreach
-#define ivm_frame_stack_foreach_arg ivm_stack_foreach_arg
-
-#define IVM_FRAME_STACK_ITER_SET(iter, val) (IVM_STACK_ITER_SET((iter), (val)))
-#define IVM_FRAME_STACK_ITER_GET(iter) ((ivm_frame_t *)IVM_STACK_ITER_GET(iter))
-#define IVM_FRAME_STACK_EACHPTR(stack, iter) IVM_STACK_EACHPTR((stack), (iter), ivm_frame_t *)
-
-#endif
 
 typedef ivm_ptpool_t ivm_frame_pool_t;
 

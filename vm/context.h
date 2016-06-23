@@ -132,9 +132,11 @@ typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 
 #define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->ct = val)
 #define IVM_CTCHAIN_ITER_GET(iter) ((iter)->ct)
-#define IVM_CTCHAIN_EACHPTR(chain, ptr) \
-	for ((ptr) = ivm_ctchain_contextStart(chain); \
-		 (ptr) <= ivm_ctchain_contextEnd(chain); (ptr)++)
+#define IVM_CTCHAIN_EACHPTR(chain, iter) \
+	ivm_ctchain_iterator_t __ctx_end_##iter##__; \
+	for ((iter) = ivm_ctchain_contextStart(chain), \
+		 __ctx_end_##iter##__ = ivm_ctchain_contextEnd(chain); \
+		 (iter) <= __ctx_end_##iter##__; (iter)++)
 
 typedef struct {
 	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1];

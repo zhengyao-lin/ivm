@@ -55,7 +55,7 @@ typedef ivm_parameter_t *ivm_param_list_iterator_t;
 #define ivm_param_list_at(list, i) ((ivm_parameter_t *)ivm_ptlist_at((list), (i)))
 
 #define IVM_PARAM_LIST_ITER_GET(iter) (*(iter))
-#define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_parameter_t)
+#define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_parameter_t)
 
 enum {
 	IVM_INTSIG_NONE			= 0,

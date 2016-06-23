@@ -1,4 +1,5 @@
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "proto.h"
 #include "obj.h"

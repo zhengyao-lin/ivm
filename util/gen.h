@@ -52,7 +52,7 @@ typedef IVM_LIST_ITER_TYPE(ivm_gen_instr_t) ivm_gen_instr_list_iterator_t;
 #define IVM_GEN_INSTR_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_gen_instr_t)
 #define IVM_GEN_INSTR_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ivm_gen_instr_t)
 #define IVM_GEN_INSTR_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ivm_gen_instr_t)
-#define IVM_GEN_INSTR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), (iter), ivm_gen_instr_t)
+#define IVM_GEN_INSTR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_gen_instr_t)
 
 typedef struct {
 	ivm_gen_pos_t pos;
@@ -77,7 +77,7 @@ ivm_gen_block_list_free(ivm_gen_block_list_t *list);
 #define IVM_GEN_BLOCK_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_gen_block_t)
 #define IVM_GEN_BLOCK_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ivm_gen_block_t)
 #define IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ivm_gen_block_t)
-#define IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), (iter), ivm_gen_block_t)
+#define IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_gen_block_t)
 
 typedef struct {
 	ivm_gen_pos_t pos;
@@ -94,7 +94,7 @@ typedef IVM_LIST_ITER_TYPE(ivm_gen_label_ref_t) ivm_gen_label_ref_list_iterator_
 #define IVM_GEN_LABEL_REF_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_gen_label_ref_t)
 #define IVM_GEN_LABEL_REF_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ivm_gen_label_ref_t)
 #define IVM_GEN_LABEL_REF_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ivm_gen_label_ref_t)
-#define IVM_GEN_LABEL_REF_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), (iter), ivm_gen_label_ref_t)
+#define IVM_GEN_LABEL_REF_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_gen_label_ref_t)
 
 typedef struct {
 	ivm_gen_pos_t def_pos;
@@ -128,7 +128,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_gen_label_t *) ivm_gen_label_list_iterator_t;
 
 #define IVM_GEN_LABEL_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_GEN_LABEL_LIST_ITER_GET(iter) ((ivm_gen_label_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_GEN_LABEL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_gen_label_t *)
+#define IVM_GEN_LABEL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_gen_label_t *)
 
 typedef struct {
 	ivm_string_pool_t *str_pool;

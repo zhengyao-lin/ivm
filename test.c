@@ -621,10 +621,10 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
-#if 0
+#if 1
 
-	// test_call();
-	// test_vm();
+	test_call();
+	test_vm();
 	test_fib();
 
 	ivm_perf_printElapsed();
@@ -632,7 +632,7 @@ int main(int argc, const char **argv)
 
 #endif
 
-#if 1
+#if 0
 	const char num[] = "0b1010101";
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;

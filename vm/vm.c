@@ -93,8 +93,6 @@ ivm_vmstate_new()
 	= ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
 	ret->ct_pool
 	= ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
-	ret->fr_pool
-	= ivm_frame_pool_new(IVM_DEFAULT_FRAME_POOL_SIZE);
 	ret->cr_pool
 	= ivm_coro_pool_new(IVM_DEFAULT_CORO_POOL_SIZE);
 
@@ -147,7 +145,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);
-		ivm_frame_pool_free(state->fr_pool);
 		ivm_coro_pool_free(state->cr_pool);
 
 		ivm_string_pool_free(state->const_pool);

@@ -28,7 +28,7 @@ typedef IVM_PTLIST_ITER_TYPE(struct ivm_object_t_tag *) ivm_destruct_list_iterat
 
 #define IVM_DESTRUCT_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_DESTRUCT_LIST_ITER_GET(iter) ((struct ivm_object_t_tag *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_DESTRUCT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), struct ivm_object_t_tag *)
+#define IVM_DESTRUCT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, struct ivm_object_t_tag *)
 
 typedef struct ivm_collector_t_tag {
 	ivm_destruct_list_t *des_log[2];

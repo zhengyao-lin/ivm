@@ -8,4 +8,7 @@
 #include "vm/inline/runtime.h"
 #include "vm/inline/vm.h"
 
+#include "vm/inline/num.h"
+#include "vm/inline/strobj.h"
+
 #endif

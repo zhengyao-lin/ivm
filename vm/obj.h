@@ -80,7 +80,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
 
 #define IVM_TYPE_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_TYPE_LIST_ITER_GET(iter) ((ivm_type_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_TYPE_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), (iter), ivm_type_t *)
+#define IVM_TYPE_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_type_t *)
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
@@ -133,10 +133,19 @@ ivm_object_newUndefined(struct ivm_vmstate_t_tag *state);
 #define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
 #define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
 
-#define ivm_object_destruct(obj, state) \
-	if ((obj) && IVM_TYPE_OF(obj) && IVM_OBJECT_GET(obj, TYPE_DES)) { \
-		IVM_OBJECT_GET(obj, TYPE_DES)((obj), (state)); \
+IVM_INLINE
+void
+ivm_object_destruct(ivm_object_t *obj,
+					struct ivm_vmstate_t_tag *state)
+{
+	ivm_destructor_t des;
+
+	if (obj && obj->type && (des = IVM_OBJECT_GET(obj, TYPE_DES))) {
+		des(obj, state);
 	}
+
+	return;
+}
 	
 #if 0
 
