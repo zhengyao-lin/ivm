@@ -5,8 +5,6 @@
 #include "pub/mem.h"
 #include "pub/vm.h"
 
-#include "../inline/context.h"
-
 IVM_COM_HEADER
 
 /* context pool */

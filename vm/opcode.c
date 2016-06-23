@@ -2,10 +2,10 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "std/string.h"
 
-#include "inline/vm.h"
 #include "opcode.h"
 #include "coro.h"
 #include "vmstack.h"

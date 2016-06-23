@@ -94,13 +94,14 @@ _ivm_dbg_printHeap(ivm_heap_t *heap,
 {
 	ivm_size_t bcount = IVM_HEAP_GET(heap, BLOCK_COUNT),
 			   bsize = IVM_HEAP_GET(heap, BLOCK_SIZE),
-			   *curs = IVM_HEAP_GET(heap, CUR_SIZE),
-			   size = 0, i;
+			   used = IVM_HEAP_GET(heap, BLOCK_USED),
+			   total = IVM_HEAP_GET(heap, BLOCK_TOTAL);
 
 	fprintf(fp, "%sblock size: %.2fMB\n", prefix, B2MB(bsize));
 	fprintf(fp, "%sblock count: %ld\n", prefix, bcount);
-	fprintf(fp, "%susage:\n", prefix);
+	fprintf(fp, "%susage: %ld in %ld\n", prefix, used, total);
 
+#if 0
 	for (i = 0; i < bcount; i++) {
 		fprintf(fp, "%s" IVM_DBG_TAB "block %ld: %ld in %ld(%.2f%%)\n",
 				prefix, i + 1, curs[i], bsize,
@@ -110,6 +111,7 @@ _ivm_dbg_printHeap(ivm_heap_t *heap,
 	fprintf(fp, "%s" IVM_DBG_TAB "(total: %ld in %ld(%.2f%%))\n",
 			prefix, size, bsize * bcount,
 			((double)size) / (bsize * bcount) * 100);
+#endif
 
 	return;
 }

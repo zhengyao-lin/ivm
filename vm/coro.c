@@ -4,11 +4,8 @@
 #include "pub/mem.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
-#include "inline/call.h"
-#include "inline/runtime.h"
-#include "inline/vm.h"
-#include "inline/func.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"

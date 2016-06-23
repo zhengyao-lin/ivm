@@ -1,11 +1,11 @@
 #include "pub/mem.h"
 #include "pub/err.h"
 #include "pub/com.h"
+#include "pub/inlines.h"
 
 #include "std/heap.h"
 #include "std/uid.h"
 
-#include "inline/func.h"
 #include "gc/gc.h"
 #include "vm.h"
 #include "obj.h"

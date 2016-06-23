@@ -2,16 +2,13 @@
 #include "pub/com.h"
 #include "pub/vm.h"
 #include "pub/err.h"
+#include "pub/inlines.h"
 
 #include "std/ref.h"
 
-#include "inline/obj.h"
-#include "inline/vm.h"
 #include "context.h"
 
 #define GET_CONTEXT(chain_sub) ((chain_sub)->ct)
-
-typedef struct ivm_ctchain_sub_t_tag ivm_ctchain_sub_t;
 
 ivm_ctchain_t *
 ivm_ctchain_new(ivm_vmstate_t *state, ivm_int_t len)
@@ -79,40 +76,6 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 	return ret;
 }
 
-ivm_object_t *
-ivm_ctchain_search_cc(ivm_ctchain_t *chain,
-					  ivm_vmstate_t *state,
-					  const ivm_string_t *key,
-					  ivm_instr_cache_t *cache)
-{
-	ivm_object_t *ret = IVM_NULL;
-	ivm_ctchain_sub_t *i, *end;
-
-	for (i = ivm_ctchain_contextStart(chain),
-		 end = i + chain->len;
-		 i != end; i++) {
-
-#if IVM_USE_INLINE_CACHE
-
-		if (ivm_object_checkCacheValid(GET_CONTEXT(i), cache)) {
-			ret = ivm_object_getCacheSlotValue(state, cache);
-		} else {
-			ret = ivm_object_getSlotValue_np_cc(
-				GET_CONTEXT(i), state,
-				key, cache
-			);
-		}
-
-#else
-		ret = ivm_object_getSlotValue_np(GET_CONTEXT(i), state, key);
-#endif
-
-		if (ret) break;
-	}
-
-	return ret;
-}
-
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 ivm_vmstate_t *state,
@@ -125,36 +88,6 @@ ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 		),
 		state, key, val
 	);
-
-	return;
-}
-
-void
-ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
-							ivm_vmstate_t *state,
-							const ivm_string_t *key,
-							ivm_object_t *val,
-							ivm_instr_cache_t *cache)
-{
-	ivm_object_t *obj
-	= ivm_context_toObject(
-		ivm_ctchain_getLocal(chain)
-	);
-
-#if IVM_USE_INLINE_CACHE
-
-	if (ivm_object_checkCacheValid(obj, cache)) {
-		ivm_object_setCacheSlotValue(state, cache, val);
-	} else {
-		ivm_object_setSlot_cc(
-			obj, state, key,
-			val, cache
-		);
-	}
-
-#else
-	ivm_object_setSlot(obj, state, key, val);
-#endif
 
 	return;
 }
@@ -173,41 +106,6 @@ ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 		 i != end; i++) {
 		ret = ivm_object_setSlotIfExist(GET_CONTEXT(i),
 										state, key, val);
-		if (ret) break;
-	}
-
-	return ret;
-}
-
-ivm_bool_t
-ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
-							  struct ivm_vmstate_t_tag *state,
-							  const ivm_string_t *key,
-							  ivm_object_t *val,
-							  ivm_instr_cache_t *cache)
-{
-	ivm_bool_t ret = IVM_FALSE;
-	ivm_ctchain_sub_t *i, *end;
-
-	for (i = ivm_ctchain_contextStart(chain),
-		 end = i + chain->len;
-		 i != end; i++) {
-
-#if IVM_USE_INLINE_CACHE
-		if (ivm_object_checkCacheValid(GET_CONTEXT(i), cache)) {
-			ivm_object_setCacheSlotValue(state, cache, val);
-			ret = IVM_TRUE;
-		} else {
-			ret = ivm_object_setSlotIfExist_cc(
-				GET_CONTEXT(i), state,
-				key, val, cache
-			);
-		}
-#else
-		ret = ivm_object_setSlotIfExist(GET_CONTEXT(i),
-										state, key, val);
-#endif
-
 		if (ret) break;
 	}
 

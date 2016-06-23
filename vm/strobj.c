@@ -2,10 +2,10 @@
 #include "pub/err.h"
 #include "pub/type.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "std/string.h"
 
-#include "inline/obj.h"
 #include "strobj.h"
 
 ivm_object_t *ivm_string_object_new(ivm_vmstate_t *state,

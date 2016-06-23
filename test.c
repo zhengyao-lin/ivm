@@ -4,15 +4,13 @@
 #include <time.h>
 
 #include "pub/const.h"
+#include "pub/inlines.h"
 
 #include "std/pool.h"
 #include "std/chain.h"
 #include "std/hash.h"
 #include "std/heap.h"
 
-#include "vm/inline/obj.h"
-#include "vm/inline/func.h"
-#include "vm/inline/context.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
@@ -625,8 +623,8 @@ int main(int argc, const char **argv)
 
 #if 0
 
-	test_call();
-	test_vm();
+	// test_call();
+	// test_vm();
 	test_fib();
 
 	ivm_perf_printElapsed();
@@ -645,7 +643,7 @@ int main(int argc, const char **argv)
 	ivm_char_t *src = "root { \
 		new_func fib; \
 		set_context_slot \"fib\"; \
-		new_num_i 30; \
+		new_num_i 34; \
 		get_context_slot \"fib\"; \
 		invoke 1; \
 		out_num; \

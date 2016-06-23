@@ -1,9 +1,8 @@
 #include "pub/mem.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
-#include "inline/runtime.h"
-#include "inline/call.h"
 #include "runtime.h"
 #include "context.h"
 #include "call.h"

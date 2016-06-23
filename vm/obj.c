@@ -3,10 +3,10 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "std/string.h"
 
-#include "inline/obj.h"
 #include "gc/gc.h"
 #include "obj.h"
 #include "instr.h"

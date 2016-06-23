@@ -2,9 +2,8 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
-#include "inline/obj.h"
-#include "inline/context.h"
 #include "gc/gc.h"
 #include "func.h"
 #include "context.h"

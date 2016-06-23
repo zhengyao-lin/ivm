@@ -22,9 +22,9 @@ typedef ivm_object_t ivm_context_t;
 
 typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
 
-struct ivm_ctchain_sub_t_tag {
+typedef struct ivm_ctchain_sub_t_tag {
 	ivm_context_t *ct;
-};
+} ivm_ctchain_sub_t;
 
 typedef struct ivm_ctchain_t_tag {
 	IVM_REF_HEADER
@@ -87,17 +87,25 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_string_t *key);
 
-ivm_object_t *
-ivm_ctchain_search_cc(ivm_ctchain_t *chain,
-					  struct ivm_vmstate_t_tag *state,
-					  const ivm_string_t *key,
-					  ivm_instr_cache_t *cache);
-
 void
 ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 struct ivm_vmstate_t_tag *state,
 						 const ivm_string_t *key,
 						 ivm_object_t *val);
+
+ivm_bool_t
+ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
+						   struct ivm_vmstate_t_tag *state,
+						   const ivm_string_t *key,
+						   ivm_object_t *val);
+
+#if 0
+
+ivm_object_t *
+ivm_ctchain_search_cc(ivm_ctchain_t *chain,
+					  struct ivm_vmstate_t_tag *state,
+					  const ivm_string_t *key,
+					  ivm_instr_cache_t *cache);
 
 void
 ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
@@ -107,17 +115,13 @@ ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
 							ivm_instr_cache_t *cache);
 
 ivm_bool_t
-ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
-						   struct ivm_vmstate_t_tag *state,
-						   const ivm_string_t *key,
-						   ivm_object_t *val);
-
-ivm_bool_t
 ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
 							  struct ivm_vmstate_t_tag *state,
 							  const ivm_string_t *key,
 							  ivm_object_t *val,
 							  ivm_instr_cache_t *cache);
+
+#endif
 
 void
 ivm_ctchain_foreach(ivm_ctchain_t *chain,
