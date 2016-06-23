@@ -72,27 +72,5 @@ ivm_heap_compact(ivm_heap_t *heap)
 							   * heap->bcount,
 							   ivm_byte_t **);
 
-#if 0
-	for (i = 0; i < heap->bcount; i++) {
-		if (heap->curs[i]) {
-			heap->curs[bcount] = heap->curs[i];
-			heap->blocks[bcount] = heap->blocks[i];
-			bcount++;
-		} else {
-			MEM_FREE(heap->blocks[i]);
-		}
-	}
-
-	IVM_OUT("compact to %ld\n", bcount);
-
-	heap->bcount = bcount;
-	heap->curs = MEM_REALLOC(heap->curs,
-							 sizeof(*heap->curs) * bcount,
-							 ivm_size_t *);
-	heap->blocks = MEM_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks) * bcount,
-							   ivm_byte_t **);
-#endif
-
 	return;
 }

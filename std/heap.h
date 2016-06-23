@@ -40,14 +40,6 @@ ivm_heap_new(ivm_size_t bsize);
 void
 ivm_heap_free(ivm_heap_t *heap);
 
-#if 0
-
-#define OFFSET(ptr, size) (&(ptr)[size])
-#define HAS_SIZE ivm_heap_hasSize
-#define INC_SIZE(heap, idx, s) ((heap)->curs[idx] += (s))
-
-#endif
-
 /* assert: addup < bsize */
 IVM_INLINE
 void *
@@ -72,28 +64,6 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t addup)
 	return curb;
 }
 
-#if 0
-
-IVM_INLINE
-ivm_size_t
-ivm_heap_hasSize(ivm_heap_t *heap, ivm_size_t size)
-{
-	ivm_size_t *i, *end;
-	ivm_size_t bsize = heap->bsize;
-
-	for (i = heap->curs + heap->btop,
-		 end = heap->curs + heap->bcount;
-		 i != end; i++) {
-		if (bsize - *i >= size) {
-			return i + 1;
-		}
-	}
-
-	return IVM_FALSE;
-}
-
-#endif
-
 IVM_INLINE
 void *
 ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
@@ -115,16 +85,6 @@ ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 		*add_block = IVM_TRUE;
 
 	return _ivm_heap_addBlock(heap, size);
-#if 0
-
-	if (!(i = HAS_SIZE(heap, size))) {
-		i = _ivm_heap_addBlock(heap);
-		if (add_block)
-			*add_block = IVM_TRUE;
-	}
-
-	return _ivm_heap_allocAt(heap, i - 1, size);
-#endif
 }
 
 IVM_INLINE
