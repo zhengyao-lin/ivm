@@ -381,7 +381,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 
 	_ivm_gen_env_cleanJumpTable(env);
 
-	ivm_dbg_printExec(ret, "  ", stderr);
+	// ivm_dbg_printExec(ret, "  ", stderr);
 
 	return ret;
 }

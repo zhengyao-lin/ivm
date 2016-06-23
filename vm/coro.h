@@ -73,11 +73,16 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define ivm_coro_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_CORO_LIST_BUFFER_SIZE))
 #define ivm_coro_list_free ivm_ptlist_free
 #define ivm_coro_list_add ivm_ptlist_push
+#define ivm_coro_list_setSize ivm_ptlist_setCur
 #define ivm_coro_list_size ivm_ptlist_size
 #define ivm_coro_list_at(list, i) ((ivm_coro_t *)ivm_ptlist_at((list), (i)))
 #define ivm_coro_list_foreach ivm_ptlist_foreach
 #define ivm_coro_list_foreach_arg ivm_ptlist_foreach_arg
 
+#define IVM_CORO_LIST_ITER_BEGIN(list) ((ivm_coro_list_iterator_t)IVM_PTLIST_ITER_BEGIN(list))
+#define IVM_CORO_LIST_ITER_END(list) ((ivm_coro_list_iterator_t)IVM_PTLIST_ITER_END(list))
+#define IVM_CORO_LIST_ITER_AT(list, i) ((ivm_coro_list_iterator_t)IVM_PTLIST_ITER_AT((list), (i)))
+#define IVM_CORO_LIST_ITER_INDEX IVM_PTLIST_ITER_INDEX
 #define IVM_CORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_CORO_LIST_ITER_GET(iter) ((ivm_coro_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)

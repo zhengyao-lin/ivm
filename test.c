@@ -611,12 +611,6 @@ strhash(const char *key)
 	return hash;
 }
 
-struct token_t {
-	ivm_int_t id;
-	ivm_size_t len;
-	const ivm_char_t *val;
-};
-
 int main(int argc, const char **argv)
 {
 	ivm_env_init();
@@ -632,7 +626,7 @@ int main(int argc, const char **argv)
 
 #endif
 
-#if 0
+#if 1
 	const char num[] = "0b1010101";
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
@@ -674,8 +668,6 @@ int main(int argc, const char **argv)
 		file = ivm_file_new(argv[1], "r");
 		src = ivm_file_readAll(file);
 		ivm_file_free(file);
-
-		IVM_TRACE("%s\n", src);
 	}
 
 	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));

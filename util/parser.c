@@ -304,8 +304,8 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 					if (tmp_entry->to_state == state)
 						tmp_token.len++;
 
-					IVM_TRACE("token %d, value '%.*s'(len %ld)\n",
-							  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
+					// IVM_TRACE("token %d, value '%.*s'(len %ld)\n",
+					// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
 
 					tmp_token.id = tmp_entry->save;
 					ivm_list_push(ret, &tmp_token);

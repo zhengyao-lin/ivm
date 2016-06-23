@@ -37,13 +37,26 @@ typedef struct ivm_ctchain_t_tag {
 #define ivm_ctchain_getContextSize(chain) \
 	(sizeof(struct ivm_ctchain_sub_t_tag) * (chain)->len)
 
-#define ivm_ctchain_contextStart(chain) \
-	((struct ivm_ctchain_sub_t_tag *) \
-	 (((ivm_ctchain_t *)(chain)) + 1))
+IVM_INLINE
+ivm_ctchain_sub_t *
+ivm_ctchain_contextStart(ivm_ctchain_t *chain)
+{
+	return (ivm_ctchain_sub_t *)(chain + 1);
+}
 
-#define ivm_ctchain_contextEnd(chain) \
-	(((struct ivm_ctchain_sub_t_tag *) \
-	   (((ivm_ctchain_t *)(chain)) + 1))+ ((chain)->len - 1))
+IVM_INLINE
+ivm_ctchain_sub_t *
+ivm_ctchain_contextLast(ivm_ctchain_t *chain)
+{
+	return (ivm_ctchain_sub_t *)(chain + 1) + (chain->len - 1);
+}
+
+IVM_INLINE
+ivm_ctchain_sub_t *
+ivm_ctchain_contextEnd(ivm_ctchain_t *chain)
+{
+	return (ivm_ctchain_sub_t *)(chain + 1) + chain->len;
+}
 
 #define ivm_ctchain_contextAt(chain, i) \
 	((((struct ivm_ctchain_sub_t_tag *) \
@@ -80,7 +93,7 @@ ivm_ctchain_clone(ivm_ctchain_t *chain,
 				  struct ivm_vmstate_t_tag *state);
 
 #define ivm_ctchain_getLocal(chain) (ivm_ctchain_contextStart(chain)->ct)
-#define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextEnd(chain)->ct)
+#define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextLast(chain)->ct)
 
 ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,
@@ -136,7 +149,7 @@ typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 	ivm_ctchain_iterator_t __ctx_end_##iter##__; \
 	for ((iter) = ivm_ctchain_contextStart(chain), \
 		 __ctx_end_##iter##__ = ivm_ctchain_contextEnd(chain); \
-		 (iter) <= __ctx_end_##iter##__; (iter)++)
+		 (iter) != __ctx_end_##iter##__; (iter)++)
 
 typedef struct {
 	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1];

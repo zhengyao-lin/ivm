@@ -158,30 +158,34 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
-#define IS_AVAILABLE(state, i) (ivm_coro_isAsleep(ivm_coro_list_at((state)->coro_list, (i))))
-
 IVM_PRIVATE
 ivm_bool_t
 ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
 {
-	ivm_size_t i;
-	ivm_bool_t ret = IVM_FALSE,
-			   restart = IVM_FALSE;
+	ivm_coro_list_t *list = state->coro_list;
+	ivm_coro_list_iterator_t i, end;
 
-	for (i = state->cur_coro + 1;
-		 i != state->cur_coro + 1 || !restart; i++) {
-		if (i >= ivm_coro_list_size(state->coro_list)) {
-			i = 0;
-			restart = IVM_TRUE;
-		}
-		if (IS_AVAILABLE(state, i)) {
-			ret = IVM_TRUE; /* found available coroutine */
-			state->cur_coro = i;
-			break;
+	// if (!ivm_coro_list_size(list)) return IVM_FALSE;
+
+	for (i = IVM_CORO_LIST_ITER_AT(list, state->cur_coro + 1),
+		 end = IVM_CORO_LIST_ITER_END(list);
+		 i != end; i++) {
+		if (ivm_coro_isAsleep(IVM_CORO_LIST_ITER_GET(i))) {
+			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
+			return IVM_TRUE;
 		}
 	}
 
-	return ret;
+	for (end = i,
+		 i = IVM_CORO_LIST_ITER_BEGIN(list);
+		 i != end; i++) {
+		if (ivm_coro_isAsleep(IVM_CORO_LIST_ITER_GET(i))) {
+			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
 }
 
 ivm_size_t
@@ -197,13 +201,16 @@ void
 ivm_vmstate_schedule(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = IVM_NULL;
+	ivm_coro_list_t *coros = state->coro_list;
 
-	while (ivm_coro_list_size(state->coro_list) > 0) {
-		ret = ivm_coro_resume(ivm_coro_list_at(state->coro_list,
-											   state->cur_coro),
+	while (ivm_coro_list_size(coros)) {
+		ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
 							  state, ret);
 		if (!ivm_vmstate_wrapCoro(state))
 			break;
 	}
+
+	state->cur_coro = 0;
+
 	return;
 }
