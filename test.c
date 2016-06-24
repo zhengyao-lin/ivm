@@ -628,16 +628,15 @@ int main(int argc, const char **argv)
 
 #if 1
 	const char num[] = "0b1010101";
-	const char str[] = "\\\"sdssd\\p\\n";
+	// const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
-	ivm_list_t *tokens;
 	ivm_gen_env_t *env;
 	ivm_vmstate_t *state;
 	ivm_file_t *file;
 	ivm_char_t *src = "root { \
 		new_func fib; \
 		set_context_slot \"fib\"; \
-		new_num_i 34; \
+		new_num_i 30; \
 		get_context_slot \"fib\"; \
 		invoke 1; \
 		out_num; \
@@ -670,7 +669,7 @@ int main(int argc, const char **argv)
 		ivm_file_free(file);
 	}
 
-	ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
+	// ivm_list_free(_ivm_parser_getTokens("h\"\\\"i wow\\\" \",,\ns2as2.3\"ss\"2hey 2.3 \"hey\" yeah 2.3"));
 
 	IVM_TRACE("****************************************\n");
 
@@ -684,8 +683,7 @@ ivm_perf_startProfile();
 
 	// tokens = _ivm_parser_getTokens("hi{}\n");
 	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
-	tokens = _ivm_parser_getTokens(src);
-	env = ivm_parser_tokenToEnv(tokens);
+	env = ivm_parser_parseSource(src);
 	state = ivm_gen_env_generateVM(env);
 
 ivm_perf_stopProfile();
@@ -700,7 +698,6 @@ ivm_perf_stopProfile();
 ivm_perf_printElapsed();
 
 	ivm_vmstate_free(state);
-	ivm_list_free(tokens);
 	ivm_gen_env_free(env);
 
 	if (argc == 2) {

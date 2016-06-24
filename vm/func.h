@@ -129,6 +129,7 @@ typedef ivm_ptpool_t ivm_function_pool_t;
 #define ivm_function_pool_free ivm_ptpool_free
 #define ivm_function_pool_alloc(pool) ((ivm_function_t *)ivm_ptpool_alloc(pool))
 #define ivm_function_pool_dump ivm_ptpool_dump
+#define ivm_function_pool_dumpAll ivm_ptpool_dumpAll
 
 typedef ivm_size_t ivm_func_id_t;
 typedef ivm_ptlist_t ivm_func_list_t;
@@ -137,8 +138,8 @@ typedef ivm_ptlist_t ivm_func_list_t;
 #define ivm_func_list_free ivm_ptlist_free
 #define ivm_func_list_register ivm_ptlist_push
 #define ivm_func_list_size ivm_ptlist_size
+#define ivm_func_list_empty ivm_ptlist_empty
 #define ivm_func_list_at(list, i) ((ivm_function_t *)ivm_ptlist_at((list), (i)))
-#define ivm_func_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
 
 IVM_COM_END
 

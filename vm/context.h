@@ -20,8 +20,6 @@ typedef ivm_object_t ivm_context_t;
 #define ivm_context_fromObj(obj) (IVM_AS((obj), ivm_context_t))
 #define ivm_context_toObject(context) (IVM_AS_OBJ(context))
 
-typedef void (*ivm_ctchain_foreach_proc_t)(ivm_context_t *, void *);
-
 typedef struct ivm_ctchain_sub_t_tag {
 	ivm_context_t *ct;
 } ivm_ctchain_sub_t;
@@ -136,11 +134,6 @@ ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
 
 #endif
 
-void
-ivm_ctchain_foreach(ivm_ctchain_t *chain,
-					ivm_ctchain_foreach_proc_t proc,
-					void *arg);
-
 typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 
 #define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->ct = val)
@@ -160,6 +153,21 @@ ivm_context_pool_new(ivm_size_t ecount);
 
 void
 ivm_context_pool_free(ivm_context_pool_t *pool);
+
+IVM_INLINE
+void
+ivm_context_pool_dumpAll(ivm_context_pool_t *pool)
+{
+	ivm_ptpool_t **i, **end;
+
+	for (i = pool->pools,
+		 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1;
+		 i != end; i++) {
+		ivm_ptpool_dumpAll(*i);
+	}
+
+	return;
+}
 
 IVM_COM_END
 

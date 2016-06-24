@@ -88,9 +88,8 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define ivm_coro_list_add ivm_ptlist_push
 #define ivm_coro_list_setSize ivm_ptlist_setCur
 #define ivm_coro_list_size ivm_ptlist_size
+#define ivm_coro_list_empty ivm_ptlist_empty
 #define ivm_coro_list_at(list, i) ((ivm_coro_t *)ivm_ptlist_at((list), (i)))
-#define ivm_coro_list_foreach ivm_ptlist_foreach
-#define ivm_coro_list_foreach_arg ivm_ptlist_foreach_arg
 
 #define IVM_CORO_LIST_ITER_BEGIN(list) ((ivm_coro_list_iterator_t)IVM_PTLIST_ITER_BEGIN(list))
 #define IVM_CORO_LIST_ITER_END(list) ((ivm_coro_list_iterator_t)IVM_PTLIST_ITER_END(list))
@@ -106,6 +105,7 @@ typedef ivm_ptpool_t ivm_coro_pool_t;
 #define ivm_coro_pool_free ivm_ptpool_free
 #define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
 #define ivm_coro_pool_dump ivm_ptpool_dump
+#define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll
 
 IVM_COM_END
 

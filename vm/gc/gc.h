@@ -53,8 +53,18 @@ typedef struct ivm_traverser_arg_t_tag {
 
 ivm_collector_t *
 ivm_collector_new();
+
 void
 ivm_collector_free(ivm_collector_t *collector, struct ivm_vmstate_t_tag *state);
+
+IVM_INLINE
+void
+ivm_collector_reinit(ivm_collector_t *collector)
+{
+	ivm_destruct_list_empty(collector->des_log[0]);
+	ivm_destruct_list_empty(collector->des_log[1]);
+	return;
+}
 
 /* only objects in destructor log will be 'informed' when being destructed */
 #define ivm_collector_addDesLog(collector, obj) (ivm_destruct_list_add((collector)->des_log[0], (obj)))

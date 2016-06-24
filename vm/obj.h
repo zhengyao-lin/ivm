@@ -75,8 +75,6 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
 #define ivm_type_list_register ivm_ptlist_push
 #define ivm_type_list_size ivm_ptlist_size
 #define ivm_type_list_at(list, i) ((ivm_type_t *)ivm_ptlist_at((list), (i)))
-#define ivm_type_list_foreach(list, each) (ivm_ptlist_foreach((list), (ivm_ptlist_foreach_proc_t)(each)))
-#define ivm_type_list_foreach_arg ivm_ptlist_foreach_arg
 
 #define IVM_TYPE_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_TYPE_LIST_ITER_GET(iter) ((ivm_type_t *)IVM_PTLIST_ITER_GET(iter))

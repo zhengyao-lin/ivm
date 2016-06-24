@@ -112,22 +112,6 @@ ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 	return ret;
 }
 
-void
-ivm_ctchain_foreach(ivm_ctchain_t *chain,
-					ivm_ctchain_foreach_proc_t proc,
-					void *arg)
-{
-	ivm_ctchain_sub_t *i;
-	ivm_int_t len;
-
-	for (i = ivm_ctchain_contextStart(chain), len = 0;
-		 len < chain->len; i++, len++) {
-		proc(GET_CONTEXT(i), arg);
-	}
-
-	return;
-}
-
 ivm_context_pool_t *
 ivm_context_pool_new(ivm_size_t ecount)
 {

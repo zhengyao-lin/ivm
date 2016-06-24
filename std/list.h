@@ -9,9 +9,6 @@
 
 IVM_COM_HEADER
 
-typedef void (*ivm_ptlist_foreach_proc_t)(void *p);
-typedef void (*ivm_ptlist_foreach_proc_arg_t)(void *p, void *arg);
-
 typedef struct {
 	ivm_size_t alloc;
 	ivm_size_t cur;
@@ -71,11 +68,6 @@ ivm_ptlist_pop(ivm_ptlist_t *ptlist)
 #define ivm_ptlist_incCur(ptlist, t) ((ptlist)->cur += (t))
 #define ivm_ptlist_empty(ptlist) (ivm_ptlist_setCur((ptlist), 0))
 #define ivm_ptlist_has(ptlist, i) ((ptlist)->cur > (i))
-
-void
-ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc);
-void
-ivm_ptlist_foreach_arg(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_arg_t proc, void *arg);
 
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);

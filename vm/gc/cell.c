@@ -187,18 +187,3 @@ ivm_cell_set_removeTail(ivm_cell_set_t *set)
 
 	return ret;
 }
-
-void
-ivm_cell_set_foreach(ivm_cell_set_t *set, ivm_cell_set_foreach_proc_t proc,
-					 void *arg1, void *arg2)
-{
-	ivm_cell_t *i, *tmp;
-
-	for (i = set->head; i;) {
-		tmp = i;
-		i = i->next;
-		proc(tmp, set, arg1, arg2);
-	}
-
-	return;
-}

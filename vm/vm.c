@@ -128,13 +128,13 @@ void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	ivm_coro_list_iterator_t citer;
+	ivm_type_list_iterator_t titer;
 
 	if (state) {
 		ivm_collector_free(GC(state), state);
 
 		ivm_heap_free(HEAP1(state));
 		ivm_heap_free(HEAP2(state));
-
 
 		IVM_CORO_LIST_EACHPTR(state->coro_list, citer) {
 			ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
@@ -149,7 +149,9 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_string_pool_free(state->const_pool);
 
-		ivm_type_list_foreach(state->type_list, ivm_type_free);
+		IVM_TYPE_LIST_EACHPTR(state->type_list, titer) {
+			ivm_type_free(IVM_TYPE_LIST_ITER_GET(titer));
+		}
 		ivm_type_list_free(state->type_list);
 
 		MEM_FREE(state);
@@ -158,9 +160,44 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
+void
+ivm_vmstate_reinit(ivm_vmstate_t *state)
+{
+	ivm_coro_list_iterator_t citer;
+
+	ivm_heap_reset(state->cur_heap);
+	ivm_heap_reset(state->empty_heap);
+
+	state->cur_coro = 0;
+	IVM_CORO_LIST_EACHPTR(state->coro_list, citer) {
+		ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
+	}
+	ivm_coro_list_empty(state->coro_list);
+
+	ivm_func_list_empty(state->func_list);
+
+	ivm_function_pool_dumpAll(state->func_pool);
+	ivm_context_pool_dumpAll(state->ct_pool);
+	ivm_coro_pool_dumpAll(state->cr_pool);
+
+	ivm_collector_reinit(state->gc);
+
+	return;
+}
+
+ivm_size_t
+ivm_vmstate_addCoro(ivm_vmstate_t *state,
+					ivm_function_object_t *func)
+{
+	ivm_coro_t *coro = ivm_coro_new(state);
+	ivm_coro_setRoot(coro, state, func);
+	return ivm_coro_list_add(state->coro_list, coro);
+}
+
 IVM_PRIVATE
+IVM_INLINE
 ivm_bool_t
-ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
+_ivm_vmstate_switchCoro(ivm_vmstate_t *state)
 {
 	ivm_coro_list_t *list = state->coro_list;
 	ivm_coro_list_iterator_t i, end;
@@ -188,15 +225,6 @@ ivm_vmstate_wrapCoro(ivm_vmstate_t *state)
 	return IVM_FALSE;
 }
 
-ivm_size_t
-ivm_vmstate_addCoro(ivm_vmstate_t *state,
-					ivm_function_object_t *func)
-{
-	ivm_coro_t *coro = ivm_coro_new(state);
-	ivm_coro_setRoot(coro, state, func);
-	return ivm_coro_list_add(state->coro_list, coro);
-}
-
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state)
 {
@@ -206,7 +234,7 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 	while (ivm_coro_list_size(coros)) {
 		ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
 							  state, ret);
-		if (!ivm_vmstate_wrapCoro(state))
+		if (!_ivm_vmstate_switchCoro(state))
 			break;
 	}
 

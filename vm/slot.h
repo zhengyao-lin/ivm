@@ -17,8 +17,6 @@ struct ivm_vmstate_t_tag;
 struct ivm_slot_t_tag;
 struct ivm_heap_t_tag;
 
-typedef void (*ivm_slot_table_foreach_proc_t)(struct ivm_slot_t_tag *, void *);
-
 typedef struct ivm_slot_t_tag {
 	const ivm_string_t *k;
 	struct ivm_object_t_tag *v;

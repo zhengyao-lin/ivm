@@ -10,8 +10,6 @@ struct ivm_cell_t_tag;
 struct ivm_cell_set_t_tag;
 struct ivm_object_t_tag;
 
-typedef void (*ivm_cell_set_foreach_proc_t)(struct ivm_cell_t_tag *, struct ivm_cell_set_t_tag *, void *, void *);
-
 typedef struct ivm_cell_t_tag {
 	struct ivm_object_t_tag *obj;
 
@@ -71,9 +69,6 @@ ivm_cell_set_addObject(ivm_cell_set_t *set, struct ivm_object_t_tag *obj);
 /* just remove, no free */
 ivm_cell_t *
 ivm_cell_set_removeTail(ivm_cell_set_t *set);
-void
-ivm_cell_set_foreach(ivm_cell_set_t *set, ivm_cell_set_foreach_proc_t proc,
-					 void *arg1, void *arg2);
 
 IVM_COM_END
 

@@ -11,9 +11,6 @@
 
 IVM_COM_HEADER
 
-ivm_list_t *
-_ivm_parser_getTokens(const ivm_char_t *src);
-
 ivm_double_t
 ivm_parser_parseNum(const ivm_char_t *src,
 					ivm_size_t len,
@@ -24,7 +21,7 @@ ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len);
 
 ivm_gen_env_t *
-ivm_parser_tokenToEnv(ivm_list_t *tokens);
+ivm_parser_parseSource(const ivm_char_t *src);
 
 IVM_COM_END
 

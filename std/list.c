@@ -38,30 +38,6 @@ ivm_ptlist_free(ivm_ptlist_t *ptlist)
 #define VALUE_AT(ptlist, i) ((ptlist)->lst[i])
 
 void
-ivm_ptlist_foreach(ivm_ptlist_t *ptlist, ivm_ptlist_foreach_proc_t proc)
-{
-	ivm_size_t i;
-
-	for (i = 0; i < ptlist->cur; i++)
-		proc(VALUE_AT(ptlist, i));
-
-	return;
-}
-
-void
-ivm_ptlist_foreach_arg(ivm_ptlist_t *ptlist,
-					   ivm_ptlist_foreach_proc_arg_t proc,
-					   void *arg)
-{
-	ivm_size_t i;
-
-	for (i = 0; i < ptlist->cur; i++)
-		proc(VALUE_AT(ptlist, i), arg);
-
-	return;
-}
-
-void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 {
 	ptlist->lst = MEM_REALLOC(ptlist->lst,

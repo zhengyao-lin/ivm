@@ -873,14 +873,16 @@ RULE(block)
 	 */
 	SUB_RULE_SET(
 		SUB_RULE(
-			EXPECT_TOKEN(T_ID) EXPECT_TOKEN(T_LBRAC)
+			EXPECT_TOKEN(T_ID) EXPECT_RULE(nl_list_opt)
+			EXPECT_TOKEN(T_LBRAC)
 				EXPECT_RULE(instr_list) {
-					list = RULE_RET_AT(0).u.instr_list;
+					list = RULE_RET_AT(1).u.instr_list;
 				}
 			EXPECT_TOKEN(T_RBRAC)
 		)
 		SUB_RULE(
-			EXPECT_TOKEN(T_ID) EXPECT_TOKEN(T_LBRAC)
+			EXPECT_TOKEN(T_ID) EXPECT_RULE(nl_list_opt)
+			EXPECT_TOKEN(T_LBRAC)
 				EXPECT_RULE(instr_end_opt)
 			EXPECT_TOKEN(T_RBRAC)
 		)
@@ -997,7 +999,7 @@ RULE(trans_unit)
 	RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__);
 
 ivm_gen_env_t *
-ivm_parser_tokenToEnv(ivm_list_t *tokens)
+_ivm_parser_tokenToEnv(ivm_list_t *tokens)
 {
 	struct env_t env = { 0 };
 	struct rule_val_t ret;
@@ -1005,4 +1007,15 @@ ivm_parser_tokenToEnv(ivm_list_t *tokens)
 	RULE_START(trans_unit, &env, &ret, tokens);
 
 	return ret.u.env;
+}
+
+ivm_gen_env_t *
+ivm_parser_parseSource(const ivm_char_t *src)
+{
+	ivm_list_t *tokens = _ivm_parser_getTokens(src);
+	ivm_gen_env_t *ret = _ivm_parser_tokenToEnv(tokens);
+
+	ivm_list_free(tokens);
+
+	return ret;
 }
