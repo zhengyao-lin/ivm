@@ -97,7 +97,7 @@ int test_fib()
 	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addInstr(exec1, NEW_NUM_I, 40);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 30);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addInstr(exec1, INVOKE, 1);
 	ivm_exec_addInstr(exec1, OUT_NUM);
@@ -615,10 +615,10 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
-#if 1
+#if 0
 
-	// test_call();
-	// test_vm();
+	test_call();
+	test_vm();
 	test_fib();
 
 	ivm_perf_printElapsed();
@@ -626,7 +626,7 @@ int main(int argc, const char **argv)
 
 #endif
 
-#if 0
+#if 1
 	const char num[] = "0b1010101";
 	const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;

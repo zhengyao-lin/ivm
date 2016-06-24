@@ -47,16 +47,20 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t addup)
 {
 	ivm_byte_t *curb;
 
-	heap->btop = heap->bcount++;
+	if (++heap->btop < heap->bcount) {
+		curb = heap->blocks[heap->btop];
+	} else {
+		heap->btop = heap->bcount++;
 
-	heap->blocks = MEM_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks)
-							   * heap->bcount,
-							   ivm_byte_t **);
+		heap->blocks = MEM_REALLOC(heap->blocks,
+								   sizeof(*heap->blocks)
+								   * heap->bcount,
+								   ivm_byte_t **);
 
-	curb
-	= heap->blocks[heap->btop]
-	= MEM_ALLOC(heap->bsize, ivm_byte_t *);
+		curb
+		= heap->blocks[heap->btop]
+		= MEM_ALLOC(heap->bsize, ivm_byte_t *);
+	}
 
 	heap->bcurp = curb + addup;
 	heap->bendp = curb + heap->bsize;

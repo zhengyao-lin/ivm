@@ -283,7 +283,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_collector_travState(&arg);
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
-	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
+	// ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
 
 	ivm_vmstate_closeGCFlag(state);
 
