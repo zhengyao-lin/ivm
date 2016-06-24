@@ -61,8 +61,23 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 
 #define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag > 0)
 
-#define ivm_vmstate_openGCFlag(state) ((state)->gc_flag < 0 ? 0 : ((state)->gc_flag = 1))
-#define ivm_vmstate_closeGCFlag(state) ((state)->gc_flag < 0 ? 0 : ((state)->gc_flag = 0))
+IVM_INLINE
+void
+ivm_vmstate_openGCFlag(ivm_vmstate_t *state)
+{
+	if (state->gc_flag >= 0)
+		state->gc_flag = 1;
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
+{
+	if (state->gc_flag >= 0)
+		state->gc_flag = 0;
+	return;
+}
 
 #define ivm_vmstate_lockGCFlag(state) ((state)->gc_flag = -1)
 #define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)

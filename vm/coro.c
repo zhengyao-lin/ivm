@@ -55,20 +55,20 @@ ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
 {
-	ivm_object_t *ret = IVM_NULL;
 	ivm_frame_t *tmp_frame;
 	ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
+	ivm_frame_stack_t *tmp_frame_st;
 
 	ivm_exec_t *tmp_exec;
 	ivm_ctchain_t *tmp_context;
 	ivm_function_t *tmp_func = IVM_NULL;
 
-	ivm_instr_t *tmp_ip = IVM_NULL,
-				*tmp_ip_end = IVM_NULL;
+	ivm_instr_t *tmp_ip,
+				*tmp_ip_end;
 	register ivm_size_t tmp_bp, tmp_sp;
 
-	register ivm_object_t *tmp_obj;
+	register ivm_object_t *tmp_obj = IVM_NULL;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
@@ -127,19 +127,23 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	}
 
 	if (ivm_function_isNative(tmp_func)) {
-		ret = ivm_function_callNative(tmp_func, state,
-									  IVM_RUNTIME_GET(coro->runtime, CONTEXT),
-									  IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
+		_TMP_OBJ = ivm_function_callNative(tmp_func, state,
+										   IVM_RUNTIME_GET(coro->runtime, CONTEXT),
+										   IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
+		if (!_TMP_OBJ) {
+			_TMP_OBJ = IVM_NULL_OBJ(state);
+		}
+
 		ivm_coro_kill(coro, state);
-	} else if (coro->runtime) {
+	} else if (ivm_coro_isAsleep(coro)) {
 		tmp_runtime = coro->runtime;
 		tmp_stack = coro->stack;
+		tmp_frame_st = coro->frame_st;
 
 		UPDATE_STACK();
 
 		while (1) {
 ACTION_INVOKE:
-			ret = IVM_NULL;
 			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
@@ -166,29 +170,27 @@ ACTION_INVOKE:
 #else
 				#error require a dispatch method
 #endif
-
+			}
 END_EXEC:
-
-				SAVE_RUNTIME(tmp_ip);
+			if (AVAIL_STACK) {
+				_TMP_OBJ = STACK_POP();
+			} else {
+				_TMP_OBJ = IVM_NULL_OBJ(state);
 			}
+
 ACTION_RETURN:
-			if (AVAIL_STACK > 0) {
-				ret = STACK_POP();
-			}
 
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, ret));
-
-			SAVE_STACK();
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ));
 
 			ivm_runtime_dump(tmp_runtime, state);
 
-			tmp_frame = ivm_frame_stack_pop(coro->frame_st, coro->runtime);
+			tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
 			if (tmp_frame) {
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
 				UPDATE_STACK();
-				STACK_PUSH(ret ? ret : IVM_NULL_OBJ(state));
+				STACK_PUSH(_TMP_OBJ);
 			} else {
 				/* no more callee to restore, end coro */
 				ivm_coro_kill(coro, state);
@@ -198,16 +200,11 @@ ACTION_RETURN:
 
 goto ACTION_YIELD_END;
 ACTION_YIELD:
-		if (AVAIL_STACK > 0) {
-			ret = STACK_POP();
-			SAVE_STACK();
-		}
-
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, ret));
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, _TMP_OBJ));
 ACTION_YIELD_END: ;
 	}
 
 END:
 
-	return ret ? ret : IVM_NULL_OBJ(state);
+	return _TMP_OBJ;
 }

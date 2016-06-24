@@ -74,7 +74,7 @@
 	}                                             \
 
 #define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
-#define RETURN() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_RETURN
+#define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
@@ -146,11 +146,11 @@
 	/* stack cache */
 	#define STC_PUSHBACK() \
 		_if (cst) _then                       \
-			_if (cst == 1) _then              \
-				STACK_PUSH_NOCACHE(stc0)      \
-			_else                             \
+			_if (cst == 2) _then              \
 				STACK_PUSH_NOCACHE(stc0),     \
 				STACK_PUSH_NOCACHE(stc1)      \
+			_else                             \
+				STACK_PUSH_NOCACHE(stc0)      \
 			_end,                             \
 			(cst = 0)                         \
 		_else                                 \

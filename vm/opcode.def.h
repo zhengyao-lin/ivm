@@ -277,10 +277,22 @@ OPCODE_GEN(FORK, "fork", N, {
 })
 
 OPCODE_GEN(YIELD, "yield", N, {
+	if (AVAIL_STACK) {
+		_TMP_OBJ = STACK_POP();
+	} else {
+		_TMP_OBJ = IVM_NULL_OBJ(_STATE);
+	}
+
 	YIELD();
 })
 
 OPCODE_GEN(RETURN, "return", N, {
+	if (AVAIL_STACK) {
+		_TMP_OBJ = STACK_POP();
+	} else {
+		_TMP_OBJ = IVM_NULL_OBJ(_STATE);
+	}
+
 	RETURN();
 })
 

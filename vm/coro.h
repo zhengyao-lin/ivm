@@ -63,9 +63,22 @@ ivm_coro_start_c(ivm_coro_t *coro,
 
 #define ivm_coro_isAsleep(coro) ((coro)->runtime != IVM_NULL)
 
-#define ivm_coro_resume(coro, state, init) \
-	((init) ? ivm_vmstack_pushAt((coro)->stack, IVM_RUNTIME_GET((coro)->runtime, SP_INC), (init)), 0 : 0, \
-	 ivm_coro_start((coro), (state), IVM_NULL))
+IVM_INLINE
+ivm_object_t *
+ivm_coro_resume(ivm_coro_t *coro,
+				struct ivm_vmstate_t_tag *state,
+				ivm_object_t *init)
+{
+	if (init) {
+		ivm_vmstack_pushAt(
+			coro->stack,
+			IVM_RUNTIME_GET(coro->runtime, SP_INC),
+			(init)
+		);
+	}
+
+	return ivm_coro_start(coro, state, IVM_NULL);
+}
 
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;

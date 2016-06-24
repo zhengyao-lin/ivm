@@ -21,7 +21,7 @@ typedef struct ivm_runtime_t_tag {
 	ivm_size_t sp;
 } IVM_NOALIGN ivm_runtime_t;
 
-#define IVM_RUNTIME_GET_IS_NATIVE(runtime) ((runtime)->exec == IVM_NULL)
+#define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->exec)
 #define IVM_RUNTIME_GET_EXEC(runtime) ((runtime)->exec)
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
