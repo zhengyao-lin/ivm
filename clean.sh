@@ -6,6 +6,10 @@ function clean()
 		rm -r CMakeFiles
 	fi
 
+	if [ -d Testing ]; then
+		rm -r Testing
+	fi
+
 	if [ -f CMakeCache.txt ]; then
 		rm CMakeCache.txt
 	fi
@@ -14,15 +18,19 @@ function clean()
 		rm cmake_install.cmake
 	fi
 
+	if [ -f CTestTestfile.cmake ]; then
+		rm CTestTestfile.cmake
+	fi
+
 	if [ -n $1 ] && [ "$1" = "dist" ] && [ -f Makefile ]; then
 		rm Makefile
 	fi
 
 	for file in `ls`
 	do
-		if [ -d "$file" ]; then
+		if [ -d "$file" ] && [ "$file" != ".git" ]; then
 			cd $file
-			clean
+			clean $@
 			cd ..
 		fi
 	done

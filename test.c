@@ -14,13 +14,13 @@
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
+#include "vm/env.h"
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
 
 #include "std/io.h"
 
 #include "util/parser.h"
-#include "util/env.h"
 #include "util/perf.h"
 #include "util/gen.h"
 

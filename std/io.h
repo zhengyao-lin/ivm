@@ -18,6 +18,12 @@ IVM_COM_HEADER
 #define IVM_TRACE(...) \
 	(fprintf(IVM_STDERR, __VA_ARGS__))
 
+#if defined(IVM_OS_WIN32)
+	#define IVM_SNPRINTF(str, len, ...) _snprintf((str), (len) - 1, __VA_ARGS__);
+#else
+	#define IVM_SNPRINTF(str, len, ...) snprintf((str), (len), __VA_ARGS__);
+#endif
+
 IVM_INLINE
 void
 ivm_fputs_n(FILE *fp, const ivm_char_t *str, ivm_size_t len)

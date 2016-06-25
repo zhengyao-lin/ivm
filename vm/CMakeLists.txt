@@ -1,35 +1,7 @@
 # lib vm
 
-ADD_LIBRARY(vm SHARED
-			obj.c
-			num.c
-			strobj.c
-			slot.c
-			vm.c
-			exec.c
-			instr.c
-			context.c
-			func.c
-			coro.c
-			runtime.c
-			opcode.c
-			byte.c
-			dbg.c
-			oprt.c
-			proto.c
-			call.c
-			gc/cell.c
-			gc/gc.c)
-
-# reset output dir
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
-# add include files
-INCLUDE_DIRECTORIES(${IVM_PUB_HEAD_DIR})
-
-# subdirs
-ADD_SUBDIRECTORY(gc)
+file(GLOB c_list "*.c" "gc/*.c")
+add_library(vm SHARED ${c_list})
 
 # link libraries
-TARGET_LINK_LIBRARIES(vm std m)
+target_link_libraries(vm std m)

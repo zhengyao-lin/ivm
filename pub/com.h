@@ -17,4 +17,13 @@
 	#define IVM_COM_END
 #endif
 
+#if defined(__linux__) || defined(__linux)
+	#define IVM_OS_LINUX
+#elif defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+	#define IVM_OS_WIN32
+	#define IVM_OS_WIN64
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+	#define IVM_OS_WIN32
+#endif
+
 #endif

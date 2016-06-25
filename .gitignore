@@ -34,8 +34,9 @@
 # CMake cache files
 CMakeFiles
 CMakeCache.txt
-cmake_install.cmake
+*.cmake
 Makefile
+Testing
 
 # build files
 build

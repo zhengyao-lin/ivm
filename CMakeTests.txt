@@ -1,0 +1,42 @@
+macro(add_ias_test ias_file expect)
+	add_test(
+		"ias_test_${ias_file}"
+		"${EXECUTABLE_OUTPUT_PATH}/ias" -p:disable ${ias_file}
+	)
+	set_tests_properties (
+		"ias_test_${ias_file}"
+		PROPERTIES PASS_REGULAR_EXPRESSION ${expect}
+	)
+endmacro()
+
+enable_testing()
+
+file(GLOB test_list "test/*.ias")
+
+# string(REGEX REPLACE ".ias$" ".res" res_list ${test_list})
+
+set(res_regx "[ \t]*->[ \t]*\"(.*)\"[ \t]*")
+
+foreach(ias_file ${test_list})
+	file(STRINGS ${ias_file} ias_lines)
+
+	set(result "")
+
+	foreach(line ${ias_lines})
+		# support two types of comment(// or /**/)
+		# search for comments containing string "-> \"regex\""
+		# ignore spaces and tabs
+		if(line MATCHES "(//${res_regx}$)|(/\\*${res_regx}\\*/)")
+			if(NOT result STREQUAL "")
+				set(result "${result}\n")
+			endif()
+			set(result "${result}${CMAKE_MATCH_2}${CMAKE_MATCH_4}")
+		endif()
+	endforeach(line)
+
+	message(STATUS "Find test ${ias_file}, pass result:\n${result}")
+
+	add_ias_test(${ias_file} "${result}")
+endforeach(ias_file)
+
+# add_ias_test("test/op1.ias" "hey (.|..|...)!\n")

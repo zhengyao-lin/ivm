@@ -1,0 +1,44 @@
+func1 {
+	set_arg "n"
+
+	get_context_slot "n"
+
+	jump_false is_null
+		new_str "hey, there"
+		dup_n 0
+		dup
+		pop
+		pop
+		yield
+		jump end
+	is_null:;
+	end:
+
+	ret
+}
+
+root {
+	new_num_f 9.001
+	out_type			// -> "numeric"
+	new_func func1
+	out_type			// -> "function"
+	invoke 1
+
+	out_type			// -> "string"
+	out_stack_size 		// -> "1"
+	dup
+	out_stack_size 		// -> "2"
+	out_str				// -> "hey, there"
+	pop
+	pop
+
+	out_stack_size 		// -> "0"
+
+	new_func func1
+	invoke 0
+
+	out_stack_size 		// -> "1"
+	out_type			// -> "null"
+
+	out "hey" 			// -> "hey"
+}

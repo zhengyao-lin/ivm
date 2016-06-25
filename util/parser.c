@@ -218,8 +218,8 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 							},
 
 		/* IN_COMMENT2 */	{
-								{ "=\n", ST_INIT, .ign = IVM_TRUE },
-								{ "=\r", ST_INIT, .ign = IVM_TRUE },
+								{ "=\n", ST_INIT, T_NEWL },
+								{ "=\r", ST_INIT, T_NEWL },
 								{ ".", ST_IN_COMMENT2 }
 							},
 

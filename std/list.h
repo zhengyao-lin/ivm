@@ -181,6 +181,7 @@ ivm_list_at(ivm_list_t *list, ivm_size_t i)
 
 #define ivm_list_size(list) ((list)->cur)
 #define ivm_list_empty(list) ((list)->cur = 0)
+#define ivm_list_core(list) ((list)->lst)
 
 #define IVM_LIST_ITER_TYPE(elem_type) elem_type *
 #define IVM_LIST_ITER_SET(iter, val, type) (*((type *)(iter)) = val)

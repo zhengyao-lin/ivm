@@ -202,23 +202,6 @@ OPCODE_GEN(PRINT_STACK, "print_stack", N, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(OUT, "out", S, {
-	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(OUT_NUM, "out_num", N, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ = STACK_POP();
-	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T)
-		IVM_TRACE("print num: %f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
-	else
-		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
-
-	NEXT_INSTR();
-})
-
 OPCODE_GEN(INVOKE, "invoke", I, {
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
@@ -328,5 +311,50 @@ OPCODE_GEN(TEST2, "test2", I, {
 OPCODE_GEN(TEST3, "test3", S, {
 	IVM_OUT("morning! this is test3\n");
 	IVM_OUT("string argument: %s\n", ivm_string_trimHead(SARG()));
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT, "out", S, {
+	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_NUM, "out_num", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T) {
+		IVM_TRACE("%.3f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
+	} else {
+		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
+	}
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_STR, "out_str", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_STRING_OBJECT_T) {
+		IVM_TRACE("%s\n", ivm_string_trimHead(IVM_AS(_TMP_OBJ, ivm_string_object_t)->val));
+	} else {
+		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
+	}
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, {
+	IVM_TRACE("%ld\n", STACK_SIZE());
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_TYPE, "out_type", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	IVM_TRACE("%s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "<null pointer>");
+	
 	NEXT_INSTR();
 })

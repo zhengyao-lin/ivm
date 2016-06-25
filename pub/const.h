@@ -59,4 +59,7 @@
 
 #define IVM_PER_INSTR_DBG(runtime) // (ivm_dbg_printRuntime(runtime))
 
+#define IVM_COPYRIGHT_HELP "this project is released under the MIT license"
+#define IVM_TAB "   "
+
 #endif

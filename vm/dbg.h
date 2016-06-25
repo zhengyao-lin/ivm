@@ -16,7 +16,7 @@
 
 IVM_COM_HEADER
 
-#define IVM_DBG_TAB "   "
+#define IVM_DBG_TAB IVM_TAB
 
 typedef struct {
 	ivm_coro_action_t action;

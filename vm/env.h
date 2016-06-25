@@ -1,5 +1,5 @@
-#ifndef _IVM_UTIL_ENV_H_
-#define _IVM_UTIL_ENV_H_
+#ifndef _IVM_VM_ENV_H_
+#define _IVM_VM_ENV_H_
 
 #include "pub/com.h"
 #include "pub/type.h"
