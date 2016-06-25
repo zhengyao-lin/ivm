@@ -55,7 +55,7 @@
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
 
 /* the number of stack element(s) cached */
-#define IVM_STACK_CACHE_N_TOS 2
+#define IVM_STACK_CACHE_N_TOS 0
 
 #define IVM_PER_INSTR_DBG(runtime) // (ivm_dbg_printRuntime(runtime))
 

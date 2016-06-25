@@ -168,7 +168,6 @@ slow_fib {
 }
 
 root {
-	
 	new_func wait_for_coro
 	set_context_slot "wait_for_coro"
 

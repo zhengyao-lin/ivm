@@ -11,6 +11,7 @@ IVM_COM_HEADER
 
 typedef struct {
 	ivm_size_t alloc;
+	void **end;
 	ivm_size_t cur;
 	void **lst;
 } ivm_ptlist_t;
@@ -35,10 +36,13 @@ void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
 	ptlist->alloc <<= 1;
-	ptlist->lst = MEM_REALLOC(ptlist->lst,
-							  sizeof(*ptlist->lst)
-							  * ptlist->alloc,
-							  void **);
+	ptlist->end = (
+		(ptlist->lst = MEM_REALLOC(ptlist->lst,
+								   sizeof(*ptlist->lst)
+								   * ptlist->alloc,
+								   void **))
+		+ ptlist->alloc
+	);
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
 
 	return;
@@ -68,6 +72,12 @@ ivm_ptlist_pop(ivm_ptlist_t *ptlist)
 #define ivm_ptlist_incCur(ptlist, t) ((ptlist)->cur += (t))
 #define ivm_ptlist_empty(ptlist) (ivm_ptlist_setCur((ptlist), 0))
 #define ivm_ptlist_has(ptlist, i) ((ptlist)->cur > (i))
+
+/* similar to iterator */
+#define ivm_ptlist_core(ptlist) ((ptlist)->lst)
+#define ivm_ptlist_end(ptlist) ((ptlist)->end)
+#define ivm_ptlist_offset(ptlist, ptr) \
+	((ivm_ptr_t)(ptr) - (ivm_ptr_t)(ptlist)->lst) / sizeof(void *)
 
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);

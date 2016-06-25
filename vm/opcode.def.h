@@ -218,6 +218,8 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 	func = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
 	args = STACK_CUT(arg_count);
 
+	// IVM_TRACE("hola!\n");
+
 	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
 	SAVE_RUNTIME(_INSTR + 1);
 

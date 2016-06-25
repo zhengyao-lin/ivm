@@ -21,6 +21,8 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 
 	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
 
+	ret->end = ret->lst + ret->alloc;
+
 	return ret;
 }
 
@@ -44,7 +46,7 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 							  sizeof(*ptlist->lst) * ptlist->cur,
 							  void **);
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted pointer list"));
-	ptlist->alloc = ptlist->cur;
+	ptlist->end = ptlist->lst + (ptlist->alloc = ptlist->cur);
 
 	return;
 }

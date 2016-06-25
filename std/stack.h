@@ -27,8 +27,12 @@ typedef ivm_ptlist_t ivm_stack_t;
 #define ivm_stack_cut(stack, i) (ivm_ptlist_setCur((stack), ivm_ptlist_size(stack) - (i)), \
 								 &ivm_stack_before((stack), -1))
 
-#define ivm_stack_setTop  ivm_ptlist_setCur
-#define ivm_stack_incTop  ivm_ptlist_incCur
+#define ivm_stack_setTop ivm_ptlist_setCur
+#define ivm_stack_incTop ivm_ptlist_incCur
+
+#define ivm_stack_core ivm_ptlist_core
+#define ivm_stack_end ivm_ptlist_end
+#define ivm_stack_offset ivm_ptlist_offset
 
 #define IVM_STACK_ITER_TYPE IVM_PTLIST_ITER_TYPE
 #define IVM_STACK_ITER_SET IVM_PTLIST_ITER_SET
@@ -38,8 +42,8 @@ typedef ivm_ptlist_t ivm_stack_t;
 IVM_INLINE
 void
 ivm_stack_pushAt(ivm_stack_t *stack,
-				  ivm_size_t i,
-				  void *p)
+				 ivm_size_t i,
+				 void *p)
 {
 	if (i >= stack->alloc) {
 		ivm_stack_inc(stack);

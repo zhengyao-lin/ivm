@@ -66,7 +66,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	ivm_instr_t *tmp_ip,
 				*tmp_ip_end;
-	register ivm_size_t tmp_bp, tmp_sp;
+	// register ivm_size_t tmp_bp, tmp_sp;
+	register ivm_object_t **tmp_bp, **tmp_sp;
 
 	register ivm_object_t *tmp_obj = IVM_NULL;
 
@@ -172,6 +173,7 @@ ACTION_INVOKE:
 #endif
 			}
 END_EXEC:
+
 			if (AVAIL_STACK) {
 				_TMP_OBJ = STACK_POP();
 			} else {
