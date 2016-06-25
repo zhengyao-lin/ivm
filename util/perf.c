@@ -8,8 +8,8 @@
 
 #if IVM_USE_PERF_PROFILE
 
-clock_t ivm_perf_gc_time = 0;
-ivm_size_t ivm_perf_gc_count = 0;
+extern clock_t ivm_perf_gc_time;
+extern ivm_size_t ivm_perf_gc_count;
 
 clock_t ivm_perf_program_start;
 clock_t ivm_perf_program_duration = 0;
@@ -47,7 +47,7 @@ ivm_perf_printElapsed()
 	IVM_TRACE("program: %ld ticks(%fs)\n",
 			  prog, (double)prog / CLOCKS_PER_SEC);
 
-	IVM_TRACE("gc times: %ld\n", ivm_perf_gc_count);
+	IVM_TRACE("gc times: %zd\n", ivm_perf_gc_count);
 
 	IVM_TRACE("gc: %ld ticks(%fs)\n",
 			  ivm_perf_gc_time,

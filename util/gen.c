@@ -13,7 +13,7 @@
 #include "vm/dbg.h"
 
 #define GEN_ERR(p, ...) \
-	IVM_TRACE("generator: at line %ld pos %ld: ", (p).line, (p).pos); \
+	IVM_TRACE("generator: at line %zd pos %zd: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 

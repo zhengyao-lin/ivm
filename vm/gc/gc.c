@@ -254,8 +254,8 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state
 
 #if IVM_USE_PERF_PROFILE
 
-extern clock_t ivm_perf_gc_time;
-extern ivm_size_t ivm_perf_gc_count;
+clock_t ivm_perf_gc_time = 0;
+ivm_size_t ivm_perf_gc_count = 0;
 
 #endif
 

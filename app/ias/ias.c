@@ -70,7 +70,7 @@ int main(int argc, const char **argv)
 			if (file) {
 				ERROR("too many files given");
 			} else {
-				if (!(file = ivm_file_new(ARG()->value, "r"))) {
+				if (!(file = ivm_file_new(ARG()->value, "rb"))) {
 					ERROR("cannot open file %s", ARG()->value);
 				}
 			}

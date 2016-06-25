@@ -73,22 +73,22 @@ struct token_t {
 };
 
 #define PARSER_ERR_LP(l, p, ...) \
-	IVM_TRACE("parser: at line %ld pos %ld: ", (l), (p)); \
+	IVM_TRACE("parser: at line %zd pos %zd: ", (l), (p)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
 #define PARSER_ERR_P(p, ...) \
-	IVM_TRACE("parser: at pos %ld: ", (p)); \
+	IVM_TRACE("parser: at pos %zd: ", (p)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
 #define PARSER_ERR_L(l, ...) \
-	IVM_TRACE("parser: at line %ld: ", (l)); \
+	IVM_TRACE("parser: at line %zd: ", (l)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
 #define PARSER_ERR_EM(err) \
-	(IVM_TRACE("parser: at line %ld pos %ld: unexpected %s, expecting %s \n", \
+	(IVM_TRACE("parser: at line %zd pos %zd: unexpected %s, expecting %s \n", \
 			   (err)->line, (err)->pos, (err)->given, (err)->expect))
 
 #define PARSER_ERR_MSG_ILLEGAL_REG									("illegal regular")
@@ -304,7 +304,7 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 					if (tmp_entry->to_state == state)
 						tmp_token.len++;
 
-					// IVM_TRACE("token %d, value '%.*s'(len %ld)\n",
+					// IVM_TRACE("token %d, value '%.*s'(len %zd)\n",
 					// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
 
 					tmp_token.id = tmp_entry->save;

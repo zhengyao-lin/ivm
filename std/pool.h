@@ -4,12 +4,11 @@
 #include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
+#include "pub/err.h"
 
 #include "chain.h"
 #include "list.h"
 #include "heap.h"
-
-#include "../err.h"
 
 IVM_COM_HEADER
 

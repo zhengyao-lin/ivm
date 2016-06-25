@@ -44,7 +44,7 @@ IVM_NATIVE_FUNC(call_func)
 	return ivm_numeric_new(state, 10016);
 }
 
-#define print_type(type) (IVM_TRACE(#type ": %ld\n", sizeof(type)))
+#define print_type(type) (IVM_TRACE(#type ": %zd\n", sizeof(type)))
 
 void profile_type()
 {
@@ -664,7 +664,7 @@ int main(int argc, const char **argv)
 	}";
 
 	if (argc == 2) {
-		file = ivm_file_new(argv[1], "r");
+		file = ivm_file_new(argv[1], "rb");
 		src = ivm_file_readAll(file);
 		ivm_file_free(file);
 	}
@@ -761,7 +761,7 @@ ivm_perf_printElapsed();
 	ivm_ptchain_addTail(chain, (void *)2);
 
 	IVM_TRACE("%d\n", (int)ivm_ptchain_removeTail(chain));
-	IVM_TRACE("%ld\n", sizeof(ivm_object_t));
+	IVM_TRACE("%zd\n", sizeof(ivm_object_t));
 
 	profile_output();
 

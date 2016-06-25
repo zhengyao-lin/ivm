@@ -24,10 +24,10 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 					FILE *fp)
 {
 	char t;
-	char buffer[50];
+	char buffer[64];
 	ivm_ptrdiff_t pc = (ivm_ptr_t)ip - (ivm_ptr_t)ivm_exec_instrPtrStart(exec);
 
-	sprintf(buffer, format, pc / sizeof(*ip));
+	IVM_SNPRINTF(buffer, sizeof(buffer), format, pc / sizeof(*ip));
 	// "%4ld: "
 	// 
 	switch (t = ivm_opcode_table_getParam(ivm_instr_opcode(ip))[0]) {
@@ -98,20 +98,8 @@ _ivm_dbg_printHeap(ivm_heap_t *heap,
 			   total = IVM_HEAP_GET(heap, BLOCK_TOTAL);
 
 	fprintf(fp, "%sblock size: %.2fMB\n", prefix, B2MB(bsize));
-	fprintf(fp, "%sblock count: %ld\n", prefix, bcount);
-	fprintf(fp, "%susage: %ld in %ld\n", prefix, used, total);
-
-#if 0
-	for (i = 0; i < bcount; i++) {
-		fprintf(fp, "%s" IVM_DBG_TAB "block %ld: %ld in %ld(%.2f%%)\n",
-				prefix, i + 1, curs[i], bsize,
-				((double)curs[i]) / bsize * 100);
-		size += curs[i];
-	}
-	fprintf(fp, "%s" IVM_DBG_TAB "(total: %ld in %ld(%.2f%%))\n",
-			prefix, size, bsize * bcount,
-			((double)size) / (bsize * bcount) * 100);
-#endif
+	fprintf(fp, "%sblock count: %zd\n", prefix, bcount);
+	fprintf(fp, "%susage: %zd in %zd\n", prefix, used, total);
 
 	return;
 }
@@ -158,7 +146,7 @@ ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
 		}
 	}
 
-	fprintf(fp, "(total of %ld object(s) in the stack)\n", i);
+	fprintf(fp, "(total of %zd object(s) in the stack)\n", i);
 
 	return;
 }
@@ -182,9 +170,9 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_vmstack_t *stack = runtime.stack;
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);
 	ivm_uptr_t exec_id;
-	char buffer[100];
+	char buffer[64];
 
-	IVM_TRACE("\nstack state(sp: %ld, bp: %ld, cst: %d):\n",
+	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d):\n",
 			  runtime.sp, runtime.bp, runtime.cst);
 
 #if 0
@@ -254,7 +242,7 @@ DRAW_END:
 			exec_id = (ivm_uptr_t)runtime.exec
 					  << ((sizeof(ivm_uptr_t) - sizeof(char)) * 8)
 					  >> ((sizeof(ivm_uptr_t) - sizeof(char)) * 8);
-			sprintf(buffer, "%p:%%ld> ", (void *)exec_id);
+			IVM_SNPRINTF(buffer, sizeof(buffer), "%p:%%zd> ", (void *)exec_id);
 			_ivm_dbg_printInstr(runtime.exec, runtime.ip, buffer, stderr);
 			break;
 		case IVM_CORO_ACTION_INVOKE:
