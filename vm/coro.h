@@ -57,9 +57,10 @@ ivm_coro_start_c(ivm_coro_t *coro,
 		((void **)ivm_coro_start_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
 #endif
 
-#define ivm_coro_setRoot(coro, state, root) \
-	((coro)->runtime = ivm_function_createRuntime(ivm_function_object_getFunc(root), (state), \
-												  ivm_function_object_getClosure(root)))
+void
+ivm_coro_setRoot(ivm_coro_t *coro,
+				 struct ivm_vmstate_t_tag *state,
+				 ivm_function_object_t *root);
 
 #define ivm_coro_isAsleep(coro) ((coro)->runtime != IVM_NULL)
 
@@ -70,11 +71,7 @@ ivm_coro_resume(ivm_coro_t *coro,
 				ivm_object_t *init)
 {
 	if (init) {
-		ivm_vmstack_pushAt(
-			coro->stack,
-			IVM_RUNTIME_GET(coro->runtime, SP_INC),
-			(init)
-		);
+		ivm_vmstack_push(coro, init);
 	}
 
 	return ivm_coro_start(coro, state, IVM_NULL);

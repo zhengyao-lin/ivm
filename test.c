@@ -97,7 +97,7 @@ int test_fib()
 	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, fib));
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "fib");
 
-	ivm_exec_addInstr(exec1, NEW_NUM_I, 30);
+	ivm_exec_addInstr(exec1, NEW_NUM_I, 40);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "fib");
 	ivm_exec_addInstr(exec1, INVOKE, 1);
 	ivm_exec_addInstr(exec1, OUT_NUM);
@@ -617,8 +617,8 @@ int main(int argc, const char **argv)
 
 #if 1
 
-	test_call();
-	test_vm();
+	// test_call();
+	// test_vm();
 	test_fib();
 
 	ivm_perf_printElapsed();

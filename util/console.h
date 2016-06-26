@@ -78,7 +78,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 		ivm_list_t *__ca_opt_list__ = ivm_list_new(sizeof(ivm_console_option_t));            \
 		ivm_bool_t __ca_is_def__ = IVM_TRUE;                                                 \
 		ivm_console_option_t __ca_tmp_opt__;                                                 \
-		ivm_console_arg_t *__ca_cur_arg__;                                                   \
+		ivm_console_arg_t *__ca_cur_arg__ = IVM_NULL;                                        \
 		ivm_size_t __ca_cur_opt__ = -1;                                                      \
 		ivm_bool_t __ca_is_failed__ = IVM_FALSE;                                             \
 		const ivm_char_t *__cs_prog__ = (prog);                                              \
@@ -121,11 +121,12 @@ ivm_console_arg_parse(ivm_int_t argc,
 	if (__ca_is_def__) {                                                                   \
 		__ca_tmp_opt__ = ivm_console_option_build((opt_name), (alias), (value), (intro));  \
 		ivm_list_push(__ca_opt_list__, &__ca_tmp_opt__);                                   \
-	} else if (!IVM_STRNCMP((opt_name), IVM_STRLEN(opt_name),                              \
+	} else if (__ca_cur_arg__ &&                                                           \
+			   (!IVM_STRNCMP((opt_name), IVM_STRLEN(opt_name),                             \
 							__ca_cur_arg__->name, __ca_cur_arg__->nlen) ||                 \
-			   ((alias) &&                                                                 \
-			   	!IVM_STRNCMP((alias), IVM_STRLEN(alias),                                   \
-							 __ca_cur_arg__->name, __ca_cur_arg__->nlen))) {               \
+			    ((alias) &&                                                                \
+			   	 !IVM_STRNCMP((alias), IVM_STRLEN(alias),                                  \
+							  __ca_cur_arg__->name, __ca_cur_arg__->nlen)))) {             \
 		__VA_ARGS__;                                                                       \
 		break;                                                                             \
 	}

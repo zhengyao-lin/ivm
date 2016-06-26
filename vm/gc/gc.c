@@ -150,13 +150,14 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_size_t i, sp;
 	ivm_frame_stack_iterator_t fiter;
+	ivm_object_t **i, **sp;
 
 	if (runtime) {
-		for (i = 0, sp = IVM_RUNTIME_GET(runtime, SP);
-			 i < sp; i++) {
-			ivm_collector_updateObject(ivm_vmstack_ptrAt(stack, i), arg);
+		for (i = ivm_vmstack_bottom(stack),
+			 sp = IVM_RUNTIME_GET(runtime, SP);
+			 i != sp; i++) {
+			ivm_collector_updateObject(i, arg);
 		}
 	}
 

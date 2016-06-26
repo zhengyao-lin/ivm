@@ -34,7 +34,7 @@ int main(int argc, const char **argv)
 	ivm_char_t *src;
 	ivm_gen_env_t *env;
 	ivm_vmstate_t *state;
-	ivm_bool_t is_failed;
+	ivm_bool_t is_failed = IVM_FALSE;
 
 	ivm_bool_t cfg_prof = IVM_TRUE;
 

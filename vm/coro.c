@@ -45,6 +45,22 @@ ivm_coro_free(ivm_coro_t *coro,
 	return;
 }
 
+void
+ivm_coro_setRoot(ivm_coro_t *coro,
+				 ivm_vmstate_t *state,
+				 ivm_function_object_t *root)
+{
+	coro->runtime
+	= ivm_function_createRuntime(
+		ivm_function_object_getFunc(root),
+		state,
+		ivm_function_object_getClosure(root),
+		coro
+	);
+
+	return;
+}
+
 #define ivm_coro_kill(coro, state) \
 	ivm_runtime_free((coro)->runtime, (state)); \
 	(coro)->runtime = IVM_NULL;
@@ -67,6 +83,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_instr_t *tmp_ip,
 				*tmp_ip_end;
 	// register ivm_size_t tmp_bp, tmp_sp;
+	ivm_object_t **tmp_st_end;
 	register ivm_object_t **tmp_bp, **tmp_sp;
 
 	register ivm_object_t *tmp_obj = IVM_NULL;
@@ -123,8 +140,11 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 		tmp_func = ivm_function_object_getFunc(root);
 		coro->runtime
-		= ivm_function_createRuntime(tmp_func, state,
-									 ivm_function_object_getClosure(root));
+		= ivm_function_createRuntime(
+			tmp_func, state,
+			ivm_function_object_getClosure(root),
+			coro
+		);
 	}
 
 	if (ivm_function_isNative(tmp_func)) {
@@ -140,6 +160,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		tmp_runtime = coro->runtime;
 		tmp_stack = coro->stack;
 		tmp_frame_st = coro->frame_st;
+		tmp_st_end = ivm_vmstack_edge(tmp_stack);
 
 		UPDATE_STACK();
 

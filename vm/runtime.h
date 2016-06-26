@@ -15,10 +15,11 @@ IVM_COM_HEADER
 struct ivm_coro_t_tag;
 struct ivm_frame_t_tag;
 struct ivm_vmstate_t_tag;
+struct ivm_object_t_tag;
 
 typedef struct ivm_runtime_t_tag {
 	IVM_EXEC_INFO_HEAD
-	ivm_size_t sp;
+	struct ivm_object_t_tag **sp;
 } IVM_NOALIGN ivm_runtime_t;
 
 #define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->exec)

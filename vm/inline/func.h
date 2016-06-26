@@ -36,10 +36,14 @@ IVM_INLINE
 ivm_runtime_t *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state,
-						   ivm_ctchain_t *context)
+						   ivm_ctchain_t *context,
+						   ivm_coro_t *coro)
 {
 	ivm_runtime_t *ret = ivm_runtime_new(state);
+	ivm_object_t **sp = ivm_vmstack_bottom(IVM_CORO_GET(coro, STACK));
 
+	IVM_RUNTIME_SET(ret, SP, sp);
+	IVM_RUNTIME_SET(ret, BP, sp);
 	_ivm_function_invoke_c(func, state, context, ret);
 
 	return ret;

@@ -88,8 +88,8 @@
 
 #define STACK_PUSH_NOCACHE(obj) \
 	(*tmp_sp++ = (obj), \
-	 (tmp_sp == ivm_vmstack_edge(_STACK) \
-	  ? SAVE_STACK_NOPUSH(), ivm_vmstack_inc(_STACK), UPDATE_STACK() \
+	 (tmp_sp == tmp_st_end \
+	  ? SAVE_STACK_NOPUSH(), ivm_vmstack_inc_c(_STACK, _CORO), UPDATE_STACK() \
 	  : 0))
 
 #define STACK_POP_NOCACHE() (*--tmp_sp)
@@ -246,17 +246,18 @@
 	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())
 
 #define SAVE_STACK() \
-	(STC_PUSHBACK(),                                                      \
-	 IVM_RUNTIME_SET(_RUNTIME, BP, ivm_vmstack_offset(_STACK, tmp_bp)),   \
-	 IVM_RUNTIME_SET(_RUNTIME, SP, ivm_vmstack_offset(_STACK, tmp_sp)))
+	(STC_PUSHBACK(),                          \
+	 IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp),   \
+	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define SAVE_STACK_NOPUSH() \
-	(IVM_RUNTIME_SET(_RUNTIME, BP, ivm_vmstack_offset(_STACK, tmp_bp)),   \
-	 IVM_RUNTIME_SET(_RUNTIME, SP, ivm_vmstack_offset(_STACK, tmp_sp)))
+	(IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp),   \
+	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define UPDATE_STACK() \
-	(tmp_bp = ivm_vmstack_bottom(_STACK) + IVM_RUNTIME_GET(_RUNTIME, BP), \
-	 tmp_sp = ivm_vmstack_bottom(_STACK) + IVM_RUNTIME_GET(_RUNTIME, SP))
+	(tmp_st_end = ivm_vmstack_edge(tmp_stack),   \
+	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
+	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
 #define _TMP_OBJ (tmp_obj)
 

@@ -5,7 +5,6 @@
 #include "pub/const.h"
 #include "pub/type.h"
 
-#include "std/stack.h"
 #include "std/pool.h"
 
 #include "instr.h"
@@ -17,7 +16,7 @@ IVM_COM_HEADER
 	ivm_exec_t *exec; \
 	struct ivm_ctchain_t_tag *context; \
 	ivm_instr_t *ip; \
-	ivm_size_t bp;
+	struct ivm_object_t_tag **bp;
 
 #define IVM_EXEC_INFO_HEAD_SIZE \
 	(sizeof(struct { IVM_EXEC_INFO_HEAD } IVM_NOALIGN))
@@ -25,20 +24,23 @@ IVM_COM_HEADER
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
 struct ivm_runtime_t_tag;
+struct ivm_object_t_tag;
 
 typedef struct ivm_frame_t_tag {
 	IVM_EXEC_INFO_HEAD
 } IVM_NOALIGN ivm_frame_t;
 
-#define IVM_FRAME_GET_EXEC(frame) ((frame) ? (frame)->exec : IVM_NULL)
-#define IVM_FRAME_GET_BP(frame) ((frame) ? (frame)->bp : 0)
-#define IVM_FRAME_GET_IP(frame) ((frame) ? (frame)->ip : 0)
-#define IVM_FRAME_GET_CONTEXT(frame) ((frame) ? (frame)->context : IVM_NULL)
+#define IVM_FRAME_GET_EXEC(frame) ((frame)->exec)
+#define IVM_FRAME_GET_BP(frame) ((frame)->bp)
+#define IVM_FRAME_GET_IP(frame) ((frame)->ip)
+#define IVM_FRAME_GET_CONTEXT(frame) ((frame)->context)
+
+#define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
-typedef struct {
+typedef struct ivm_frame_stack_t_tag {
 	ivm_size_t alloc;
 	ivm_size_t top;
 	ivm_frame_t *frames;

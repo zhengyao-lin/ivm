@@ -41,6 +41,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_NO_UNIOP_FOR(op, t)				"the unary operation %s of <%s> is not defined", (op), (t)
 #define IVM_ERROR_MSG_NO_BINOP_FOR(t1, op, t2)			"the binary operation of <%s> %s <%s> is not defined", (t1), (op), (t2)
 #define IVM_ERROR_MSG_UNEXPECTED_ARG_TYPE(t)			"unexpected param type %c", (t)
+#define IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK				"cannot push object to dead coro"
 
 IVM_COM_END
 
