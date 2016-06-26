@@ -71,11 +71,14 @@ ivm_ptlist_pop(ivm_ptlist_t *ptlist)
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 
+#define ivm_ptlist_offset(ptlist, ptr) \
+	(((ivm_ptr_t)(ptr) - (ivm_ptr_t)(ptlist)->lst) / sizeof(*ptr))
+
 #define IVM_PTLIST_ITER_TYPE(elem_type) elem_type *
 #define IVM_PTLIST_ITER_BEGIN(ptlist) ((ptlist)->lst)
 #define IVM_PTLIST_ITER_END(ptlist) ((ptlist)->lst + (ptlist)->cur)
 #define IVM_PTLIST_ITER_AT(ptlist, i) ((ptlist)->lst + (i))
-#define IVM_PTLIST_ITER_INDEX(ptlist, i) (((ivm_ptr_t)(i) - (ivm_ptr_t)(ptlist)->lst) / sizeof(*i))
+#define IVM_PTLIST_ITER_INDEX(ptlist, ptr) ivm_ptlist_offset((ptlist), (ptr))
 #define IVM_PTLIST_ITER_SET(iter, val) (*(iter) = val)
 #define IVM_PTLIST_ITER_GET(iter) (*(iter))
 #define IVM_PTLIST_EACHPTR(ptlist, iter, type) \
@@ -94,6 +97,24 @@ ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr, ivm_ptlist_comparer_t comp
 	(ivm_ptlist_indexOf_c((ptlist), \
 						  (ptr), \
 						  (ivm_ptlist_comparer_t)(comp)))
+
+/* find a pointer with the identical address */
+IVM_INLINE
+ivm_size_t
+ivm_ptlist_find(ivm_ptlist_t *ptlist,
+				void *ptr)
+{
+	void **i, **end;
+
+	for (i = ptlist->lst,
+		 end = i + ptlist->cur;
+		 i != end; i++) {
+		if (*i == ptr)
+			return ivm_ptlist_offset(ptlist, i);
+	}
+
+	return -1;
+}
 
 IVM_INLINE
 void

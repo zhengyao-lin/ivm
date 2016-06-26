@@ -26,9 +26,9 @@ typedef struct {
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
 typedef struct ivm_instr_t_tag {
-	void *entry;
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
+	void *entry;
 	ivm_instr_cache_t cache;
 } ivm_instr_t;
 
@@ -44,13 +44,13 @@ typedef struct ivm_instr_t_tag {
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
-#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(opc), .opc = (opc), __VA_ARGS__ })
+#define ivm_instr_build(o, a) ((ivm_instr_t) { .opc = (o), .arg = (a), .entry = ivm_opcode_table_getEntry(o) })
 
 #define ivm_instr_entry(instr) ((instr)->entry)
 
 #else
 
-#define ivm_instr_build(opc, ...) ((ivm_instr_t) { .opc = (opc), ##__VA_ARGS__ })
+#define ivm_instr_build(o, a) ((ivm_instr_t) { .opc = (o), .arg = (a), ##__VA_ARGS__ })
 
 #endif
 

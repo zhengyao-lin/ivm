@@ -24,16 +24,20 @@
 #include "util/perf.h"
 #include "util/gen.h"
 #include "util/console.h"
+#include "util/serial.h"
 
 int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
 	const ivm_char_t *tmp_str;
-	ivm_file_t *file = IVM_NULL;
+	ivm_file_t *src_file = IVM_NULL;
+	ivm_file_t *cache_file = IVM_NULL;
+
 	ivm_char_t *src;
 	ivm_gen_env_t *env;
 	ivm_vmstate_t *state;
+	ivm_serial_exec_list_t *s_list;
 	ivm_bool_t is_failed = IVM_FALSE;
 
 	ivm_bool_t cfg_prof = IVM_TRUE;
@@ -66,17 +70,27 @@ int main(int argc, const char **argv)
 			}
 		})
 
-		NORMAL({
-			if (file) {
-				ERROR("too many files given");
+		OPTION("c", "-cache", "<file path>", "compile and save cache file to the specified path", {
+			if (!(tmp_str = ARG()->value)) {
+				ILLEGAL_ARG();
 			} else {
-				if (!(file = ivm_file_new(ARG()->value, "rb"))) {
-					ERROR("cannot open file %s", ARG()->value);
+				if (cache_file) {
+					ERROR("too many cache file outputs given");
+				} else if (!(cache_file = ivm_file_new(tmp_str, IVM_FMODE_WRITE_BINARY))) {
+					ERROR("cannot open cache file %s", tmp_str);
 				}
+			}
+		})
+
+		NORMAL({
+			if (src_file) {
+				ERROR("too many source files given");
+			} else if (!(src_file = ivm_file_new(ARG()->value, IVM_FMODE_READ_BINARY))) {
+				ERROR("cannot open source file %s", ARG()->value);
 			}
 		}),
 
-		if (!file) {
+		if (!src_file) {
 			FAILED(IVM_FALSE, "no available source file given");
 		},
 
@@ -94,25 +108,39 @@ int main(int argc, const char **argv)
 
 	if (is_failed) return 1;
 
-	src = ivm_file_readAll(file);
+	src = ivm_file_readAll(src_file);
 	env = ivm_parser_parseSource(src);
 	state = ivm_gen_env_generateVM(env);
 
-if (cfg_prof) {
-	ivm_perf_reset();
-	ivm_perf_startProfile();
-}
+	if (cfg_prof) {
+		ivm_perf_reset();
+		ivm_perf_startProfile();
+	}
 
 	ivm_vmstate_schedule(state);
 
-if (cfg_prof) {
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
-}
+	if (cfg_prof) {
+		ivm_perf_stopProfile();
+		ivm_perf_printElapsed();
+	}
+
+	if (cache_file) {
+		s_list = ivm_serial_serializeExecList(env->exec_list);
+		ivm_serial_execListToFile(s_list, cache_file);
+		ivm_serial_exec_list_free(s_list);
+
+		// fflush(cache_file->fp);
+
+		// ivm_file_t *tmp_file = ivm_file_new("test.iobj", "rb");
+		// s_list = ivm_serial_execListFromFile(tmp_file);
+		// ivm_serial_exec_list_free(s_list);
+		// ivm_file_free(tmp_file);
+	}
 
 	ivm_vmstate_free(state);
 	ivm_gen_env_free(env);
-	ivm_file_free(file);
+	ivm_file_free(src_file);
+	ivm_file_free(cache_file);
 	MEM_FREE(src);
 
 	return 0;

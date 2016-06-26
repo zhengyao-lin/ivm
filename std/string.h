@@ -42,7 +42,7 @@ ivm_strdup_heap(const ivm_char_t *src,
 				struct ivm_heap_t_tag *heap);
 
 typedef struct {
-	ivm_bool_t is_const: 1;
+	ivm_bool_t is_const;
 	ivm_uint32_t len;
 } ivm_string_t;
 
@@ -79,6 +79,9 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 
 #define ivm_string_length(str) \
 	((str)->len)
+
+#define ivm_string_size(str) \
+	(IVM_STRING_GET_SIZE((str)->len))
 
 #define ivm_string_trimHead(str) \
 	((ivm_char_t *)(((ivm_string_t *)str) + 1))
@@ -150,6 +153,41 @@ ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
 
 #define ivm_string_pool_get(pool, i) ((pool)->table[i])
 
+#define ivm_string_pool_isFixed(pool) ((pool)->is_fixed)
+#define ivm_string_pool_size(pool) ((pool)->size)
+#define ivm_string_pool_table(pool) ((pool)->table)
+#define ivm_string_pool_setSize(pool, val) ((pool)->size = (val))
+
+IVM_INLINE
+void
+ivm_string_pool_setTable(ivm_string_pool_t *pool,
+						 const ivm_string_t **table)
+{
+	MEM_FREE(pool->table);
+	pool->table = table;
+	return;
+}
+
+#define ivm_string_pool_alloc(pool, size) \
+	(ivm_heap_alloc((pool)->heap, (size)))
+
+IVM_INLINE
+ivm_size_t
+ivm_string_pool_find(ivm_string_pool_t *pool,
+					 const ivm_string_t *str)
+{
+	const ivm_string_t **i, **end;
+
+	for (i = pool->table,
+		 end = i + pool->size;
+		 i != end; i++) {
+		if (*i == str)
+			return ((ivm_ptr_t)i - (ivm_ptr_t)pool->table) / sizeof(*i);
+	}
+
+	return -1;
+}
+
 IVM_INLINE
 const ivm_string_t *
 ivm_string_pool_store(ivm_string_pool_t *pool,
@@ -159,10 +197,42 @@ ivm_string_pool_store(ivm_string_pool_t *pool,
 	return ivm_string_pool_get(pool, i);
 }
 
-ivm_string_t *
-ivm_string_pool_prealloc(ivm_string_pool_t *pool,
-						 ivm_bool_t is_const,
-						 ivm_size_t len);
+typedef ivm_ptlist_t ivm_string_pool_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_string_pool_t *) ivm_string_pool_list_iterator_t;
+
+#define ivm_string_pool_list_new ivm_ptlist_new
+
+IVM_INLINE
+ivm_size_t
+ivm_string_pool_list_register(ivm_string_pool_list_t *list,
+							  ivm_string_pool_t *pool)
+{
+	ivm_ref_inc(pool);
+	return ivm_ptlist_push(list, pool);
+}
+
+#define ivm_string_pool_list_find ivm_ptlist_find
+#define ivm_string_pool_list_size ivm_ptlist_size
+
+#define IVM_STRING_POOL_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
+#define IVM_STRING_POOL_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
+#define IVM_STRING_POOL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_string_pool_t *)
+
+IVM_INLINE
+void
+ivm_string_pool_list_free(ivm_string_pool_list_t *list)
+{
+	ivm_string_pool_list_iterator_t siter;
+
+	IVM_STRING_POOL_LIST_EACHPTR(list, siter) {
+		ivm_string_pool_free(
+			IVM_STRING_POOL_LIST_ITER_GET(siter)
+		);
+		ivm_ptlist_free(list);
+	}
+
+	return;
+}
 
 IVM_COM_END
 

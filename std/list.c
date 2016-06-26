@@ -53,11 +53,13 @@ ivm_size_t
 ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr,
 					 ivm_ptlist_comparer_t comp)
 {
-	ivm_size_t i;
+	void **i, **end;
 
-	for (i = 0; i < ptlist->cur; i++) {
-		if (!comp(ptlist->lst[i], ptr))
-			return i;
+	for (i = ptlist->lst,
+		 end = i + ptlist->cur;
+		 i != end; i++) {
+		if (!comp(*i, ptr))
+			return ivm_ptlist_offset(ptlist, i);
 	}
 
 	return -1;

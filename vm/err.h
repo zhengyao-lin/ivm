@@ -42,6 +42,9 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_NO_BINOP_FOR(t1, op, t2)			"the binary operation of <%s> %s <%s> is not defined", (t1), (op), (t2)
 #define IVM_ERROR_MSG_UNEXPECTED_ARG_TYPE(t)			"unexpected param type %c", (t)
 #define IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK				"cannot push object to dead coro"
+#define IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC				"cannot serialize cached executable"
+#define IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE		"unexpected instruction string operand cache(not appear in the string pool)"
+#define IVM_ERROR_MSG_FILE_FORMAT_ERR					"wrong file format"
 
 IVM_COM_END
 

@@ -62,6 +62,7 @@ typedef union {
 	ivm_function_id_t xarg;
 	ivm_double_t farg;
 	ivm_ptr_t parg;
+	ivm_uint64_t dummy;
 } ivm_opcode_arg_t;
 
 #define ivm_opcode_arg_toInt(arg) (arg.iarg)

@@ -29,9 +29,9 @@
 									  ivm_exec_t *exec) \
 		{ \
 			return (ivm_instr_t) { \
-				ivm_opcode_table_getEntry(IVM_OPCODE(o)), \
 				IVM_OPCODE(o), \
-				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)) \
+				INSTR_TYPE_##arg##_ARG_INIT((ret), (exec)), \
+				ivm_opcode_table_getEntry(IVM_OPCODE(o)) \
 			}; \
 		}
 

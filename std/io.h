@@ -19,9 +19,9 @@ IVM_COM_HEADER
 	(fprintf(IVM_STDERR, __VA_ARGS__))
 
 #if defined(IVM_OS_WIN32)
-	#define IVM_SNPRINTF(str, len, ...) _snprintf((str), (len) - 1, __VA_ARGS__);
+	#define IVM_SNPRINTF(str, len, ...) (_snprintf((str), (len) - 1, __VA_ARGS__))
 #else
-	#define IVM_SNPRINTF(str, len, ...) snprintf((str), (len), __VA_ARGS__);
+	#define IVM_SNPRINTF(str, len, ...) (snprintf((str), (len), __VA_ARGS__))
 #endif
 
 IVM_INLINE
@@ -43,7 +43,13 @@ typedef FILE *ivm_file_raw_t;
 #define IVM_FSEEK_CUR SEEK_CUR
 #define IVM_FSEEK_TAIL SEEK_END
 #define IVM_FTELL ftell
+
 #define IVM_FREAD fread
+#define IVM_FWRITE fwrite
+#define IVM_FFLUSH fflush
+
+#define IVM_FMODE_WRITE_BINARY "wb"
+#define IVM_FMODE_READ_BINARY "rb"
 
 typedef struct {
 	ivm_file_raw_t fp;
@@ -58,6 +64,75 @@ ivm_file_free(ivm_file_t *file);
 
 ivm_char_t *
 ivm_file_readAll(ivm_file_t *file);
+
+IVM_INLINE
+ivm_size_t
+ivm_file_write(ivm_file_t *file,
+			   void *buf,
+			   ivm_size_t size,
+			   ivm_size_t count)
+{
+	ivm_file_raw_t fp = file->fp;
+	ivm_size_t ret = 0;
+
+	if (fp) {
+		ret = IVM_FWRITE(buf, size, count, fp);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_file_writeAt(ivm_file_t *file,
+				 ivm_size_t pos,
+				 void *buf,
+				 ivm_size_t size,
+				 ivm_size_t count)
+{
+	ivm_file_raw_t fp = file->fp;
+	ivm_size_t ret = 0;
+	ivm_size_t cur;
+
+	if (fp) {
+		cur = IVM_FTELL(fp);
+		IVM_FSEEK(fp, IVM_FSEEK_HEAD, pos);
+		ret = IVM_FWRITE(buf, size, count, fp);
+		IVM_FSEEK(fp, IVM_FSEEK_HEAD, cur);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_file_read(ivm_file_t *file,
+			  void *buf,
+			  ivm_size_t size,
+			  ivm_size_t count)
+{
+	ivm_file_raw_t fp = file->fp;
+	ivm_size_t ret = 0;
+
+	if (fp) {
+		ret = IVM_FREAD(buf, size, count, fp);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_file_curPos(ivm_file_t *file)
+{
+	ivm_file_raw_t fp = file->fp;
+
+	if (fp) {
+		return IVM_FTELL(fp);
+	}
+
+	return 0;
+}
 
 IVM_COM_END
 

@@ -2,6 +2,7 @@
 
 #include "pub/mem.h"
 #include "pub/type.h"
+#include "pub/err.h"
 
 #include "io.h"
 
@@ -14,6 +15,8 @@ ivm_file_new(const ivm_char_t *path,
 	if (!fp) return IVM_NULL;
 
 	ret = MEM_ALLOC(sizeof(*ret), ivm_file_t *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("file"));
 
 	ret->fp = fp;
 
@@ -58,13 +61,13 @@ ivm_file_readAll(ivm_file_t *file)
 								ivm_char_t *);
 
 	FGOTO(fp, HEAD);
-	if (!IVM_FREAD(ret, len, sizeof(*ret), fp)) {
+	if (!(len = IVM_FREAD(ret, sizeof(*ret), len, fp))) {
 		/* none is read */
 		MEM_FREE(ret);
 		return IVM_NULL;
 	}
 	IVM_FSEEK(fp, IVM_FSEEK_HEAD, cur);
-	ret[len] = '\0';
+	ret[len - 1] = '\0';
 
 	return ret;
 }

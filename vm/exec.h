@@ -55,10 +55,15 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_opcAt(exec, i) ((exec)->instrs[i].opc)
 
 #define ivm_exec_cached(exec) ((exec)->cached)
+#define ivm_exec_pool(exec) ((exec)->pool)
 	
 void
 ivm_exec_preproc(ivm_exec_t *exec,
 				 struct ivm_vmstate_t_tag *state);
+
+ivm_instr_t
+ivm_exec_decache(ivm_exec_t *exec,
+				 ivm_instr_t *instr);
 
 typedef ivm_ptpool_t ivm_exec_pool_t;
 

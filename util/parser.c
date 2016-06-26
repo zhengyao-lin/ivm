@@ -280,59 +280,61 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 	ivm_bool_t has_exc = IVM_FALSE;
 	struct token_t tmp_token = (struct token_t) { .len = 0, .val = c, .line = LINE, .pos = POS };
 
-	do {
-		// IVM_TRACE("matching %c state %d\n", *c, state);
-		if (!has_exc) {
-			if (*c == '\n') {
-				line++;
-				col = (ivm_ptr_t)c;
-			}
-		} else {
-			has_exc = IVM_FALSE;
-		}
-
-		for (tmp_entry = trans_map[state];
-			 tmp_entry->match;
-			 tmp_entry++) {
-			if (_is_match(*c, tmp_entry->match)) {
-				// tmp_token.val += tmp_entry->s_ofs;
-				// tmp_token.len += tmp_entry->ofs;
-
-				if (tmp_entry->ign) {
-					tmp_token = NEXT_INIT;
-				} else if (tmp_entry->save != T_NONE) { // save to token stack
-					if (tmp_entry->to_state == state)
-						tmp_token.len++;
-
-					// IVM_TRACE("token %d, value '%.*s'(len %zd)\n",
-					// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
-
-					tmp_token.id = tmp_entry->save;
-					ivm_list_push(ret, &tmp_token);
-
-					if (tmp_entry->exc || tmp_entry->to_state == state) {
-						tmp_token = NEXT_INIT;
-					} else {
-						tmp_token = CUR_INIT;
-					}
-				} else {
-					tmp_token.len++;
+	if (c && *c != '\0') {
+		do {
+			// IVM_TRACE("matching %c state %d\n", *c, state);
+			if (!has_exc) {
+				if (*c == '\n') {
+					line++;
+					col = (ivm_ptr_t)c;
 				}
-
-				// c += tmp_entry->c_ofs;
-
-				break;
+			} else {
+				has_exc = IVM_FALSE;
 			}
-		}
 
-		if (tmp_entry->match)
-			state = tmp_entry->to_state;
-		else {
-			PARSER_ERR_LP(LINE, POS, PARSER_ERR_MSG_UNEXPECTED_CHAR(*c, state));
-			state = ST_UNEXP;
-			c--;
-		}
-	} while (*c++ != '\0');
+			for (tmp_entry = trans_map[state];
+				 tmp_entry->match;
+				 tmp_entry++) {
+				if (_is_match(*c, tmp_entry->match)) {
+					// tmp_token.val += tmp_entry->s_ofs;
+					// tmp_token.len += tmp_entry->ofs;
+
+					if (tmp_entry->ign) {
+						tmp_token = NEXT_INIT;
+					} else if (tmp_entry->save != T_NONE) { // save to token stack
+						if (tmp_entry->to_state == state)
+							tmp_token.len++;
+
+						// IVM_TRACE("token %d, value '%.*s'(len %zd)\n",
+						// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
+
+						tmp_token.id = tmp_entry->save;
+						ivm_list_push(ret, &tmp_token);
+
+						if (tmp_entry->exc || tmp_entry->to_state == state) {
+							tmp_token = NEXT_INIT;
+						} else {
+							tmp_token = CUR_INIT;
+						}
+					} else {
+						tmp_token.len++;
+					}
+
+					// c += tmp_entry->c_ofs;
+
+					break;
+				}
+			}
+
+			if (tmp_entry->match)
+				state = tmp_entry->to_state;
+			else {
+				PARSER_ERR_LP(LINE, POS, PARSER_ERR_MSG_UNEXPECTED_CHAR(*c, state));
+				state = ST_UNEXP;
+				c--;
+			}
+		} while (*c++ != '\0');
+	}
 
 	#undef NEXT_INIT
 	#undef CUR_INIT
