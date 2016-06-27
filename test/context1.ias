@@ -1,0 +1,24 @@
+func1 {
+	set_arg "a"
+	new_str "hey"
+	set_context_slot "b"
+
+	get_context_slot "a"
+	out_type // -> "object"
+
+	get_context_slot "b"
+	out_type // -> "string"
+}
+
+root {
+	new_obj
+	new_func func1
+	invoke 1
+	pop
+
+	get_context_slot "a"
+	out_type // -> "undefined"
+
+	get_context_slot "b"
+	out_type // -> "undefined"
+}

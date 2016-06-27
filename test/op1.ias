@@ -9,4 +9,15 @@ root {
 
 	mul
 	out_num; /* -> "180.020" */
+
+	out_stack_size // -> "1"
+	
+	new_num_i 10
+
+	div
+	out_num // -> "18.002"
+
+	new_num_i 2
+	mod
+	out_num // -> "0.002"
 }

@@ -1,0 +1,130 @@
+// -> "0.000"
+// -> "coro1"
+// -> "coro2"
+// -> "coro2"
+// -> "coro1 end"
+// -> "coro2 end"
+// -> "coro2 end"
+
+// -> "1.000"
+// -> "coro1"
+// -> "coro2"
+// -> "coro2"
+// -> "coro1 end"
+// -> "coro2 end"
+// -> "coro2 end"
+
+// -> "2.000"
+// -> "coro1"
+// -> "coro2"
+// -> "coro2"
+// -> "coro1 end"
+// -> "coro2 end"
+// -> "coro2 end"
+
+// -> "3.000"
+// -> "coro1"
+// -> "coro2"
+// -> "coro2"
+// -> "coro1 end"
+// -> "coro2 end"
+// -> "coro2 end"
+
+// -> "4.000"
+// -> "coro1"
+// -> "coro2"
+// -> "coro2"
+// -> "coro1 end"
+// -> "coro2 end"
+// -> "coro2 end"
+
+root {
+	new_func coro_test1
+	invoke 0
+}
+
+c2 {
+	out "coro2"
+	yield
+	out "coro2 end"
+}
+
+c1 {
+	out "coro1"
+	new_func c2
+	fork
+	yield
+	out "coro1 end"
+}
+
+coro_test2 {
+	new_func c2
+	new_func c1
+
+	fork; fork
+
+	yield
+
+	new_func wait
+	invoke 0
+}
+
+do_something {
+	new_func coro_test2
+	fork
+	yield
+}
+
+wait {
+loop: yield
+	dup
+	jump_false end
+	jump loop
+end:
+}
+
+coro_test1 {
+	new_func do_something
+	set_context_slot "do_something"
+	new_num_i 0
+	set_context_slot "i"
+
+	// while (i < 10000)
+loop:
+	get_context_slot "i"
+	new_num_i 5
+	lt
+
+	jump_false end
+
+	// if (!(i % 1000))
+	/*
+	get_context_slot "i"
+	new_num_i 1000
+	mod
+
+	jump_true no_print
+	*/
+
+	// print i
+	get_context_slot "i"
+	out_num
+
+//no_print:
+
+	get_context_slot "do_something"
+	invoke 0
+	new_func wait
+	invoke 0
+
+	// i = i + 1
+	get_context_slot "i"
+	new_num_i 1
+	add
+	set_context_slot "i"
+
+	jump loop
+
+end:
+	yield
+}

@@ -155,7 +155,7 @@ int test_fib()
 
 	ivm_perf_stopProfile();
 
-	ivm_dbg_heapState(state, stderr);
+	// ivm_dbg_heapState(state, stderr);
 
 	ivm_ctchain_free(chain, state);
 	ivm_vmstate_free(state);
@@ -271,9 +271,9 @@ int test_call()
 
 	ivm_perf_stopProfile();
 
-	ivm_dbg_heapState(state, stderr);
-	IVM_TRACE("\nstack state:\n");
-	ivm_dbg_stackState(coro, stderr);
+	// ivm_dbg_heapState(state, stderr);
+	// IVM_TRACE("\nstack state:\n");
+	// ivm_dbg_stackState(coro, stderr);
 
 	ivm_ctchain_free(chain, state);
 	ivm_vmstate_free(state);
@@ -544,7 +544,7 @@ int test_vm()
 
 	ivm_perf_stopProfile();
 
-	ivm_dbg_heapState(state, stderr);
+	// ivm_dbg_heapState(state, stderr);
 
 #if 0
 	IVM_TRACE("disasm exec1:\n");

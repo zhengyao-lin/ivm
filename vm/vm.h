@@ -50,6 +50,8 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->cur_heap)
 #define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->empty_heap)
 
+#define IVM_VMSTATE_SET_CUR_CORO(state, val) ((state)->cur_coro = (val))
+
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
 

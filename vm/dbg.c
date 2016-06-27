@@ -151,8 +151,12 @@ ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
 		}
 	}
 
-	fprintf(fp, "(total of %zd object(s) in the stack)\n",
-			ivm_vmstack_offset(stack, i));
+	if (stack && i) {
+		fprintf(fp, "(total of %ld object(s) in the stack)\n",
+				ivm_vmstack_offset(stack, i));
+	} else {
+		fprintf(fp, "(empty stack)\n");
+	}
 
 	return;
 }

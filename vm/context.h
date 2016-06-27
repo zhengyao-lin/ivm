@@ -64,7 +64,16 @@ ivm_ctchain_contextEnd(ivm_ctchain_t *chain)
 #define ivm_ctchain_setAt(chain, i, context) \
 	(ivm_ctchain_contextAt((chain), (i))->ct = (context))
 
-#define ivm_ctchain_addRef(chain) ((chain) ? ivm_ref_inc(chain), (chain) : (chain))
+IVM_INLINE
+ivm_ctchain_t *
+ivm_ctchain_addRef(ivm_ctchain_t *chain)
+{
+	if (chain) {
+		ivm_ref_inc(chain);
+	}
+
+	return chain;
+}
 
 ivm_ctchain_t *
 ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
