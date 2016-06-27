@@ -8,6 +8,9 @@
 
 #define ivm_ref_init(obj) ((obj)->__refc__ = 0)
 #define ivm_ref_dec(obj) (--(obj)->__refc__)
+#define ivm_ref_cur(obj) ((obj)->__refc__)
 #define ivm_ref_inc(obj) ((obj)->__refc__++)
+
+#define ivm_ref_deref(obj) (((ivm_int_t)--(obj)->__refc__) > 0)
 
 #endif

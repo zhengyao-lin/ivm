@@ -274,6 +274,7 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 	#define POS ((ivm_ptr_t)c - col + 1)
 
 	const ivm_char_t *c = src;
+	ivm_char_t cur_c;
 	struct trans_entry_t *tmp_entry;
 	ivm_size_t line = 1;
 	ivm_ptr_t col = (ivm_ptr_t)c;
@@ -282,6 +283,7 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 
 	if (c && *c != '\0') {
 		do {
+			cur_c = *c;
 			// IVM_TRACE("matching %c state %d\n", *c, state);
 			if (!has_exc) {
 				if (*c == '\n') {
@@ -326,14 +328,16 @@ _ivm_parser_getTokens(const ivm_char_t *src)
 				}
 			}
 
-			if (tmp_entry->match)
+			if (tmp_entry->match) {
 				state = tmp_entry->to_state;
-			else {
+			} else {
 				PARSER_ERR_LP(LINE, POS, PARSER_ERR_MSG_UNEXPECTED_CHAR(*c, state));
 				state = ST_UNEXP;
 				c--;
 			}
-		} while (*c++ != '\0');
+
+			c++;
+		} while (cur_c != '\0');
 	}
 
 	#undef NEXT_INIT

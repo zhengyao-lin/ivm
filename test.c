@@ -80,6 +80,8 @@ int test_fib()
 
 	top = ivm_function_new(state, exec1);
 	fib = ivm_function_new(state, exec2);
+	ivm_vmstate_registerFunc(state, top);
+	ivm_vmstate_registerFunc(state, fib);
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
@@ -155,10 +157,7 @@ int test_fib()
 
 	ivm_dbg_heapState(state, stderr);
 
-	ivm_function_free(top, state);
-	ivm_function_free(fib, state);
 	ivm_ctchain_free(chain, state);
-	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_vmstate_free(state);
 
 	return 0;
@@ -216,6 +215,8 @@ int test_call()
 
 	top = ivm_function_new(state, exec1);
 	empty = ivm_function_new(state, IVM_NULL);
+	ivm_vmstate_registerFunc(state, top);
+	ivm_vmstate_registerFunc(state, empty);
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
@@ -274,9 +275,7 @@ int test_call()
 	IVM_TRACE("\nstack state:\n");
 	ivm_dbg_stackState(coro, stderr);
 
-	ivm_function_free(top, state);
 	ivm_ctchain_free(chain, state);
-	ivm_exec_free(exec1);
 	ivm_vmstate_free(state);
 
 	return 0;
@@ -340,6 +339,10 @@ int test_vm()
 	func2 = ivm_function_new(state, exec2);
 	func3 = ivm_function_new(state, exec3);
 	func4 = ivm_function_new(state, exec4);
+	ivm_vmstate_registerFunc(state, func1);
+	ivm_vmstate_registerFunc(state, func2);
+	ivm_vmstate_registerFunc(state, func3);
+	ivm_vmstate_registerFunc(state, func4);
 	
 	chain = ivm_ctchain_new(state, 2);
 	ivm_ctchain_setAt(chain, 0, obj1);
@@ -563,16 +566,7 @@ int test_vm()
 	ivm_dbg_printExec(exec4, "  ", stderr);
 #endif
 
-	ivm_function_free(func1, state);
-	ivm_function_free(func2, state);
-	ivm_function_free(func3, state);
-	ivm_function_free(func4, state);
 	ivm_ctchain_free(chain, state);
-	
-	ivm_exec_free(exec1);
-	ivm_exec_free(exec2);
-	ivm_exec_free(exec3);
-	ivm_exec_free(exec4);
 
 	ivm_vmstate_free(state);
 
@@ -685,6 +679,7 @@ ivm_perf_startProfile();
 	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
 	env = ivm_parser_parseSource(src);
 	state = ivm_gen_env_generateVM(env);
+	ivm_gen_env_free(env);
 
 ivm_perf_stopProfile();
 ivm_perf_printElapsed();
@@ -698,7 +693,6 @@ ivm_perf_stopProfile();
 ivm_perf_printElapsed();
 
 	ivm_vmstate_free(state);
-	ivm_gen_env_free(env);
 
 	if (argc == 2) {
 		MEM_FREE(src);

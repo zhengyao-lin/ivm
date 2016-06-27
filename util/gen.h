@@ -136,7 +136,6 @@ typedef struct {
 
 	/* caches */
 	ivm_gen_label_list_t *jmp_table;
-	ivm_exec_list_t *exec_list;
 } ivm_gen_env_t;
 
 ivm_gen_env_t *
@@ -147,6 +146,9 @@ ivm_gen_env_free(ivm_gen_env_t *env);
 
 ivm_vmstate_t *
 ivm_gen_env_generateVM(ivm_gen_env_t *env);
+
+ivm_exec_unit_t *
+ivm_gen_env_generateExecUnit(ivm_gen_env_t *env);
 
 IVM_COM_END
 

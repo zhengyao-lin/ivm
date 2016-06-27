@@ -69,6 +69,13 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t addup)
 }
 
 IVM_INLINE
+ivm_bool_t
+ivm_heap_isIllegalSize(ivm_heap_t *heap, ivm_size_t size)
+{
+	return size && size <= heap->bsize;
+}
+
+IVM_INLINE
 void *
 ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {

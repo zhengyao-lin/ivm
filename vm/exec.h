@@ -8,6 +8,7 @@
 #include "std/list.h"
 #include "std/string.h"
 #include "std/pool.h"
+#include "std/ref.h"
 
 #include "opcode.h"
 #include "instr.h"
@@ -17,7 +18,9 @@ IVM_COM_HEADER
 struct ivm_vmstate_t_tag;
 
 typedef struct ivm_exec_t_tag {
-	ivm_byte_t cached;
+	IVM_REF_HEADER
+
+	ivm_bool_t cached;
 	ivm_string_pool_t *pool;
 
 	ivm_size_t alloc;
@@ -76,15 +79,69 @@ typedef ivm_ptlist_t ivm_exec_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_exec_t *) ivm_exec_list_iterator_t;
 
 #define ivm_exec_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_EXEC_LIST_BUFFER_SIZE))
-#define ivm_exec_list_free ivm_ptlist_free
-#define ivm_exec_list_push ivm_ptlist_push
 #define ivm_exec_list_size ivm_ptlist_size
 #define ivm_exec_list_at(list, i) ((ivm_exec_t *)ivm_ptlist_at((list), (i)))
-#define ivm_exec_list_empty ivm_ptlist_empty
 
 #define IVM_EXEC_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
 #define IVM_EXEC_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
 #define IVM_EXEC_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_exec_t *)
+
+IVM_INLINE
+ivm_size_t
+ivm_exec_list_push(ivm_exec_list_t *list,
+				   ivm_exec_t *exec)
+{
+	ivm_ref_inc(exec);
+	return ivm_ptlist_push(list, exec);
+}
+
+IVM_INLINE
+void
+ivm_exec_list_free(ivm_exec_list_t *list)
+{
+	ivm_exec_list_iterator_t eiter;
+
+	if (list) {
+		IVM_EXEC_LIST_EACHPTR(list, eiter) {
+			ivm_exec_free(IVM_EXEC_LIST_ITER_GET(eiter));
+		}
+		ivm_ptlist_free(list);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_exec_list_empty(ivm_exec_list_t *list)
+{
+	ivm_exec_list_iterator_t eiter;
+
+	IVM_EXEC_LIST_EACHPTR(list, eiter) {
+		ivm_exec_free(IVM_EXEC_LIST_ITER_GET(eiter));
+	}
+	ivm_ptlist_empty(list);
+
+	return;
+}
+
+typedef struct {
+	ivm_size_t root;
+	ivm_exec_list_t *execs;
+} ivm_exec_unit_t;
+
+ivm_exec_unit_t *
+ivm_exec_unit_new(ivm_size_t root,
+				  ivm_exec_list_t *execs);
+
+void
+ivm_exec_unit_free(ivm_exec_unit_t *unit);
+
+#define ivm_exec_unit_execList(unit) ((unit)->execs)
+#define ivm_exec_unit_root(unit) ((unit)->root)
+
+struct ivm_vmstate_t_tag *
+ivm_exec_unit_generateVM(ivm_exec_unit_t *unit);
 
 IVM_COM_END
 

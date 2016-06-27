@@ -133,13 +133,63 @@ typedef ivm_ptpool_t ivm_function_pool_t;
 
 typedef ivm_size_t ivm_func_id_t;
 typedef ivm_ptlist_t ivm_func_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_function_t *) ivm_func_list_iterator_t;
 
 #define ivm_func_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
-#define ivm_func_list_free ivm_ptlist_free
-#define ivm_func_list_register ivm_ptlist_push
 #define ivm_func_list_size ivm_ptlist_size
-#define ivm_func_list_empty ivm_ptlist_empty
 #define ivm_func_list_at(list, i) ((ivm_function_t *)ivm_ptlist_at((list), (i)))
+
+#define IVM_FUNC_LIST_ITER_INDEX IVM_PTLIST_ITER_INDEX
+#define IVM_FUNC_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
+#define IVM_FUNC_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
+#define IVM_FUNC_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_function_t *)
+
+IVM_INLINE
+ivm_size_t
+ivm_func_list_register(ivm_func_list_t *list,
+					   ivm_function_t *func)
+{
+	ivm_func_list_iterator_t fiter;
+
+	IVM_FUNC_LIST_EACHPTR(list, fiter) {
+		if (IVM_FUNC_LIST_ITER_GET(fiter) == func)
+			return IVM_FUNC_LIST_ITER_INDEX(list, fiter);
+	}
+
+	return ivm_ptlist_push(list, func);
+}
+
+IVM_INLINE
+void
+ivm_func_list_free(ivm_func_list_t *list,
+				   struct ivm_vmstate_t_tag *state)
+{
+	ivm_func_list_iterator_t fiter;
+
+	if (list) {
+		IVM_FUNC_LIST_EACHPTR(list, fiter) {
+			ivm_function_free(IVM_FUNC_LIST_ITER_GET(fiter), state);
+		}
+		ivm_ptlist_free(list);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_func_list_empty(ivm_func_list_t *list,
+					struct ivm_vmstate_t_tag *state)
+{
+	ivm_func_list_iterator_t fiter;
+
+	IVM_FUNC_LIST_EACHPTR(list, fiter) {
+		ivm_function_free(IVM_FUNC_LIST_ITER_GET(fiter), state);
+	}
+	ivm_ptlist_empty(list);
+
+	return;
+}
 
 IVM_COM_END
 

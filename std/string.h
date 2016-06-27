@@ -9,6 +9,7 @@
 #include "pub/mem.h"
 
 #include "list.h"
+#include "heap.h"
 #include "ref.h"
 
 IVM_COM_HEADER
@@ -168,8 +169,23 @@ ivm_string_pool_setTable(ivm_string_pool_t *pool,
 	return;
 }
 
+#define ivm_string_pool_isIllegalSize(pool, size) \
+	(ivm_heap_isIllegalSize((pool)->heap, (size)))
+
 #define ivm_string_pool_alloc(pool, size) \
 	(ivm_heap_alloc((pool)->heap, (size)))
+
+IVM_INLINE
+void *
+ivm_string_pool_alloc_s(ivm_string_pool_t *pool,
+						ivm_size_t size)
+{
+	if (ivm_string_pool_isIllegalSize(pool, size)) {
+		return ivm_string_pool_alloc(pool, size);
+	}
+
+	return IVM_NULL;
+}
 
 IVM_INLINE
 ivm_size_t
@@ -213,6 +229,7 @@ ivm_string_pool_list_register(ivm_string_pool_list_t *list,
 
 #define ivm_string_pool_list_find ivm_ptlist_find
 #define ivm_string_pool_list_size ivm_ptlist_size
+#define ivm_string_pool_list_at ivm_ptlist_at
 
 #define IVM_STRING_POOL_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))
 #define IVM_STRING_POOL_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
@@ -224,10 +241,12 @@ ivm_string_pool_list_free(ivm_string_pool_list_t *list)
 {
 	ivm_string_pool_list_iterator_t siter;
 
-	IVM_STRING_POOL_LIST_EACHPTR(list, siter) {
-		ivm_string_pool_free(
-			IVM_STRING_POOL_LIST_ITER_GET(siter)
-		);
+	if (list) {
+		IVM_STRING_POOL_LIST_EACHPTR(list, siter) {
+			ivm_string_pool_free(
+				IVM_STRING_POOL_LIST_ITER_GET(siter)
+			);
+		}
 		ivm_ptlist_free(list);
 	}
 

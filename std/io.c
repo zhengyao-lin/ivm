@@ -61,13 +61,13 @@ ivm_file_readAll(ivm_file_t *file)
 								ivm_char_t *);
 
 	FGOTO(fp, HEAD);
-	if (!(len = IVM_FREAD(ret, sizeof(*ret), len, fp))) {
-		/* none is read */
+	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
+		/* unexpected read len */
 		MEM_FREE(ret);
 		return IVM_NULL;
 	}
 	IVM_FSEEK(fp, IVM_FSEEK_HEAD, cur);
-	ret[len - 1] = '\0';
+	ret[len] = '\0';
 
 	return ret;
 }

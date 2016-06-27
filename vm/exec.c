@@ -17,6 +17,7 @@ void
 _ivm_exec_init(ivm_exec_t *exec,
 			   ivm_string_pool_t *pool)
 {
+	ivm_ref_init(exec);
 	exec->cached = IVM_FALSE;
 	exec->pool = pool;
 	ivm_ref_inc(pool);
@@ -46,7 +47,7 @@ ivm_exec_new(ivm_string_pool_t *pool)
 void
 ivm_exec_free(ivm_exec_t *exec)
 {
-	if (exec) {
+	if (exec && !ivm_ref_dec(exec)) {
 		ivm_string_pool_free(exec->pool);
 		MEM_FREE(exec->instrs);
 		MEM_FREE(exec);
@@ -140,4 +141,68 @@ ivm_exec_decache(ivm_exec_t *exec,
 		ivm_instr_opcode(instr),
 		ivm_instr_arg(instr)
 	);
+}
+
+ivm_exec_unit_t *
+ivm_exec_unit_new(ivm_size_t root,
+				  ivm_exec_list_t *execs)
+{
+	ivm_exec_unit_t *ret = MEM_ALLOC(sizeof(*ret), ivm_exec_unit_t *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable unit"));
+
+	ret->root = root;
+	ret->execs = execs;
+
+	return ret;
+}
+
+void
+ivm_exec_unit_free(ivm_exec_unit_t *unit)
+{
+	if (unit) {
+		ivm_exec_list_free(unit->execs);
+		MEM_FREE(unit);
+	}
+
+	return;
+}
+
+ivm_vmstate_t *
+ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
+{
+	ivm_vmstate_t *state = ivm_vmstate_new();
+	ivm_function_t *func, *root = IVM_NULL;
+	ivm_exec_t *exec;
+	ivm_exec_list_iterator_t eiter;
+	ivm_size_t i = 0;
+
+	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
+		ivm_vmstate_registerFunc(
+			state,
+			(func = ivm_function_new(
+				state,
+				(exec = IVM_EXEC_LIST_ITER_GET(eiter))
+			))
+		);
+
+		if (i++ == unit->root) {
+			root = func;
+		}
+
+		ivm_exec_preproc(exec, state);
+	}
+
+	if (root) {
+		ivm_vmstate_addCoro(
+			state, IVM_AS(
+				ivm_function_object_new(
+					state, IVM_NULL, root
+				),
+				ivm_function_object_t
+			)
+		);
+	}
+
+	return state;
 }

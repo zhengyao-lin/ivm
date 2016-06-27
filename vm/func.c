@@ -19,6 +19,9 @@ _ivm_function_init(ivm_vmstate_t *state,
 {
 	func->is_native = IVM_FALSE;
 	func->u.body = body;
+	if (body) {
+		ivm_ref_inc(body);
+	}
 
 	return;
 }
@@ -66,6 +69,9 @@ ivm_function_free(ivm_function_t *func,
 				  ivm_vmstate_t *state)
 {
 	if (func) {
+		if (!func->is_native) {
+			ivm_exec_free(func->u.body);
+		}
 		ivm_vmstate_dumpFunc(state, func);
 	}
 
@@ -80,6 +86,9 @@ ivm_function_clone(ivm_function_t *func,
 
 	if (func) {
 		ret = ivm_vmstate_allocFunc(state);
+		if (ret->u.body) {
+			ivm_ref_inc(ret->u.body);
+		}
 		MEM_COPY(ret, func, sizeof(*ret));
 	}
 
@@ -90,9 +99,10 @@ void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
 {	
-	ivm_ctchain_free(IVM_AS(obj, ivm_function_object_t)->closure, state);
-	// ivm_function_free(func->val, state);
-
+	ivm_ctchain_free(
+		IVM_AS(obj, ivm_function_object_t)->closure,
+		state
+	);
 	return;
 }
 

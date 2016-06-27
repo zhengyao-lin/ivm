@@ -169,4 +169,8 @@ ivm_console_arg_parse(ivm_int_t argc,
 		__ca_cur_arg__->value                         \
 	)
 
+ivm_bool_t
+ivm_console_arg_hasSuffix(const ivm_char_t *arg,
+						  const ivm_char_t *suffix);
+
 #endif

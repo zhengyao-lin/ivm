@@ -141,7 +141,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 		ivm_coro_list_free(state->coro_list);
 
-		ivm_func_list_free(state->func_list);
+		ivm_func_list_free(state->func_list, state);
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);
@@ -174,7 +174,7 @@ ivm_vmstate_reinit(ivm_vmstate_t *state)
 	}
 	ivm_coro_list_empty(state->coro_list);
 
-	ivm_func_list_empty(state->func_list);
+	ivm_func_list_empty(state->func_list, state);
 
 	ivm_function_pool_dumpAll(state->func_pool);
 	ivm_context_pool_dumpAll(state->ct_pool);

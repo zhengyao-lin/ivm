@@ -35,7 +35,6 @@ ivm_gen_env_new(ivm_gen_block_list_t *block_list)
 	ivm_ref_inc(ret->str_pool);
 	ret->block_list = block_list;
 	ret->jmp_table = ivm_gen_label_list_new();
-	ret->exec_list = ivm_exec_list_new();
 
 	return ret;
 }
@@ -58,19 +57,12 @@ _ivm_gen_env_cleanJumpTable(ivm_gen_env_t *env)
 void
 ivm_gen_env_free(ivm_gen_env_t *env)
 {
-	ivm_exec_list_iterator_t eiter;
-
 	if (env) {
 		ivm_string_pool_free(env->str_pool);
 		ivm_gen_block_list_free(env->block_list);
 		
 		_ivm_gen_env_cleanJumpTable(env);
 		ivm_gen_label_list_free(env->jmp_table);
-
-		IVM_EXEC_LIST_EACHPTR(env->exec_list, eiter) {
-			ivm_exec_free(IVM_EXEC_LIST_ITER_GET(eiter));
-		}
-		ivm_exec_list_free(env->exec_list);
 
 		MEM_FREE(env);
 	}
@@ -339,8 +331,6 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 	ivm_exec_t *ret = ivm_exec_new(env->str_pool);
 	ivm_bool_t failed;
 
-	ivm_exec_list_push(env->exec_list, ret);
-
 	if (block->instrs) {
 		IVM_GEN_INSTR_LIST_EACHPTR(block->instrs, iter) {
 			instr = IVM_GEN_INSTR_LIST_ITER_GET(iter);
@@ -386,35 +376,40 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 	return ret;
 }
 
-ivm_vmstate_t *
-ivm_gen_env_generateVM(ivm_gen_env_t *env)
+ivm_exec_unit_t *
+ivm_gen_env_generateExecUnit(ivm_gen_env_t *env)
 {
-	ivm_vmstate_t *state = ivm_vmstate_new();
-	ivm_gen_block_list_iterator_t iter;
-	ivm_exec_t *exec;
+	ivm_exec_unit_t *ret;
+	ivm_exec_list_t *execs = ivm_exec_list_new();
 	ivm_gen_block_t *block;
-	ivm_function_t *func;
-	ivm_function_t *root = IVM_NULL;
+	ivm_exec_t *exec;
+	ivm_size_t i = 0, root = -1;
+	ivm_gen_block_list_iterator_t iter;
 
 	if (env->block_list) {
 		IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
 			block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
-			
 			exec = _ivm_gen_block_generateExec(block, env);
-			ivm_vmstate_registerFunc(state, (func = ivm_function_new(state, exec)));
 
-			if (!IVM_STRNCMP("root", IVM_STRLEN("root"), block->label, block->len))
-				root = func;
+			if (!IVM_STRNCMP("root", IVM_STRLEN("root"),
+							 block->label, block->len)) {
+				root = i;
+			}
 
-			ivm_exec_preproc(exec, state);
+			ivm_exec_list_push(execs, exec);
+			i++;
 		}
 	}
 
-	if (root) {
-		ivm_vmstate_addCoro(state,
-							IVM_AS(ivm_function_object_new(state, IVM_NULL, root),
-								   ivm_function_object_t));
-	}
+	ret = ivm_exec_unit_new(root, execs);
 
-	return state;
+	return ret;
+}
+
+ivm_vmstate_t *
+ivm_gen_env_generateVM(ivm_gen_env_t *env)
+{
+	return ivm_exec_unit_generateVM(
+		ivm_gen_env_generateExecUnit(env)
+	);
 }

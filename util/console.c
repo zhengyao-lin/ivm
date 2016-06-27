@@ -91,3 +91,23 @@ ivm_console_arg_parse(ivm_int_t argc,
 
 	return ret;
 }
+
+ivm_bool_t
+ivm_console_arg_hasSuffix(const ivm_char_t *arg,
+						  const ivm_char_t *suffix)
+{
+	ivm_size_t l1 = IVM_STRLEN(arg);
+	ivm_size_t l2 = IVM_STRLEN(suffix);
+	const ivm_char_t *i;
+
+	if (l1 < l2) return IVM_FALSE;
+
+	for (i = arg + l1 - l2;
+		 *i != '\0'; i++, suffix++) {
+		if (*i != *suffix) {
+			return IVM_FALSE;
+		}
+	}
+
+	return IVM_TRUE;
+}
