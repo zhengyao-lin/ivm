@@ -1,0 +1,132 @@
+root {
+	new_num_i 40
+	new_func fib
+	invoke 1
+}
+
+fib {
+	new_func fib_producer
+	fork
+	new_func fib_consumer
+	fork
+
+	out_stack_size // -> "1"
+
+	// wait for other coro to stop
+	new_func wait
+	invoke 1
+}
+
+fib_producer {
+	set_arg "n"
+
+	new_num_i 0
+	set_context_slot "a"
+
+	new_num_i 1
+	dup
+	set_context_slot "b"
+
+	out_stack_size // -> "1"
+
+	out_num
+
+	new_num_i 0
+	set_context_slot "i"
+
+loop:
+	get_context_slot "i"
+	get_context_slot "n"
+	lt
+
+	jump_false end
+
+	// c = a + b
+	get_context_slot "a"
+	get_context_slot "b"
+	add
+	set_context_slot "c"
+
+	// a = b
+	get_context_slot "b"
+	set_context_slot "a"
+
+	// b = c
+	get_context_slot "c"
+	dup
+	set_context_slot "b"
+
+	yield
+
+	get_context_slot "i"
+	new_num_i 1
+	add
+	set_context_slot "i"
+
+	jump loop
+end:
+
+	new_null
+	yield
+}
+
+fib_consumer {
+loop:
+	dup
+	jump_false end
+	out_num
+	new_num_i 1
+	yield
+	jump loop
+end:
+}
+
+wait {
+loop: yield
+	dup
+	jump_false end
+	jump loop
+end:
+}
+
+// -> "1.000"
+// -> "1.000"
+// -> "2.000"
+// -> "3.000"
+// -> "5.000"
+// -> "8.000"
+// -> "13.000"
+// -> "21.000"
+// -> "34.000"
+// -> "55.000"
+// -> "89.000"
+// -> "144.000"
+// -> "233.000"
+// -> "377.000"
+// -> "610.000"
+// -> "987.000"
+// -> "1597.000"
+// -> "2584.000"
+// -> "4181.000"
+// -> "6765.000"
+// -> "10946.000"
+// -> "17711.000"
+// -> "28657.000"
+// -> "46368.000"
+// -> "75025.000"
+// -> "121393.000"
+// -> "196418.000"
+// -> "317811.000"
+// -> "514229.000"
+// -> "832040.000"
+// -> "1346269.000"
+// -> "2178309.000"
+// -> "3524578.000"
+// -> "5702887.000"
+// -> "9227465.000"
+// -> "14930352.000"
+// -> "24157817.000"
+// -> "39088169.000"
+// -> "63245986.000"
+// -> "102334155.000"
+// -> "165580141.000"
