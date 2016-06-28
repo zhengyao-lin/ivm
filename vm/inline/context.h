@@ -42,7 +42,7 @@ void
 ivm_context_pool_dump(ivm_context_pool_t *pool,
 					  ivm_ctchain_t *chain)
 {
-	if (pool && chain) {
+	if (chain) {
 		if (!ivm_ref_dec(chain)) {
 			if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
 				ivm_ptpool_dump(pool->pools[chain->len], chain);
@@ -56,13 +56,18 @@ ivm_context_pool_dump(ivm_context_pool_t *pool,
 }
 
 IVM_INLINE
-ivm_ctchain_t *
-ivm_context_pool_realloc(ivm_context_pool_t *pool,
-						 ivm_ctchain_t *chain,
-						 ivm_int_t len)
+void
+ivm_context_pool_dumpAll(ivm_context_pool_t *pool)
 {
-	return ivm_context_pool_dump(pool, chain),
-		   ivm_context_pool_alloc(pool, len);
+	ivm_ptpool_t **i, **end;
+
+	for (i = pool->pools,
+		 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1;
+		 i != end; i++) {
+		ivm_ptpool_dumpAll(*i);
+	}
+
+	return;
 }
 
 IVM_INLINE

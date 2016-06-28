@@ -25,12 +25,12 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_size_t cur_coro;
 	ivm_coro_list_t *coro_list;
 
-	ivm_type_list_t *type_list;
+	ivm_type_list_t type_list;
 	ivm_func_list_t *func_list;
 
 	ivm_function_pool_t *func_pool;
 	ivm_context_pool_t *ct_pool;
-	ivm_coro_pool_t *cr_pool;
+	ivm_coro_pool_t cr_pool;
 
 	ivm_string_pool_t *const_pool;
 
@@ -45,7 +45,7 @@ typedef struct ivm_vmstate_t_tag {
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
 #define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
-#define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
+#define IVM_VMSTATE_GET_TYPE_LIST(state) (&(state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->cur_heap)
 #define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->empty_heap)
@@ -171,8 +171,8 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
 
-#define ivm_vmstate_registerType(state, type) (ivm_type_list_register((state)->type_list, (type)))
-#define ivm_vmstate_getType(state, tag) (ivm_type_list_at((state)->type_list, (tag)))
+#define ivm_vmstate_registerType(state, type) (ivm_type_list_register(&(state)->type_list, (type)))
+#define ivm_vmstate_getType(state, tag) (ivm_type_list_at(&(state)->type_list, (tag)))
 #define ivm_vmstate_getTypeProto(state, tag) \
 	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
 #define ivm_vmstate_getTypeHeader(state, tag) \

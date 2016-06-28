@@ -86,15 +86,15 @@ ivm_vmstate_new()
 	ret->cur_coro = 0;
 	ret->coro_list = ivm_coro_list_new();
 	
-	ret->type_list = ivm_type_list_new();
+	ivm_type_list_init(&ret->type_list);
 	ret->func_list = ivm_func_list_new();
 
 	ret->func_pool
 	= ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
 	ret->ct_pool
 	= ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
-	ret->cr_pool
-	= ivm_coro_pool_new(IVM_DEFAULT_CORO_POOL_SIZE);
+
+	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
 
 	ret->const_pool
 	= ivm_string_pool_new(IVM_FALSE);
@@ -107,10 +107,10 @@ ivm_vmstate_new()
 
 	for (i = 0; i < type_count; i++) {
 		tmp_type = ivm_type_new(static_type_list[i]);
-		ivm_type_list_register(ret->type_list, tmp_type);
+		ivm_type_list_register(&ret->type_list, tmp_type);
 	}
 
-	IVM_TYPE_LIST_EACHPTR(ret->type_list, titer) {
+	IVM_TYPE_LIST_EACHPTR(&ret->type_list, titer) {
 		tmp_type = IVM_TYPE_LIST_ITER_GET(titer);
 		ivm_proto_initType(tmp_type, ret);
 	}
@@ -145,14 +145,14 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);
-		ivm_coro_pool_free(state->cr_pool);
+		ivm_coro_pool_destruct(state->cr_pool);
 
 		ivm_string_pool_free(state->const_pool);
 
-		IVM_TYPE_LIST_EACHPTR(state->type_list, titer) {
+		IVM_TYPE_LIST_EACHPTR(&state->type_list, titer) {
 			ivm_type_free(IVM_TYPE_LIST_ITER_GET(titer));
 		}
-		ivm_type_list_free(state->type_list);
+		ivm_type_list_dump(&state->type_list);
 
 		MEM_FREE(state);
 	}

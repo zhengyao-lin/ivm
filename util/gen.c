@@ -409,7 +409,10 @@ ivm_gen_env_generateExecUnit(ivm_gen_env_t *env)
 ivm_vmstate_t *
 ivm_gen_env_generateVM(ivm_gen_env_t *env)
 {
-	return ivm_exec_unit_generateVM(
-		ivm_gen_env_generateExecUnit(env)
-	);
+	ivm_exec_unit_t *unit = ivm_gen_env_generateExecUnit(env);
+	ivm_vmstate_t *ret = ivm_exec_unit_generateVM(unit);
+
+	ivm_exec_unit_free(unit);
+	
+	return ret;
 }

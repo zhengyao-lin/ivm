@@ -100,6 +100,7 @@ ivm_collector_updateObject(ivm_object_t **obj,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travContextChain(ivm_ctchain_t *chain,
 							   ivm_traverser_arg_t *arg)
@@ -119,6 +120,7 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travFrame(ivm_frame_t *frame,
 						ivm_traverser_arg_t *arg)
@@ -131,6 +133,7 @@ ivm_collector_travFrame(ivm_frame_t *frame,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travRuntime(ivm_runtime_t *runtime,
 						  ivm_traverser_arg_t *arg)
@@ -143,6 +146,7 @@ ivm_collector_travRuntime(ivm_runtime_t *runtime,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travCoro(ivm_coro_t *coro,
 					   ivm_traverser_arg_t *arg)
@@ -171,6 +175,7 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travType(ivm_type_t *type,
 					   ivm_traverser_arg_t *arg)
@@ -182,6 +187,7 @@ ivm_collector_travType(ivm_type_t *type,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
@@ -229,6 +235,7 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	(ivm_destruct_list_add((collector)->des_log[1], (obj)))
 
 IVM_PRIVATE
+IVM_INLINE
 void
 ivm_collector_checkIfDestruct(ivm_collector_t *collector,
 							  ivm_object_t *obj,
@@ -245,8 +252,10 @@ ivm_collector_checkIfDestruct(ivm_collector_t *collector,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 void
-ivm_collector_triggerDestructor(ivm_collector_t *collector, ivm_vmstate_t *state)
+ivm_collector_triggerDestructor(ivm_collector_t *collector,
+								ivm_vmstate_t *state)
 {
 	ivm_destruct_list_t *tmp;
 	ivm_destruct_list_iterator_t iter;

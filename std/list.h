@@ -23,6 +23,20 @@ ivm_ptlist_new_c(ivm_size_t buf_size);
 void
 ivm_ptlist_free(ivm_ptlist_t *ptlist);
 
+void
+ivm_ptlist_init_c(ivm_ptlist_t *ptlist, ivm_size_t buf_size);
+
+IVM_INLINE
+void
+ivm_ptlist_dump(ivm_ptlist_t *ptlist)
+{
+	if (ptlist) {
+		MEM_FREE(ptlist->lst);
+	}
+
+	return;
+}
+
 #define ivm_ptlist_setBufferSize(ptlist, size) ((ptlist)->buf_size = (size))
 
 #define ivm_ptlist_size(ptlist) ((ptlist)->cur)

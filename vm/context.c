@@ -117,13 +117,15 @@ ivm_context_pool_new(ivm_size_t ecount)
 {
 	ivm_context_pool_t *ret = MEM_ALLOC(sizeof(*ret),
 										ivm_context_pool_t *);
-	ivm_int_t i;
+	ivm_ptpool_t **i, **end;
+	ivm_int_t len = 0;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("context pool"));
 
-	for (i = 0; i <= IVM_CONTEXT_POOL_MAX_CACHE_LEN; i++) {
-		ret->pools[i] = ivm_ptpool_new(ecount,
-									   ivm_ctchain_getSize(i));
+	for (i = ret->pools,
+		 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN;
+		 i != end; i++, len++) {
+		*i = ivm_ptpool_new(ecount, ivm_ctchain_getSize(len));
 	}
 
 	return ret;
@@ -132,11 +134,13 @@ ivm_context_pool_new(ivm_size_t ecount)
 void
 ivm_context_pool_free(ivm_context_pool_t *pool)
 {
-	ivm_int_t i;
+	ivm_ptpool_t **i, **end;
 
 	if (pool) {
-		for (i = 0; i <= IVM_CONTEXT_POOL_MAX_CACHE_LEN; i++) {
-			ivm_ptpool_free(pool->pools[i]);
+		for (i = pool->pools,
+			 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN;
+			 i != end; i++) {
+			ivm_ptpool_free(*i);
 		}
 
 		MEM_FREE(pool);

@@ -163,21 +163,6 @@ ivm_context_pool_new(ivm_size_t ecount);
 void
 ivm_context_pool_free(ivm_context_pool_t *pool);
 
-IVM_INLINE
-void
-ivm_context_pool_dumpAll(ivm_context_pool_t *pool)
-{
-	ivm_ptpool_t **i, **end;
-
-	for (i = pool->pools,
-		 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1;
-		 i != end; i++) {
-		ivm_ptpool_dumpAll(*i);
-	}
-
-	return;
-}
-
 IVM_COM_END
 
 #endif

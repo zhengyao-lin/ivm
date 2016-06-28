@@ -72,6 +72,8 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
 
 #define ivm_type_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_TYPE_LIST_BUFFER_SIZE))
 #define ivm_type_list_free ivm_ptlist_free
+#define ivm_type_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_TYPE_LIST_BUFFER_SIZE))
+#define ivm_type_list_dump ivm_ptlist_dump
 #define ivm_type_list_register ivm_ptlist_push
 #define ivm_type_list_size ivm_ptlist_size
 #define ivm_type_list_at(list, i) ((ivm_type_t *)ivm_ptlist_at((list), (i)))

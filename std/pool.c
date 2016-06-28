@@ -33,3 +33,15 @@ ivm_ptpool_free(ivm_ptpool_t *pool)
 
 	return;
 }
+
+void
+ivm_ptpool_init(ivm_ptpool_t *pool,
+				ivm_size_t ecount,
+				ivm_size_t esize)
+{
+	pool->esize = esize;
+	pool->heap = ivm_heap_new(ecount * esize);
+	pool->freed = ivm_ptlist_new_c(ecount);
+
+	return;
+}

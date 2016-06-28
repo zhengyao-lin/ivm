@@ -98,11 +98,11 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 
 typedef ivm_ptpool_t ivm_coro_pool_t;
 
-#define ivm_coro_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_coro_t)))
-#define ivm_coro_pool_free ivm_ptpool_free
-#define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
-#define ivm_coro_pool_dump ivm_ptpool_dump
-#define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll
+#define ivm_coro_pool_init(pool, count) (ivm_ptpool_init((pool), (count), sizeof(ivm_coro_t)))
+#define ivm_coro_pool_destruct ivm_ptpool_destruct_s
+#define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc_s(pool))
+#define ivm_coro_pool_dump ivm_ptpool_dump_s
+#define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll_s
 
 IVM_COM_END
 
