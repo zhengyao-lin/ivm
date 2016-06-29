@@ -86,7 +86,12 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_object_t **tmp_st_end;
 	register ivm_object_t **tmp_bp, **tmp_sp;
 
-	register ivm_object_t *tmp_obj = IVM_NULL;
+	register ivm_object_t *tmp_obj1 = IVM_NULL;
+	register ivm_object_t *tmp_obj2 = IVM_NULL;
+	register ivm_uniop_proc_t tmp_uni_proc;
+	register ivm_binop_proc_t tmp_bin_proc;
+
+	register ivm_string_t *tmp_str;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)

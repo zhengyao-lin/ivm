@@ -22,3 +22,23 @@ root {
 	get_context_slot "b"
 	out_type // -> "undefined"
 }
+
+/*
+-> __block_1__ { set_arg "a"; get_context_slot "a"; new_num_i 2; add; ret }
+   new_func __block_1__
+
+trans_unit:
+	expression_list
+
+expression_list
+	: expression
+	| expression_list expression
+
+expression
+	: 
+
+precedure:
+	1. * / %
+	2. + -
+	3. fn:
+*/

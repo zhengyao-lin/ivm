@@ -54,12 +54,12 @@ OPCODE_GEN(DIV, "div", N, DEFAULT_BINOP_HANDLER(DIV, "/"))
 OPCODE_GEN(MOD, "mod", N, DEFAULT_BINOP_HANDLER(MOD, "%"))
 
 OPCODE_GEN(LT, "lt", N, CMP_BINOP_HANDLER(
-	STACK_PUSH(ivm_numeric_new(_STATE, _RETVAL < 0));
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ < 0));
 	NEXT_INSTR();
 ))
 
 OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
-	if (_RETVAL < 0) {
+	if ((ivm_ptr_t)_TMP_OBJ < 0) {
 		NEXT_N_INSTR(IARG());
 	} else {
 		NEXT_INSTR();
@@ -95,18 +95,18 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
 })
 
 OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
-	const ivm_string_t *key = SARG();
+	_TMP_STR = SARG();
 
 	CHECK_STACK(1);
 
 	_TMP_OBJ = STACK_POP();
 
 	if (!ivm_ctchain_setSlotIfExist_cc(
-			_CONTEXT, _STATE, key,
+			_CONTEXT, _STATE, _TMP_STR,
 			_TMP_OBJ, _INSTR_CACHE
 		)) {
 		ivm_ctchain_setLocalSlot_cc(
-			_CONTEXT, _STATE, key,
+			_CONTEXT, _STATE, _TMP_STR,
 			_TMP_OBJ, _INSTR_CACHE
 		);
 	}

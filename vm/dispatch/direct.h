@@ -8,6 +8,7 @@
 #define _EXEC (tmp_exec)
 #define _INSTR (tmp_ip)
 #define _INSTR_CACHE (&(_INSTR->cache))
+#define _INSTR_CACHE_UID (_INSTR->cache.id)
 #define _INSTR_CACHE_DATA (_INSTR->cache.data)
 
 #define CLEAR_INSTR_CACHE() \
@@ -259,7 +260,11 @@
 	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
-#define _TMP_OBJ (tmp_obj)
+#define _TMP_OBJ (tmp_obj1)
+#define _TMP_OBJ2 (tmp_obj2)
+#define _TMP_UNI_PROC (tmp_uni_proc)
+#define _TMP_BIN_PROC (tmp_bin_proc)
+#define _TMP_STR (tmp_str)
 
 #if IVM_USE_INLINE_CACHE
 
@@ -268,7 +273,6 @@
 		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                            \
 			_TMP_OBJ = ivm_object_getCacheSlotValue(_STATE, _INSTR_CACHE);              \
 		} else {                                                                        \
-			CLEAR_INSTR_CACHE();                                                        \
 			_TMP_OBJ = ivm_object_getSlotValue_cc(                                      \
 				(a), _STATE,                                                            \
 				(key), _INSTR_CACHE                                                     \
@@ -280,7 +284,6 @@
 		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                      \
 			ivm_object_setCacheSlotValue(_STATE, _INSTR_CACHE, (b));              \
 		} else {                                                                  \
-			CLEAR_INSTR_CACHE();                                                  \
 			ivm_object_setSlot_cc(                                                \
 				(a), _STATE, (key),                                               \
 				(b), _INSTR_CACHE                                                 \

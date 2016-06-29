@@ -21,60 +21,50 @@
 
 #define DEFAULT_UNIOP_HANDLER(op, op_name) \
 	{                                                                                          \
-		ivm_object_t *op1;                                                                     \
-		ivm_uniop_proc_t proc;                                                                 \
-                                                                                               \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
-		op1 = STACK_POP();                                                                     \
-		proc = IVM_OBJECT_GET_UNIOP_PROC(op, op1);                                             \
+		_TMP_OBJ = STACK_POP();                                                                \
+		_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(op, _TMP_OBJ);                               \
                                                                                                \
-		IVM_ASSERT(proc,                                                                       \
+		IVM_ASSERT(_TMP_UNI_PROC,                                                              \
 				   IVM_ERROR_MSG_NO_UNIOP_FOR(op_name,                                         \
-											  IVM_OBJECT_GET(op1, TYPE_NAME)));                \
+											  IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));           \
                                                                                                \
-		STACK_PUSH(proc(_STATE, op1));                                                         \
+		STACK_PUSH(_TMP_UNI_PROC(_STATE, _TMP_OBJ));                                           \
 		NEXT_INSTR();                                                                          \
 	}
 
 #define DEFAULT_BINOP_HANDLER(op, op_name) \
 	{                                                                                          \
-		ivm_object_t *op1, *op2;                                                               \
-		ivm_binop_proc_t proc;                                                                 \
-                                                                                               \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
-		op2 = STACK_POP();                                                                     \
-		op1 = STACK_POP();                                                                     \
-		proc = IVM_OBJECT_GET_BINOP_PROC(op1, op, op2);                                        \
+		_TMP_OBJ2 = STACK_POP();                                                               \
+		_TMP_OBJ = STACK_POP();                                                                \
+		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ, op, _TMP_OBJ2);                    \
                                                                                                \
-		IVM_ASSERT(proc,                                                                       \
-				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(op1, TYPE_NAME),                  \
+		IVM_ASSERT(_TMP_BIN_PROC,                                                              \
+				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME),             \
 				   							  op_name,                                         \
-											  IVM_OBJECT_GET(op2, TYPE_NAME)));                \
+											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		STACK_PUSH(proc(_STATE, op1, op2));                                                    \
+		STACK_PUSH(_TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2));                                \
 		NEXT_INSTR();                                                                          \
 	}
 
 #define CMP_BINOP_HANDLER(todo) \
 	{                                                                                          \
-		ivm_object_t *op1, *op2;                                                               \
-		ivm_ptr_t _RETVAL;                                                                     \
-		ivm_binop_proc_t proc;                                                                 \
-                                                                                               \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
-		op2 = STACK_POP();                                                                     \
-		op1 = STACK_POP();                                                                     \
-		proc = IVM_OBJECT_GET_BINOP_PROC(op1, CMP, op2);                                       \
+		_TMP_OBJ2 = STACK_POP();                                                               \
+		_TMP_OBJ = STACK_POP();                                                                \
+		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ, CMP, _TMP_OBJ2);                   \
                                                                                                \
-		IVM_ASSERT(proc,                                                                       \
-				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(op1, TYPE_NAME),                  \
+		IVM_ASSERT(_TMP_BIN_PROC,                                                              \
+				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME),             \
 				   							  "<=>",                                           \
-											  IVM_OBJECT_GET(op2, TYPE_NAME)));                \
+											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		_RETVAL = (ivm_ptr_t)proc(_STATE, op1, op2);                                           \
+		_TMP_OBJ = _TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2);                                 \
 		todo;                                                                                  \
 		NEXT_INSTR();                                                                          \
 	}
