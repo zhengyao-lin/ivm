@@ -1,0 +1,9 @@
+macro(add_lib_batch lib_name linkage)
+	file(GLOB c_list ${ARGN})
+	add_library(${lib_name} ${linkage} ${c_list})
+endmacro()
+
+macro(add_exe_batch exe_name)
+	file(GLOB c_list ${ARGN})
+	add_executable(${exe_name} ${c_list})
+endmacro()

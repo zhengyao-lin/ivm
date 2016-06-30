@@ -7,8 +7,6 @@
 
 #include "std/list.h"
 
-#include "gen.h"
-
 IVM_COM_HEADER
 
 ivm_double_t
@@ -20,15 +18,6 @@ ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len);
 
-ivm_gen_env_t *
-ivm_parser_parseSource(const ivm_char_t *src);
-
 IVM_COM_END
 
-#endif
-
-#if 0
-opcode -> t_identifier
-
-instr -> opcode arg1[, arg2[, ...]] '\n'
 #endif

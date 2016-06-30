@@ -1,7 +1,6 @@
 # lib vm
 
-file(GLOB c_list "*.c" "gc/*.c")
-add_library(vm SHARED ${c_list})
+add_lib_batch(vm SHARED "*.c" "gc/*.c")
 
 # link libraries
 target_link_libraries(vm std m)

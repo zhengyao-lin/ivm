@@ -7,7 +7,8 @@
 #include "std/list.h"
 #include "std/ref.h"
 
-#include "parser.h"
+#include "util/parser.h"
+
 #include "gen.h"
 
 #include "vm/dbg.h"
@@ -23,18 +24,18 @@
 #define GEN_ERR_MSG_UNDEFINED_BLOCK(label, len)							"undefined block '%.*s'", (int)(len), (label)
 #define GEN_ERR_MSG_REDEF_LABEL(label, len)								"redefinition of label '%.*s'", (int)(len), (label)
 
-ivm_gen_env_t *
-ivm_gen_env_new(ivm_gen_block_list_t *block_list)
+ias_gen_env_t *
+ias_gen_env_new(ias_gen_block_list_t *block_list)
 {
-	ivm_gen_env_t *ret = MEM_ALLOC(sizeof(*ret),
-								   ivm_gen_env_t *);
+	ias_gen_env_t *ret = MEM_ALLOC(sizeof(*ret),
+								   ias_gen_env_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("generator environment"));
 
 	ret->str_pool = ivm_string_pool_new(IVM_TRUE);
 	ivm_ref_inc(ret->str_pool);
 	ret->block_list = block_list;
-	ret->jmp_table = ivm_gen_label_list_new();
+	ret->jmp_table = ias_gen_label_list_new();
 
 	return ret;
 }
@@ -42,27 +43,27 @@ ivm_gen_env_new(ivm_gen_block_list_t *block_list)
 IVM_PRIVATE
 IVM_INLINE
 void
-_ivm_gen_env_cleanJumpTable(ivm_gen_env_t *env)
+_ias_gen_env_cleanJumpTable(ias_gen_env_t *env)
 {
-	ivm_gen_label_list_iterator_t liter;
+	ias_gen_label_list_iterator_t liter;
 
 	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, liter) {
-		ivm_gen_label_free(IVM_GEN_LABEL_LIST_ITER_GET(liter));
+		ias_gen_label_free(IVM_GEN_LABEL_LIST_ITER_GET(liter));
 	}
-	ivm_gen_label_list_empty(env->jmp_table);
+	ias_gen_label_list_empty(env->jmp_table);
 
 	return;
 }
 
 void
-ivm_gen_env_free(ivm_gen_env_t *env)
+ias_gen_env_free(ias_gen_env_t *env)
 {
 	if (env) {
 		ivm_string_pool_free(env->str_pool);
-		ivm_gen_block_list_free(env->block_list);
+		ias_gen_block_list_free(env->block_list);
 		
-		_ivm_gen_env_cleanJumpTable(env);
-		ivm_gen_label_list_free(env->jmp_table);
+		_ias_gen_env_cleanJumpTable(env);
+		ias_gen_label_list_free(env->jmp_table);
 
 		MEM_FREE(env);
 	}
@@ -70,39 +71,39 @@ ivm_gen_env_free(ivm_gen_env_t *env)
 	return;
 }
 
-ivm_gen_label_t *
-ivm_gen_label_new(const ivm_char_t *name,
+ias_gen_label_t *
+ias_gen_label_new(const ivm_char_t *name,
 				  ivm_size_t len,
 				  ivm_bool_t is_def,
-				  ivm_gen_pos_t pos,
+				  ias_gen_pos_t pos,
 				  ivm_size_t addr)
 {
-	ivm_gen_label_t *ret = MEM_ALLOC(sizeof(*ret),
-									 ivm_gen_label_t *);
-	ivm_gen_label_ref_t tmp;
+	ias_gen_label_t *ret = MEM_ALLOC(sizeof(*ret),
+									 ias_gen_label_t *);
+	ias_gen_label_ref_t tmp;
 
 	ret->has_def = is_def;
 	ret->name = name;
 	ret->len = len;
 
-	ret->refs = ivm_gen_label_ref_list_new();
+	ret->refs = ias_gen_label_ref_list_new();
 
 	if (is_def) {
 		ret->def_pos = pos;
 		ret->addr = addr;
 	} else {
-		tmp = (ivm_gen_label_ref_t) { pos, addr };
-		ivm_gen_label_ref_list_add(ret->refs, &tmp);
+		tmp = (ias_gen_label_ref_t) { pos, addr };
+		ias_gen_label_ref_list_add(ret->refs, &tmp);
 	}
 
 	return ret;
 }
 
 void
-ivm_gen_label_free(ivm_gen_label_t *label)
+ias_gen_label_free(ias_gen_label_t *label)
 {
 	if (label) {
-		ivm_gen_label_ref_list_free(label->refs);
+		ias_gen_label_ref_list_free(label->refs);
 		MEM_FREE(label);
 	}
 
@@ -110,13 +111,13 @@ ivm_gen_label_free(ivm_gen_label_t *label)
 }
 
 void
-ivm_gen_block_list_free(ivm_gen_block_list_t *list)
+ias_gen_block_list_free(ias_gen_block_list_t *list)
 {
-	ivm_gen_block_list_iterator_t iter;
+	ias_gen_block_list_iterator_t iter;
 
 	if (list) {
 		IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) {
-			ivm_gen_instr_list_free(IVM_GEN_BLOCK_LIST_ITER_GET(iter).instrs);
+			ias_gen_instr_list_free(IVM_GEN_BLOCK_LIST_ITER_GET(iter).instrs);
 		}
 
 		ivm_list_free(list);
@@ -127,25 +128,25 @@ ivm_gen_block_list_free(ivm_gen_block_list_t *list)
 
 IVM_PRIVATE
 void
-_ivm_gen_label_addRef(ivm_gen_label_t *label,
-					  ivm_gen_pos_t pos,
+_ias_gen_label_addRef(ias_gen_label_t *label,
+					  ias_gen_pos_t pos,
 					  ivm_size_t addr)
 {
-	ivm_gen_label_ref_t tmp = (ivm_gen_label_ref_t) { pos, addr };
-	ivm_gen_label_ref_list_add(label->refs, &tmp);
+	ias_gen_label_ref_t tmp = (ias_gen_label_ref_t) { pos, addr };
+	ias_gen_label_ref_list_add(label->refs, &tmp);
 	return;
 }
 
 IVM_PRIVATE
 ivm_long_t
-_ivm_gen_env_refJumpAddr(ivm_gen_env_t *env,
+_ias_gen_env_refJumpAddr(ias_gen_env_t *env,
 						 const ivm_char_t *name,
 						 ivm_size_t len,
-						 ivm_gen_pos_t pos,
+						 ias_gen_pos_t pos,
 						 ivm_size_t addr)
 {
-	ivm_gen_label_list_iterator_t iter;
-	ivm_gen_label_t *tmp;
+	ias_gen_label_list_iterator_t iter;
+	ias_gen_label_t *tmp;
 
 	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
 		tmp = IVM_GEN_LABEL_LIST_ITER_GET(iter);
@@ -156,30 +157,30 @@ _ivm_gen_env_refJumpAddr(ivm_gen_env_t *env,
 				/* found definition */
 				return (ivm_long_t)tmp->addr - (ivm_long_t)addr; /* to - from */
 			}
-			_ivm_gen_label_addRef(tmp, pos, addr);
+			_ias_gen_label_addRef(tmp, pos, addr);
 			return 0;
 		}
 	}
 
 	/* add new reference */
-	ivm_gen_label_list_add(env->jmp_table,
-						   ivm_gen_label_new(name, len, IVM_FALSE, pos, addr));
+	ias_gen_label_list_add(env->jmp_table,
+						   ias_gen_label_new(name, len, IVM_FALSE, pos, addr));
 
 	return 0;
 }
 
 IVM_PRIVATE
 void
-_ivm_gen_env_addLabel(ivm_gen_env_t *env,
+_ias_gen_env_addLabel(ias_gen_env_t *env,
 					  ivm_exec_t *exec,
 					  const ivm_char_t *name,
 					  ivm_size_t len,
-					  ivm_gen_pos_t pos,
+					  ias_gen_pos_t pos,
 					  ivm_size_t addr)
 {
-	ivm_gen_label_ref_list_iterator_t riter;
-	ivm_gen_label_list_iterator_t iter;
-	ivm_gen_label_t *tmp;
+	ias_gen_label_ref_list_iterator_t riter;
+	ias_gen_label_list_iterator_t iter;
+	ias_gen_label_t *tmp;
 	ivm_long_t from, to;
 
 	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
@@ -210,22 +211,22 @@ _ivm_gen_env_addLabel(ivm_gen_env_t *env,
 	}
 
 	/* add new definition */
-	ivm_gen_label_list_add(env->jmp_table,
-						   ivm_gen_label_new(name, len, IVM_TRUE, pos, addr));
+	ias_gen_label_list_add(env->jmp_table,
+						   ias_gen_label_new(name, len, IVM_TRUE, pos, addr));
 
 	return;
 }
 
 IVM_PRIVATE
 ivm_function_id_t
-_ivm_gen_env_getBlockID(ivm_gen_env_t *env,
-						ivm_gen_pos_t pos,
+_ias_gen_env_getBlockID(ias_gen_env_t *env,
+						ias_gen_pos_t pos,
 						const ivm_char_t *label,
 						ivm_size_t len)
 {
 	ivm_function_id_t ret = 0;
-	ivm_gen_block_list_iterator_t iter;
-	ivm_gen_block_t *tmp;
+	ias_gen_block_list_iterator_t iter;
+	ias_gen_block_t *tmp;
 
 	IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
 		tmp = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
@@ -244,10 +245,10 @@ _ivm_gen_env_getBlockID(ivm_gen_env_t *env,
 
 IVM_PRIVATE
 ivm_opcode_arg_t
-_ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
-									  ivm_gen_instr_t instr,
+_ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
+									  ias_gen_instr_t instr,
 									  ivm_exec_t *exec,
-									  ivm_gen_env_t *env,
+									  ias_gen_env_t *env,
 									  const ivm_char_t param,
 									  ivm_bool_t *failed)
 {
@@ -296,13 +297,13 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 				case 'I':
 					return
 						ivm_opcode_arg_fromInt(
-							_ivm_gen_env_refJumpAddr(
+							_ias_gen_env_refJumpAddr(
 								env, arg.val, arg.len,
 								arg.pos, ivm_exec_cur(exec)
 							)
 						);
 				case 'X':
-					tmp_id = _ivm_gen_env_getBlockID(env, arg.pos, arg.val, arg.len);
+					tmp_id = _ias_gen_env_getBlockID(env, arg.pos, arg.val, arg.len);
 					if (tmp_id == (ivm_function_id_t)-1) {
 						SET_FAILED();
 					}
@@ -320,14 +321,14 @@ _ivm_gen_opcode_arg_generateOpcodeArg(ivm_gen_opcode_arg_t arg,
 
 IVM_PRIVATE
 ivm_exec_t *
-_ivm_gen_block_generateExec(ivm_gen_block_t *block,
-							ivm_gen_env_t *env)
+_ias_gen_block_generateExec(ias_gen_block_t *block,
+							ias_gen_env_t *env)
 {
 	ivm_opcode_t opc;
 	ivm_opcode_arg_t arg;
-	ivm_gen_instr_t instr;
+	ias_gen_instr_t instr;
 	const ivm_char_t *param;
-	ivm_gen_instr_list_iterator_t iter;
+	ias_gen_instr_list_iterator_t iter;
 	ivm_exec_t *ret = ivm_exec_new(env->str_pool);
 	ivm_bool_t failed;
 
@@ -336,7 +337,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 			instr = IVM_GEN_INSTR_LIST_ITER_GET(iter);
 
 			if (instr.label) {
-				_ivm_gen_env_addLabel(
+				_ias_gen_env_addLabel(
 					env, ret, instr.label, instr.llen,
 					instr.pos, ivm_exec_cur(ret)
 				);
@@ -353,7 +354,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 				param = ivm_opcode_table_getParam(opc);
 				failed = IVM_FALSE;
 				arg =
-				_ivm_gen_opcode_arg_generateOpcodeArg(
+				_ias_gen_opcode_arg_generateOpcodeArg(
 					instr.arg, instr, ret,
 					env, param[0], &failed
 				);
@@ -369,7 +370,7 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 		}
 	}
 
-	_ivm_gen_env_cleanJumpTable(env);
+	_ias_gen_env_cleanJumpTable(env);
 
 	// ivm_dbg_printExec(ret, "  ", stderr);
 
@@ -377,19 +378,19 @@ _ivm_gen_block_generateExec(ivm_gen_block_t *block,
 }
 
 ivm_exec_unit_t *
-ivm_gen_env_generateExecUnit(ivm_gen_env_t *env)
+ias_gen_env_generateExecUnit(ias_gen_env_t *env)
 {
 	ivm_exec_unit_t *ret;
 	ivm_exec_list_t *execs = ivm_exec_list_new();
-	ivm_gen_block_t *block;
+	ias_gen_block_t *block;
 	ivm_exec_t *exec;
 	ivm_size_t i = 0, root = -1;
-	ivm_gen_block_list_iterator_t iter;
+	ias_gen_block_list_iterator_t iter;
 
 	if (env->block_list) {
 		IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
 			block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
-			exec = _ivm_gen_block_generateExec(block, env);
+			exec = _ias_gen_block_generateExec(block, env);
 
 			if (!IVM_STRNCMP("root", IVM_STRLEN("root"),
 							 block->label, block->len)) {
@@ -407,9 +408,9 @@ ivm_gen_env_generateExecUnit(ivm_gen_env_t *env)
 }
 
 ivm_vmstate_t *
-ivm_gen_env_generateVM(ivm_gen_env_t *env)
+ias_gen_env_generateVM(ias_gen_env_t *env)
 {
-	ivm_exec_unit_t *unit = ivm_gen_env_generateExecUnit(env);
+	ivm_exec_unit_t *unit = ias_gen_env_generateExecUnit(env);
 	ivm_vmstate_t *ret = ivm_exec_unit_generateVM(unit);
 
 	ivm_exec_unit_free(unit);

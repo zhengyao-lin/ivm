@@ -22,7 +22,9 @@
 
 #include "util/parser.h"
 #include "util/perf.h"
-#include "util/gen.h"
+
+#include "app/ias/parser.h"
+#include "app/ias/gen.h"
 
 IVM_NATIVE_FUNC(test)
 {
@@ -624,7 +626,7 @@ int main(int argc, const char **argv)
 	const char num[] = "0b1010101";
 	// const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;
-	ivm_gen_env_t *env;
+	ias_gen_env_t *env;
 	ivm_vmstate_t *state;
 	ivm_file_t *file;
 	ivm_char_t *src = "root { \
@@ -677,9 +679,9 @@ ivm_perf_startProfile();
 
 	// tokens = _ivm_parser_getTokens("hi{}\n");
 	// tokens = _ivm_parser_getTokens("\n\nhi { get_slot \"hi\"\n\npop;;pop;;pop } wow { } hey { ;a: s;pop 2.|||; } wowow{}");
-	env = ivm_parser_parseSource(src);
-	state = ivm_gen_env_generateVM(env);
-	ivm_gen_env_free(env);
+	env = ias_parser_parseSource(src);
+	state = ias_gen_env_generateVM(env);
+	ias_gen_env_free(env);
 
 ivm_perf_stopProfile();
 ivm_perf_printElapsed();

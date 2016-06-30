@@ -1,6 +1,7 @@
 # cmake version: haven't really tested, but the higher the better
 # remove it if necessary
 cmake_minimum_required(VERSION 2.8)
+include(CMakeUtils.txt)
 
 project(ivm)
 
@@ -48,7 +49,7 @@ add_subdirectory(mem)
 add_subdirectory(util)
 
 # link libraries
-target_link_libraries(testbed vm mem util)
+target_link_libraries(testbed vm mem util iasp)
 
 message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
 

@@ -20,11 +20,12 @@
 
 #include "std/io.h"
 
-#include "util/parser.h"
 #include "util/perf.h"
-#include "util/gen.h"
 #include "util/console.h"
 #include "util/serial.h"
+
+#include "parser.h"
+#include "gen.h"
 
 int main(int argc, const char **argv)
 {
@@ -43,7 +44,7 @@ int main(int argc, const char **argv)
 	} file_format = FORMAT_AUTO; // auto
 
 	ivm_char_t *src;
-	ivm_gen_env_t *env;
+	ias_gen_env_t *env;
 	ivm_exec_unit_t *unit = IVM_NULL;
 	ivm_vmstate_t *state = IVM_NULL;
 	ivm_serial_exec_unit_t *s_unit;
@@ -162,8 +163,8 @@ int main(int argc, const char **argv)
 
 	if (src_file) {
 		src = ivm_file_readAll(src_file);
-		env = ivm_parser_parseSource(src);
-		unit = ivm_gen_env_generateExecUnit(env);
+		env = ias_parser_parseSource(src);
+		unit = ias_gen_env_generateExecUnit(env);
 
 		if (output_cache) {
 			s_unit = ivm_serial_serializeExecUnit(unit);
@@ -174,7 +175,7 @@ int main(int argc, const char **argv)
 			unit = IVM_NULL;
 		}
 
-		ivm_gen_env_free(env);
+		ias_gen_env_free(env);
 		MEM_FREE(src);
 	} else if (cache_file) {
 		s_unit = ivm_serial_execUnitFromFile(cache_file);
