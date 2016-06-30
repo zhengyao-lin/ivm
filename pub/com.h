@@ -9,6 +9,8 @@
 
 #define IVM_STRICT strict
 
+#define IVM_HEREDOC(...) __VA_ARGS__
+
 #ifdef __cplusplus
 	#define IVM_COM_HEADER extern "C" {
 	#define IVM_COM_END }

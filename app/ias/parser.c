@@ -12,6 +12,8 @@
 #include "std/list.h"
 #include "std/string.h"
 
+#define IVM_USE_COMMON_PARSER
+#define IVM_COMMON_PARSER_NAME "ias"
 #include "util/parser.h"
 
 #include "parser.h"
@@ -53,51 +55,6 @@ token_name_table[] = {
 	"EOF"
 };
 
-#define TOKEN_NAME(tid) (token_name_table[tid])
-
-struct err_msg_t {
-	ivm_size_t line;
-	ivm_size_t pos;
-
-	const ivm_char_t *expect;
-	const ivm_char_t *given;
-};
-
-#define ERR_MSG(l, p, e, g) ((struct err_msg_t) { (l), (p), (e), (g) })
-
-struct token_t {
-	enum token_id_t id;
-	ivm_size_t len;
-	const ivm_char_t *val;
-	
-	ivm_size_t line;
-	ivm_size_t pos;
-};
-
-#define PARSER_ERR_LP(l, p, ...) \
-	IVM_TRACE("parser: at line %zd pos %zd: ", (l), (p)); \
-	IVM_TRACE(__VA_ARGS__); \
-	IVM_TRACE("\n");
-
-#define PARSER_ERR_P(p, ...) \
-	IVM_TRACE("parser: at pos %zd: ", (p)); \
-	IVM_TRACE(__VA_ARGS__); \
-	IVM_TRACE("\n");
-
-#define PARSER_ERR_L(l, ...) \
-	IVM_TRACE("parser: at line %zd: ", (l)); \
-	IVM_TRACE(__VA_ARGS__); \
-	IVM_TRACE("\n");
-
-#define PARSER_ERR_EM(err) \
-	(IVM_TRACE("parser: at line %zd pos %zd: unexpected %s, expecting %s \n", \
-			   (err)->line, (err)->pos, (err)->given, (err)->expect))
-
-#define PARSER_ERR_MSG_ILLEGAL_REG									("illegal regular")
-#define PARSER_ERR_MSG_UNEXPECTED_CHAR(c, state)					"unexpected character '%c' in state %d", (c), (state)
-#define PARSER_ERR_MSG_UNEXPECTED_ENDING(state)						"unexpected ending(still in state %d)", (state)
-#define PARSER_ERR_MSG_ILLEGAL_CHAR_RADIX(c, rdx)					"illegal character '%c' in radix %d", (c), (rdx)
-
 enum state_t {
 	ST_INIT = 0,
 	ST_UNEXP,
@@ -125,234 +82,119 @@ enum state_t {
 	STATE_ERR
 };
 
-struct trans_entry_t {
-	const ivm_char_t *match;
-	enum state_t to_state;
-	enum token_id_t save;
-	ivm_bool_t ign;
-	ivm_bool_t exc; // exclude current char
-	const ivm_char_t *msg;
-};
-
-/*
-	"=a": a
-	"-ab": a-b or b-a
-	".": .
-	NULL: ->err
-*/
-
-IVM_PRIVATE
-ivm_bool_t
-_is_match(const char c,
-		  const char *reg)
-{
-	ivm_size_t len = strlen(reg);
-
-	IVM_ASSERT(len, PARSER_ERR_MSG_ILLEGAL_REG);
-
-	// IVM_TRACE("reg: %c to %s\n", c, reg);
-
-	switch (reg[0]) {
-		case '=': return c == reg[1];
-		case '-': return (c >= reg[1] && c <= reg[2]) ||
-						 (c <= reg[1] && c >= reg[2]);
-		case '.': return IVM_TRUE;
-		default: ;
-	}
-
-	IVM_ASSERT(0, PARSER_ERR_MSG_ILLEGAL_REG);
-
-	return IVM_FALSE;
-}
-
 ivm_list_t *
 _ias_parser_getTokens(const ivm_char_t *src)
 {
-	ivm_list_t *ret = ivm_list_new(sizeof(struct token_t));
-	enum state_t state = ST_INIT;
+	return TOKENIZER(src,
+		/* INIT */
+		{
+			{ "-az", ST_IN_ID },
+			{ "-AZ", ST_IN_ID },
+			{ "=_", ST_IN_ID },
 
-	struct trans_entry_t
-	trans_map[STATE_COUNT][20] = {
-		/* INIT */			{
-								{ "-az", ST_IN_ID },
-								{ "-AZ", ST_IN_ID },
-								{ "=_", ST_IN_ID },
+			{ "-09", ST_IN_NUM_INT },
+			{ "=.", ST_IN_NUM_DOT },
 
-								{ "-09", ST_IN_NUM_INT },
-								{ "=.", ST_IN_NUM_DOT },
+			{ "=,", ST_INIT, T_COMMA },
+			{ "=;", ST_INIT, T_SEMIC },
+			{ "=:", ST_INIT, T_COLON },
+			{ "={", ST_INIT, T_LBRAC },
+			{ "=}", ST_INIT, T_RBRAC },
+			
+			{ "=\n", ST_INIT, T_NEWL },
+			{ "=\r", ST_INIT, T_NEWL },
 
-								{ "=,", ST_INIT, T_COMMA },
-								{ "=;", ST_INIT, T_SEMIC },
-								{ "=:", ST_INIT, T_COLON },
-								{ "={", ST_INIT, T_LBRAC },
-								{ "=}", ST_INIT, T_RBRAC },
-								
-								{ "=\n", ST_INIT, T_NEWL },
-								{ "=\r", ST_INIT, T_NEWL },
+			{ "=\"", ST_IN_STR, .ign = IVM_TRUE },
+			{ "=`", ST_IN_STR_ID, .ign = IVM_TRUE },
+			{ "= ", ST_INIT, .ign = IVM_TRUE },
+			{ "=\t", ST_INIT, .ign = IVM_TRUE },
 
-								{ "=\"", ST_IN_STR, .ign = IVM_TRUE },
-								{ "=`", ST_IN_STR_ID, .ign = IVM_TRUE },
-								{ "= ", ST_INIT, .ign = IVM_TRUE },
-								{ "=\t", ST_INIT, .ign = IVM_TRUE },
+			{ "=/", ST_TRY_COMMENT12 },
 
-								{ "=/", ST_TRY_COMMENT12 },
+			{ "=\0", ST_INIT, T_EOF }
+		},
 
-								{ "=\0", ST_INIT, T_EOF }
-							},
+		/* UNEXP */
+		{
+			{ ".", ST_INIT, .ign = IVM_TRUE }
+		},
 
-		/* UNEXP */			{
-								{ ".", ST_INIT, .ign = IVM_TRUE }
-							},
+		/* TRY_COMMENT12 */
+		{
+			{ "=*", ST_IN_COMMENT1 },
+			{ "=/", ST_IN_COMMENT2 }
+		},
 
-		/* TRY_COMMENT12 */	{
-								{ "=*", ST_IN_COMMENT1 },
-								{ "=/", ST_IN_COMMENT2 }
-							},
+		/* IN_COMMENT1 */
+		{
+			{ "=*", ST_OUT_COMMENT1 },
+			{ ".", ST_IN_COMMENT1 }
+		},
 
-		/* IN_COMMENT1 */	{
-								{ "=*", ST_OUT_COMMENT1 },
-								{ ".", ST_IN_COMMENT1 }
-							},
+		/* OUT_COMMENT1 */
+		{
+			{ "=/", ST_INIT, .ign = IVM_TRUE },
+			{ ".", ST_IN_COMMENT1 }
+		},
 
-		/* OUT_COMMENT1 */	{
-								{ "=/", ST_INIT, .ign = IVM_TRUE },
-								{ ".", ST_IN_COMMENT1 }
-							},
+		/* IN_COMMENT2 */
+		{
+			{ "=\n", ST_INIT, T_NEWL },
+			{ "=\r", ST_INIT, T_NEWL },
+			{ ".", ST_IN_COMMENT2 }
+		},
 
-		/* IN_COMMENT2 */	{
-								{ "=\n", ST_INIT, T_NEWL },
-								{ "=\r", ST_INIT, T_NEWL },
-								{ ".", ST_IN_COMMENT2 }
-							},
+		/* IN_ID */
+		{
+			{ "-az", ST_IN_ID },
+			{ "-AZ", ST_IN_ID },
+			{ "=_", ST_IN_ID },
+			{ "-09", ST_IN_ID },
+			{ ".", ST_INIT, T_ID } /* revert one char */
+		},
 
-		/* IN_ID */			{
-								{ "-az", ST_IN_ID },
-								{ "-AZ", ST_IN_ID },
-								{ "=_", ST_IN_ID },
-								{ "-09", ST_IN_ID },
-								{ ".", ST_INIT, T_ID } /* revert one char */
-							},
+		/* IN_STR_ID */
+		{
+			{ "=`", ST_INIT, T_ID, .exc = IVM_TRUE },
+			{ "=\\", ST_IN_ID_STR_ESC },
+			{ ".", ST_IN_STR_ID }
+		},
 
-		/* IN_STR_ID */		{
-								{ "=`", ST_INIT, T_ID, .exc = IVM_TRUE },
-								{ "=\\", ST_IN_ID_STR_ESC },
-								{ ".", ST_IN_STR_ID }
-							},
+		/* IN_ID_STR_ESC */
+		{
+			{ ".", ST_IN_STR_ID }
+		},
 
-		/* IN_ID_STR_ESC */	{
-								{ ".", ST_IN_STR_ID }
-							},
+		/* IN_STR */
+		{
+			{ "=\"", ST_INIT, T_STR, .exc = IVM_TRUE },
+			{ "=\\", ST_IN_STR_ESC },
+			{ ".", ST_IN_STR }
+		},
 
-		/* IN_STR */		{
-								{ "=\"", ST_INIT, T_STR, .exc = IVM_TRUE },
-								{ "=\\", ST_IN_STR_ESC },
-								{ ".", ST_IN_STR }
-							},
+		/* IN_STR_ESC */
+		{
+			{ ".", ST_IN_STR }
+		},
 
-		/* IN_STR_ESC */	{
-								{ ".", ST_IN_STR }
-							},
+		/* IN_NUM_INT */
+		{
+			{ "-09", ST_IN_NUM_INT },
+			{ "=.", ST_IN_NUM_DEC },
+			{ ".", ST_INIT, T_INT }
+		},
 
-		/* IN_NUM_INT */	{
-								{ "-09", ST_IN_NUM_INT },
-								{ "=.", ST_IN_NUM_DEC },
-								{ ".", ST_INIT, T_INT }
-							},
+		/* IN_NUM_DOT */
+		{
+			{ "-09", ST_IN_NUM_DEC }
+		},
 
-		/* IN_NUM_DOT */	{
-								{ "-09", ST_IN_NUM_DEC }
-							},
-
-		/* IN_NUM_DEC */	{
-								{ "-09", ST_IN_NUM_DEC },
-								{ ".", ST_INIT, T_FLOAT }
-							}
-	};
-
-
-	#define NEXT_INIT ((struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS })
-	#define CUR_INIT (c--, has_exc = IVM_TRUE, (struct token_t) { .len = 0, .val = c + 1, .line = LINE, .pos = POS + 1 })
-	#define LINE (line)
-	#define POS ((ivm_ptr_t)c - col + 1)
-
-	const ivm_char_t *c = src;
-	ivm_char_t cur_c;
-	struct trans_entry_t *tmp_entry;
-	ivm_size_t line = 1;
-	ivm_ptr_t col = (ivm_ptr_t)c;
-	ivm_bool_t has_exc = IVM_FALSE;
-	struct token_t tmp_token = (struct token_t) { .len = 0, .val = c, .line = LINE, .pos = POS };
-
-	if (c && *c != '\0') {
-		do {
-			cur_c = *c;
-			// IVM_TRACE("matching %c state %d\n", *c, state);
-			if (!has_exc) {
-				if (*c == '\n') {
-					line++;
-					col = (ivm_ptr_t)c;
-				}
-			} else {
-				has_exc = IVM_FALSE;
-			}
-
-			for (tmp_entry = trans_map[state];
-				 tmp_entry->match;
-				 tmp_entry++) {
-				if (_is_match(*c, tmp_entry->match)) {
-					// tmp_token.val += tmp_entry->s_ofs;
-					// tmp_token.len += tmp_entry->ofs;
-
-					if (tmp_entry->ign) {
-						tmp_token = NEXT_INIT;
-					} else if (tmp_entry->save != T_NONE) { // save to token stack
-						if (tmp_entry->to_state == state)
-							tmp_token.len++;
-
-						// IVM_TRACE("token %d, value '%.*s'(len %zd)\n",
-						// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
-
-						tmp_token.id = tmp_entry->save;
-						ivm_list_push(ret, &tmp_token);
-
-						if (tmp_entry->exc || tmp_entry->to_state == state) {
-							tmp_token = NEXT_INIT;
-						} else {
-							tmp_token = CUR_INIT;
-						}
-					} else {
-						tmp_token.len++;
-					}
-
-					// c += tmp_entry->c_ofs;
-
-					break;
-				}
-			}
-
-			if (tmp_entry->match) {
-				state = tmp_entry->to_state;
-			} else {
-				PARSER_ERR_LP(LINE, POS, PARSER_ERR_MSG_UNEXPECTED_CHAR(*c, state));
-				state = ST_UNEXP;
-				c--;
-			}
-
-			c++;
-		} while (cur_c != '\0');
-	}
-
-	#undef NEXT_INIT
-	#undef CUR_INIT
-
-	if (state != ST_INIT) {
-		PARSER_ERR_LP(LINE, POS, PARSER_ERR_MSG_UNEXPECTED_ENDING(state));
-	}
-
-	#undef LINE
-	#undef POS
-
-	return ret;
+		/* IN_NUM_DEC */
+		{
+			{ "-09", ST_IN_NUM_DEC },
+			{ ".", ST_INIT, T_FLOAT }
+		}
+	);
 }
 
 /*
@@ -372,11 +214,6 @@ argt
 
 */
 
-struct arg_t {
-	ivm_char_t type;
-	ivm_opcode_arg_t val;
-};
-
 struct rule_val_t {
 	union {
 		ias_gen_opcode_arg_t arg;
@@ -389,120 +226,6 @@ struct rule_val_t {
 };
 
 struct env_t { int dummy; };
-
-#define RULE_ARG \
-	struct env_t *__env__, struct rule_val_t *__ret__, ivm_list_t *__tokens__, ivm_size_t *__i__, struct err_msg_t *__last_err__
-
-#define MAX_RULE_COUNT 10
-#define MAX_TOK_COUNT 10
-
-#define _ENV (__env__)
-#define _RET (__ret__)
-#define _RETVAL (__ret__->u)
-#define _RETLINE (__ret__->line)
-#define _RETPOS (__ret__->pos)
-#define _TOKEN (__tokens__)
-
-#define CUR_TOKEN() ((struct token_t *)ivm_list_at(_TOKEN, *__i__))
-#define NEXT_TOKEN() (++*__i__)
-#define HAS_NEXT_TOKEN() (*__i__ < ivm_list_size(_TOKEN))
-
-#define RULE_NAME(name) _ias_parser_rule_##name
-
-#define RULE(name) \
-	ivm_bool_t RULE_NAME(name)(RULE_ARG)
-
-#define IS_SUC(call) (call)
-#define IS_FAILED(call) (!IS_SUC(call))
-
-#define SET_ERR(msg) (*__last_err__ = (msg))
-#define POP_ERR() (PARSER_ERR_EM(__last_err__))
-
-#define SHIFT(name, ret, ofs) \
-	(*__i__ += (ofs), RULE_NAME(name)(_ENV, (ret), _TOKEN, __i__))
-
-#define RESTORE_RULE() \
-	__reti__ = __rets__; \
-	__toki__ = __toks__; \
-	*__i__ = __i_back__;
-
-#define EXPECT_TOKEN(tid) \
-	if (HAS_NEXT_TOKEN() && (*__toki__++ = CUR_TOKEN())->id == (tid)) { \
-		NEXT_TOKEN(); \
-	} else { \
-		if (HAS_NEXT_TOKEN() && !__has_err__) { \
-			__has_err__ = IVM_TRUE; \
-			__tmp_token__ = CUR_TOKEN(); \
-			__tmp_err__= ERR_MSG( \
-				__tmp_token__->line, __tmp_token__->pos, \
-				TOKEN_NAME(tid), TOKEN_NAME(__tmp_token__->id) \
-			); \
-		} \
-		RESTORE_RULE(); \
-		break; \
-	}
-
-#define EXPECT_RULE(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__))) { \
-		RESTORE_RULE(); \
-		break; \
-	}
-
-#define EXPECT_RULE_NORET(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__, _TOKEN, __i__, __last_err__))) { \
-		break; \
-	}
-
-#define EXPECT_RULE_LIST(name, ...) \
-	struct rule_val_t *__reti_back__ =  __reti__; \
-	EXPECT_RULE(name); \
-	do { \
-		__VA_ARGS__; \
-		while (IS_SUC(RULE_NAME(name)(_ENV, __reti_back__, _TOKEN, __i__, __last_err__))) { \
-			__VA_ARGS__; \
-		} \
-	} while (0);
-
-#define RULE_RET_AT(i) (__rets__[i])
-#define TOKEN_AT(i) (__toks__[i]) // ((struct token_t *)ivm_list_at(_TOKEN, __i_back__ + (i)))
-
-#define SUB_RULE_SET(...) \
-	ivm_size_t __i_back__ = *__i__; \
-	struct rule_val_t __rets__[MAX_RULE_COUNT]; \
-	struct rule_val_t *__reti__ = __rets__; \
-	struct token_t *__toks__[MAX_TOK_COUNT]; \
-	struct token_t **__toki__ = __toks__; \
-	struct token_t *__tmp_token__ = IVM_NULL; \
-	ivm_bool_t __has_err__ = IVM_FALSE; \
-	struct err_msg_t __tmp_err__; \
-	__reti__ == __reti__; /* reduce unused variable warning */ \
-	__toki__ == __toki__; \
-	__tmp_token__ == __tmp_token__; \
-	__VA_ARGS__; \
-	goto RULE_FAILED;
-
-#define SUB_RULE(...) \
-	do { \
-		__VA_ARGS__; \
-		goto RULE_MATCHED; \
-	} while (0);
-
-#define FAILED(...) \
-	goto RULE_FAILED_END; \
-	RULE_FAILED: \
-		__VA_ARGS__; \
-		if (__has_err__) { \
-			SET_ERR(__tmp_err__); \
-		} \
-		return IVM_FALSE;\
-	RULE_FAILED_END: ;
-
-#define MATCHED(...) \
-	goto RULE_MATCHED_END; \
-	RULE_MATCHED: \
-		__VA_ARGS__; \
-		return IVM_TRUE; \
-	RULE_MATCHED_END: ;
 
 RULE(arg)
 {
@@ -869,11 +592,6 @@ RULE(trans_unit)
 		_RETVAL.env = ias_gen_env_new(RULE_RET_AT(0).u.block_list);
 	});
 }
-
-#define RULE_START(name, env, ret, tokens) \
-	ivm_size_t __i__ = 0; \
-	struct err_msg_t __last_err__; \
-	RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__);
 
 ias_gen_env_t *
 _ias_parser_tokenToEnv(ivm_list_t *tokens)
