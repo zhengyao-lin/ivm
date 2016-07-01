@@ -19,11 +19,11 @@
 IVM_COM_HEADER
 
 typedef struct ivm_vmstate_t_tag {
-	ivm_heap_t *cur_heap;
-	ivm_heap_t *empty_heap;
+	ivm_heap_t cur_heap;
+	ivm_heap_t empty_heap;
 
 	ivm_size_t cur_coro;
-	ivm_coro_list_t *coro_list;
+	ivm_coro_list_t coro_list;
 
 	ivm_type_list_t type_list;
 	ivm_func_list_t *func_list;
@@ -43,12 +43,12 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_uid_gen_t uid_gen;
 } ivm_vmstate_t;
 
-#define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at((state)->coro_list, (state)->cur_coro))
-#define IVM_VMSTATE_GET_CORO_LIST(state) ((state)->coro_list)
+#define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at(&(state)->coro_list, (state)->cur_coro))
+#define IVM_VMSTATE_GET_CORO_LIST(state) (&(state)->coro_list)
 #define IVM_VMSTATE_GET_TYPE_LIST(state) (&(state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
-#define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->cur_heap)
-#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->empty_heap)
+#define IVM_VMSTATE_GET_CUR_HEAP(state) (&(state)->cur_heap)
+#define IVM_VMSTATE_GET_EMPTY_HEAP(state) (&(state)->empty_heap)
 
 #define IVM_VMSTATE_SET_CUR_CORO(state, val) ((state)->cur_coro = (val))
 
@@ -103,7 +103,7 @@ void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
 	ivm_bool_t add_block = IVM_FALSE;
-	void *ret = ivm_heap_alloc_c((state)->cur_heap, size, &add_block);
+	void *ret = ivm_heap_alloc_c(&(state)->cur_heap, size, &add_block);
 
 	if (add_block) {
 		ivm_vmstate_openGCFlag(state);
@@ -116,7 +116,7 @@ IVM_INLINE
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 {
-	ivm_heap_t *tmp = state->cur_heap;
+	ivm_heap_t tmp = state->cur_heap;
 	state->cur_heap = state->empty_heap;
 	state->empty_heap = tmp;
 
@@ -149,9 +149,9 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 #if IVM_USE_CORO_POOL
 
 #define ivm_vmstate_allocCoro(state) \
-	(ivm_coro_pool_alloc((state)->cr_pool))
+	(ivm_coro_pool_alloc(&(state)->cr_pool))
 #define ivm_vmstate_dumpCoro(state, cr) \
-	(ivm_coro_pool_dump((state)->cr_pool, (cr)))
+	(ivm_coro_pool_dump(&(state)->cr_pool, (cr)))
 
 #else
 
@@ -193,12 +193,12 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 	ivm_vmstate_isGCFlagOpen(state)
 
 #define ivm_vmstate_doGC(state) \
-	ivm_collector_collect((state)->gc, (state), (state)->cur_heap); \
+	ivm_collector_collect((state)->gc, (state), &(state)->cur_heap); \
 	ivm_vmstate_closeGCFlag(state);
 
 #endif
 
-#define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add((state)->coro_list, (coro)))
+#define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add(&(state)->coro_list, (coro)))
 
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,

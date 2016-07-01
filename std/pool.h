@@ -41,6 +41,18 @@ ivm_ptpool_destruct_s(ivm_ptpool_t pool)
 }
 
 IVM_INLINE
+void
+ivm_ptpool_destruct(ivm_ptpool_t *pool)
+{
+	if (pool) {
+		ivm_heap_free(pool->heap);
+		ivm_ptlist_free(pool->freed);
+	}
+
+	return;
+}
+
+IVM_INLINE
 void *
 ivm_ptpool_alloc(ivm_ptpool_t *pool)
 {

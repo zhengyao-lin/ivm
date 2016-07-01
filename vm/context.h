@@ -163,6 +163,13 @@ ivm_context_pool_new(ivm_size_t ecount);
 void
 ivm_context_pool_free(ivm_context_pool_t *pool);
 
+void
+ivm_context_pool_init(ivm_context_pool_t *pool,
+					  ivm_size_t ecount);
+
+void
+ivm_context_pool_destruct(ivm_context_pool_t *pool);
+
 IVM_COM_END
 
 #endif

@@ -48,6 +48,43 @@ ivm_heap_free(ivm_heap_t *heap)
 }
 
 void
+ivm_heap_init(ivm_heap_t *heap,
+			  ivm_size_t bsize)
+{
+	heap->bcount = 2;
+	heap->bsize = bsize;
+
+	heap->btop = 0;
+	heap->blocks = MEM_ALLOC(sizeof(*heap->blocks) * 2,
+							 ivm_byte_t **);
+	
+	IVM_ASSERT(heap->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+
+	heap->bcurp = heap->blocks[0] = MEM_ALLOC(bsize, ivm_byte_t *);
+	heap->blocks[1] = MEM_ALLOC(bsize, ivm_byte_t *);
+
+	IVM_ASSERT(heap->bcurp && heap->blocks[1], IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+
+	heap->bendp = heap->bcurp + bsize;
+
+	return;
+}
+
+void
+ivm_heap_dump(ivm_heap_t *heap)
+{
+	ivm_size_t i;
+
+	if (heap) {
+		for (i = 0; i < heap->bcount; i++)
+			MEM_FREE(heap->blocks[i]);
+		MEM_FREE(heap->blocks);
+	}
+
+	return;
+}
+
+void
 ivm_heap_reset(ivm_heap_t *heap)
 {
 	heap->btop = 0;

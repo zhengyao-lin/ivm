@@ -40,6 +40,13 @@ ivm_heap_new(ivm_size_t bsize);
 void
 ivm_heap_free(ivm_heap_t *heap);
 
+void
+ivm_heap_init(ivm_heap_t *heap,
+			  ivm_size_t bsize);
+
+void
+ivm_heap_dump(ivm_heap_t *heap);
+
 /* assert: addup < bsize */
 IVM_INLINE
 void *

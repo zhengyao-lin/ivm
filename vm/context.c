@@ -148,3 +148,35 @@ ivm_context_pool_free(ivm_context_pool_t *pool)
 
 	return;
 }
+
+void
+ivm_context_pool_init(ivm_context_pool_t *pool,
+					  ivm_size_t ecount)
+{
+	ivm_ptpool_t **i, **end;
+	ivm_int_t len = 0;
+
+	for (i = pool->pools,
+		 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN;
+		 i != end; i++, len++) {
+		*i = ivm_ptpool_new(ecount, ivm_ctchain_getSize(len));
+	}
+
+	return;
+}
+
+void
+ivm_context_pool_destruct(ivm_context_pool_t *pool)
+{
+	ivm_ptpool_t **i, **end;
+
+	if (pool) {
+		for (i = pool->pools,
+			 end = i + IVM_CONTEXT_POOL_MAX_CACHE_LEN;
+			 i != end; i++) {
+			ivm_ptpool_free(*i);
+		}
+	}
+
+	return;
+}
