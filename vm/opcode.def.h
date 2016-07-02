@@ -70,17 +70,52 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ = STACK_POP();
-	GET_SLOT(_TMP_OBJ, SARG());
+	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
 })
 
+/*
+ * set_slot/set_proto:
+ *
+ * stack before:
+ * ---------------
+ * | obj1 | obj2 | ...
+ * ---------------
+ *
+ * stack after:
+ * --------
+ * | obj1 | ...
+ * --------
+ *
+ * while obj1.key = obj2
+ */
+
 OPCODE_GEN(SET_SLOT, "set_slot", S, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ = STACK_POP();
-	SET_SLOT(_TMP_OBJ, SARG(), STACK_POP());
+	SET_SLOT(_TMP_OBJ, SARG(), STACK_POP()); // result in _TMP_OBJ
+	STACK_PUSH(_TMP_OBJ);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(GET_PROTO, "get_proto", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = IVM_OBJECT_GET(STACK_POP(), PROTO);
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(SET_PROTO, "set_proto", N, {
+	CHECK_STACK(2);
+
+	_TMP_OBJ = STACK_POP();
+	IVM_OBJECT_SET(_TMP_OBJ, PROTO, STACK_POP());
 	STACK_PUSH(_TMP_OBJ);
 
 	NEXT_INSTR();

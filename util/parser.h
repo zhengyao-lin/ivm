@@ -21,7 +21,7 @@ ivm_parser_parseStr(const ivm_char_t *str,
 /*
  * common parser: define IVM_USE_COMMON_PARSER to use(it MUST NOT be used in header file)
  * 
- * need to define:
+ * need to define BEFORE including:
  *    1. const ivm_char_t *token_name_table[] (name of each token)
  *    2. struct rule_val_t (return value of every rule)
  *    3. struct env_t (possessed by every rule handler)
@@ -31,12 +31,17 @@ ivm_parser_parseStr(const ivm_char_t *str,
  *    2. default none token value: IVM_COMMON_TOKEN_NONE = 0(don't set any token to 0)
  *    3. default init state: IVM_COMMON_TOKEN_STATE_INIT = 0
  *    4. default unexpected state: IVM_COMMON_TOKEN_STATE_UNEXP = 1
+ *    5. debug mode is closed in default: IVM_COMMON_DEBUG_MODE(not defined)
  *
  * transition rule(only apply to single character):
  *    1. "=a": the char is 'a'
  *    2. "-ab": the char could be between a and b(in ASCII code)
  *    3. ".": any char can be applied
  *    4. NULL: end of rule, unexpected char
+ *
+ * note:
+ *    1. it's just a simple recursive descent parser -- DO NOT include any left-recursive rules
+ *    2. it's quite inefficient
  */
 
 #if defined(IVM_USE_COMMON_PARSER)
@@ -141,6 +146,25 @@ _is_match(const char c,
 
 IVM_PRIVATE
 IVM_INLINE
+void
+_ivm_parser_dumpToken(ivm_list_t *tokens)
+{
+	ivm_int_t i, size = ivm_list_size(tokens);
+	struct token_t *tmp;
+
+	for (i = 0; i < size; i++) {
+		tmp = (struct token_t *)ivm_list_at(tokens, i);
+
+		IVM_TRACE("token %-25svalue '%.*s'(len %zd)\n",
+				  token_name_table[tmp->id],
+				  (int)tmp->len, tmp->val, tmp->len);
+	}
+
+	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
 ivm_list_t *
 _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IVM_COMMON_MAX_TOKEN_RULE])
 {
@@ -180,9 +204,6 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 					} else if (tmp_entry->save != IVM_COMMON_TOKEN_NONE) { // save to token stack
 						if (tmp_entry->to_state == state)
 							tmp_token.len++;
-
-						// IVM_TRACE("token %d, value '%.*s'(len %zd)\n",
-						// 		  tmp_entry->save, (int)tmp_token.len, tmp_token.val, tmp_token.len);
 
 						tmp_token.id = tmp_entry->save;
 						ivm_list_push(ret, &tmp_token);
@@ -224,7 +245,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 }
 
 /* tokenizer */
-#define TOKENIZER(src, ...) (_ivm_parser_tokenizer(src, (struct trans_entry_t [][IVM_COMMON_MAX_TOKEN_RULE]){ __VA_ARGS__ }))
+#define TOKENIZE(src, ...) (_ivm_parser_tokenizer(src, (struct trans_entry_t [][IVM_COMMON_MAX_TOKEN_RULE]){ __VA_ARGS__ }))
 
 /* syntax parser */
 #define RULE_ARG \

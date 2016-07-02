@@ -12,10 +12,6 @@
 #include "std/list.h"
 #include "std/string.h"
 
-#define IVM_USE_COMMON_PARSER
-#define IVM_COMMON_PARSER_NAME "ias"
-#include "util/parser.h"
-
 #include "parser.h"
 #include "gen.h"
 
@@ -55,6 +51,10 @@ token_name_table[] = {
 	"EOF"
 };
 
+#define IVM_USE_COMMON_PARSER
+#define IVM_COMMON_PARSER_NAME "ias"
+#include "util/parser.h"
+
 enum state_t {
 	ST_INIT = 0,
 	ST_UNEXP,
@@ -82,10 +82,11 @@ enum state_t {
 	STATE_ERR
 };
 
+IVM_PRIVATE
 ivm_list_t *
 _ias_parser_getTokens(const ivm_char_t *src)
 {
-	return TOKENIZER(src,
+	return TOKENIZE(src,
 		/* INIT */
 		{
 			{ "-az", ST_IN_ID },
