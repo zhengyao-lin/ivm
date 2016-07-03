@@ -11,6 +11,9 @@
 
 #define IVM_ARRLEN(arr) (sizeof(arr) / sizeof(*arr))
 
+#define IVM_INT_MAX(t) ((t)~((t)1 << (sizeof(t) * 8 - 1)))
+#define IVM_UINT_MAX(t) (~(t)0)
+
 #ifdef __cplusplus
 	#define IVM_COM_HEADER extern "C" {
 	#define IVM_COM_END }

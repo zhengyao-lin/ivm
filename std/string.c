@@ -60,9 +60,10 @@ ivm_string_new_state(ivm_bool_t is_const,
 {
 	ivm_size_t len = IVM_STRLEN(str);
 	ivm_string_t *ret = ivm_vmstate_alloc(state, IVM_STRING_GET_SIZE(len));
-
-	// if (is_const) IVM_BIT_SET_TRUE(ret->is_const);
-	// else IVM_BIT_SET_FALSE(ret->is_const);
+	
+	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
+			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
+	
 	ret->is_const = is_const;
 	ret->len = len;
 	MEM_COPY(ivm_string_trimHead(ret), str,
@@ -79,31 +80,13 @@ ivm_string_new_heap(ivm_bool_t is_const,
 	ivm_size_t len = IVM_STRLEN(str);
 	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
 
-	// if (is_const) IVM_BIT_SET_TRUE(ret->is_const);
-	// else IVM_BIT_SET_FALSE(ret->is_const);
+	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
+			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
+
 	ret->is_const = is_const;
 	ret->len = len;
 	MEM_COPY(ivm_string_trimHead(ret), str,
 			 sizeof(ivm_char_t) * (len + 1));
-
-	return ret;
-}
-
-ivm_string_t *
-ivm_string_new_heap_n(ivm_bool_t is_const,
-					  const ivm_char_t *str,
-					  ivm_heap_t *heap,
-					  ivm_size_t len)
-{
-	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
-
-	// if (is_const) IVM_BIT_SET_TRUE(ret->is_const);
-	// else IVM_BIT_SET_FALSE(ret->is_const);
-	ret->is_const = is_const;
-	ret->len = len;
-	MEM_COPY(ivm_string_trimHead(ret), str,
-			 sizeof(ivm_char_t) * (len));
-	ivm_string_trimHead(ret)[len] = '\0';
 
 	return ret;
 }
@@ -113,8 +96,6 @@ ivm_string_initHead(ivm_string_t *str,
 					ivm_bool_t is_const,
 					ivm_size_t len)
 {
-	// if (is_const) IVM_BIT_SET_TRUE(str->is_const);
-	// else IVM_BIT_SET_FALSE(str->is_const);
 	str->is_const = is_const;
 	str->len = len;
 	
@@ -133,8 +114,6 @@ _ivm_string_copy_heap(ivm_bool_t is_const,
 	size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 	ret = ivm_heap_alloc(heap, size);
 	MEM_COPY(ret, str, size);
-	// if (is_const) IVM_BIT_SET_TRUE(ret->is_const);
-	// else IVM_BIT_SET_FALSE(ret->is_const);
 	ret->is_const = is_const;
 
 	return ret;
@@ -359,11 +338,5 @@ ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 HASH(str, !ivm_string_compareToRaw(*i, str),
 	 ivm_string_new_heap(IVM_TRUE, str, pool->heap))
 
-ivm_ptr_t
-ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
-							  const ivm_char_t *str,
-							  ivm_size_t len)
-HASH(str, !ivm_string_compareToRaw_n(*i, str, len),
-	 ivm_string_new_heap_n(IVM_TRUE, str, pool->heap, len))
 
 #undef HASH

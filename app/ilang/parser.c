@@ -313,12 +313,10 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 #undef KEYWORD
 	};
 
-#define KEYWORD_COUNT (sizeof(keywords) / sizeof(*keywords))
-
 	for (i = 0; i < size; i++) {
 		tmp_token = (struct token_t *)ivm_list_at(ret, i);
 		if (tmp_token->id == T_ID) {
-			for (j = 0; j < KEYWORD_COUNT; j++) {
+			for (j = 0; j < IVM_ARRLEN(keywords); j++) {
 				if (!IVM_STRNCMP(tmp_token->val, tmp_token->len,
 								 keywords[j].name,
 								 keywords[j].len)) {

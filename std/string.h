@@ -50,6 +50,11 @@ typedef struct {
 #define IVM_STRING_GET_SIZE(len) \
 	(sizeof(ivm_string_t) + sizeof(ivm_char_t) * ((len) + 1))
 
+#define IVM_STRING_MAX_LEN IVM_UINT_MAX(ivm_uint32_t)
+
+#define IVM_STRING_LEGAL_LEN(len) \
+	((len) < IVM_STRING_MAX_LEN)
+
 ivm_string_t *
 ivm_string_new_state(ivm_bool_t is_const,
 					 const ivm_char_t *str,
@@ -146,11 +151,6 @@ ivm_string_pool_register_nc(ivm_string_pool_t *pool,
 ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str);
-
-ivm_ptr_t
-ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
-							  const ivm_char_t *str,
-							  ivm_size_t len);
 
 #define ivm_string_pool_get(pool, i) ((pool)->table[i])
 
