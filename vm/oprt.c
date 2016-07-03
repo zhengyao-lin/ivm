@@ -45,29 +45,11 @@ ivm_binop_table_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("binary operator table"));
 
-	ret->alloc = IVM_TYPE_COUNT;
 	ret->size = 0;
-	ret->lst = MEM_ALLOC(sizeof(ivm_binop_proc_t) * IVM_TYPE_COUNT,
-						 ivm_binop_proc_t *);
-
-	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("binary operator table data"));
+	ret->lst = IVM_NULL;
 
 	return ret;
 }
-
-void
-ivm_binop_table_init(ivm_binop_table_t *table)
-{
-	table->alloc = IVM_TYPE_COUNT;
-	table->size = 0;
-	table->lst = MEM_ALLOC(sizeof(ivm_binop_proc_t)
-						   * IVM_TYPE_COUNT,
-						   ivm_binop_proc_t *);
-	
-	IVM_ASSERT(table->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("binary operator table data"));
-
-	return;
-}	
 
 void
 ivm_binop_table_free(ivm_binop_table_t *table)
@@ -75,6 +57,24 @@ ivm_binop_table_free(ivm_binop_table_t *table)
 	if (table) {
 		MEM_FREE(table->lst);
 		MEM_FREE(table);
+	}
+
+	return;
+}
+
+void
+ivm_binop_table_init(ivm_binop_table_t *table)
+{
+	table->size = 0;
+	table->lst = IVM_NULL;
+	return;
+}
+
+void
+ivm_binop_table_dump(ivm_binop_table_t *table)
+{
+	if (table) {
+		MEM_FREE(table->lst);
 	}
 
 	return;
@@ -89,7 +89,7 @@ ivm_oprt_initType(ivm_vmstate_t *state)
 
 #define BINOP_GEN(t1, op, t2, ...) \
 	(tmp_table = ivm_type_getBinopTable((tmp_type = ivm_type_list_at(type_list, TYPE_TAG_OF(t1))), op), \
-	 tmp_table ? 0 : (tmp_table = ivm_type_setBinopTable(tmp_type, op, ivm_binop_table_new())), \
+	 /* tmp_table ? 0 : (tmp_table = ivm_type_setBinopTable(tmp_type, op, ivm_binop_table_new())), */ \
 	 ivm_binop_table_set(tmp_table, TYPE_TAG_OF(t2), BINOP_PROC_NAME(t1, op, t2)));
 
 #define UNIOP_GEN(op, t, ...) \

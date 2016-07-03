@@ -46,7 +46,6 @@ typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 #define ivm_uniop_table_set(table, i, proc) ((table)[i] = (proc))
 
 typedef struct {
-	ivm_size_t alloc;
 	ivm_size_t size;
 	ivm_binop_proc_t *lst;
 } ivm_binop_table_t;
@@ -55,11 +54,13 @@ ivm_binop_table_t *
 ivm_binop_table_new();
 
 void
+ivm_binop_table_free(ivm_binop_table_t *table);
+
+void
 ivm_binop_table_init(ivm_binop_table_t *table);
 
 void
-ivm_binop_table_free(ivm_binop_table_t *table);
-
+ivm_binop_table_dump(ivm_binop_table_t *table);
 
 IVM_INLINE
 ivm_binop_proc_t
@@ -76,13 +77,10 @@ void
 _ivm_binop_table_incTo(ivm_binop_table_t *table,
 					   ivm_size_t size) /* size >= table->size */
 {
-	if (size > table->alloc) {
-		table->lst = MEM_REALLOC(table->lst,
-								 sizeof(ivm_binop_proc_t) * size,
-								 ivm_binop_proc_t *);
-		table->alloc = size;
-	}
-
+	table->lst = MEM_REALLOC(table->lst,
+							 sizeof(ivm_binop_proc_t) * size,
+							 ivm_binop_proc_t *);
+	
 	MEM_INIT(table->lst + table->size,
 			 sizeof(ivm_binop_proc_t) * (size - table->size));
 

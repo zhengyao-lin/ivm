@@ -43,7 +43,7 @@ typedef struct ivm_type_t_tag {
 	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 
-	ivm_binop_table_t *binops[IVM_BINOP_COUNT];
+	ivm_binop_table_t binops[IVM_BINOP_COUNT];
 	ivm_uniop_table_t uniops;
 } ivm_type_t;
 
@@ -57,8 +57,8 @@ ivm_type_free(ivm_type_t *type);
 #define ivm_type_setProto(type, p) ((type)->proto = (p))
 #define ivm_type_getProto(type) ((type)->proto)
 
-#define ivm_type_setBinopTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
-#define ivm_type_getBinopTable(type, op) ((type)->binops[IVM_BINOP_ID(op)])
+// #define ivm_type_setBinopTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
+#define ivm_type_getBinopTable(type, op) ((type)->binops + IVM_BINOP_ID(op))
 
 #define ivm_type_getUniopTable(type) ((type)->uniops)
 

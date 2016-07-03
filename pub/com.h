@@ -9,7 +9,7 @@
 
 #define IVM_STRICT strict
 
-#define IVM_HEREDOC(...) __VA_ARGS__
+#define IVM_ARRLEN(arr) (sizeof(arr) / sizeof(*arr))
 
 #ifdef __cplusplus
 	#define IVM_COM_HEADER extern "C" {
