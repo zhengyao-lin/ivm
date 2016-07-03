@@ -58,12 +58,39 @@ OPCODE_GEN(LT, "lt", N, CMP_BINOP_HANDLER(
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
-	if ((ivm_ptr_t)_TMP_OBJ < 0) {
-		NEXT_N_INSTR(IARG());
-	} else {
-		NEXT_INSTR();
-	}
+OPCODE_GEN(LE, "le", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ <= 0));
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(GT, "gt", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ > 0));
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(GE, "ge", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ >= 0));
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(LT_R, "lt_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ < 0;
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(LE_R, "le_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ <= 0;
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(GT_R, "gt_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ > 0;
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(GE_R, "ge_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ >= 0;
+	NEXT_INSTR();
 ))
 
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
@@ -335,6 +362,54 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", I, {
 		NEXT_INSTR();
 	}
 })
+
+OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, {
+	if (_TMP_CMP_REG) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+})
+
+OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", I, {
+	if (!_TMP_CMP_REG) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+})
+
+OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
+	if ((ivm_ptr_t)_TMP_OBJ < 0) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+))
+
+OPCODE_GEN(JUMP_LE, "jump_le", I, CMP_BINOP_HANDLER(
+	if ((ivm_ptr_t)_TMP_OBJ <= 0) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+))
+
+OPCODE_GEN(JUMP_GT, "jump_gt", I, CMP_BINOP_HANDLER(
+	if ((ivm_ptr_t)_TMP_OBJ > 0) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+))
+
+OPCODE_GEN(JUMP_GE, "jump_ge", I, CMP_BINOP_HANDLER(
+	if ((ivm_ptr_t)_TMP_OBJ >= 0) {
+		NEXT_N_INSTR(IARG());
+	} else {
+		NEXT_INSTR();
+	}
+))
 
 OPCODE_GEN(TEST1, "test1", N, {
 	IVM_OUT("test1\n");

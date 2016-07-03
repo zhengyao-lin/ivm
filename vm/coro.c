@@ -90,6 +90,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	register ivm_object_t *tmp_obj2 = IVM_NULL;
 	register ivm_uniop_proc_t tmp_uni_proc;
 	register ivm_binop_proc_t tmp_bin_proc;
+	register ivm_ptr_t tmp_cmp_reg = 0;
 
 	register const ivm_string_t *tmp_str;
 
