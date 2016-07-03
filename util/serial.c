@@ -251,7 +251,7 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 		return IVM_NULL;
 	// IVM_ASSERT(tmp, IVM_ERROR_MSG_FILE_FORMAT_ERR);
 
-	IVM_TRACE("pool size: %ld\n", size);
+	// IVM_TRACE("pool size: %ld\n", size);
 
 	ret = ivm_string_pool_new(IVM_TRUE);
 

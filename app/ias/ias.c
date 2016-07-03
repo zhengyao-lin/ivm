@@ -44,6 +44,7 @@ int main(int argc, const char **argv)
 	} file_format = FORMAT_AUTO; // auto
 
 	ivm_char_t *src;
+	const ivm_char_t *cache_file_path;
 	ias_gen_env_t *env;
 	ivm_exec_unit_t *unit = IVM_NULL;
 	ivm_vmstate_t *state = IVM_NULL;
@@ -133,12 +134,13 @@ int main(int argc, const char **argv)
 						}
 						break;
 					case FORMAT_IOBJ:
+						cache_file_path = tmp_str;
 						cache_file = ivm_file_new(tmp_str, IVM_FMODE_READ_BINARY);
 						if (!cache_file) {
 							ERROR("cannot open cache file %s", tmp_str);
 						}
 						break;
-					default: IVM_ABORT();
+					default: IVM_FATAL("unexpected file format");
 				}
 			}
 		}),
@@ -183,7 +185,7 @@ int main(int argc, const char **argv)
 			unit = ivm_serial_unserializeExecUnit(s_unit);
 			ivm_serial_exec_unit_free(s_unit);
 		} else {
-			IVM_TRACE(IVM_ERROR_MSG_FILE_FORMAT_ERR);
+			IVM_FATAL(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "iobj"));
 		}
 	}
 

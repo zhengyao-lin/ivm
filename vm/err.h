@@ -44,7 +44,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK				"cannot push object to dead coro"
 #define IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC				"cannot serialize cached executable"
 #define IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE		"unexpected instruction string operand cache(not appear in the string pool)"
-#define IVM_ERROR_MSG_FILE_FORMAT_ERR					"wrong file format"
+#define IVM_ERROR_MSG_FILE_FORMAT_ERR(file, format)		"wrong file format of file %s, expecting %s file", (file), (format)
 
 IVM_COM_END
 
