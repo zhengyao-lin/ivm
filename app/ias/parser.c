@@ -599,8 +599,11 @@ _ias_parser_tokenToEnv(ivm_list_t *tokens)
 {
 	struct env_t env = { 0 };
 	struct rule_val_t ret;
+	ivm_bool_t suc;
 
-	RULE_START(trans_unit, &env, &ret, tokens);
+	RULE_START(trans_unit, &env, &ret, tokens, suc);
+
+	suc = suc;
 
 	return ret.u.env;
 }

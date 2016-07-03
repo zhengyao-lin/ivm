@@ -92,6 +92,7 @@ struct trans_entry_t {
 	ivm_int_t save;
 	ivm_bool_t ign;
 	ivm_bool_t exc; // exclude current char
+	ivm_bool_t ext; // extend the current token len
 	const ivm_char_t *msg;
 };
 
@@ -183,8 +184,10 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 		do {
 			cur_c = *c;
 			// IVM_TRACE("matching %c state %d\n", *c, state);
+
+			// if used exc before, skip the current char
 			if (!has_exc) {
-				if (*c == '\n') {
+				if (cur_c == '\n') {
 					line++;
 					col = (ivm_ptr_t)c;
 				}
@@ -195,14 +198,14 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 			for (tmp_entry = trans_map[state];
 				 tmp_entry->match;
 				 tmp_entry++) {
-				if (_is_match(*c, tmp_entry->match)) {
+				if (_is_match(cur_c, tmp_entry->match)) {
 					// tmp_token.val += tmp_entry->s_ofs;
 					// tmp_token.len += tmp_entry->ofs;
 
 					if (tmp_entry->ign) {
 						tmp_token = ((struct token_t) { .len = 0, .val = c + 1, .line = line, .pos = (ivm_ptr_t)c - col + 1 });
 					} else if (tmp_entry->save != IVM_COMMON_TOKEN_NONE) { // save to token stack
-						if (tmp_entry->to_state == state)
+						if (tmp_entry->ext || tmp_entry->to_state == state)
 							tmp_token.len++;
 
 						tmp_token.id = tmp_entry->save;
@@ -234,7 +237,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 			}
 
 			c++;
-		} while (cur_c != '\0');
+		} while (cur_c != '\0' || has_exc);
 	}
 
 	if (state != IVM_COMMON_TOKEN_STATE_INIT) {
@@ -362,10 +365,10 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 		return IVM_TRUE; \
 	RULE_MATCHED_END: ;
 
-#define RULE_START(name, env, ret, tokens) \
+#define RULE_START(name, env, ret, tokens, suc) \
 	ivm_size_t __i__ = 0; \
 	struct err_msg_t __last_err__; \
-	RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__);
+	(suc) = RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__) && __i__ == ivm_list_size(tokens);
 
 #endif
 

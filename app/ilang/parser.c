@@ -25,10 +25,15 @@ enum token_id_t {
 	/* keywords */
 	T_FN,
 	T_LET,
+	T_IF,
+	T_ELSE,
+	T_WHILE,
+	T_RET,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
 	T_COLON,	// :
+	T_DOT,		// .
 
 	T_LBRAC,	// {
 	T_RBRAC,	// }
@@ -71,10 +76,15 @@ token_name_table[] = {
 	
 	"keyword `fn`",
 	"keyword `let`",
+	"keyword `if`",
+	"keyword `else`",
+	"keyword `while`",
+	"keyword `ret`",
 
 	"semicolon",
 	"comma",
 	"colon",
+	"dot",
 
 	"left brace",
 	"right brace",
@@ -107,7 +117,7 @@ token_name_table[] = {
 
 #define IVM_USE_COMMON_PARSER
 #define IVM_COMMON_DEBUG_MODE 1
-#define IVM_COMMON_MAX_TOKEN_RULE 30
+#define IVM_COMMON_MAX_TOKEN_RULE 40
 #define IVM_COMMON_PARSER_NAME "ilang"
 #include "util/parser.h"
 
@@ -200,26 +210,26 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 
 		/* TRY_GT */
 		{
-			{ "==", ST_INIT, T_CGE },
-			{ ".", ST_INIT, T_CGT, .exc = IVM_TRUE },
+			{ "==", ST_INIT, T_CGE, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_CGT },
 		},
 
 		/* TRY_LT */
 		{
-			{ "==", ST_INIT, T_CLE },
-			{ ".", ST_INIT, T_CLT, .exc = IVM_TRUE }
+			{ "==", ST_INIT, T_CLE, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_CLT }
 		},
 
 		/* TRY_NOT */
 		{
-			{ "==", ST_INIT, T_CNE },
-			{ ".", ST_INIT, T_NOT, .exc = IVM_TRUE }
+			{ "==", ST_INIT, T_CNE, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_NOT }
 		},
 
 		/* TRY_ASSIGN */
 		{
-			{ "==", ST_INIT, T_CEQ },
-			{ ".", ST_INIT, T_ASSIGN, .exc = IVM_TRUE }
+			{ "==", ST_INIT, T_CEQ, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_ASSIGN }
 		},
 
 		/* TRY_COMMENT12 */
@@ -290,7 +300,8 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 
 		/* IN_NUM_DOT */
 		{
-			{ "-09", ST_IN_NUM_DEC }
+			{ "-09", ST_IN_NUM_DEC },
+			{ ".", ST_INIT, T_DOT }
 		},
 
 		/* IN_NUM_DEC */
@@ -310,6 +321,10 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 #define KEYWORD(name, id) { (name), sizeof(name) - 1, (id) },
 		KEYWORD("fn", T_FN)
 		KEYWORD("let", T_LET)
+		KEYWORD("if", T_IF)
+		KEYWORD("else", T_ELSE)
+		KEYWORD("while", T_WHILE)
+		KEYWORD("ret", T_RET)
 #undef KEYWORD
 	};
 
@@ -329,4 +344,778 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 	_ivm_parser_dumpToken(ret);
 
 	return ret;
+}
+
+/*
+
+ink grammar
+
+trans_unit
+	: expression_list
+
+sep : newl
+	| ';'
+
+sep_list
+	: sep
+	| sep_list sep
+
+newl_opt
+	: newl
+	| %empty
+
+expression_list
+	: expression
+	| expression_list sep_list expression
+
+expression
+	: fn_expr
+
+param_list
+	: id
+	| param_list ',' id
+
+fn_expr
+	: comma_expr
+	| fn param_list ':' fn_expr
+
+comma_expr
+	: assign_expr
+	| comma_expr ',' assign_expr
+
+assign_expr
+	: eq_expr
+	| eq_expr '=' assign_expr
+
+eq_expr
+	: cmp_expr
+	| eq_expr '==' cmp_expr
+	| eq_expr '!=' cmp_expr
+
+cmp_expr
+	: add_sub_expr
+	| cmp_expr '>' add_sub_expr
+	| cmp_expr '>=' add_sub_expr
+	| cmp_expr '<' add_sub_expr
+	| cmp_expr '<=' add_sub_expr
+
+add_sub_expr
+	: mul_div_expr
+	| add_sub_expr '+' mul_div_expr
+	| add_sub_expr '-' mul_div_expr
+
+mul_div_expr
+	: unary_expr
+	| mul_div_expr '*' unary_expr
+	| mul_div_expr '/' unary_expr
+	| mul_div_expr '%' unary_expr
+
+unary_expr
+	: postfix_expr
+	| '!' unary_expr
+
+arg_list
+	: expression
+	| arg_list ',' expression
+
+postfix_expr
+	: primary_expr
+	| postfix_expr '(' arg_list ')'
+	| postfix_expr '.' id
+
+primary_expr
+	: string
+	| int
+	| float
+	| id
+	| '(' expression ')'
+	| '{' expression_list '}'
+
+************************************
+
+no left-recur:
+
+trans_unit
+	: expression_list
+
+sep : newl
+	| ';'
+
+sep_list
+	: sep sep_list_sub
+
+	sep_list_sub
+		: sep sep_list_sub
+		| %empty
+
+newl_opt
+	: newl
+	| %empty
+
+expression_list
+	: expression expression_list_sub
+
+	expression_list_sub
+		: sep_list expression expression_list_sub
+		| %empty
+
+expression
+	: fn_expr
+
+param_list
+	: id param_list_sub
+
+	param_list_sub
+		: ',' id param_list_sub
+		| %empty
+
+fn_expr
+	: comma_expr
+	| fn param_list ':' fn_expr
+
+comma_expr
+	: assign_expr comma_expr_sub
+
+	comma_expr_sub
+		: ',' assign_expr comma_expr_sub
+		| %empty
+
+assign_expr
+	: eq_expr
+	| eq_expr '=' assign_expr
+
+eq_expr
+	: cmp_expr eq_expr_sub
+
+	eq_expr_sub
+		: '==' cmp_expr eq_expr_sub
+		| '!=' cmp_expr eq_expr_sub
+		| %empty
+
+cmp_expr
+	: add_sub_expr cmp_expr_sub
+
+	cmp_expr_sub
+		: '>' add_sub_expr cmp_expr_sub
+		| '>=' add_sub_expr cmp_expr_sub
+		| '<' add_sub_expr cmp_expr_sub
+		| '<=' add_sub_expr cmp_expr_sub
+		| %empty
+
+add_sub_expr
+	: mul_div_expr add_sub_expr_sub
+
+	add_sub_expr_sub
+		: '+' mul_div_expr add_sub_expr_sub
+		| '-' mul_div_expr add_sub_expr_sub
+		| %empty
+
+mul_div_expr
+	: unary_expr mul_div_expr_sub
+
+	mul_div_expr_sub
+		: '*' unary_expr mul_div_expr_sub
+		| '/' unary_expr mul_div_expr_sub
+		| '%' unary_expr mul_div_expr_sub
+		| %empty
+
+unary_expr
+	: postfix_expr
+	| '!' unary_expr
+
+arg_list
+	: expression arg_list_sub
+
+	arg_list_sub
+		: ',' expression arg_list_sub
+		| %empty
+
+postfix_expr
+	: primary_expr postfix_expr_sub
+
+	postfix_expr_sub
+		: '(' arg_list ')' postfix_expr_sub
+		| '.' id postfix_expr_sub
+		| %empty
+
+primary_expr
+	: string
+	| int
+	| float
+	| id
+	| '(' expression ')'
+	| '{' expression_list '}'
+
+ */
+
+struct rule_val_t { int dummy; };
+struct env_t { int dummy; };
+
+#define R EXPECT_RULE
+#define T EXPECT_TOKEN
+
+/*
+	sep : newl
+		| ';'
+ */
+RULE(sep)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_NEWL))
+		SUB_RULE(T(T_SEMIC))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	sep_list_sub
+		: sep sep_list_sub
+		| %empty
+ */
+RULE(sep_list_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep) R(sep_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	sep_list
+		: sep sep_list_sub
+ */
+RULE(sep_list)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep) R(sep_list_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	sep_list_opt
+		: sep sep_list_sub
+		| %empty
+ */
+RULE(sep_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep) R(sep_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	newl_list_sub
+		: newl newl_list_sub
+		| %empty
+ */
+RULE(newl_list_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_NEWL) R(newl_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	newl_list_opt
+		: newl newl_list_sub
+		| %empty
+ */
+RULE(newl_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_NEWL) R(newl_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	primary_expr
+		: string
+		| int
+		| float
+		| id
+		| '(' expression ')'
+		| '{' expression_list_opt '}'
+ */
+RULE(expression);
+RULE(expression_list);
+RULE(expression_list_opt);
+RULE(primary_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_STR))
+		SUB_RULE(T(T_INT))
+		SUB_RULE(T(T_FLOAT))
+		SUB_RULE(T(T_ID))
+		SUB_RULE(T(T_LPAREN) R(newl_list_opt) R(expression) R(newl_list_opt) T(T_RPAREN))
+		SUB_RULE(T(T_LBRAC) R(expression_list_opt) T(T_RBRAC))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	arg_list_sub
+		: ',' expression arg_list_sub
+		| %empty
+ */
+RULE(arg_list_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(expression) R(arg_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	arg_list
+		: expression arg_list_sub
+ */
+RULE(arg_list)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(expression) R(arg_list_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	arg_list_opt
+		: expression arg_list_sub
+		| %empty
+ */
+RULE(arg_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(expression) R(arg_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	postfix_expr_sub
+		: '(' arg_list ')' postfix_expr_sub
+		| '.' id postfix_expr_sub
+		| %empty
+ */
+RULE(postfix_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_LPAREN) R(newl_list_opt) R(arg_list_opt) R(newl_list_opt) T(T_RPAREN) R(postfix_expr_sub))
+		SUB_RULE(T(T_DOT) R(newl_list_opt) T(T_ID) R(postfix_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	postfix_expr
+		: primary_expr postfix_expr_sub
+ */
+RULE(postfix_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(primary_expr) R(postfix_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	unary_expr
+		: postfix_expr
+		| '!' unary_expr
+ */
+RULE(unary_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_NOT) R(newl_list_opt) R(unary_expr))
+		SUB_RULE(R(postfix_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	mul_div_expr_sub
+		: '*' unary_expr mul_div_expr_sub
+		| '/' unary_expr mul_div_expr_sub
+		| '%' unary_expr mul_div_expr_sub
+		| %empty
+ */
+RULE(mul_div_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_MUL) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE(T(T_DIV) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE(T(T_MOD) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	mul_div_expr
+		: unary_expr mul_div_expr_sub
+ */
+RULE(mul_div_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(unary_expr) R(mul_div_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	add_sub_expr_sub
+		: '+' mul_div_expr add_sub_expr_sub
+		| '-' mul_div_expr add_sub_expr_sub
+		| %empty
+ */
+RULE(add_sub_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ADD) R(newl_list_opt) R(mul_div_expr) R(add_sub_expr_sub))
+		SUB_RULE(T(T_SUB) R(newl_list_opt) R(mul_div_expr) R(add_sub_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	add_sub_expr
+		: mul_div_expr add_sub_expr_sub
+ */
+RULE(add_sub_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(mul_div_expr) R(add_sub_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	cmp_expr_sub
+		: '>' add_sub_expr cmp_expr_sub
+		| '>=' add_sub_expr cmp_expr_sub
+		| '<' add_sub_expr cmp_expr_sub
+		| '<=' add_sub_expr cmp_expr_sub
+		| %empty
+ */
+RULE(cmp_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_CGT) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CGE) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CLT) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CLE) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	cmp_expr
+		: add_sub_expr cmp_expr_sub
+ */
+RULE(cmp_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(add_sub_expr) R(cmp_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	eq_expr_sub
+		: '==' cmp_expr eq_expr_sub
+		| '!=' cmp_expr eq_expr_sub
+		| %empty
+ */
+RULE(eq_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_CEQ) R(newl_list_opt) R(cmp_expr) R(eq_expr_sub))
+		SUB_RULE(T(T_CNE) R(newl_list_opt) R(cmp_expr) R(eq_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	eq_expr
+		: cmp_expr eq_expr_sub
+ */
+RULE(eq_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(cmp_expr) R(eq_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	param_list_sub
+		: ',' id param_list_sub
+		| %empty
+ */
+RULE(param_list_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(newl_list_opt) T(T_ID) R(param_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	param_list
+		: id param_list_sub
+ */
+RULE(param_list)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ID) R(param_list_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	param_list_opt
+		: id param_list_sub
+		| %empty
+ */
+RULE(param_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ID) R(param_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	fn_expr
+		: comma_expr
+		| fn param_list ':' fn_expr
+ */
+RULE(fn_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_FN) R(param_list_opt) R(newl_list_opt) T(T_COLON) R(newl_list_opt) R(fn_expr))
+		SUB_RULE(R(eq_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	assign_expr
+		: eq_expr
+		| eq_expr '=' assign_expr
+ */
+RULE(assign_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(fn_expr) T(T_ASSIGN) R(newl_list_opt) R(assign_expr))
+		SUB_RULE(R(fn_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	comma_expr_sub
+		: ',' assign_expr comma_expr_sub
+		| %empty
+ */
+RULE(comma_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(assign_expr) R(comma_expr_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	comma_expr
+		: assign_expr comma_expr_sub
+ */
+RULE(comma_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(assign_expr) R(comma_expr_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	intr_expr:
+		: 'ret' fn_expr
+ */
+RULE(intr_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_RET) R(comma_expr))
+		SUB_RULE(R(comma_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	expression
+		: intr_expr
+ */
+RULE(expression)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(intr_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	expression_list_sub
+		: sep_list expression expression_list_sub
+		| %empty
+ */
+RULE(expression_list_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep_list) R(expression) R(expression_list_sub))
+		SUB_RULE(R(sep_list))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	expression_list
+		: expression expression_list_sub
+ */
+RULE(expression_list)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep_list_opt) R(expression) R(expression_list_sub))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	expression_list_opt
+		: expression expression_list_sub
+		| %empty
+ */
+RULE(expression_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep_list_opt) R(expression) R(expression_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	trans_unit
+		: expression_list
+ */
+
+RULE(trans_unit)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(expression_list) T(T_EOF))
+	);
+
+	FAILED({
+		POP_ERR();
+	});
+
+	MATCHED({
+		if (HAS_NEXT_TOKEN()) {
+			POP_ERR();
+		}
+	});
+}
+
+ivm_bool_t
+_ivm_parser_tryParse(ivm_list_t *tokens)
+{
+	struct env_t env = { 0 };
+	struct rule_val_t ret;
+	ivm_bool_t suc;
+
+	RULE_START(trans_unit, &env, &ret, tokens, suc);
+
+	return suc;
 }
