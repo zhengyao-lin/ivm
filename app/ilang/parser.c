@@ -346,208 +346,6 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 	return ret;
 }
 
-/*
-
-ink grammar
-
-trans_unit
-	: expression_list
-
-sep : newl
-	| ';'
-
-sep_list
-	: sep
-	| sep_list sep
-
-newl_opt
-	: newl
-	| %empty
-
-expression_list
-	: expression
-	| expression_list sep_list expression
-
-expression
-	: fn_expr
-
-param_list
-	: id
-	| param_list ',' id
-
-fn_expr
-	: comma_expr
-	| fn param_list ':' fn_expr
-
-comma_expr
-	: assign_expr
-	| comma_expr ',' assign_expr
-
-assign_expr
-	: eq_expr
-	| eq_expr '=' assign_expr
-
-eq_expr
-	: cmp_expr
-	| eq_expr '==' cmp_expr
-	| eq_expr '!=' cmp_expr
-
-cmp_expr
-	: add_sub_expr
-	| cmp_expr '>' add_sub_expr
-	| cmp_expr '>=' add_sub_expr
-	| cmp_expr '<' add_sub_expr
-	| cmp_expr '<=' add_sub_expr
-
-add_sub_expr
-	: mul_div_expr
-	| add_sub_expr '+' mul_div_expr
-	| add_sub_expr '-' mul_div_expr
-
-mul_div_expr
-	: unary_expr
-	| mul_div_expr '*' unary_expr
-	| mul_div_expr '/' unary_expr
-	| mul_div_expr '%' unary_expr
-
-unary_expr
-	: postfix_expr
-	| '!' unary_expr
-
-arg_list
-	: expression
-	| arg_list ',' expression
-
-postfix_expr
-	: primary_expr
-	| postfix_expr '(' arg_list ')'
-	| postfix_expr '.' id
-
-primary_expr
-	: string
-	| int
-	| float
-	| id
-	| '(' expression ')'
-	| '{' expression_list '}'
-
-************************************
-
-no left-recur:
-
-trans_unit
-	: expression_list
-
-sep : newl
-	| ';'
-
-sep_list
-	: sep sep_list_sub
-
-	sep_list_sub
-		: sep sep_list_sub
-		| %empty
-
-newl_opt
-	: newl
-	| %empty
-
-expression_list
-	: expression expression_list_sub
-
-	expression_list_sub
-		: sep_list expression expression_list_sub
-		| %empty
-
-expression
-	: fn_expr
-
-param_list
-	: id param_list_sub
-
-	param_list_sub
-		: ',' id param_list_sub
-		| %empty
-
-fn_expr
-	: comma_expr
-	| fn param_list ':' fn_expr
-
-comma_expr
-	: assign_expr comma_expr_sub
-
-	comma_expr_sub
-		: ',' assign_expr comma_expr_sub
-		| %empty
-
-assign_expr
-	: eq_expr
-	| eq_expr '=' assign_expr
-
-eq_expr
-	: cmp_expr eq_expr_sub
-
-	eq_expr_sub
-		: '==' cmp_expr eq_expr_sub
-		| '!=' cmp_expr eq_expr_sub
-		| %empty
-
-cmp_expr
-	: add_sub_expr cmp_expr_sub
-
-	cmp_expr_sub
-		: '>' add_sub_expr cmp_expr_sub
-		| '>=' add_sub_expr cmp_expr_sub
-		| '<' add_sub_expr cmp_expr_sub
-		| '<=' add_sub_expr cmp_expr_sub
-		| %empty
-
-add_sub_expr
-	: mul_div_expr add_sub_expr_sub
-
-	add_sub_expr_sub
-		: '+' mul_div_expr add_sub_expr_sub
-		| '-' mul_div_expr add_sub_expr_sub
-		| %empty
-
-mul_div_expr
-	: unary_expr mul_div_expr_sub
-
-	mul_div_expr_sub
-		: '*' unary_expr mul_div_expr_sub
-		| '/' unary_expr mul_div_expr_sub
-		| '%' unary_expr mul_div_expr_sub
-		| %empty
-
-unary_expr
-	: postfix_expr
-	| '!' unary_expr
-
-arg_list
-	: expression arg_list_sub
-
-	arg_list_sub
-		: ',' expression arg_list_sub
-		| %empty
-
-postfix_expr
-	: primary_expr postfix_expr_sub
-
-	postfix_expr_sub
-		: '(' arg_list ')' postfix_expr_sub
-		| '.' id postfix_expr_sub
-		| %empty
-
-primary_expr
-	: string
-	| int
-	| float
-	| id
-	| '(' expression ')'
-	| '{' expression_list '}'
-
- */
-
 struct rule_val_t { int dummy; };
 struct env_t { int dummy; };
 
@@ -902,6 +700,8 @@ RULE(eq_expr)
 	MATCHED({})
 }
 
+RULE(prefix_expr);
+
 /*
 	param_list_sub
 		: ',' id param_list_sub
@@ -950,14 +750,28 @@ RULE(param_list_opt)
 
 /*
 	fn_expr
-		: comma_expr
-		| fn param_list ':' fn_expr
+		: fn param_list ':' prefix_expr
  */
 RULE(fn_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_FN) R(param_list_opt) R(newl_list_opt) T(T_COLON) R(newl_list_opt) R(fn_expr))
-		SUB_RULE(R(eq_expr))
+		SUB_RULE(T(T_FN) R(param_list_opt) R(newl_list_opt) T(T_COLON) R(newl_list_opt) R(prefix_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	intr_expr:
+		: 'ret' prefix_expr
+		| 'ret'
+ */
+RULE(intr_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_RET) R(prefix_expr))
+		SUB_RULE(T(T_RET))
 	);
 
 	FAILED({})
@@ -966,14 +780,33 @@ RULE(fn_expr)
 
 /*
 	assign_expr
-		: eq_expr
-		| eq_expr '=' assign_expr
+		: eq_expr '=' prefix_expr
  */
 RULE(assign_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(fn_expr) T(T_ASSIGN) R(newl_list_opt) R(assign_expr))
-		SUB_RULE(R(fn_expr))
+		SUB_RULE(R(eq_expr) T(T_ASSIGN) R(newl_list_opt) R(prefix_expr))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	prefix_expr
+		: assign_expr
+		| intr_expr
+		| fn_expr
+		| eq_expr
+ */
+
+RULE(prefix_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(assign_expr) PRINT_MATCH_TOKEN("assign expr"))
+		SUB_RULE(R(intr_expr) PRINT_MATCH_TOKEN("intr expr"))
+		SUB_RULE(R(fn_expr) PRINT_MATCH_TOKEN("fn expr"))
+		SUB_RULE(R(eq_expr) PRINT_MATCH_TOKEN("eq expr"))
 	);
 
 	FAILED({})
@@ -982,13 +815,13 @@ RULE(assign_expr)
 
 /*
 	comma_expr_sub
-		: ',' assign_expr comma_expr_sub
+		: ',' prefix_expr comma_expr_sub
 		| %empty
  */
 RULE(comma_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(assign_expr) R(comma_expr_sub))
+		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(prefix_expr) R(comma_expr_sub))
 		SUB_RULE()
 	);
 
@@ -998,27 +831,12 @@ RULE(comma_expr_sub)
 
 /*
 	comma_expr
-		: assign_expr comma_expr_sub
+		: prefix_expr comma_expr_sub
  */
 RULE(comma_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(assign_expr) R(comma_expr_sub))
-	);
-
-	FAILED({})
-	MATCHED({})
-}
-
-/*
-	intr_expr:
-		: 'ret' fn_expr
- */
-RULE(intr_expr)
-{
-	SUB_RULE_SET(
-		SUB_RULE(T(T_RET) R(comma_expr))
-		SUB_RULE(R(comma_expr))
+		SUB_RULE(R(prefix_expr) R(comma_expr_sub) PRINT_MATCH_TOKEN("comma expr"))
 	);
 
 	FAILED({})
@@ -1032,7 +850,7 @@ RULE(intr_expr)
 RULE(expression)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(intr_expr))
+		SUB_RULE(R(comma_expr))
 	);
 
 	FAILED({})
@@ -1047,7 +865,9 @@ RULE(expression)
 RULE(expression_list_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(sep_list) R(expression) R(expression_list_sub))
+		SUB_RULE(R(sep_list) CLEAR_ERR() R(expression)
+				 IVM_TRACE("********* expr matched *********\n");
+				 R(expression_list_sub))
 		SUB_RULE(R(sep_list))
 		SUB_RULE()
 	);
@@ -1063,7 +883,9 @@ RULE(expression_list_sub)
 RULE(expression_list)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(sep_list_opt) R(expression) R(expression_list_sub))
+		SUB_RULE(R(sep_list_opt) CLEAR_ERR() R(expression)
+				 IVM_TRACE("********* expr matched *********\n");
+				 R(expression_list_sub))
 	);
 
 	FAILED({})
@@ -1078,7 +900,25 @@ RULE(expression_list)
 RULE(expression_list_opt)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(sep_list_opt) R(expression) R(expression_list_sub))
+		SUB_RULE(R(sep_list_opt) CLEAR_ERR() R(expression)
+				 IVM_TRACE("********* expr matched *********\n");
+				 R(expression_list_sub))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	eof_opt
+		: EOF
+		| %empty
+ */
+RULE(eof_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_EOF))
 		SUB_RULE()
 	);
 
@@ -1094,7 +934,7 @@ RULE(expression_list_opt)
 RULE(trans_unit)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(expression_list) T(T_EOF))
+		SUB_RULE(R(expression_list) R(eof_opt))
 	);
 
 	FAILED({

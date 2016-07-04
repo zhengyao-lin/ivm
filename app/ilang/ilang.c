@@ -34,8 +34,13 @@ ivm_perf_startProfile();
 
 ivm_perf_stopProfile();
 ivm_perf_printElapsed();
+ivm_perf_reset();
+ivm_perf_startProfile();
 
 	IVM_TRACE("is legal: %d\n", _ivm_parser_tryParse(tokens));
+	
+ivm_perf_stopProfile();
+ivm_perf_printElapsed();
 
 	ivm_list_free(tokens);
 

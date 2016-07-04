@@ -73,9 +73,11 @@ struct err_msg_t {
 
 	const ivm_char_t *expect;
 	const ivm_char_t *given;
+	const ivm_char_t *rule_name;
 };
 
-#define ERR_MSG(l, p, e, g) ((struct err_msg_t) { (l), (p), (e), (g) })
+#define ERR_MSG(l, p, e, g) ((struct err_msg_t) { (l), (p), (e), (g), IVM_NULL })
+#define ERR_MSG_R(l, p, e, g, r) ((struct err_msg_t) { (l), (p), (e), (g), (r) })
 
 struct token_t {
 	ivm_int_t id;
@@ -114,9 +116,20 @@ struct trans_entry_t {
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
-#define PARSER_ERR_EM(err) \
-	(IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: unexpected %s, expecting %s \n", \
-			   (err)->line, (err)->pos, (err)->given, (err)->expect))
+IVM_INLINE
+void
+PARSER_ERR_EM(struct err_msg_t *err)
+{
+	if (err->expect) {
+		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: unexpected %s, expecting %s \n",
+				  (err)->line, (err)->pos, (err)->given, (err)->expect);
+	} else {
+		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: unexpected %s \n",
+				  (err)->line, (err)->pos, (err)->given);
+	}
+
+	return;
+}
 
 #define PARSER_ERR_MSG_ILLEGAL_REG									("illegal regular")
 #define PARSER_ERR_MSG_UNEXPECTED_CHAR(c, state)					"unexpected character '%c' in state %d", (c), (state)
@@ -160,6 +173,24 @@ _ivm_parser_dumpToken(ivm_list_t *tokens)
 				  token_name_table[tmp->id],
 				  (int)tmp->len, tmp->val, tmp->len);
 	}
+
+	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_parser_dumpToken_r(struct token_t *from, struct token_t *to) // [from, to)
+{
+	if (from == to) {
+		IVM_TRACE("none\n");
+		return;
+	}
+
+	for (; from != to; from++) {
+		IVM_TRACE("%.*s ", (int)from->len, from->val);
+	}
+	IVM_TRACE("\n");
 
 	return;
 }
@@ -252,7 +283,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 
 /* syntax parser */
 #define RULE_ARG \
-	struct env_t *__env__, struct rule_val_t *__ret__, ivm_list_t *__tokens__, ivm_size_t *__i__, struct err_msg_t *__last_err__
+	struct env_t *__env__, struct rule_val_t *__ret__, ivm_list_t *__tokens__, ivm_size_t *__i__, struct err_msg_t *__last_err__, int __indent__
 
 #define MAX_RULE_COUNT 10
 #define MAX_TOK_COUNT 10
@@ -277,7 +308,17 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 #define IS_FAILED(call) (!IS_SUC(call))
 
 #define SET_ERR(msg) (*__last_err__ = (msg))
-#define POP_ERR() (PARSER_ERR_EM(__last_err__))
+#define POP_ERR() \
+	if (!__last_err__->line && HAS_NEXT_TOKEN()) { \
+		__tmp_token__ = CUR_TOKEN(); \
+		SET_ERR(ERR_MSG( \
+			__tmp_token__->line, __tmp_token__->pos, \
+			IVM_NULL, TOKEN_NAME(__tmp_token__->id) \
+		)); \
+	} \
+	PARSER_ERR_EM(__last_err__);
+
+#define CLEAR_ERR() *__last_err__ = (struct err_msg_t) { 0 };
 
 #define SHIFT(name, ret, ofs) \
 	(*__i__ += (ofs), RULE_NAME(name)(_ENV, (ret), _TOKEN, __i__))
@@ -285,32 +326,43 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 #define RESTORE_RULE() \
 	__reti__ = __rets__; \
 	__toki__ = __toks__; \
-	*__i__ = __i_back__;
+	*__i__ = __i_back__; \
+	__has_matched__ = IVM_FALSE;
 
 #define EXPECT_TOKEN(tid) \
 	if (HAS_NEXT_TOKEN() && (*__toki__++ = CUR_TOKEN())->id == (tid)) { \
+		__has_matched__ = IVM_TRUE; \
 		NEXT_TOKEN(); \
 	} else { \
-		if (HAS_NEXT_TOKEN() && !__has_err__) { \
-			__has_err__ = IVM_TRUE; \
+		if (HAS_NEXT_TOKEN() && !__last_err__->line && __has_matched__ /* has matched token(s) */) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__= ERR_MSG( \
 				__tmp_token__->line, __tmp_token__->pos, \
 				TOKEN_NAME(tid), TOKEN_NAME(__tmp_token__->id) \
 			); \
+			SET_ERR(__tmp_err__); \
 		} \
 		RESTORE_RULE(); \
 		break; \
 	}
 
 #define EXPECT_RULE(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__))) { \
+	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
+		if (!__last_err__->line && __has_matched__ /* has matched token(s) */) { \
+			__tmp_token__ = CUR_TOKEN(); \
+			__tmp_err__ = ERR_MSG_R( \
+				__tmp_token__->line, __tmp_token__->pos, \
+				#name, TOKEN_NAME(__tmp_token__->id), \
+				#name \
+			); \
+			SET_ERR(__tmp_err__); \
+		} \
 		RESTORE_RULE(); \
 		break; \
 	}
 
 #define EXPECT_RULE_NORET(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__, _TOKEN, __i__, __last_err__))) { \
+	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
 		break; \
 	}
 
@@ -319,7 +371,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	EXPECT_RULE(name); \
 	do { \
 		__VA_ARGS__; \
-		while (IS_SUC(RULE_NAME(name)(_ENV, __reti_back__, _TOKEN, __i__, __last_err__))) { \
+		while (IS_SUC(RULE_NAME(name)(_ENV, __reti_back__, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
 			__VA_ARGS__; \
 		} \
 	} while (0);
@@ -334,11 +386,13 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	struct token_t *__toks__[MAX_TOK_COUNT]; \
 	struct token_t **__toki__ = __toks__; \
 	struct token_t *__tmp_token__ = IVM_NULL; \
-	ivm_bool_t __has_err__ = IVM_FALSE; \
+	ivm_bool_t __has_matched__ = IVM_FALSE; \
 	struct err_msg_t __tmp_err__; \
 	__reti__ == __reti__; /* reduce unused variable warning */ \
 	__toki__ == __toki__; \
 	__tmp_token__ == __tmp_token__; \
+	__has_matched__ == __has_matched__; \
+	__tmp_err__ = __tmp_err__; \
 	__VA_ARGS__; \
 	goto RULE_FAILED;
 
@@ -348,13 +402,14 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 		goto RULE_MATCHED; \
 	} while (0);
 
+#define PRINT_MATCH_TOKEN(name) \
+	IVM_TRACE("%*smatch rule %s: ", 0, "", (name)); \
+	_ivm_parser_dumpToken_r((struct token_t *)ivm_list_at(__tokens__, __i_back__), CUR_TOKEN());
+
 #define FAILED(...) \
 	goto RULE_FAILED_END; \
 	RULE_FAILED: \
 		__VA_ARGS__; \
-		if (__has_err__) { \
-			SET_ERR(__tmp_err__); \
-		} \
 		return IVM_FALSE;\
 	RULE_FAILED_END: ;
 
@@ -367,8 +422,8 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 
 #define RULE_START(name, env, ret, tokens, suc) \
 	ivm_size_t __i__ = 0; \
-	struct err_msg_t __last_err__; \
-	(suc) = RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__) && __i__ == ivm_list_size(tokens);
+	struct err_msg_t __last_err__ = { 0 }; \
+	(suc) = RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__, 0) && __i__ == ivm_list_size(tokens);
 
 #endif
 

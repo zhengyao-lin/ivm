@@ -447,6 +447,7 @@ RULE(instr_list)
 		SUB_RULE(
 			EXPECT_RULE(instr_end_opt)
 			EXPECT_RULE_LIST(instr, {
+				CLEAR_ERR();
 				ias_gen_instr_list_add(list, &RULE_RET_AT(1).u.instr);
 			} EXPECT_RULE_NORET(instr_end))
 
