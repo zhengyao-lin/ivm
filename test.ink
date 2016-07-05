@@ -4,10 +4,7 @@ fib = fn n
 fn n:
 
 {
-	IF (n < 2)
-	{
-		ret 1
-	}
+	if n < 2: ret 1
 
 	ret fib(
 		n - 1
@@ -35,4 +32,11 @@ a = b = fn:(
 fn:(10 + 2 + (fn:0))
 
 a = fn:b = 2, c, d
-c, b = fn n : ret n, retn 1
+c, b = fn n : ret n, ret 1
+
+if a < b: {
+
+}
+elif a >
+b: b
+else: c

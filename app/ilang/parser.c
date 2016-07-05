@@ -26,6 +26,7 @@ enum token_id_t {
 	T_FN,
 	T_LET,
 	T_IF,
+	T_ELIF,
 	T_ELSE,
 	T_WHILE,
 	T_RET,
@@ -77,6 +78,7 @@ token_name_table[] = {
 	"keyword `fn`",
 	"keyword `let`",
 	"keyword `if`",
+	"keyword `elif`",
 	"keyword `else`",
 	"keyword `while`",
 	"keyword `ret`",
@@ -322,6 +324,7 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 		KEYWORD("fn", T_FN)
 		KEYWORD("let", T_LET)
 		KEYWORD("if", T_IF)
+		KEYWORD("elif", T_ELIF)
 		KEYWORD("else", T_ELSE)
 		KEYWORD("while", T_WHILE)
 		KEYWORD("ret", T_RET)
@@ -430,11 +433,11 @@ RULE(newl_list_sub)
 }
 
 /*
-	newl_list_opt
+	nllo
 		: newl newl_list_sub
 		| %empty
  */
-RULE(newl_list_opt)
+RULE(nllo)
 {
 	SUB_RULE_SET(
 		SUB_RULE(T(T_NEWL) R(newl_list_sub))
@@ -464,7 +467,7 @@ RULE(primary_expr)
 		SUB_RULE(T(T_INT))
 		SUB_RULE(T(T_FLOAT))
 		SUB_RULE(T(T_ID))
-		SUB_RULE(T(T_LPAREN) R(newl_list_opt) R(expression) R(newl_list_opt) T(T_RPAREN))
+		SUB_RULE(T(T_LPAREN) R(nllo) R(expression) R(nllo) T(T_RPAREN))
 		SUB_RULE(T(T_LBRAC) R(expression_list_opt) T(T_RBRAC))
 	);
 
@@ -480,7 +483,7 @@ RULE(primary_expr)
 RULE(arg_list_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(expression) R(arg_list_sub))
+		SUB_RULE(T(T_COMMA) R(nllo) R(expression) R(arg_list_sub))
 		SUB_RULE()
 	);
 
@@ -527,8 +530,8 @@ RULE(arg_list_opt)
 RULE(postfix_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_LPAREN) R(newl_list_opt) R(arg_list_opt) R(newl_list_opt) T(T_RPAREN) R(postfix_expr_sub))
-		SUB_RULE(T(T_DOT) R(newl_list_opt) T(T_ID) R(postfix_expr_sub))
+		SUB_RULE(T(T_LPAREN) R(nllo) R(arg_list_opt) R(nllo) T(T_RPAREN) R(postfix_expr_sub))
+		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(postfix_expr_sub))
 		SUB_RULE()
 	);
 
@@ -558,7 +561,7 @@ RULE(postfix_expr)
 RULE(unary_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_NOT) R(newl_list_opt) R(unary_expr))
+		SUB_RULE(T(T_NOT) R(nllo) R(unary_expr))
 		SUB_RULE(R(postfix_expr))
 	);
 
@@ -576,9 +579,9 @@ RULE(unary_expr)
 RULE(mul_div_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_MUL) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
-		SUB_RULE(T(T_DIV) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
-		SUB_RULE(T(T_MOD) R(newl_list_opt) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE(T(T_MUL) R(nllo) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE(T(T_DIV) R(nllo) R(unary_expr) R(mul_div_expr_sub))
+		SUB_RULE(T(T_MOD) R(nllo) R(unary_expr) R(mul_div_expr_sub))
 		SUB_RULE()
 	);
 
@@ -609,8 +612,8 @@ RULE(mul_div_expr)
 RULE(add_sub_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_ADD) R(newl_list_opt) R(mul_div_expr) R(add_sub_expr_sub))
-		SUB_RULE(T(T_SUB) R(newl_list_opt) R(mul_div_expr) R(add_sub_expr_sub))
+		SUB_RULE(T(T_ADD) R(nllo) R(mul_div_expr) R(add_sub_expr_sub))
+		SUB_RULE(T(T_SUB) R(nllo) R(mul_div_expr) R(add_sub_expr_sub))
 		SUB_RULE()
 	);
 
@@ -643,10 +646,10 @@ RULE(add_sub_expr)
 RULE(cmp_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_CGT) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
-		SUB_RULE(T(T_CGE) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
-		SUB_RULE(T(T_CLT) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
-		SUB_RULE(T(T_CLE) R(newl_list_opt) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CGT) R(nllo) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CGE) R(nllo) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CLT) R(nllo) R(add_sub_expr) R(cmp_expr_sub))
+		SUB_RULE(T(T_CLE) R(nllo) R(add_sub_expr) R(cmp_expr_sub))
 		SUB_RULE()
 	);
 
@@ -677,8 +680,8 @@ RULE(cmp_expr)
 RULE(eq_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_CEQ) R(newl_list_opt) R(cmp_expr) R(eq_expr_sub))
-		SUB_RULE(T(T_CNE) R(newl_list_opt) R(cmp_expr) R(eq_expr_sub))
+		SUB_RULE(T(T_CEQ) R(nllo) R(cmp_expr) R(eq_expr_sub))
+		SUB_RULE(T(T_CNE) R(nllo) R(cmp_expr) R(eq_expr_sub))
 		SUB_RULE()
 	);
 
@@ -710,7 +713,7 @@ RULE(prefix_expr);
 RULE(param_list_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(newl_list_opt) T(T_ID) R(param_list_sub))
+		SUB_RULE(T(T_COMMA) R(nllo) T(T_ID) R(param_list_sub))
 		SUB_RULE()
 	);
 
@@ -749,13 +752,77 @@ RULE(param_list_opt)
 }
 
 /*
+	elif_branch
+		: 'elif' nllo expression nllo ':' nllo prefix_expr
+ */
+RULE(elif_branch)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(nllo) T(T_ELIF) R(nllo) R(expression) R(nllo) T(T_COLON) R(nllo) R(prefix_expr) PRINT_MATCH_TOKEN("elif branch"))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	elif_list_opt
+		: elif_branch nllo elif_list_opt
+		| %empty
+ */
+RULE(elif_list_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(elif_branch) R(elif_list_opt))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	else_branch_opt
+		: 'else' nllo ':' bllo prefix_expr
+		| %empty
+ */
+RULE(else_branch_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(nllo) T(T_ELSE) R(nllo) T(T_COLON) R(nllo) R(prefix_expr) PRINT_MATCH_TOKEN("else branch"))
+		SUB_RULE()
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	if_expr
+		: 'if' expression ':' prefix_expr elif_list_opt else_branch_opt
+ */
+RULE(if_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_IF) R(expression) R(nllo) T(T_COLON) R(nllo)
+				 R(prefix_expr) PRINT_MATCH_TOKEN("if branch")
+				 R(elif_list_opt)
+				 R(else_branch_opt))
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	fn_expr
 		: fn param_list ':' prefix_expr
  */
 RULE(fn_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_FN) R(param_list_opt) R(newl_list_opt) T(T_COLON) R(newl_list_opt) R(prefix_expr))
+		SUB_RULE(T(T_FN) R(nllo) R(param_list_opt) R(nllo) T(T_COLON) R(nllo) R(prefix_expr))
+		SUB_RULE(R(if_expr))
 	);
 
 	FAILED({})
@@ -785,7 +852,7 @@ RULE(intr_expr)
 RULE(assign_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(eq_expr) T(T_ASSIGN) R(newl_list_opt) R(prefix_expr))
+		SUB_RULE(R(eq_expr) T(T_ASSIGN) R(nllo) R(prefix_expr))
 	);
 
 	FAILED({})
@@ -821,7 +888,7 @@ RULE(prefix_expr)
 RULE(comma_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(newl_list_opt) R(prefix_expr) R(comma_expr_sub))
+		SUB_RULE(T(T_COMMA) R(nllo) R(prefix_expr) R(comma_expr_sub))
 		SUB_RULE()
 	);
 
@@ -903,7 +970,7 @@ RULE(expression_list_opt)
 		SUB_RULE(R(sep_list_opt) CLEAR_ERR() R(expression)
 				 IVM_TRACE("********* expr matched *********\n");
 				 R(expression_list_sub))
-		SUB_RULE()
+		SUB_RULE(R(sep_list_opt))
 	);
 
 	FAILED({})
