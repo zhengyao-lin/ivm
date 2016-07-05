@@ -7,6 +7,8 @@
 
 #include "std/list.h"
 
+#include "gen.h"
+
 IVM_COM_HEADER
 
 IVM_COM_END

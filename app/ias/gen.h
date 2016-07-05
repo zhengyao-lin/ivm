@@ -49,10 +49,10 @@ typedef IVM_LIST_ITER_TYPE(ias_gen_instr_t) ias_gen_instr_list_iterator_t;
 #define ias_gen_instr_list_free ivm_list_free
 #define ias_gen_instr_list_add(list, instr) (ivm_list_push((list), (instr)))
 
-#define IVM_GEN_INSTR_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_instr_t)
-#define IVM_GEN_INSTR_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_instr_t)
-#define IVM_GEN_INSTR_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_instr_t)
-#define IVM_GEN_INSTR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_instr_t)
+#define IAS_GEN_INSTR_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_instr_t)
+#define IAS_GEN_INSTR_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_instr_t)
+#define IAS_GEN_INSTR_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_instr_t)
+#define IAS_GEN_INSTR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_instr_t)
 
 typedef struct {
 	ias_gen_pos_t pos;
@@ -74,10 +74,10 @@ void
 ias_gen_block_list_free(ias_gen_block_list_t *list);
 #define ias_gen_block_list_push(list, block) (ivm_list_push((list), (block)))
 
-#define IVM_GEN_BLOCK_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_block_t)
-#define IVM_GEN_BLOCK_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_block_t)
-#define IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_block_t)
-#define IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_block_t)
+#define IAS_GEN_BLOCK_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_block_t)
+#define IAS_GEN_BLOCK_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_block_t)
+#define IAS_GEN_BLOCK_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_block_t)
+#define IAS_GEN_BLOCK_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_block_t)
 
 typedef struct {
 	ias_gen_pos_t pos;
@@ -91,10 +91,10 @@ typedef IVM_LIST_ITER_TYPE(ias_gen_label_ref_t) ias_gen_label_ref_list_iterator_
 #define ias_gen_label_ref_list_free ivm_list_free
 #define ias_gen_label_ref_list_add(list, ref) (ivm_list_push((list), (ref)))
 
-#define IVM_GEN_LABEL_REF_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_label_ref_t)
-#define IVM_GEN_LABEL_REF_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_label_ref_t)
-#define IVM_GEN_LABEL_REF_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_label_ref_t)
-#define IVM_GEN_LABEL_REF_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_label_ref_t)
+#define IAS_GEN_LABEL_REF_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ias_gen_label_ref_t)
+#define IAS_GEN_LABEL_REF_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ias_gen_label_ref_t)
+#define IAS_GEN_LABEL_REF_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ias_gen_label_ref_t)
+#define IAS_GEN_LABEL_REF_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ias_gen_label_ref_t)
 
 typedef struct {
 	ias_gen_pos_t def_pos;
@@ -126,9 +126,9 @@ typedef IVM_PTLIST_ITER_TYPE(ias_gen_label_t *) ias_gen_label_list_iterator_t;
 #define ias_gen_label_list_add(list, label) (ivm_ptlist_push((list), (label)))
 #define ias_gen_label_list_empty ivm_ptlist_empty
 
-#define IVM_GEN_LABEL_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
-#define IVM_GEN_LABEL_LIST_ITER_GET(iter) ((ias_gen_label_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_GEN_LABEL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ias_gen_label_t *)
+#define IAS_GEN_LABEL_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IAS_GEN_LABEL_LIST_ITER_GET(iter) ((ias_gen_label_t *)IVM_PTLIST_ITER_GET(iter))
+#define IAS_GEN_LABEL_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ias_gen_label_t *)
 
 typedef struct {
 	ivm_string_pool_t *str_pool;

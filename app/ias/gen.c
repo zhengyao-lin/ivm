@@ -47,8 +47,8 @@ _ias_gen_env_cleanJumpTable(ias_gen_env_t *env)
 {
 	ias_gen_label_list_iterator_t liter;
 
-	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, liter) {
-		ias_gen_label_free(IVM_GEN_LABEL_LIST_ITER_GET(liter));
+	IAS_GEN_LABEL_LIST_EACHPTR(env->jmp_table, liter) {
+		ias_gen_label_free(IAS_GEN_LABEL_LIST_ITER_GET(liter));
 	}
 	ias_gen_label_list_empty(env->jmp_table);
 
@@ -116,8 +116,8 @@ ias_gen_block_list_free(ias_gen_block_list_t *list)
 	ias_gen_block_list_iterator_t iter;
 
 	if (list) {
-		IVM_GEN_BLOCK_LIST_EACHPTR(list, iter) {
-			ias_gen_instr_list_free(IVM_GEN_BLOCK_LIST_ITER_GET(iter).instrs);
+		IAS_GEN_BLOCK_LIST_EACHPTR(list, iter) {
+			ias_gen_instr_list_free(IAS_GEN_BLOCK_LIST_ITER_GET(iter).instrs);
 		}
 
 		ivm_list_free(list);
@@ -148,8 +148,8 @@ _ias_gen_env_refJumpAddr(ias_gen_env_t *env,
 	ias_gen_label_list_iterator_t iter;
 	ias_gen_label_t *tmp;
 
-	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
-		tmp = IVM_GEN_LABEL_LIST_ITER_GET(iter);
+	IAS_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
+		tmp = IAS_GEN_LABEL_LIST_ITER_GET(iter);
 		if (!IVM_STRNCMP(tmp->name,
 						 tmp->len,
 						 name, len)) {
@@ -183,8 +183,8 @@ _ias_gen_env_addLabel(ias_gen_env_t *env,
 	ias_gen_label_t *tmp;
 	ivm_long_t from, to;
 
-	IVM_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
-		tmp = IVM_GEN_LABEL_LIST_ITER_GET(iter);
+	IAS_GEN_LABEL_LIST_EACHPTR(env->jmp_table, iter) {
+		tmp = IAS_GEN_LABEL_LIST_ITER_GET(iter);
 		if (!IVM_STRNCMP(tmp->name,
 						 tmp->len,
 						 name, len)) {
@@ -199,8 +199,8 @@ _ias_gen_env_addLabel(ias_gen_env_t *env,
 
 			/* apply address to all referers */
 			to = addr;
-			IVM_GEN_LABEL_REF_LIST_EACHPTR(tmp->refs, riter) {
-				from = IVM_GEN_LABEL_REF_LIST_ITER_GET(riter).ref_addr;
+			IAS_GEN_LABEL_REF_LIST_EACHPTR(tmp->refs, riter) {
+				from = IAS_GEN_LABEL_REF_LIST_ITER_GET(riter).ref_addr;
 				ivm_exec_setArgAt(exec, from, to - from);
 			}
 
@@ -228,8 +228,8 @@ _ias_gen_env_getBlockID(ias_gen_env_t *env,
 	ias_gen_block_list_iterator_t iter;
 	ias_gen_block_t *tmp;
 
-	IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
-		tmp = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
+	IAS_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
+		tmp = IAS_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
 		if (!IVM_STRNCMP(tmp->label,
 						 tmp->len,
 						 label, len)) {
@@ -333,8 +333,8 @@ _ias_gen_block_generateExec(ias_gen_block_t *block,
 	ivm_bool_t failed;
 
 	if (block->instrs) {
-		IVM_GEN_INSTR_LIST_EACHPTR(block->instrs, iter) {
-			instr = IVM_GEN_INSTR_LIST_ITER_GET(iter);
+		IAS_GEN_INSTR_LIST_EACHPTR(block->instrs, iter) {
+			instr = IAS_GEN_INSTR_LIST_ITER_GET(iter);
 
 			if (instr.label) {
 				_ias_gen_env_addLabel(
@@ -388,8 +388,8 @@ ias_gen_env_generateExecUnit(ias_gen_env_t *env)
 	ias_gen_block_list_iterator_t iter;
 
 	if (env->block_list) {
-		IVM_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
-			block = IVM_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
+		IAS_GEN_BLOCK_LIST_EACHPTR(env->block_list, iter) {
+			block = IAS_GEN_BLOCK_LIST_ITER_GET_PTR(iter);
 			exec = _ias_gen_block_generateExec(block, env);
 
 			if (!IVM_STRNCMP("root", IVM_STRLEN("root"),

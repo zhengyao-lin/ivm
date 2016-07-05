@@ -37,6 +37,6 @@ c, b = fn n : ret n, ret 1
 if a < b: {
 
 }
-elif a >
-b: b
+elif a > b: (0, 0, 0)
 else: c
+

@@ -102,6 +102,13 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 		 (iter) != __pl_end_##iter##__; \
 		 (iter)++)
 
+#define IVM_PTLIST_EACHPTR_R(ptlist, iter, type) \
+	type *__pl_begin_##iter##__; \
+	for (__pl_begin_##iter##__ = (type *)((ptlist)->lst) - 1, \
+		 (iter) = __pl_begin_##iter##__ + (ptlist)->cur; \
+		 (iter) != __pl_begin_##iter##__; \
+		 (iter)--)
+
 typedef int (*ivm_ptlist_comparer_t)(const void *, const void *);
 
 ivm_size_t
@@ -227,6 +234,12 @@ ivm_list_at(ivm_list_t *list, ivm_size_t i)
 		 __l_end_##iter##__ = ((type *)(iter)) + (list)->cur; \
 		 (iter) != __l_end_##iter##__; \
 		 (iter)++)
+#define IVM_LIST_EACHPTR_R(list, iter, type) \
+	type *__l_begin_##iter##__; \
+	for (__l_begin_##iter##__ = (type *)((list)->lst) - 1, \
+		 (iter) = __l_begin_##iter##__ + (list)->cur; \
+		 (iter) != __l_begin_##iter##__; \
+		 (iter)--)
 
 IVM_COM_END
 
