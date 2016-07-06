@@ -41,6 +41,37 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 }
 
 ivm_slot_table_t *
+ivm_slot_table_new_c(ivm_vmstate_t *state,
+					 ivm_size_t prealloc)
+{
+	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	SET_BIT_FALSE(ret->is_hash);
+
+	if (prealloc < IVM_DEFAULT_SLOT_TABLE_SIZE) {
+		prealloc = IVM_DEFAULT_SLOT_TABLE_SIZE;
+	}
+
+#if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
+	if (prealloc >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
+		prealloc <<= 1; // lower load ratio
+		SET_BIT_TRUE(ret->is_hash);
+	}
+#endif
+
+	ret->size = prealloc;
+	ret->uid = ivm_vmstate_genUID(state);
+	ret->tabl = ivm_vmstate_alloc(state,
+								  sizeof(*ret->tabl)
+								  * prealloc);
+	MEM_INIT(ret->tabl,
+			 sizeof(*ret->tabl)
+			 * prealloc);
+
+	return ret;
+}
+
+ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table,
 					ivm_vmstate_t *state,
 					ivm_heap_t *heap)

@@ -43,6 +43,7 @@ _to_digit(ivm_char_t c, ivm_uint_t rdx)
 ivm_double_t
 ivm_parser_parseNum(const ivm_char_t *src,
 					ivm_size_t len,
+					ivm_bool_t *overflow,
 					ivm_bool_t *err)
 {
 	ivm_int_t sign = 1;
@@ -104,6 +105,10 @@ ivm_parser_parseNum(const ivm_char_t *src,
 			// 			 PARSER_ERR_MSG_ILLEGAL_CHAR_RADIX(*src, radix));
 			if (err) *err = IVM_TRUE;
 		}
+	}
+
+	if (ret >= IVM_INT_MAX(ivm_int_t) && overflow) {
+		*overflow = IVM_TRUE;
 	}
 
 	return ret * sign;

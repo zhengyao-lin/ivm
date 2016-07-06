@@ -12,6 +12,7 @@ IVM_COM_HEADER
 ivm_double_t
 ivm_parser_parseNum(const ivm_char_t *src,
 					ivm_size_t len,
+					ivm_bool_t *overflow,
 					ivm_bool_t *err);
 
 ivm_char_t *

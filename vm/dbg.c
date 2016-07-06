@@ -92,6 +92,10 @@ ivm_dbg_printExecUnit(ivm_exec_unit_t *unit, FILE *fp)
 	ivm_exec_list_iterator_t eiter;
 
 	IVM_EXEC_LIST_EACHPTR(list, eiter) {
+		if (i) {
+			fputc('\n', fp);
+		}
+
 		fprintf(fp, "exec %lu:\n", i);
 		i++;
 		ivm_dbg_printExec(

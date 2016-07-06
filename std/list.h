@@ -88,6 +88,8 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 #define ivm_ptlist_offset(ptlist, ptr) \
 	(((ivm_ptr_t)(ptr) - (ivm_ptr_t)(ptlist)->lst) / sizeof(*ptr))
 
+typedef void **ivm_ptlist_iterator_t;
+
 #define IVM_PTLIST_ITER_TYPE(elem_type) elem_type *
 #define IVM_PTLIST_ITER_BEGIN(ptlist) ((ptlist)->lst)
 #define IVM_PTLIST_ITER_END(ptlist) ((ptlist)->lst + (ptlist)->cur)

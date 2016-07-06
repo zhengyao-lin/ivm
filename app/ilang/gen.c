@@ -8,6 +8,7 @@
 #include "gen.h"
 
 #define FLAG ilang_gen_flag_build
+#define CHECK_SE() ((ilang_gen_check_flag_t) { .has_side_effect = IVM_TRUE })
 #define RETVAL ilang_gen_value_build
 #define NORET() ((ilang_gen_value_t) { 0 })
 
@@ -45,7 +46,8 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_env_t *env)
 {
 	ilang_gen_int_expr_t *int_expr = IVM_AS(expr, ilang_gen_int_expr_t);
-	ivm_long_t val;
+	ivm_double_t val;
+	ivm_bool_t overfl = IVM_FALSE;
 	ivm_bool_t err = IVM_FALSE;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "integer expression", flag);
@@ -54,6 +56,7 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 		val = ivm_parser_parseNum(
 			int_expr->val.val,
 			int_expr->val.len,
+			&overfl,
 			&err
 		);
 
@@ -66,7 +69,12 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 				)
 			);
 		}
-		ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, val);
+
+		if (overfl) {
+			ivm_exec_addInstr(env->cur_exec, NEW_NUM_F, val);
+		} else {
+			ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, val);
+		}
 	}
 
 	return NORET();
@@ -87,6 +95,7 @@ ilang_gen_float_expr_eval(ilang_gen_expr_t *expr,
 		val = ivm_parser_parseNum(
 			float_expr->val.val,
 			float_expr->val.len,
+			IVM_NULL,
 			&err
 		);
 
@@ -144,13 +153,71 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		if (!flag.is_top_level) {
 			ivm_exec_addInstr(env->cur_exec, DUP);
 		}
-
 		ivm_exec_addInstr(env->cur_exec, SET_CONTEXT_SLOT, tmp_str);
 	} else if (!flag.is_top_level) {
 		ivm_exec_addInstr(env->cur_exec, GET_CONTEXT_SLOT, tmp_str);
 	}
 
 	MEM_FREE(tmp_str);
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env)
+{
+	ilang_gen_table_expr_t *table_expr = IVM_AS(expr, ilang_gen_table_expr_t);
+	ivm_size_t size;
+	ilang_gen_table_entry_t tmp_entry;
+	ilang_gen_table_entry_list_t *list;
+	ilang_gen_table_entry_list_iterator_t eiter;
+	ivm_char_t *tmp_str;
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
+
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
+	list = table_expr->list;
+	size = ilang_gen_table_entry_list_size(list);
+
+	/* not top level => no new object */
+	if (!flag.is_top_level) {
+		if (size) {
+			ivm_exec_addInstr(env->cur_exec, NEW_OBJ_T, size);
+		} else {
+			ivm_exec_addInstr(env->cur_exec, NEW_OBJ);
+		}
+	}
+
+	ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
+		tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
+
+		if (!flag.is_top_level ||
+			tmp_entry.expr->check(tmp_entry.expr, CHECK_SE())) {
+			// not top level and no side effect => skip
+			tmp_entry.expr->eval(
+				tmp_entry.expr,
+				FLAG(.is_top_level = flag.is_top_level),
+				env
+			);
+
+			if (!flag.is_top_level) {
+				tmp_str = ivm_parser_parseStr(
+					tmp_entry.name.val,
+					tmp_entry.name.len
+				);
+
+				ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
+
+				MEM_FREE(tmp_str);
+			}
+		}
+	}
 
 	return NORET();
 }
@@ -164,7 +231,6 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_t *args;
 	ilang_gen_expr_list_iterator_t aiter;
 	ilang_gen_expr_t *tmp_arg;
-
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "call expression", flag);
 
@@ -215,15 +281,25 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (flag.is_top_level) {
 			ivm_exec_addInstr(env->cur_exec, POP);
 		}
-	} else if (!flag.is_top_level) {
+	} else {
+		if (flag.is_top_level &&
+			!expr->check(expr, CHECK_SE())) {
+			goto END;
+		}
+
 		slot_expr->obj->eval(
 			slot_expr->obj,
-			FLAG(0),
+			FLAG(.is_top_level = flag.is_top_level),
+			// is_top_level == true => has side effect => no need to get slot
 			env
 		);
-		ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+
+		if (!flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+		}
 	} // else neither left value nor top level: don't generate
 
+END:
 	MEM_FREE(tmp_str);
 
 	return NORET();
@@ -238,18 +314,27 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "unary expression", flag);
 
-	if (!flag.is_top_level) {
-		switch (unary_expr->type) {
-			case IVM_UNIOP_ID(NOT):
-				unary_expr->opr->eval(
-					unary_expr->opr,
-					FLAG(0), env
-				);
-				ivm_exec_addInstr(env->cur_exec, NOT);
-				break;
-			default:
-				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
-		}
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
+	unary_expr->opr->eval(
+		unary_expr->opr,
+		FLAG(.is_top_level = flag.is_top_level),
+		env
+	);
+
+	if (flag.is_top_level) {
+		return NORET();
+	}
+
+	switch (unary_expr->type) {
+		case IVM_UNIOP_ID(NOT):
+			ivm_exec_addInstr(env->cur_exec, NOT);
+			break;
+		default:
+			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
 	}
 
 	return NORET();
@@ -261,39 +346,44 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 						   ilang_gen_env_t *env)
 {
 	ilang_gen_binary_expr_t *binary_expr = IVM_AS(expr, ilang_gen_binary_expr_t);
+	ilang_gen_expr_t *op1, *op2;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "binary expression", flag);
 
-	if (!flag.is_top_level) {
-		binary_expr->op1->eval(
-			binary_expr->op1,
-			FLAG(0), env
-		);
+	op1 = binary_expr->op1;
+	op2 = binary_expr->op2;
 
-		binary_expr->op2->eval(
-			binary_expr->op2,
-			FLAG(0), env
-		);
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		/* is top level and has no side effect */
+		return NORET();
+	}
 
-		switch (binary_expr->type) {
-			case IVM_BINOP_ID(ADD):
-				ivm_exec_addInstr(env->cur_exec, ADD);
-				break;
-			case IVM_BINOP_ID(SUB):
-				ivm_exec_addInstr(env->cur_exec, SUB);
-				break;
-			case IVM_BINOP_ID(MUL):
-				ivm_exec_addInstr(env->cur_exec, MUL);
-				break;
-			case IVM_BINOP_ID(DIV):
-				ivm_exec_addInstr(env->cur_exec, DIV);
-				break;
-			case IVM_BINOP_ID(MOD):
-				ivm_exec_addInstr(env->cur_exec, MOD);
-				break;
-			default:
-				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_BINARY_OP(binary_expr->type));
-		}
+	op1->eval(op1, FLAG(.is_top_level = flag.is_top_level), env);
+	op2->eval(op2, FLAG(.is_top_level = flag.is_top_level), env);
+
+	if (flag.is_top_level) {
+		return NORET();
+	}
+
+	switch (binary_expr->type) {
+		case IVM_BINOP_ID(ADD):
+			ivm_exec_addInstr(env->cur_exec, ADD);
+			break;
+		case IVM_BINOP_ID(SUB):
+			ivm_exec_addInstr(env->cur_exec, SUB);
+			break;
+		case IVM_BINOP_ID(MUL):
+			ivm_exec_addInstr(env->cur_exec, MUL);
+			break;
+		case IVM_BINOP_ID(DIV):
+			ivm_exec_addInstr(env->cur_exec, DIV);
+			break;
+		case IVM_BINOP_ID(MOD):
+			ivm_exec_addInstr(env->cur_exec, MOD);
+			break;
+		default:
+			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_BINARY_OP(binary_expr->type));
 	}
 
 	return NORET();
@@ -305,19 +395,25 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_env_t *env)
 {
 	ilang_gen_cmp_expr_t *cmp_expr = IVM_AS(expr, ilang_gen_cmp_expr_t);
+	ilang_gen_expr_t *op1, *op2;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "compare expression", flag);
 
-	if (!flag.is_top_level) {
-		cmp_expr->op1->eval(
-			cmp_expr->op1,
-			FLAG(0), env
-		);
+	op1 = cmp_expr->op1;
+	op2 = cmp_expr->op2;
 
-		cmp_expr->op2->eval(
-			cmp_expr->op2,
-			FLAG(0), env
-		);
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		/* is top level and has no side effect */
+		return NORET();
+	}
+
+	op1->eval(op1, FLAG(.is_top_level = flag.is_top_level), env);
+	op2->eval(op2, FLAG(.is_top_level = flag.is_top_level), env);
+
+	if (flag.is_top_level) {
+		return NORET();
+	}
 
 #define BR(op) \
 	case ILANG_GEN_CMP_##op:                             \
@@ -329,19 +425,18 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 		}                                                \
 		break;
 
-		switch (cmp_expr->cmp_type) {
-			BR(LT)
-			BR(LE)
-			BR(EQ)
-			BR(GE)
-			BR(GT)
-			BR(NE)
-			default:
-				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(cmp_expr->cmp_type));
-		}
+	switch (cmp_expr->cmp_type) {
+		BR(LT)
+		BR(LE)
+		BR(EQ)
+		BR(GE)
+		BR(GT)
+		BR(NE)
+		default:
+			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(cmp_expr->cmp_type));
+	}
 
 #undef BR
-	}
 
 	return NORET();
 }
@@ -400,6 +495,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_if_expr_t *if_expr = IVM_AS(expr, ilang_gen_if_expr_t);
 	ivm_size_t main_jmp, prev_elif_jmp = 0;
+	ivm_size_t main_end_jmp;
 	ilang_gen_branch_t main_br, last_br, tmp_br;
 	ilang_gen_branch_list_t *elifs;
 	ilang_gen_branch_list_iterator_t biter;
@@ -407,16 +503,23 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "if expression", flag);
 
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
 	main_br = if_expr->main;
 	last_br = if_expr->last;
 	elifs = if_expr->elifs;
 
+	/*************** main branch ***************/
 	cond_ret = main_br.cond->eval(
 		main_br.cond,
 		FLAG(.if_use_cond_reg = IVM_TRUE),
 		env
 	);
 
+	// use vreg to opt
 	if (cond_ret.use_cond_reg) {
 		main_jmp = ivm_exec_addInstr(
 			env->cur_exec, JUMP_FALSE_R,
@@ -429,17 +532,28 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		);
 	}
 
+	// body
 	main_br.body->eval(
 		main_br.body,
 		FLAG(.is_top_level = flag.is_top_level),
 		env
 	);
 
-	ivm_exec_setArgAt( // main branch jump to next branch(elif or else)
+	// end of if branch => jump to end of if expression
+	main_end_jmp = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+
+	/*************** main branch ***************/
+
+	// main branch jump to next branch(elif or else)
+	ivm_exec_setArgAt(
 		env->cur_exec,
 		main_jmp,
 		ivm_exec_cur(env->cur_exec) - main_jmp
 	);
+
+	/*************** elifs ***************/
+	ivm_size_t elif_end_jmps[ilang_gen_branch_list_size(elifs) + 1];
+	ivm_size_t *cur_end_jmp = elif_end_jmps, *end;
 
 	ILANG_GEN_BRANCH_LIST_EACHPTR_R(elifs, biter) {
 		if (prev_elif_jmp) { // has previous elif
@@ -472,7 +586,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 			FLAG(.is_top_level = flag.is_top_level),
 			env
 		);
+
+		*cur_end_jmp++ = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
 	}
+
+	/*************** elifs ***************/
 
 	if (prev_elif_jmp) { // has previous elif
 		ivm_exec_setArgAt(
@@ -482,11 +600,30 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		);
 	}
 
+	/*************** else ***************/
 	if (last_br.body) { // has else branch
 		last_br.body->eval(
 			last_br.body,
 			FLAG(.is_top_level = flag.is_top_level),
 			env
+		);
+	}
+	/*************** else ***************/
+
+	// set end jump in if branch
+	ivm_exec_setArgAt(
+		env->cur_exec,
+		main_end_jmp,
+		ivm_exec_cur(env->cur_exec) - main_end_jmp
+	);
+
+	for (end = cur_end_jmp,
+		 cur_end_jmp = elif_end_jmps;
+		 cur_end_jmp != end; cur_end_jmp++) {
+		ivm_exec_setArgAt(
+			env->cur_exec,
+			*cur_end_jmp,
+			ivm_exec_cur(env->cur_exec) - *cur_end_jmp
 		);
 	}
 
@@ -553,6 +690,11 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "expression block", flag);
 
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
 	ILANG_GEN_EXPR_LIST_EACHPTR_R(list, eiter) {
 		tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
 		if (ILANG_GEN_EXPR_LIST_ITER_IS_FIRST(list, eiter)
@@ -563,7 +705,9 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 				tmp_expr,
 				FLAG(0), env
 			);
-		} else {
+		} else if (!flag.is_top_level ||
+				   tmp_expr->check(tmp_expr, CHECK_SE())) {
+			// is top level or has side effect => generate
 			// other expression should leave no object on the stack
 			tmp_expr->eval(
 				tmp_expr,
@@ -594,91 +738,184 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	return ret;
 }
 
-void
-ilang_gen_expr_block_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_expr_block_check(ilang_gen_expr_t *expr,
+						   ilang_gen_check_flag_t flag)
 {
-	ilang_gen_expr_list_free(IVM_AS(expr, ilang_gen_expr_block_t)->list);
-	return;
+	ilang_gen_expr_block_t *block = IVM_AS(expr, ilang_gen_expr_block_t);
+	ilang_gen_expr_list_t *list = block->list;
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_expr;
+
+	ILANG_GEN_EXPR_LIST_EACHPTR_R(list, eiter) {
+		tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+		if (tmp_expr->check(tmp_expr, flag)) {
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_call_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_int_expr_check(ilang_gen_expr_t *expr,
+						 ilang_gen_check_flag_t flag)
 {
-	ilang_gen_call_expr_t *tmp = IVM_AS(expr, ilang_gen_call_expr_t);
-
-	ilang_gen_expr_free(tmp->callee);
-	ilang_gen_expr_list_free(tmp->args);
-	
-	return;
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_slot_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_float_expr_check(ilang_gen_expr_t *expr,
+						   ilang_gen_check_flag_t flag)
 {
-	ilang_gen_expr_free(IVM_AS(expr, ilang_gen_slot_expr_t)->obj);
-	return;
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_unary_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_string_expr_check(ilang_gen_expr_t *expr,
+							ilang_gen_check_flag_t flag)
 {
-	ilang_gen_expr_free(IVM_AS(expr, ilang_gen_unary_expr_t)->opr);
-	return;
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_binary_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_id_expr_check(ilang_gen_expr_t *expr,
+						ilang_gen_check_flag_t flag)
 {
-	ilang_gen_binary_expr_t *tmp = IVM_AS(expr, ilang_gen_binary_expr_t);
-	ilang_gen_expr_free(tmp->op1);
-	ilang_gen_expr_free(tmp->op2);
-	return;
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_cmp_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_table_expr_check(ilang_gen_expr_t *expr,
+						   ilang_gen_check_flag_t flag)
 {
-	ilang_gen_cmp_expr_t *tmp = IVM_AS(expr, ilang_gen_cmp_expr_t);
-	ilang_gen_expr_free(tmp->op1);
-	ilang_gen_expr_free(tmp->op2);
-	return;
+	ilang_gen_table_expr_t *table_expr = IVM_AS(expr, ilang_gen_table_expr_t);
+	ilang_gen_table_entry_t tmp_entry;
+	ilang_gen_table_entry_list_t *list = table_expr->list;
+	ilang_gen_table_entry_list_iterator_t eiter;
+
+	ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
+		tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
+		if (tmp_entry.expr->check(tmp_entry.expr, flag)) {
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
 }
 
-void
-ilang_gen_fn_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_call_expr_check(ilang_gen_expr_t *expr,
+						  ilang_gen_check_flag_t flag)
 {
-	ilang_gen_fn_expr_t *tmp = IVM_AS(expr, ilang_gen_fn_expr_t);
+	/*
+	ilang_gen_call_expr_t *call_expr = IVM_AS(expr, ilang_gen_call_expr_t);
+	ilang_gen_expr_list_t *args = call_expr->args;
+	ilang_gen_expr_list_iterator_t aiter;
+	ilang_gen_expr_t *tmp_arg;
 
-	ilang_gen_param_list_free(tmp->params);
-	ilang_gen_expr_free(tmp->body);
+	ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
+		tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
+		if (tmp_arg->check(tmp_arg, flag)) {
+			return IVM_TRUE;
+		}
+	}
+	*/
 
-	return;
+	return IVM_TRUE;
 }
 
-void
-ilang_gen_if_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_slot_expr_check(ilang_gen_expr_t *expr,
+						  ilang_gen_check_flag_t flag)
 {
-	ilang_gen_if_expr_t *tmp = IVM_AS(expr, ilang_gen_if_expr_t);
+	ilang_gen_slot_expr_t *slot_expr = IVM_AS(expr, ilang_gen_slot_expr_t);
 
-	ilang_gen_branch_dump(&tmp->main);
-	ilang_gen_branch_list_free(tmp->elifs);
-	ilang_gen_branch_dump(&tmp->last);
-
-	return;
+	return slot_expr->obj->check(slot_expr->obj, flag);
 }
 
-void
-ilang_gen_intr_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_unary_expr_check(ilang_gen_expr_t *expr,
+						   ilang_gen_check_flag_t flag)
 {
-	ilang_gen_expr_free(IVM_AS(expr, ilang_gen_intr_expr_t)->val);
-	return;
+	ilang_gen_unary_expr_t *unary_expr = IVM_AS(expr, ilang_gen_unary_expr_t);
+
+	return unary_expr->opr->check(unary_expr->opr, flag);
 }
 
-void
-ilang_gen_assign_expr_destruct(ilang_gen_expr_t *expr)
+ivm_bool_t
+ilang_gen_binary_expr_check(ilang_gen_expr_t *expr,
+							ilang_gen_check_flag_t flag)
 {
-	ilang_gen_assign_expr_t *tmp = IVM_AS(expr, ilang_gen_assign_expr_t);
-	ilang_gen_expr_free(tmp->lhe);
-	ilang_gen_expr_free(tmp->rhe);
-	return;
+	ilang_gen_binary_expr_t *binary_expr = IVM_AS(expr, ilang_gen_binary_expr_t);
+
+	return
+	binary_expr->op1->check(binary_expr->op1, flag) ||
+	binary_expr->op2->check(binary_expr->op2, flag);
+}
+
+ivm_bool_t
+ilang_gen_cmp_expr_check(ilang_gen_expr_t *expr,
+						 ilang_gen_check_flag_t flag)
+{
+	ilang_gen_cmp_expr_t *cmp_expr = IVM_AS(expr, ilang_gen_cmp_expr_t);
+
+	return
+	cmp_expr->op1->check(cmp_expr->op1, flag) ||
+	cmp_expr->op2->check(cmp_expr->op2, flag);
+}
+
+ivm_bool_t
+ilang_gen_fn_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	return IVM_FALSE;
+}
+
+ivm_bool_t
+ilang_gen_if_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	ilang_gen_if_expr_t *if_expr = IVM_AS(expr, ilang_gen_if_expr_t);
+	ilang_gen_branch_t main_br = if_expr->main,
+					   last_br = if_expr->last,
+					   tmp_br;
+	ilang_gen_branch_list_t *elifs = if_expr->elifs;
+	ilang_gen_branch_list_iterator_t eiter;
+
+	if (main_br.cond->check(main_br.cond, flag)) {
+		return IVM_TRUE;
+	}
+
+	if (main_br.body->check(main_br.body, flag)) {
+		return IVM_TRUE;
+	}
+
+	ILANG_GEN_BRANCH_LIST_EACHPTR(elifs, eiter) {
+		tmp_br = ILANG_GEN_BRANCH_LIST_ITER_GET(eiter);
+
+		if (tmp_br.cond->check(tmp_br.cond, flag)) {
+			return IVM_TRUE;
+		}
+
+		if (tmp_br.body->check(tmp_br.body, flag)) {
+			return IVM_TRUE;
+		}
+	}
+
+	if (last_br.body && last_br.body->check(last_br.body, flag)) {
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+ivm_bool_t
+ilang_gen_intr_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	return IVM_TRUE;
+}
+
+ivm_bool_t
+ilang_gen_assign_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	return IVM_TRUE;
 }

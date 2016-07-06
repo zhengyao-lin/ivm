@@ -58,6 +58,55 @@ ivm_object_getSlotValue_np_cc(ivm_object_t *obj,
 
 #undef STR_IS_PROTO
 
+IVM_INLINE
+ivm_object_t *
+ivm_object_new(ivm_vmstate_t *state)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_OBJECT_T);
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_new_c(struct ivm_vmstate_t_tag *state,
+				 ivm_size_t prealloc)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_OBJECT_T);
+	ret->slots = ivm_slot_table_new_c(state, prealloc);
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_newNull(ivm_vmstate_t *state)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_NULL_T);
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_newUndefined(ivm_vmstate_t *state)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_UNDEFINED_T);
+
+	return ret;
+}
+
+#define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
+#define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
+
 IVM_COM_END
 
 #endif

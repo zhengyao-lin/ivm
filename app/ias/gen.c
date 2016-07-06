@@ -23,6 +23,7 @@
 #define GEN_ERR_MSG_UNKNOWN_ARGUMENT_TYPE(t)							"unknown argument type '%c'", (t)
 #define GEN_ERR_MSG_UNDEFINED_BLOCK(label, len)							"undefined block '%.*s'", (int)(len), (label)
 #define GEN_ERR_MSG_REDEF_LABEL(label, len)								"redefinition of label '%.*s'", (int)(len), (label)
+#define GEN_ERR_MSG_FLOAT_TO_INT_OVERFLOW(val, len)						"integer overflow when casting float '%.*s' to int", (int)(len), (val)
 
 ias_gen_env_t *
 ias_gen_env_new(ias_gen_block_list_t *block_list)
@@ -255,6 +256,8 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 	ivm_function_id_t tmp_id;
 	ivm_char_t *tmp_str;
 	ivm_opcode_arg_t tmp_ret;
+	ivm_long_t tmp_int;
+	ivm_bool_t overflow = IVM_FALSE;
 
 #define SET_FAILED() \
 	if (failed) *failed = IVM_TRUE;
@@ -276,11 +279,15 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 		case 'F':
 			switch (param) {
 				case 'I':
-					return ivm_opcode_arg_fromInt(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
+					tmp_int = ivm_parser_parseNum(arg.val, arg.len, &overflow, IVM_NULL);
+					if (overflow) {
+						GEN_ERR(arg.pos, GEN_ERR_MSG_FLOAT_TO_INT_OVERFLOW(arg.val, arg.len));
+					}
+					return ivm_opcode_arg_fromInt(tmp_int);
 				case 'F':
-					return ivm_opcode_arg_fromFloat(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
+					return ivm_opcode_arg_fromFloat(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL, IVM_NULL));
 				case 'X':
-					return ivm_opcode_arg_fromFunc(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL));
+					return ivm_opcode_arg_fromFunc(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL, IVM_NULL));
 				default: UNMATCHED();
 			}
 		case 'S':

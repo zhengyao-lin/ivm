@@ -123,16 +123,6 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_UNIOP_PROC(op, op1) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), IVM_UNIOP_ID(op)))
 
-ivm_object_t *
-ivm_object_new(struct ivm_vmstate_t_tag *state);
-ivm_object_t *
-ivm_object_newNull(struct ivm_vmstate_t_tag *state);
-ivm_object_t *
-ivm_object_newUndefined(struct ivm_vmstate_t_tag *state);
-
-#define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
-#define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
-
 IVM_INLINE
 void
 ivm_object_destruct(ivm_object_t *obj,

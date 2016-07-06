@@ -670,7 +670,7 @@ int main(int argc, const char **argv)
 	IVM_TRACE("****************************************\n");
 
 	IVM_TRACE("%f %d\n",
-			  ivm_parser_parseNum(num, sizeof(num) - 1, &err), err);
+			  ivm_parser_parseNum(num, sizeof(num) - 1, IVM_NULL, &err), err);
 
 	IVM_TRACE("****************************************\n");
 

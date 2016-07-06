@@ -54,6 +54,10 @@ ivm_slot_table_t *
 ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
 
 ivm_slot_table_t *
+ivm_slot_table_new_c(struct ivm_vmstate_t_tag *state,
+					 ivm_size_t prealloc);
+
+ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table,
 					struct ivm_vmstate_t_tag *state,
 					struct ivm_heap_t_tag *heap);

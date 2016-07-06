@@ -49,42 +49,13 @@ ivm_type_free(ivm_type_t *type)
 	return;
 }
 
-ivm_object_t *
-ivm_object_new(ivm_vmstate_t *state)
-{
-	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(ret, state, IVM_OBJECT_T);
-
-	return ret;
-}
-
-ivm_object_t *
-ivm_object_newNull(ivm_vmstate_t *state)
-{
-	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(ret, state, IVM_NULL_T);
-
-	return ret;
-}
-
-ivm_object_t *
-ivm_object_newUndefined(ivm_vmstate_t *state)
-{
-	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(ret, state, IVM_UNDEFINED_T);
-
-	return ret;
-}
-
 ivm_bool_t
 ivm_object_alwaysTrue(ivm_object_t *obj,
 					  ivm_vmstate_t *state)
 {
 	return IVM_TRUE;
 }
+
 ivm_bool_t
 ivm_object_alwaysFalse(ivm_object_t *obj,
 					   ivm_vmstate_t *state)

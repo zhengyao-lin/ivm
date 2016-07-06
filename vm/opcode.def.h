@@ -12,6 +12,12 @@ OPCODE_GEN(NEW_OBJ, "new_obj", N, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(NEW_OBJ_T, "new_obj_t", I, {
+	_TMP_OBJ = ivm_object_new_c(_STATE, IARG());
+	STACK_PUSH(_TMP_OBJ);
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(NEW_NUM_I, "new_num_i", I, {
 	STACK_PUSH(ivm_numeric_new(_STATE, IARG()));
 	NEXT_INSTR();
@@ -145,6 +151,16 @@ OPCODE_GEN(SET_SLOT, "set_slot", S, {
 	_TMP_OBJ = STACK_POP();
 	SET_SLOT(_TMP_OBJ, SARG(), STACK_POP()); // result in _TMP_OBJ
 	STACK_PUSH(_TMP_OBJ);
+
+	NEXT_INSTR();
+})
+
+/* backward */
+OPCODE_GEN(SET_SLOT_B, "set_slot_b", S, {
+	CHECK_STACK(2);
+
+	_TMP_OBJ = STACK_POP();
+	SET_SLOT(STACK_TOP(), SARG(), _TMP_OBJ);
 
 	NEXT_INSTR();
 })

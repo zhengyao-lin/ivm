@@ -23,6 +23,8 @@
 /* size of a single heap in GC */
 #define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 19)
 
+#define IVM_DEFAULT_PARSER_INIT_HEAP_SIZE (2 << 15)
+
 /* list buffer sizes */
 #define IVM_DEFAULT_PTLIST_BUFFER_SIZE 32
 #define IVM_DEFAULT_LIST_BUFFER_SIZE 32

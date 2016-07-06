@@ -38,51 +38,63 @@ int main(int argc, const char **argv)
 
 	ivm_env_init();
 
-ivm_perf_reset();
-ivm_perf_startProfile();
+/***********************************************/
+
+	ivm_perf_reset();
+	ivm_perf_startProfile();
 
 	tokens = _ilang_parser_getTokens(src);
 
-ivm_perf_stopProfile();
-ivm_perf_printElapsed();
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
-ivm_perf_reset();
-ivm_perf_startProfile();
+/***********************************************/
+
+	ivm_perf_reset();
+	ivm_perf_startProfile();
 
 	unit = _ivm_parser_parseToken(tokens, &suc);
 	IVM_TRACE("is legal: %d\n", suc);
 	
-ivm_perf_stopProfile();
-ivm_perf_printElapsed();
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
-ivm_perf_reset();
-ivm_perf_startProfile();
+	ivm_list_free(tokens);
+
+/***********************************************/
+
+	ivm_perf_reset();
+	ivm_perf_startProfile();
 
 	exec_unit = ilang_gen_generateExecUnit(unit);
 	ivm_dbg_printExecUnit(exec_unit, stderr);
 
-ivm_perf_stopProfile();
-ivm_perf_printElapsed();
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
 
-	state = ivm_exec_unit_generateVM(exec_unit);
+/***********************************************/
 
-ivm_perf_reset();
-ivm_perf_startProfile();
-
-	ivm_vmstate_schedule(state);
-
-ivm_perf_stopProfile();
-ivm_perf_printElapsed();
-
-	ivm_list_free(tokens);
-
+	ilang_gen_trans_unit_free(unit);
 	if (fp) {
 		ivm_file_free(fp);
 		MEM_FREE(src);
 	}
 
-	ilang_gen_trans_unit_free(unit);
+	state = ivm_exec_unit_generateVM(exec_unit);
 	ivm_exec_unit_free(exec_unit);
+
+/***********************************************/
+
+	ivm_perf_reset();
+	ivm_perf_startProfile();
+
+	ivm_vmstate_schedule(state);
+
+	ivm_perf_stopProfile();
+	ivm_perf_printElapsed();
+
+/***********************************************/
+
 	ivm_vmstate_free(state);
 
 	return 0;
