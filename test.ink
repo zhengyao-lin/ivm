@@ -1,4 +1,4 @@
-fib = fn n
+/*fib = fn n
 
 :
 fn n:
@@ -34,9 +34,16 @@ fn:(10 + 2 + (fn:0))
 a = fn:b = 2, c, d
 c, b = fn n : ret n, ret 1
 
-if a < b: {
+a = if a < b: {
 
 }
 elif a > b: (0, 0, 0)
 else: c
+*/
 
+fib = fn n: {
+	if n < 2: ret 1
+	ret fib(n - 1) + fib(n - 2)
+}
+
+fib(30)

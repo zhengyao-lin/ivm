@@ -27,7 +27,9 @@ typedef struct {
 #define ilang_gen_token_value_build(val, len) ((ilang_gen_token_value_t) { (val), (len) })
 
 typedef struct {
+	ivm_string_pool_t *str_pool;
 	ivm_exec_unit_t *unit;
+	ivm_exec_t *cur_exec;
 } ilang_gen_env_t;
 
 typedef struct {
@@ -35,9 +37,13 @@ typedef struct {
 	ivm_bool_t is_top_level; // true: don't leave anything on the stack
 } ilang_gen_flag_t;
 
+#define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
+
 typedef struct {
-	ivm_instr_t assign_instr;
+	int dummy;
 } ilang_gen_value_t;
+
+#define ilang_gen_value_build(...) ((ilang_gen_value_t) { __VA_ARGS__ })
 
 struct ilang_gen_expr_t_tag;
 
@@ -89,9 +95,11 @@ typedef IVM_PTLIST_ITER_TYPE(ilang_gen_expr_t *) ilang_gen_expr_list_iterator_t;
 
 #define ilang_gen_expr_list_new ivm_ptlist_new
 #define ilang_gen_expr_list_push ivm_ptlist_push
+#define ilang_gen_expr_list_size ivm_ptlist_size
 
 #define ILANG_GEN_EXPR_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define ILANG_GEN_EXPR_LIST_ITER_GET(iter) ((ilang_gen_expr_t *)IVM_PTLIST_ITER_GET(iter))
+#define ILANG_GEN_EXPR_LIST_ITER_IS_FIRST IVM_PTLIST_ITER_IS_FIRST
 #define ILANG_GEN_EXPR_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ilang_gen_expr_t *)
 #define ILANG_GEN_EXPR_LIST_EACHPTR_R(list, iter) IVM_PTLIST_EACHPTR_R((list), iter, ilang_gen_expr_t *)
 
@@ -476,7 +484,7 @@ COMMON_EXPR(assign_expr, "assign expression", ilang_gen_assign_expr_destruct, {
 #undef COMMON_EXPR
 
 typedef struct {
-	ilang_gen_expr_list_t *expr_list;
+	ilang_gen_expr_t *top_level;
 } ilang_gen_trans_unit_t;
 
 IVM_INLINE
@@ -488,7 +496,9 @@ ilang_gen_trans_unit_new(ilang_gen_expr_list_t *expr_list)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("translate unit"));
 
-	ret->expr_list = expr_list;
+	ret->top_level = ilang_gen_expr_block_new(
+		ilang_gen_pos_build(0, 0), expr_list
+	);
 
 	return ret;
 }
@@ -498,12 +508,15 @@ void
 ilang_gen_trans_unit_free(ilang_gen_trans_unit_t *unit)
 {
 	if (unit) {
-		ilang_gen_expr_list_free(unit->expr_list);
+		ilang_gen_expr_free(unit->top_level);
 		MEM_FREE(unit);
 	}
 
 	return;
 }
+
+ivm_exec_unit_t *
+ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit);
 
 IVM_COM_END
 

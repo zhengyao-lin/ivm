@@ -91,6 +91,25 @@ ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
+ivm_string_t *
+_ivm_string_new_n_heap(ivm_bool_t is_const,
+					   const ivm_char_t *str,
+					   ivm_size_t len,
+					   ivm_heap_t *heap)
+{
+	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
+
+	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
+			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
+
+	ret->is_const = is_const;
+	ret->len = len;
+	MEM_COPY(ivm_string_trimHead(ret), str,
+			 sizeof(ivm_char_t) * (len + 1));
+
+	return ret;
+}
+
 void
 ivm_string_initHead(ivm_string_t *str,
 					ivm_bool_t is_const,
@@ -317,26 +336,33 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		}                                                                           \
 	                                                                                \
 		return ret;                                                                 \
-	}
+	} int dummy()
 
 ivm_ptr_t
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str)
 HASH(ivm_string_trimHead(str),
 	 ivm_string_compare(*i, str),
-	 _ivm_string_copy_heap(IVM_TRUE, str, pool->heap))
+	 _ivm_string_copy_heap(IVM_TRUE, str, pool->heap));
 
 ivm_ptr_t
 ivm_string_pool_register_nc(ivm_string_pool_t *pool,
 							const ivm_string_t *str)
 HASH(ivm_string_trimHead(str),
-	 ivm_string_compare(*i, str), str)
+	 ivm_string_compare(*i, str), str);
 
 ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)
 HASH(str, !ivm_string_compareToRaw(*i, str),
-	 ivm_string_new_heap(IVM_TRUE, str, pool->heap))
+	 ivm_string_new_heap(IVM_TRUE, str, pool->heap));
+
+ivm_ptr_t
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len)
+HASH(str, !ivm_string_compareToRaw_n(*i, str, len),
+	 _ivm_string_new_n_heap(IVM_TRUE, str, len, pool->heap));
 
 
 #undef HASH

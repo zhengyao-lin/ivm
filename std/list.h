@@ -95,6 +95,8 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist);
 #define IVM_PTLIST_ITER_INDEX(ptlist, ptr) ivm_ptlist_offset((ptlist), (ptr))
 #define IVM_PTLIST_ITER_SET(iter, val) (*(iter) = val)
 #define IVM_PTLIST_ITER_GET(iter) (*(iter))
+#define IVM_PTLIST_ITER_IS_LAST(ptlist, iter) ((void *)(iter + 1) == (ptlist)->lst + (ptlist)->cur)
+#define IVM_PTLIST_ITER_IS_FIRST(ptlist, iter) ((void *)iter == (ptlist)->lst)
 #define IVM_PTLIST_EACHPTR(ptlist, iter, type) \
 	type *__pl_end_##iter##__; \
 	for ((iter) = (type *)((ptlist)->lst), \

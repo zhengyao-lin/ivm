@@ -73,6 +73,16 @@ OPCODE_GEN(GE, "ge", N, CMP_BINOP_HANDLER(
 	NEXT_INSTR();
 ))
 
+OPCODE_GEN(EQ, "eq", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ == 0));
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(NE, "ne", N, CMP_BINOP_HANDLER(
+	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ != 0));
+	NEXT_INSTR();
+))
+
 OPCODE_GEN(LT_R, "lt_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ < 0;
 	NEXT_INSTR();
@@ -90,6 +100,16 @@ OPCODE_GEN(GT_R, "gt_r", N, CMP_BINOP_HANDLER(
 
 OPCODE_GEN(GE_R, "ge_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ >= 0;
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(EQ_R, "eq_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ == 0;
+	NEXT_INSTR();
+))
+
+OPCODE_GEN(NE_R, "ne_r", N, CMP_BINOP_HANDLER(
+	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ != 0;
 	NEXT_INSTR();
 ))
 

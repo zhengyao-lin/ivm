@@ -44,6 +44,9 @@ typedef struct {
 void
 ivm_dbg_printExec(ivm_exec_t *exec, const char *prefix, FILE *fp);
 
+void
+ivm_dbg_printExecUnit(ivm_exec_unit_t *unit, FILE *fp);
+
 /* print current heap state */
 void
 ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp);

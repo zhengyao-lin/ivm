@@ -152,6 +152,11 @@ ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str);
 
+ivm_ptr_t
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len);
+
 #define ivm_string_pool_get(pool, i) ((pool)->table[i])
 
 #define ivm_string_pool_isFixed(pool) ((pool)->is_fixed)

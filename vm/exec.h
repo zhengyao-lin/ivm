@@ -141,7 +141,7 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit);
 #define ivm_exec_unit_root(unit) ((unit)->root)
 
 #define ivm_exec_unit_registerExec(unit, exec) \
-	(ivm_exec_list_register((unit)->execs, (exec)))
+	(ivm_exec_list_push((unit)->execs, (exec)))
 
 struct ivm_vmstate_t_tag *
 ivm_exec_unit_generateVM(ivm_exec_unit_t *unit);

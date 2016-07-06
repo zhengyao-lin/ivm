@@ -84,6 +84,25 @@ ivm_dbg_printExec(ivm_exec_t *exec,
 	return;
 }
 
+void
+ivm_dbg_printExecUnit(ivm_exec_unit_t *unit, FILE *fp)
+{
+	ivm_size_t i = 0;
+	ivm_exec_list_t *list = ivm_exec_unit_execList(unit);
+	ivm_exec_list_iterator_t eiter;
+
+	IVM_EXEC_LIST_EACHPTR(list, eiter) {
+		fprintf(fp, "exec %lu:\n", i);
+		i++;
+		ivm_dbg_printExec(
+			IVM_EXEC_LIST_ITER_GET(eiter),
+			"  ", fp
+		);
+	}
+
+	return;
+}
+
 #define B2MB(val) ((double)val / (2 << 20))
 
 IVM_PRIVATE

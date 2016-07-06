@@ -6,6 +6,9 @@
 
 #include "util/perf.h"
 
+#include "vm/dbg.h"
+#include "vm/env.h"
+
 #include "parser.h"
 #include "gen.h"
 
@@ -21,6 +24,8 @@ int main(int argc, const char **argv)
 	ivm_file_t *fp = IVM_NULL;
 	ivm_list_t *tokens = IVM_NULL;
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
+	ivm_exec_unit_t *exec_unit;
+	ivm_vmstate_t *state;
 	ivm_bool_t suc;
 
 	if (argc == 2) {
@@ -31,6 +36,8 @@ int main(int argc, const char **argv)
 		src = "a(fn a, b: a + b).a.b(a + b * v);";
 	}
 
+	ivm_env_init();
+
 ivm_perf_reset();
 ivm_perf_startProfile();
 
@@ -38,12 +45,32 @@ ivm_perf_startProfile();
 
 ivm_perf_stopProfile();
 ivm_perf_printElapsed();
+
 ivm_perf_reset();
 ivm_perf_startProfile();
 
 	unit = _ivm_parser_parseToken(tokens, &suc);
 	IVM_TRACE("is legal: %d\n", suc);
 	
+ivm_perf_stopProfile();
+ivm_perf_printElapsed();
+
+ivm_perf_reset();
+ivm_perf_startProfile();
+
+	exec_unit = ilang_gen_generateExecUnit(unit);
+	ivm_dbg_printExecUnit(exec_unit, stderr);
+
+ivm_perf_stopProfile();
+ivm_perf_printElapsed();
+
+	state = ivm_exec_unit_generateVM(exec_unit);
+
+ivm_perf_reset();
+ivm_perf_startProfile();
+
+	ivm_vmstate_schedule(state);
+
 ivm_perf_stopProfile();
 ivm_perf_printElapsed();
 
@@ -55,6 +82,8 @@ ivm_perf_printElapsed();
 	}
 
 	ilang_gen_trans_unit_free(unit);
+	ivm_exec_unit_free(exec_unit);
+	ivm_vmstate_free(state);
 
 	return 0;
 }
