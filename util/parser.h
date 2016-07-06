@@ -406,8 +406,10 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	} while (0);
 
 #define PRINT_MATCH_TOKEN(name) \
-	IVM_TRACE("%*smatch rule %s: ", 0, "", (name)); \
-	_ivm_parser_dumpToken_r((struct token_t *)ivm_list_at(__tokens__, __i_back__), CUR_TOKEN());
+	{ \
+		IVM_TRACE("%*smatch rule %s: ", 0, "", (name)); \
+		_ivm_parser_dumpToken_r((struct token_t *)ivm_list_at(__tokens__, __i_back__), CUR_TOKEN()); \
+	}
 
 #define FAILED(...) \
 	goto RULE_FAILED_END; \

@@ -365,6 +365,8 @@ struct env_t { int dummy; };
 #define R EXPECT_RULE
 #define T EXPECT_TOKEN
 
+#define DBB(...) { __VA_ARGS__; } // debug block
+
 /*
 	sep : newl
 		| ';'
@@ -480,7 +482,7 @@ RULE(primary_expr)
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_STR)
+		SUB_RULE(T(T_STR) DBB(PRINT_MATCH_TOKEN("str expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_string_expr_new(
@@ -488,7 +490,7 @@ RULE(primary_expr)
 			);
 		})
 
-		SUB_RULE(T(T_INT)
+		SUB_RULE(T(T_INT) DBB(PRINT_MATCH_TOKEN("int expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_int_expr_new(
@@ -496,7 +498,7 @@ RULE(primary_expr)
 			);
 		})
 
-		SUB_RULE(T(T_FLOAT)
+		SUB_RULE(T(T_FLOAT) DBB(PRINT_MATCH_TOKEN("float expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_float_expr_new(
@@ -504,7 +506,7 @@ RULE(primary_expr)
 			);
 		})
 
-		SUB_RULE(T(T_ID)
+		SUB_RULE(T(T_ID) DBB(PRINT_MATCH_TOKEN("id expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_id_expr_new(
@@ -514,14 +516,14 @@ RULE(primary_expr)
 
 		SUB_RULE(T(T_LPAREN) R(nllo)
 				 R(expression) { tmp_expr = RULE_RET_AT(1).u.expr; }
-				 R(nllo) T(T_RPAREN)
+				 R(nllo) T(T_RPAREN) DBB(PRINT_MATCH_TOKEN("paren expr"))
 		{
 			_RETVAL.expr = tmp_expr;
 		})
 
 		SUB_RULE(T(T_LBRAC)
 				 R(expression_list_opt) { tmp_expr_list = RULE_RET_AT(0).u.expr_list; }
-				 T(T_RBRAC)
+				 T(T_RBRAC) DBB(PRINT_MATCH_TOKEN("expr block"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_expr_block_new(
@@ -565,8 +567,8 @@ RULE(arg_list_opt)
 	MATCHED({})
 }
 
-#define GET_OPERAND(expr, i) (*((ilang_gen_expr_t **)((expr) + (i))))
-#define SET_OPERAND(expr, i, val) (*((ilang_gen_expr_t **)((expr) + (i))) = (val))
+#define GET_OPERAND(expr, i) (((struct { ILANG_GEN_EXPR_HEADER ilang_gen_expr_t *tmp[i]; } *)(expr))->tmp[(i) - 1])
+#define SET_OPERAND(expr, i, val) (GET_OPERAND((expr), (i)) = (val))
 
 /*
 	postfix_expr_sub
@@ -583,7 +585,7 @@ RULE(postfix_expr_sub)
 	SUB_RULE_SET(
 		SUB_RULE(T(T_LPAREN) R(nllo)
 				 R(arg_list_opt) { tmp_expr_list = RULE_RET_AT(1).u.expr_list; }
-				 R(nllo) T(T_RPAREN) R(postfix_expr_sub)
+				 R(nllo) T(T_RPAREN) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("call expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			tmp_expr = RULE_RET_AT(3).u.expr;
@@ -604,11 +606,12 @@ RULE(postfix_expr_sub)
 			}
 		})
 
-		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(postfix_expr_sub)
+		SUB_RULE({ ilang_gen_expr_list_free(tmp_expr_list); tmp_expr_list = IVM_NULL; }
+				 T(T_DOT) R(nllo) T(T_ID) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			id = TOKEN_AT(1);
-			tmp_expr = RULE_RET_AT(3).u.expr;
+			tmp_expr = RULE_RET_AT(1).u.expr;
 
 			if (tmp_expr) {
 				_RETVAL.expr = tmp_expr;
@@ -632,9 +635,7 @@ RULE(postfix_expr_sub)
 		})
 	);
 
-	FAILED({
-		ilang_gen_expr_list_free(tmp_expr_list);
-	})
+	FAILED({})
 	MATCHED({})
 }
 
@@ -648,6 +649,10 @@ RULE(postfix_expr)
 
 	SUB_RULE_SET(
 		SUB_RULE(R(primary_expr) R(postfix_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("postfix expr");
+		)
 		{
 			tmp_expr = RULE_RET_AT(1).u.expr;
 			// find the innermost expression
@@ -678,6 +683,7 @@ RULE(unary_expr)
 
 	SUB_RULE_SET(
 		SUB_RULE(T(T_NOT) R(nllo) R(unary_expr)
+		DBB(PRINT_MATCH_TOKEN("not expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_unary_expr_new(
@@ -763,7 +769,11 @@ RULE(mul_div_expr_sub)
 RULE(mul_div_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(unary_expr) R(mul_div_expr_sub) SUB2())
+		SUB_RULE(R(unary_expr) R(mul_div_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("mul/div/mod expr");
+		) SUB2())
 	);
 
 	FAILED({})
@@ -795,7 +805,11 @@ RULE(add_sub_expr_sub)
 RULE(add_sub_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(mul_div_expr) R(add_sub_expr_sub) SUB2())
+		SUB_RULE(R(mul_div_expr) R(add_sub_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("add/sub expr");
+		) SUB2())
 	);
 
 	FAILED({})
@@ -855,7 +869,11 @@ RULE(cmp_expr_sub)
 RULE(cmp_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(add_sub_expr) R(cmp_expr_sub) SUB2())
+		SUB_RULE(R(add_sub_expr) R(cmp_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("cmp expr");
+		) SUB2())
 	);
 
 	FAILED({})
@@ -887,7 +905,11 @@ RULE(eq_expr_sub)
 RULE(eq_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(cmp_expr) R(eq_expr_sub) SUB2())
+		SUB_RULE(R(cmp_expr) R(eq_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("eq/ne expr");
+		) SUB2())
 	);
 
 	FAILED({})
@@ -967,7 +989,7 @@ RULE(elif_branch)
 		SUB_RULE(R(nllo) T(T_ELIF) R(nllo)
 				 R(expression) { tmp_expr = RULE_RET_AT(2).u.expr; }
 				 R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
-				 PRINT_MATCH_TOKEN("elif branch")
+				 DBB(PRINT_MATCH_TOKEN("elif branch"))
 		{
 			_RETVAL.branch = ilang_gen_branch_build(
 				tmp_expr, RULE_RET_AT(5).u.expr
@@ -1020,7 +1042,7 @@ RULE(else_branch_opt)
 	SUB_RULE_SET(
 		SUB_RULE(R(nllo) T(T_ELSE) R(nllo)
 				 T(T_COLON) R(nllo) R(prefix_expr)
-				 PRINT_MATCH_TOKEN("else branch")
+				 DBB(PRINT_MATCH_TOKEN("else branch"))
 		{
 			_RETVAL.branch = ilang_gen_branch_build(
 				IVM_NULL, RULE_RET_AT(3).u.expr
@@ -1046,7 +1068,7 @@ RULE(if_expr)
 		SUB_RULE(T(T_IF) R(nllo) R(expression)
 				 { tmp_expr = RULE_RET_AT(1).u.expr; }
 				 R(nllo) T(T_COLON) R(nllo)
-				 R(prefix_expr) PRINT_MATCH_TOKEN("if branch")
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("if branch"))
 				 R(elif_list_opt)
 				 R(else_branch_opt)
 		{
@@ -1078,7 +1100,7 @@ RULE(fn_expr)
 	SUB_RULE_SET(
 		SUB_RULE(T(T_FN) R(nllo)
 				 R(param_list_opt) { tmp_list = RULE_RET_AT(1).u.param_list; }
-				 R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+				 R(nllo) T(T_COLON) R(nllo) R(prefix_expr) DBB(PRINT_MATCH_TOKEN("fn expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_fn_expr_new(
@@ -1089,7 +1111,7 @@ RULE(fn_expr)
 
 		SUB_RULE({ ilang_gen_param_list_free(tmp_list); tmp_list = IVM_NULL; }
 				 // clean params as the previous rule has failed
-				 R(if_expr)
+				 R(if_expr) DBB(PRINT_MATCH_TOKEN("if expr"))
 		{
 			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 		})
@@ -1168,10 +1190,10 @@ RULE(assign_expr)
 RULE(prefix_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(assign_expr) PRINT_MATCH_TOKEN("assign expr"))
-		SUB_RULE(R(intr_expr) PRINT_MATCH_TOKEN("intr expr"))
-		SUB_RULE(R(fn_expr) PRINT_MATCH_TOKEN("fn expr"))
-		SUB_RULE(R(eq_expr) PRINT_MATCH_TOKEN("eq expr"))
+		SUB_RULE(R(assign_expr) DBB(PRINT_MATCH_TOKEN("assign expr")))
+		SUB_RULE(R(intr_expr) DBB(PRINT_MATCH_TOKEN("intr expr")))
+		SUB_RULE(R(fn_expr))
+		SUB_RULE(R(eq_expr))
 	);
 
 	FAILED({})
@@ -1223,7 +1245,11 @@ RULE(comma_expr)
 	ilang_gen_expr_t *tmp_expr;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(prefix_expr) R(comma_expr_sub) PRINT_MATCH_TOKEN("comma expr")
+		SUB_RULE(R(prefix_expr) R(comma_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr_list)
+				DBB(PRINT_MATCH_TOKEN("comma expr"))
+		)
 		{
 			tmp_expr_list = RULE_RET_AT(1).u.expr_list;
 			tmp_expr = RULE_RET_AT(0).u.expr;
@@ -1271,7 +1297,7 @@ RULE(expression_list_sub)
 
 	SUB_RULE_SET(
 		SUB_RULE(R(sep_list) CLEAR_ERR() R(expression)
-				 IVM_TRACE("********* expr matched *********\n");
+				 DBB(IVM_TRACE("********* expr matched *********\n"))
 				 R(expression_list_sub)
 		{
 			tmp_expr_list
@@ -1306,7 +1332,7 @@ RULE(expression_list)
 
 	SUB_RULE_SET(
 		SUB_RULE(R(sep_list_opt) CLEAR_ERR() R(expression)
-				 IVM_TRACE("********* expr matched *********\n");
+				 DBB(IVM_TRACE("********* expr matched *********\n"))
 				 R(expression_list_sub)
 		{
 			tmp_expr_list = _RETVAL.expr_list = RULE_RET_AT(2).u.expr_list;
@@ -1331,7 +1357,7 @@ RULE(expression_list_opt)
 
 	SUB_RULE_SET(
 		SUB_RULE(R(sep_list_opt) CLEAR_ERR() R(expression)
-				 IVM_TRACE("********* expr matched *********\n");
+				 DBB(IVM_TRACE("********* expr matched *********\n"))
 				 R(expression_list_sub)
 		{
 			tmp_expr_list = _RETVAL.expr_list = RULE_RET_AT(2).u.expr_list;

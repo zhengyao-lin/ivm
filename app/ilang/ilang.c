@@ -51,9 +51,10 @@ ivm_perf_printElapsed();
 
 	if (fp) {
 		ivm_file_free(fp);
-		ilang_gen_trans_unit_free(unit);
 		MEM_FREE(src);
 	}
+
+	ilang_gen_trans_unit_free(unit);
 
 	return 0;
 }
