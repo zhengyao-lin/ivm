@@ -45,7 +45,7 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_env_t *env)
 {
 	ilang_gen_int_expr_t *int_expr = IVM_AS(expr, ilang_gen_int_expr_t);
-	ivm_double_t val;
+	ivm_long_t val;
 	ivm_bool_t err = IVM_FALSE;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "integer expression", flag);
@@ -66,7 +66,7 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 				)
 			);
 		}
-		ivm_exec_addInstr(env->cur_exec, NEW_NUM_F, val);
+		ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, val);
 	}
 
 	return NORET();
@@ -319,28 +319,28 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 			FLAG(0), env
 		);
 
+#define BR(op) \
+	case ILANG_GEN_CMP_##op:                             \
+		if (flag.if_use_cond_reg) {                      \
+			ivm_exec_addInstr(env->cur_exec, op##_R);    \
+			return RETVAL(.use_cond_reg = IVM_TRUE);     \
+		} else {                                         \
+			ivm_exec_addInstr(env->cur_exec, op);        \
+		}                                                \
+		break;
+
 		switch (cmp_expr->cmp_type) {
-			case ILANG_GEN_CMP_LT:
-				ivm_exec_addInstr(env->cur_exec, LT);
-				break;
-			case ILANG_GEN_CMP_LE:
-				ivm_exec_addInstr(env->cur_exec, LE);
-				break;
-			case ILANG_GEN_CMP_EQ:
-				ivm_exec_addInstr(env->cur_exec, EQ);
-				break;
-			case ILANG_GEN_CMP_GE:
-				ivm_exec_addInstr(env->cur_exec, GE);
-				break;
-			case ILANG_GEN_CMP_GT:
-				ivm_exec_addInstr(env->cur_exec, GT);
-				break;
-			case ILANG_GEN_CMP_NE:
-				ivm_exec_addInstr(env->cur_exec, NE);
-				break;
+			BR(LT)
+			BR(LE)
+			BR(EQ)
+			BR(GE)
+			BR(GT)
+			BR(NE)
 			default:
 				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(cmp_expr->cmp_type));
 		}
+
+#undef BR
 	}
 
 	return NORET();
@@ -403,6 +403,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_branch_t main_br, last_br, tmp_br;
 	ilang_gen_branch_list_t *elifs;
 	ilang_gen_branch_list_iterator_t biter;
+	ilang_gen_value_t cond_ret;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "if expression", flag);
 
@@ -410,11 +411,24 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	last_br = if_expr->last;
 	elifs = if_expr->elifs;
 
-	main_br.cond->eval(main_br.cond, FLAG(0), env);
-	main_jmp = ivm_exec_addInstr(
-		env->cur_exec, JUMP_FALSE,
-		0 /* replaced with else addr later */
+	cond_ret = main_br.cond->eval(
+		main_br.cond,
+		FLAG(.if_use_cond_reg = IVM_TRUE),
+		env
 	);
+
+	if (cond_ret.use_cond_reg) {
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE_R,
+			0 /* replaced with else addr later */
+		);
+	} else {
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE,
+			0 /* replaced with else addr later */
+		);
+	}
+
 	main_br.body->eval(
 		main_br.body,
 		FLAG(.is_top_level = flag.is_top_level),
@@ -437,10 +451,22 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		}
 
 		tmp_br = ILANG_GEN_BRANCH_LIST_ITER_GET(biter);
-		tmp_br.cond->eval(tmp_br.cond, FLAG(0), env);
-		prev_elif_jmp = ivm_exec_addInstr( // jump to next elif/else if false
-			env->cur_exec, JUMP_FALSE, 0
+		cond_ret = tmp_br.cond->eval(
+			tmp_br.cond,
+			FLAG(.if_use_cond_reg = IVM_TRUE),
+			env
 		);
+
+		if (cond_ret.use_cond_reg) {
+			prev_elif_jmp = ivm_exec_addInstr(
+				env->cur_exec, JUMP_FALSE_R, 0
+			);
+		} else {
+			prev_elif_jmp = ivm_exec_addInstr( // jump to next elif/else if false
+				env->cur_exec, JUMP_FALSE, 0
+			);
+		}
+
 		tmp_br.body->eval(
 			tmp_br.body,
 			FLAG(.is_top_level = flag.is_top_level),

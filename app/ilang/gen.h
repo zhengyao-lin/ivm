@@ -35,12 +35,13 @@ typedef struct {
 typedef struct {
 	ivm_bool_t is_left_val;
 	ivm_bool_t is_top_level; // true: don't leave anything on the stack
+	ivm_bool_t if_use_cond_reg; // use (virtual)register to in condition expression
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
 
 typedef struct {
-	int dummy;
+	ivm_bool_t use_cond_reg; // return value to confirm the use of register
 } ilang_gen_value_t;
 
 #define ilang_gen_value_build(...) ((ilang_gen_value_t) { __VA_ARGS__ })
