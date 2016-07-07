@@ -34,6 +34,10 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_string_pool_t *const_pool;
 
+#define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
+	#include "vm.const.h"
+#undef CONST_GEN
+
 	ivm_int_t gc_flag; /* gc flag:
 						  > 0: open
 						  = 0: closed
@@ -54,6 +58,8 @@ typedef struct ivm_vmstate_t_tag {
 
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
+
+#define IVM_VMSTATE_CONST(state, name) ((state)->const_str_##name)
 
 ivm_vmstate_t *
 ivm_vmstate_new();

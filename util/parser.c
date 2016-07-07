@@ -107,7 +107,8 @@ ivm_parser_parseNum(const ivm_char_t *src,
 		}
 	}
 
-	if (ret >= IVM_INT_MAX(ivm_int_t) && overflow) {
+	if (ret >= IVM_INT_MAX(ivm_int_t)
+		&& overflow) {
 		*overflow = IVM_TRUE;
 	}
 

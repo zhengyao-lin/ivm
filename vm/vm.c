@@ -5,6 +5,7 @@
 
 #include "std/heap.h"
 #include "std/uid.h"
+#include "std/string.h"
 
 #include "gc/gc.h"
 #include "vm.h"
@@ -96,6 +97,11 @@ ivm_vmstate_new()
 	ret->const_pool
 	= ivm_string_pool_new(IVM_FALSE);
 	ivm_ref_inc(ret->const_pool);
+
+#define CONST_GEN(name, str) \
+	ret->const_str_##name = (const ivm_string_t *)ivm_string_pool_registerRaw(ret->const_pool, (str));
+	#include "vm.const.h"
+#undef CONST_GEN
 
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);

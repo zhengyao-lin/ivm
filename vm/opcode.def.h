@@ -129,6 +129,17 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	NEXT_INSTR();
 })
 
+// no pop
+OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
+
+	NEXT_INSTR();
+})
+
 /*
  * set_slot/set_proto:
  *
@@ -300,6 +311,18 @@ OPCODE_GEN(PRINT_STACK, "print_stack", N, {
 	NEXT_INSTR();
 })
 
+/*
+ * invoke:
+ * ----------------------
+ * | func | arg1 | arg2 | ...
+ * ----------------------
+ *
+ * invoke_base:
+ * -----------------------------
+ * | func | base | arg1 | arg2 | ...
+ * -----------------------------
+ * 
+ */
 OPCODE_GEN(INVOKE, "invoke", I, {
 	ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
@@ -334,6 +357,54 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 
 		_TMP_OBJ = ivm_function_callNative(func, _STATE, _CONTEXT,
 									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
+		STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_NULL_OBJ(_STATE));
+	} else {
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+
+		STACK_INC(arg_count);
+	}
+
+	INVOKE();
+})
+
+OPCODE_GEN(INVOKE_BASE, "invoke_base", I, {
+	ivm_function_t *func;
+	ivm_sint32_t arg_count = IARG();
+	ivm_object_t **args;
+
+	CHECK_STACK(arg_count + 1);
+
+	_TMP_OBJ = STACK_POP();
+	// IVM_TRACE("%p\n", obj);
+
+	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));
+	
+	func = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
+	args = STACK_CUT(arg_count + 1);
+
+	// IVM_TRACE("hola!\n");
+
+	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
+	SAVE_RUNTIME(_INSTR + 1);
+
+	ivm_function_invokeBase(
+		func, _STATE,
+		ivm_function_object_getClosure(
+			IVM_AS(_TMP_OBJ, ivm_function_object_t)
+		),
+		_CORO, args[arg_count]
+	);
+	
+	UPDATE_STACK();
+
+	if (ivm_function_isNative(func)) {
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
+
+		_TMP_OBJ = ivm_function_callNative(
+			func, _STATE, _CONTEXT,
+			IVM_FUNCTION_SET_ARG_2(arg_count, args)
+		);
 		STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_NULL_OBJ(_STATE));
 	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));

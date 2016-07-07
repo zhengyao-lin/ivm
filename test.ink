@@ -46,7 +46,7 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(30))
+print(fib(15))
 
 {
 	b: 10,
@@ -75,3 +75,13 @@ func = fn n, b, a: (
 )
 
 func(1, (2, 3), 4)
+
+print(if a < 11: "a < 11" elif a > 2: "a > 2" else: "no!")
+
+builder = fn n: {
+	a: 10,
+	b: 20,
+	sum: fn : base.a + base.b
+}
+
+print(builder().sum())

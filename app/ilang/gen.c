@@ -10,7 +10,7 @@
 #define FLAG ilang_gen_flag_build
 #define CHECK_SE() ((ilang_gen_check_flag_t) { .has_side_effect = IVM_TRUE })
 #define RETVAL ilang_gen_value_build
-#define NORET() ((ilang_gen_value_t) { 0 })
+#define NORET() ((ilang_gen_value_t) { 0, 0 })
 
 #define GEN_ERR(p, ...) \
 	IVM_TRACE("ilang generator error: at line %zd pos %zd: ", (p).line, (p).pos); \
@@ -231,6 +231,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_t *args;
 	ilang_gen_expr_list_iterator_t aiter;
 	ilang_gen_expr_t *tmp_arg;
+	ilang_gen_value_t tmp_ret;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "call expression", flag);
 
@@ -241,15 +242,23 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		tmp_arg->eval(tmp_arg, FLAG(0), env);
 	}
 
-	call_expr->callee->eval(
+	tmp_ret = call_expr->callee->eval(
 		call_expr->callee,
-		FLAG(0), env
+		FLAG(.is_callee = IVM_TRUE),
+		env
 	);
 
-	ivm_exec_addInstr(
-		env->cur_exec, INVOKE,
-		ilang_gen_expr_list_size(args)
-	);
+	if (tmp_ret.has_base) {
+		ivm_exec_addInstr(
+			env->cur_exec, INVOKE_BASE,
+			ilang_gen_expr_list_size(args)
+		);
+	} else {
+		ivm_exec_addInstr(
+			env->cur_exec, INVOKE,
+			ilang_gen_expr_list_size(args)
+		);
+	}
 
 	if (flag.is_top_level) {
 		ivm_exec_addInstr(env->cur_exec, POP);
@@ -265,6 +274,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_slot_expr_t *slot_expr = IVM_AS(expr, ilang_gen_slot_expr_t);
 	ivm_char_t *tmp_str;
+	ilang_gen_value_t ret = NORET();
 
 	tmp_str = ivm_parser_parseStr(
 		slot_expr->slot.val,
@@ -295,14 +305,20 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		);
 
 		if (!flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+			if (flag.is_callee) {
+				// leave base object on the stack
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				ret = RETVAL(.has_base = IVM_TRUE);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+			}
 		}
 	} // else neither left value nor top level: don't generate
 
 END:
 	MEM_FREE(tmp_str);
 
-	return NORET();
+	return ret;
 }
 
 ilang_gen_value_t

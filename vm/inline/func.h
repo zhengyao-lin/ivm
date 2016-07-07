@@ -33,6 +33,36 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 }
 
 IVM_INLINE
+void
+_ivm_function_invoke_b(const ivm_function_t *func,
+					   ivm_vmstate_t *state,
+					   ivm_ctchain_t *context,
+					   ivm_runtime_t *runtime,
+					   ivm_object_t *base)
+{
+	ivm_context_t *ct;
+
+	if (func->is_native) {
+		context = ivm_ctchain_clone(context, state);
+		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
+	} else {
+		context = ivm_ctchain_appendContext(context, state,
+											(ct = ivm_context_new(state)));
+
+		ivm_runtime_invoke(runtime, state, func->u.body, context);
+
+		ivm_object_setSlot(
+			ivm_context_toObject(ct),
+			state,
+			IVM_VMSTATE_CONST(state, C_BASE),
+			base
+		);
+	}
+
+	return;
+}
+
+IVM_INLINE
 ivm_runtime_t *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state,
@@ -64,6 +94,21 @@ ivm_function_invoke(const ivm_function_t *func,
 	return;
 }
 
+IVM_INLINE
+void
+ivm_function_invokeBase(const ivm_function_t *func,
+						ivm_vmstate_t *state,
+						ivm_ctchain_t *context,
+						ivm_coro_t *coro,
+						ivm_object_t *base)
+{
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+
+	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
+	_ivm_function_invoke_b(func, state, context, runtime, base);
+
+	return;
+}
 
 IVM_COM_END
 
