@@ -46,7 +46,7 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-fib(30)
+print(fib(30))
 
 {
 	b: 10,
@@ -63,3 +63,15 @@ a = if 0: {
 }
 
 //b = a.b.v - 1
+
+a = 10
+
+func = fn n, b, a: (
+	b = a + 10,
+	n = b + 1,
+	n + 1,
+	c = "hello, " + "world!",
+	print(c)
+)
+
+func(1, (2, 3), 4)

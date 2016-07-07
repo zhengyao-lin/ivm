@@ -644,8 +644,36 @@ RULE(primary_expr)
 }
 
 /*
+	arg_list_sub
+		: ',' prefix_expr arg_list_sub
+		| %empty
+ */
+RULE(prefix_expr);
+RULE(arg_list_sub)
+{
+	ilang_gen_expr_list_t *tmp_list;
+	struct rule_val_t tmp_ret;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(prefix_expr) R(arg_list_sub)
+		{
+			tmp_ret = RULE_RET_AT(0);
+			tmp_list = _RETVAL.expr_list = RULE_RET_AT(1).u.expr_list;
+			ilang_gen_expr_list_push(tmp_list, tmp_ret.u.expr);
+		})
+
+		SUB_RULE({
+			_RETVAL.expr_list = ilang_gen_expr_list_new(_ENV->unit);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	arg_list_opt
-		: expr arg_list_opt
+		: prefix_expr arg_list_sub
 		| %empty
  */
 RULE(arg_list_opt)
@@ -654,7 +682,7 @@ RULE(arg_list_opt)
 	struct rule_val_t tmp_ret;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(expr) R(arg_list_opt)
+		SUB_RULE(R(prefix_expr) R(arg_list_sub)
 		{
 			tmp_ret = RULE_RET_AT(0);
 			tmp_list = _RETVAL.expr_list = RULE_RET_AT(1).u.expr_list;

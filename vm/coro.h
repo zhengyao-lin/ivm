@@ -77,6 +77,20 @@ ivm_coro_resume(ivm_coro_t *coro,
 	return ivm_coro_start(coro, state, IVM_NULL);
 }
 
+IVM_INLINE
+ivm_object_t *
+ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
+{
+	ivm_ctchain_t *chain;
+
+	if (coro->runtime &&
+		(chain = IVM_RUNTIME_GET(coro->runtime, CONTEXT))) {
+		return ivm_context_toObject(ivm_ctchain_getGlobal(chain));
+	}
+
+	return IVM_NULL;
+}
+
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 

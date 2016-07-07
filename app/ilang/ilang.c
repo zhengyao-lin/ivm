@@ -1,5 +1,6 @@
 #include "pub/type.h"
 #include "pub/vm.h"
+#include "pub/obj.h"
 
 #include "std/list.h"
 #include "std/io.h"
@@ -11,6 +12,29 @@
 
 #include "parser.h"
 #include "gen.h"
+
+IVM_NATIVE_FUNC(print)
+{
+	ivm_object_t *obj;
+
+	IVM_ASSERT(arg.argc, "print need at least 1 argument");
+
+	obj = arg.argv[0];
+
+	switch (IVM_TYPE_TAG_OF(obj)) {
+		case IVM_NUMERIC_T:
+			IVM_TRACE("num: %f\n", ivm_numeric_getValue(obj));
+			break;
+		case IVM_STRING_OBJECT_T:
+			IVM_TRACE("str: %s\n", ivm_string_trimHead(ivm_string_object_getValue(obj)));
+			break;
+		default:
+			IVM_TRACE("unable to print the object of type <%s>\n",
+					  IVM_OBJECT_GET(obj, TYPE_NAME));
+	}
+
+	return IVM_NULL;
+}
 
 ivm_list_t *
 _ilang_parser_getTokens(const ivm_char_t *src);
@@ -26,6 +50,7 @@ int main(int argc, const char **argv)
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
 	ivm_exec_unit_t *exec_unit;
 	ivm_vmstate_t *state;
+	ivm_object_t *global;
 	ivm_bool_t suc;
 
 	if (argc == 2) {
@@ -82,6 +107,15 @@ int main(int argc, const char **argv)
 
 	state = ivm_exec_unit_generateVM(exec_unit);
 	ivm_exec_unit_free(exec_unit);
+
+	ivm_vmstate_lockGCFlag(state);
+
+	global = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
+
+	ivm_object_setSlot_r(global, state, "print",
+						 ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print))));
+
+	ivm_vmstate_unlockGCFlag(state);
 
 /***********************************************/
 

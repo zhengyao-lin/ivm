@@ -24,6 +24,13 @@ typedef struct ivm_ctchain_sub_t_tag {
 	ivm_context_t *ct;
 } ivm_ctchain_sub_t;
 
+/*
+ * context chain:
+ * -------------------------------
+ * | head | local | ... | global |
+ * -------------------------------
+ */
+
 typedef struct ivm_ctchain_t_tag {
 	IVM_REF_HEADER
 	ivm_uint_t len;

@@ -163,6 +163,12 @@ ivm_object_setSlot(ivm_object_t *obj,
 				   ivm_object_t *value);
 
 void
+ivm_object_setSlot_r(ivm_object_t *obj,
+					 struct ivm_vmstate_t_tag *state,
+					 const ivm_char_t *rkey,
+					 ivm_object_t *value);
+
+void
 ivm_object_setSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,

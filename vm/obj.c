@@ -109,6 +109,33 @@ ivm_object_setSlot(ivm_object_t *obj,
 }
 
 void
+ivm_object_setSlot_r(ivm_object_t *obj,
+					 ivm_vmstate_t *state,
+					 const ivm_char_t *rkey,
+					 ivm_object_t *value)
+{
+	ivm_slot_t *found;
+	const ivm_string_t *key;
+
+	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
+
+	key = (const ivm_string_t *)
+		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
+
+	if (!(found = ivm_slot_table_findSlot(obj->slots, state, key))) {
+		/* not found */
+		if (!obj->slots) {
+			obj->slots = ivm_slot_table_new(state);
+		}
+		ivm_slot_table_addSlot(obj->slots, state, key, value);
+	} else {
+		ivm_slot_setValue(found, state, value);
+	}
+
+	return;
+}
+
+void
 ivm_object_setSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
