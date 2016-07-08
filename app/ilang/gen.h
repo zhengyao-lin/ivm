@@ -179,6 +179,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 					   ilang_gen_env_t *env);
 
 ilang_gen_value_t
+ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env);
+
+ilang_gen_value_t
 ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 						 ilang_gen_flag_t flag,
 						 ilang_gen_env_t *env);
@@ -453,6 +458,18 @@ COMMON_EXPR(if_expr, "if expression", {
 }, ilang_gen_branch_t main,
    ilang_gen_branch_list_t *elifs,
    ilang_gen_branch_t last);
+
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *cond;
+	ilang_gen_expr_t *body;
+} ilang_gen_while_expr_t;
+
+COMMON_EXPR(while_expr, "while expression", {
+	ret->cond = cond;
+	ret->body = body;
+}, ilang_gen_expr_t *cond,
+   ilang_gen_expr_t *body);
 
 enum {
 	ILANG_GEN_INTR_RET = 1

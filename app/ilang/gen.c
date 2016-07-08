@@ -524,6 +524,26 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		return NORET();
 	}
 
+	/*
+			[main.cond]
+		jump_false next1
+			[main.body]
+			jump end
+		next1:
+			[elif1.cond]
+			jump_false next2
+			[elif1.body]
+			jump end
+			.
+			.
+			.
+		else:
+			[else.cond]
+			jump_false end
+			[else.body]
+		end:
+	 */
+
 	main_br = if_expr->main;
 	last_br = if_expr->last;
 	elifs = if_expr->elifs;
@@ -641,6 +661,70 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 			*cur_end_jmp,
 			ivm_exec_cur(env->cur_exec) - *cur_end_jmp
 		);
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env)
+{
+	ilang_gen_while_expr_t *while_expr = IVM_AS(expr, ilang_gen_while_expr_t);
+	ivm_size_t start_addr, main_jmp;
+	ilang_gen_value_t cond_ret;
+
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
+	/*
+		start:
+			[cond]
+			jump_false end
+			[body]
+			jump start
+		end:
+	 */
+	
+
+	start_addr = ivm_exec_cur(env->cur_exec);
+
+	cond_ret = while_expr->cond->eval(
+		while_expr->cond,
+		FLAG(.if_use_cond_reg = IVM_TRUE),
+		env
+	);
+
+	if (cond_ret.use_cond_reg) {
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE_R,
+			0 /* replaced with else addr later */
+		);
+	} else {
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE,
+			0 /* replaced with else addr later */
+		);
+	}
+
+	while_expr->body->eval(
+		while_expr->body,
+		FLAG(.is_top_level = IVM_TRUE),
+		env
+	);
+
+	ivm_exec_addInstr(env->cur_exec, JUMP,
+					  start_addr - ivm_exec_cur(env->cur_exec));
+
+	ivm_exec_setArgAt(env->cur_exec, main_jmp,
+					  ivm_exec_cur(env->cur_exec) - main_jmp);
+
+	if (!flag.is_top_level) {
+		// return null in default
+		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
 	}
 
 	return NORET();
@@ -918,6 +1002,22 @@ ilang_gen_if_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
 	}
 
 	if (last_br.body && last_br.body->check(last_br.body, flag)) {
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+ivm_bool_t
+ilang_gen_while_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	ilang_gen_while_expr_t *while_expr = IVM_AS(expr, ilang_gen_while_expr_t);
+
+	if (while_expr->cond->check(while_expr->cond, flag)) {
+		return IVM_TRUE;
+	}
+
+	if (while_expr->body->check(while_expr->body, flag)) {
 		return IVM_TRUE;
 	}
 

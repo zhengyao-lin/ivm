@@ -1170,7 +1170,7 @@ RULE(elif_list_opt)
 
 /*
 	else_branch_opt
-		: 'else' nllo ':' bllo prefix_expr
+		: 'else' nllo ':' nllo prefix_expr
 		| %empty
  */
 RULE(else_branch_opt)
@@ -1193,7 +1193,7 @@ RULE(else_branch_opt)
 
 /*
 	if_expr
-		: 'if' expr ':' prefix_expr elif_list_opt else_branch_opt
+		: 'if' nllo expr nllo ':' nllo prefix_expr elif_list_opt else_branch_opt
  */
 RULE(if_expr)
 {
@@ -1215,6 +1215,34 @@ RULE(if_expr)
 				ilang_gen_branch_build(tmp_expr, RULE_RET_AT(4).u.expr), /* main branch */
 				RULE_RET_AT(5).u.branch_list,
 				RULE_RET_AT(6).u.branch
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	while_expr
+		: 'while' nllo expr nllo ':' nllo preifx_expr
+ */
+RULE(while_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_WHILE) R(nllo)
+				 R(expr) R(nllo)
+				 T(T_COLON) R(nllo)
+				 R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_while_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr,
+				RULE_RET_AT(4).u.expr
 			);
 		})
 	);
@@ -1247,6 +1275,11 @@ RULE(fn_expr)
 		})
 
 		SUB_RULE(R(if_expr) DBB(PRINT_MATCH_TOKEN("if expr"))
+		{
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
+		})
+
+		SUB_RULE(R(while_expr) DBB(PRINT_MATCH_TOKEN("while expr"))
 		{
 			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 		})
