@@ -29,6 +29,14 @@
 #define GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(type)						"unsupported unary operation type %d", (type)
 #define GEN_ERR_MSG_UNSUPPORTED_BINARY_OP(type)						"unsupported binary operation type %d", (type)
 #define GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(type)						"unsupported compare type type %d", (type)
+#define GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP						"using break/cont outside a loop"
+#define GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG						"ignore break/cont argument"
+
+#define GEN_ERR_GENERAL(expr, ...) \
+	GEN_ERR((expr)->pos, __VA_ARGS__)
+
+#define GEN_WARN_GENERAL(expr, ...) \
+	GEN_WARN((expr)->pos, __VA_ARGS__)
 
 #define GEN_ASSERT_NOT_LEFT_VALUE(expr, name, flag) \
 	if ((flag).is_left_val) { \
@@ -673,7 +681,10 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_while_expr_t *while_expr = IVM_AS(expr, ilang_gen_while_expr_t);
 	ivm_size_t start_addr, main_jmp;
+	ivm_size_t cont_addr_back;
+	ivm_list_t *break_ref_back, *break_ref;
 	ilang_gen_value_t cond_ret;
+	IVM_LIST_ITER_TYPE(ivm_size_t) riter;
 
 	if (flag.is_top_level &&
 		!expr->check(expr, CHECK_SE())) {
@@ -689,8 +700,11 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 		end:
 	 */
 	
+	cont_addr_back = env->continue_addr;
+	break_ref_back = env->break_ref;
 
-	start_addr = ivm_exec_cur(env->cur_exec);
+	env->continue_addr = start_addr = ivm_exec_cur(env->cur_exec);
+	break_ref = env->break_ref = ivm_list_new(sizeof(ivm_size_t));
 
 	cond_ret = while_expr->cond->eval(
 		while_expr->cond,
@@ -722,10 +736,23 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	ivm_exec_setArgAt(env->cur_exec, main_jmp,
 					  ivm_exec_cur(env->cur_exec) - main_jmp);
 
+	ivm_size_t cur = ivm_exec_cur(env->cur_exec);
+	ivm_size_t jmp_addr;
+
+	/* reset all break jump addresses */
+	IVM_LIST_EACHPTR(break_ref, riter, ivm_size_t) {
+		jmp_addr = IVM_LIST_ITER_GET(riter, ivm_size_t);
+		ivm_exec_setArgAt(env->cur_exec, jmp_addr, cur - jmp_addr);
+	}
+
 	if (!flag.is_top_level) {
 		// return null in default
 		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
 	}
+
+	ivm_list_free(break_ref);
+	env->continue_addr = cont_addr_back;
+	env->break_ref = break_ref_back;
 
 	return NORET();
 }
@@ -740,17 +767,41 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "interrupt expression", flag);
 	// GEN_WARN_NO_NESTED_RET(expr, flag)
 
-	// support return only currently
-	IVM_ASSERT(intr->sig == ILANG_GEN_INTR_RET,
-			   "unsupported interrupt signal");
+	ivm_size_t cur = ivm_exec_cur(env->cur_exec);
 
-	if (intr->val) {
-		intr->val->eval(intr->val, FLAG(0), env);
-	} else {
-		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+	switch (intr->sig) {
+		case ILANG_GEN_INTR_RET:
+			if (intr->val) {
+				intr->val->eval(intr->val, FLAG(0), env);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+			}
+			ivm_exec_addInstr(env->cur_exec, RETURN);
+			break;
+		case ILANG_GEN_INTR_CONT:
+			if (env->continue_addr != -1) {
+				if (intr->val) {
+					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
+				}
+				ivm_exec_addInstr(env->cur_exec, JUMP, env->continue_addr - cur);
+			} else {
+				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
+			}
+			break;
+		case ILANG_GEN_INTR_BREAK:
+			if (env->break_ref) {
+				if (intr->val) {
+					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
+				}
+				ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+				ivm_list_push(env->break_ref, &cur);
+			} else {
+				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
+			}
+			break;
+		default:
+			IVM_FATAL("unsupported interrupt signal");
 	}
-
-	ivm_exec_addInstr(env->cur_exec, RETURN);
 
 	return NORET();
 }
@@ -826,7 +877,7 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	ivm_string_pool_t *str_pool = ivm_string_pool_new(IVM_TRUE);
 	ivm_exec_unit_t *ret = ivm_exec_unit_new(0, ivm_exec_list_new());
 	ivm_exec_t *top_level = ivm_exec_new(str_pool);
-	ilang_gen_env_t env = { str_pool, ret, top_level };
+	ilang_gen_env_t env = { str_pool, ret, top_level, -1, IVM_NULL };
 
 	ivm_exec_unit_registerExec(ret, top_level);
 

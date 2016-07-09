@@ -31,6 +31,8 @@ enum token_id_t {
 	T_ELSE,
 	T_WHILE,
 	T_RET,
+	T_CONT,
+	T_BREAK,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
@@ -83,6 +85,8 @@ token_name_table[] = {
 	"keyword `else`",
 	"keyword `while`",
 	"keyword `ret`",
+	"keyword `cont`",
+	"keyword `break`",
 
 	"semicolon",
 	"comma",
@@ -329,6 +333,8 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 		KEYWORD("else", T_ELSE)
 		KEYWORD("while", T_WHILE)
 		KEYWORD("ret", T_RET)
+		KEYWORD("cont", T_CONT)
+		KEYWORD("break", T_BREAK)
 #undef KEYWORD
 	};
 
@@ -1290,11 +1296,11 @@ RULE(fn_expr)
 }
 
 /*
-	intr_expr:
+	ret_expr:
 		: 'ret' prefix_expr
 		| 'ret'
  */
-RULE(intr_expr)
+RULE(ret_expr)
 {
 	struct token_t *tmp_token;
 
@@ -1319,6 +1325,90 @@ RULE(intr_expr)
 
 	FAILED({})
 	MATCHED({})
+}
+
+/*
+	cont_expr:
+		: 'cont' prefix_expr
+		| 'cont'
+ */
+RULE(cont_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_CONT) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_intr_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_CONT, RULE_RET_AT(0).u.expr
+			);
+		})
+		SUB_RULE(T(T_CONT)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_intr_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_CONT, IVM_NULL
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	break_expr:
+		: 'break' prefix_expr
+		| 'break'
+ */
+RULE(break_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_BREAK) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_intr_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_BREAK, RULE_RET_AT(0).u.expr
+			);
+		})
+		SUB_RULE(T(T_BREAK)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_intr_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_BREAK, IVM_NULL
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	intr_expr:
+		: ret_expr
+		| cont_expr
+		| break_expr
+ */
+RULE(intr_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(ret_expr))
+		SUB_RULE(R(cont_expr))
+		SUB_RULE(R(break_expr))
+	);
+
+	FAILED({})
+	MATCHED({
+		_RETVAL.expr = RULE_RET_AT(0).u.expr;
+	})
 }
 
 /*

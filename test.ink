@@ -93,3 +93,15 @@ while i < 1000000: {
 	(fn:0)()
 	i = i + 1
 } 
+
+while 1: break
+
+i = 0
+
+while i < 10000: {
+	if !(i % 100):
+		print(i)
+	i = i + 1
+	while 1: 1
+	cont 1
+}

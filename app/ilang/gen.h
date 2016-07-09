@@ -30,6 +30,8 @@ typedef struct {
 	ivm_string_pool_t *str_pool;
 	ivm_exec_unit_t *unit;
 	ivm_exec_t *cur_exec;
+	ivm_size_t continue_addr;
+	ivm_list_t *break_ref;
 } ilang_gen_env_t;
 
 typedef struct {
@@ -472,7 +474,9 @@ COMMON_EXPR(while_expr, "while expression", {
    ilang_gen_expr_t *body);
 
 enum {
-	ILANG_GEN_INTR_RET = 1
+	ILANG_GEN_INTR_RET = 1,
+	ILANG_GEN_INTR_CONT,
+	ILANG_GEN_INTR_BREAK
 };
 
 /* intr expr */
