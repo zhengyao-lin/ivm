@@ -71,7 +71,7 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 void
 ivm_vmstate_reinit(ivm_vmstate_t *state);
 
-#define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag > 0)
+#define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag == 1)
 
 IVM_INLINE
 void

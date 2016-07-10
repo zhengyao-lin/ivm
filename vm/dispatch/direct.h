@@ -62,14 +62,6 @@
 	}                                         \
 	goto *(ivm_instr_entry(++tmp_ip));
 
-#define NEXT_INSTR_NGC() \
-	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
-	if (ivm_vmstate_checkGC(state)) {         \
-		SAVE_STACK();                         \
-		ivm_vmstate_doGC(state);              \
-	}                                         \
-	goto *(ivm_instr_entry(++tmp_ip));
-
 #define NEXT_N_INSTR(n) \
 	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
 	goto *(ivm_instr_entry(tmp_ip += (n)));

@@ -48,8 +48,6 @@ fib = fn n: {
 
 print(fib(30))
 
-ret
-
 {
 	b: 10,
 	c: 10,
@@ -67,9 +65,6 @@ a = if 0: {
 //b = a.b.v - 1
 
 a = 10
-
-protof a
-clone a
 
 func = fn n, b, a: (
 	b = a + 10,
