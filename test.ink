@@ -46,7 +46,9 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(30))
+print(fib(40))
+
+ret
 
 {
 	b: 10,
@@ -65,6 +67,9 @@ a = if 0: {
 //b = a.b.v - 1
 
 a = 10
+
+protof a
+clone a
 
 func = fn n, b, a: (
 	b = a + 10,
