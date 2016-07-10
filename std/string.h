@@ -44,13 +44,13 @@ ivm_strdup_heap(const ivm_char_t *src,
 
 typedef struct {
 	ivm_bool_t is_const;
-	ivm_uint32_t len;
+	ivm_uint_t len;
 } ivm_string_t;
 
 #define IVM_STRING_GET_SIZE(len) \
 	(sizeof(ivm_string_t) + sizeof(ivm_char_t) * ((len) + 1))
 
-#define IVM_STRING_MAX_LEN IVM_UINT_MAX(ivm_uint32_t)
+#define IVM_STRING_MAX_LEN IVM_UINT_MAX(ivm_uint_t)
 
 #define IVM_STRING_LEGAL_LEN(len) \
 	((len) < IVM_STRING_MAX_LEN)

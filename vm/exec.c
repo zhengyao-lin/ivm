@@ -56,6 +56,33 @@ ivm_exec_free(ivm_exec_t *exec)
 	return;
 }
 
+void
+ivm_exec_dump(ivm_exec_t *exec)
+{
+	if (exec) {
+		ivm_string_pool_free(exec->pool);
+		MEM_FREE(exec->instrs);
+	}
+
+	return;
+}
+
+void
+ivm_exec_copy(ivm_exec_t *exec,
+			  ivm_exec_t *dest)
+{
+	ivm_size_t size;
+
+	*dest = *exec;
+	ivm_ref_init(dest);
+	ivm_ref_inc(dest->pool);
+	size = sizeof(*exec->instrs) * exec->alloc;
+	dest->instrs = MEM_ALLOC(size, ivm_instr_t *);
+	MEM_COPY(dest->instrs, exec->instrs, size);
+
+	return;
+}
+
 IVM_PRIVATE
 void
 ivm_exec_expand(ivm_exec_t *exec)

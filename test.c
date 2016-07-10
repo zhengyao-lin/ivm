@@ -77,11 +77,11 @@ int test_fib()
 	str_pool = ivm_string_pool_new(IVM_TRUE);
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
-	exec1 = ivm_exec_new(str_pool);
-	exec2 = ivm_exec_new(str_pool);
+	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
+	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);
 
-	top = ivm_function_new(state, exec1);
-	fib = ivm_function_new(state, exec2);
+	top = ivm_function_new(state, IVM_NULL);
+	fib = ivm_function_new(state, IVM_NULL);
 	ivm_vmstate_registerFunc(state, top);
 	ivm_vmstate_registerFunc(state, fib);
 	
@@ -91,10 +91,6 @@ int test_fib()
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
-
-	/********** top **********/
-
-	/********** top **********/
 
 #if 1
 	/********** top **********/
@@ -141,6 +137,10 @@ int test_fib()
 	ivm_exec_addInstr(exec2, ADD);
 	ivm_exec_addInstr(exec2, RETURN);
 	/********** fib **********/
+
+	ivm_function_setExec(top, exec1);
+	ivm_function_setExec(fib, exec2);
+
 #endif
 
 	ivm_coro_setRoot(coro, state,
@@ -161,6 +161,8 @@ int test_fib()
 
 	ivm_ctchain_free(chain, state);
 	ivm_vmstate_free(state);
+	ivm_exec_free(exec1);
+	ivm_exec_free(exec2);
 
 	return 0;
 }
@@ -213,9 +215,9 @@ int test_call()
 	str_pool = ivm_string_pool_new(IVM_TRUE);
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
-	exec1 = ivm_exec_new(str_pool);
+	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
 
-	top = ivm_function_new(state, exec1);
+	top = ivm_function_new(state, IVM_NULL);
 	empty = ivm_function_new(state, IVM_NULL);
 	ivm_vmstate_registerFunc(state, top);
 	ivm_vmstate_registerFunc(state, empty);
@@ -259,6 +261,9 @@ int test_call()
 	ivm_exec_setArgAt(exec1, addr2, addr3 - addr2);
 
 	/********************** code ***********************/
+
+	ivm_function_setExec(top, exec1);
+
 	ivm_coro_setRoot(coro, state,
 					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top),
 					 ivm_function_object_t));
@@ -279,6 +284,7 @@ int test_call()
 
 	ivm_ctchain_free(chain, state);
 	ivm_vmstate_free(state);
+	ivm_exec_free(exec1);
 
 	return 0;
 }
@@ -323,10 +329,10 @@ int test_vm()
 	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func)));
 	str_pool = ivm_string_pool_new(IVM_TRUE);
 
-	exec1 = ivm_exec_new(str_pool);
-	exec2 = ivm_exec_new(str_pool);
-	exec3 = ivm_exec_new(str_pool);
-	exec4 = ivm_exec_new(str_pool);
+	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
+	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);
+	exec3 = ivm_exec_new(str_pool); ivm_ref_inc(exec3);
+	exec4 = ivm_exec_new(str_pool); ivm_ref_inc(exec4);
 
 	proto = ivm_vmstate_getTypeProto(state, IVM_OBJECT_T);
 
@@ -337,10 +343,10 @@ int test_vm()
 
 	ivm_object_printSlots(proto);
 
-	func1 = ivm_function_new(state, exec1);
-	func2 = ivm_function_new(state, exec2);
-	func3 = ivm_function_new(state, exec3);
-	func4 = ivm_function_new(state, exec4);
+	func1 = ivm_function_new(state, IVM_NULL);
+	func2 = ivm_function_new(state, IVM_NULL);
+	func3 = ivm_function_new(state, IVM_NULL);
+	func4 = ivm_function_new(state, IVM_NULL);
 	ivm_vmstate_registerFunc(state, func1);
 	ivm_vmstate_registerFunc(state, func2);
 	ivm_vmstate_registerFunc(state, func3);
@@ -517,6 +523,11 @@ int test_vm()
 	IVM_TRACE("obj1: %p\n", (void *)obj1);
 	IVM_TRACE("obj2: %p\n", (void *)obj2);
 
+	ivm_function_setExec(func1, exec1);
+	ivm_function_setExec(func2, exec2);
+	ivm_function_setExec(func3, exec3);
+	ivm_function_setExec(func4, exec4);
+
 	/* init coroutines */
 
 	coro1 = ivm_coro_new(state);
@@ -569,7 +580,8 @@ int test_vm()
 #endif
 
 	ivm_ctchain_free(chain, state);
-
+	ivm_exec_free(exec1); ivm_exec_free(exec2);
+	ivm_exec_free(exec3); ivm_exec_free(exec4);
 	ivm_vmstate_free(state);
 
 	return 0;

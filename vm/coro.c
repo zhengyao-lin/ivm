@@ -76,9 +76,9 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_vmstack_t *tmp_stack;
 	ivm_frame_stack_t *tmp_frame_st;
 
-	ivm_exec_t *tmp_exec;
+	const ivm_exec_t *tmp_exec;
 	ivm_ctchain_t *tmp_context;
-	ivm_function_t *tmp_func = IVM_NULL;
+	const ivm_function_t *tmp_func = IVM_NULL;
 
 	ivm_instr_t *tmp_ip,
 				*tmp_ip_end;

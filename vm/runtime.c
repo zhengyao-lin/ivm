@@ -22,7 +22,7 @@ ivm_runtime_new(ivm_vmstate_t *state)
 void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_vmstate_t *state,
-				   ivm_exec_t *exec,
+				   const ivm_exec_t *exec,
 				   ivm_ctchain_t *context)
 {
 	runtime->exec = exec;

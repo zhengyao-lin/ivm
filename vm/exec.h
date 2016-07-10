@@ -34,6 +34,13 @@ ivm_exec_new(ivm_string_pool_t *pool);
 void
 ivm_exec_free(ivm_exec_t *exec);
 
+void
+ivm_exec_dump(ivm_exec_t *exec);
+
+void
+ivm_exec_copy(ivm_exec_t *exec,
+			  ivm_exec_t *dest);
+
 ivm_size_t
 ivm_exec_addInstr_c(ivm_exec_t *exec,
 					ivm_instr_t instr);

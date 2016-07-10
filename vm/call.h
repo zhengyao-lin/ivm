@@ -13,7 +13,7 @@
 IVM_COM_HEADER
 
 #define IVM_EXEC_INFO_HEAD \
-	ivm_exec_t *exec; \
+	const ivm_exec_t *exec; \
 	struct ivm_ctchain_t_tag *context; \
 	ivm_instr_t *ip; \
 	struct ivm_object_t_tag **bp;

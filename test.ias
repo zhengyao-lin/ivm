@@ -212,6 +212,9 @@ root {
 
 	new_func context_test1
 	invoke 0
+
+	new_func from_test
+	invoke
 }
 
 context_test1 {
@@ -362,4 +365,93 @@ loop:/************************************/
 	jump loop
 
 end:
+}
+
+add_many_slot {
+	new_obj
+	get_proto
+	new_obj; set_slot_n "a"
+	new_obj; set_slot_n "b"
+	new_obj; set_slot_n "c"
+	new_obj; set_slot_n "d"
+	new_obj; set_slot_n "e"
+	new_obj; set_slot_n "f"
+	new_obj; set_slot_n "g"
+	new_obj; set_slot_n "h"
+	new_obj; set_slot_n "i"
+	new_obj; set_slot_n "j"
+	new_obj; set_slot_n "k"
+	new_obj; set_slot_n "l"
+	new_obj; set_slot_n "m"
+	new_obj; set_slot_n "n"
+	new_obj; set_slot_n "o"
+	new_obj; set_slot_n "p"
+	new_obj; set_slot_n "q"
+	new_obj; set_slot_n "r"
+	new_obj; set_slot_n "s"
+	new_obj; set_slot_n "t"
+	new_obj; set_slot_n "u"
+	new_obj; set_slot_n "v"
+	new_obj; set_slot_n "w"
+	new_obj; set_slot_n "x"
+	new_obj; set_slot_n "y"
+	new_obj; set_slot_n "z"
+	new_obj; set_slot_n "aa"
+	new_obj; set_slot_n "bb"
+	new_obj; set_slot_n "cc"
+	new_obj; set_slot_n "dd"
+	new_obj; set_slot_n "ee"
+	new_obj; set_slot_n "ff"
+	new_obj; set_slot_n "gg"
+	new_obj; set_slot_n "hh"
+	new_obj; set_slot_n "ii"
+	new_obj; set_slot_n "jj"
+	new_obj; set_slot_n "kk"
+	new_obj; set_slot_n "ll"
+	new_obj; set_slot_n "mm"
+	new_obj; set_slot_n "nn"
+	new_obj; set_slot_n "oo"
+	new_obj; set_slot_n "pp"
+	new_obj; set_slot_n "qq"
+	new_obj; set_slot_n "rr"
+	new_obj; set_slot_n "ss"
+	new_obj; set_slot_n "tt"
+	new_obj; set_slot_n "uu"
+	new_obj; set_slot_n "vv"
+	new_obj; set_slot_n "ww"
+	new_obj; set_slot_n "xx"
+	new_obj; set_slot_n "yy"
+	new_obj; set_slot_n "zz"
+	new_obj; set_slot_n "aaa"
+	new_obj; set_slot_n "bbb"
+	new_obj; set_slot_n "ccc"
+	new_obj; set_slot_n "ddd"
+	new_obj; set_slot_n "fff"
+	new_obj; set_slot_n "ggg"
+	new_obj; set_slot_n "hhh"
+	new_obj; set_slot_n "iii"
+	new_obj; set_slot_n "jjj"
+	new_obj; set_slot_n "kkk"
+	new_obj; set_slot_n "lll"
+	new_obj; set_slot_n "mmm"
+	new_obj; set_slot_n "nnn"
+	new_obj; set_slot_n "ooo"
+	new_obj; set_slot_n "ppp"
+	new_obj; set_slot_n "qqq"
+	new_obj; set_slot_n "rrr"
+	new_obj; set_slot_n "sss"
+	new_obj; set_slot_n "ttt"
+	new_obj; set_slot_n "uuu"
+	new_obj; set_slot_n "vvv"
+	new_obj; set_slot_n "www"
+	new_obj; set_slot_n "xxx"
+	new_obj; set_slot_n "yyy"
+	new_obj; set_slot_n "zzz"
+}
+
+from_test {
+	new_func add_many_slot
+	invoke 0
+
+	
 }

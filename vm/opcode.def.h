@@ -324,7 +324,7 @@ OPCODE_GEN(PRINT_STACK, "print_stack", N, {
  * 
  */
 OPCODE_GEN(INVOKE, "invoke", I, {
-	ivm_function_t *func;
+	const ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
 	ivm_object_t **args;
 
@@ -368,7 +368,7 @@ OPCODE_GEN(INVOKE, "invoke", I, {
 })
 
 OPCODE_GEN(INVOKE_BASE, "invoke_base", I, {
-	ivm_function_t *func;
+	const ivm_function_t *func;
 	ivm_sint32_t arg_count = IARG();
 	ivm_object_t **args;
 

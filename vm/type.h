@@ -24,8 +24,8 @@ typedef uint64_t				ivm_uint64_t;
 typedef int						ivm_bool_t;
 typedef int						ivm_int_t;
 typedef unsigned int			ivm_uint_t;
-typedef int64_t					ivm_long_t;
-typedef uint64_t				ivm_ulong_t;
+typedef long					ivm_long_t;
+typedef unsigned long			ivm_ulong_t;
 
 typedef float					ivm_single_t;
 typedef double					ivm_double_t;

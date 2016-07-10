@@ -92,7 +92,7 @@ while i < 1000000: {
 	// print(i)
 	(fn:0)()
 	i = i + 1
-} 
+}
 
 while 1: break
 

@@ -56,7 +56,7 @@ ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,
-				   ivm_exec_t *exec,
+				   const ivm_exec_t *exec,
 				   ivm_ctchain_t *context);
 
 #define ivm_runtime_dump(runtime, state) \
