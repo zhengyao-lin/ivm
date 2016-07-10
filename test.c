@@ -366,7 +366,7 @@ int test_vm()
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
 	/* add opcodes */
-	ivm_exec_addInstr(exec3, TEST3, "this is exec3");
+	ivm_exec_addInstr(exec3, NOP);
 	ivm_exec_addInstr(exec3, NEW_FUNC, ivm_vmstate_registerFunc(state, func4));
 	/* ivm_exec_addInstr(exec3, GET_CONTEXT_SLOT, "func2"); */
 
@@ -508,17 +508,16 @@ int test_vm()
 	ivm_exec_addInstr(exec1, YIELD);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 9990);
 	ivm_exec_addInstr(exec1, YIELD);
-	ivm_exec_addInstr(exec1, TEST1);
 
 	ivm_exec_addInstr(exec2, NEW_OBJ);
 	ivm_exec_addInstr(exec2, PRINT_OBJ);
-	ivm_exec_addInstr(exec2, TEST3, "yes, I am");
+	ivm_exec_addInstr(exec2, OUT, "yes, I am");
 	ivm_exec_addInstr(exec2, NEW_OBJ);
 	ivm_exec_addInstr(exec2, YIELD);
 	ivm_exec_addInstr(exec2, NEW_OBJ);
 	ivm_exec_addInstr(exec2, YIELD);
 	ivm_exec_addInstr(exec2, PRINT_NUM);
-	ivm_exec_addInstr(exec2, TEST3, "hello?");
+	ivm_exec_addInstr(exec2, NOP);
 
 	IVM_TRACE("obj1: %p\n", (void *)obj1);
 	IVM_TRACE("obj2: %p\n", (void *)obj2);

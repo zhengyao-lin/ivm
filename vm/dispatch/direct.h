@@ -55,24 +55,24 @@
 
 
 #define NEXT_INSTR() \
-	if (++tmp_ip != tmp_ip_end) {                 \
-		IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
-		if (ivm_vmstate_checkGC(state)) {         \
-			SAVE_STACK();                         \
-			ivm_vmstate_doGC(state);              \
-		}                                         \
-		goto *(ivm_instr_entry(tmp_ip));          \
-	} else {                                      \
-		goto END_EXEC;                            \
-	}
+	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
+	if (ivm_vmstate_checkGC(state)) {         \
+		SAVE_STACK();                         \
+		ivm_vmstate_doGC(state);              \
+	}                                         \
+	goto *(ivm_instr_entry(++tmp_ip));
+
+#define NEXT_INSTR_NGC() \
+	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
+	if (ivm_vmstate_checkGC(state)) {         \
+		SAVE_STACK();                         \
+		ivm_vmstate_doGC(state);              \
+	}                                         \
+	goto *(ivm_instr_entry(++tmp_ip));
 
 #define NEXT_N_INSTR(n) \
-	if ((tmp_ip += (n)) != tmp_ip_end) {          \
-		IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
-		goto *(ivm_instr_entry(tmp_ip));          \
-	} else {                                      \
-		goto END_EXEC;                            \
-	}                                             \
+	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
+	goto *(ivm_instr_entry(tmp_ip += (n)));
 
 #define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN

@@ -177,7 +177,7 @@ ACTION_INVOKE:
 
 			if (tmp_exec) {
 				if (!ivm_exec_cached(tmp_exec))
-					ivm_exec_preproc(tmp_exec, state);
+					ivm_exec_preproc((ivm_exec_t *)tmp_exec, state);
 
 				tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
 				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
@@ -199,6 +199,7 @@ ACTION_INVOKE:
 				#error require a dispatch method
 #endif
 			}
+#if 0
 END_EXEC:
 
 			if (AVAIL_STACK) {
@@ -206,6 +207,7 @@ END_EXEC:
 			} else {
 				_TMP_OBJ = IVM_NULL_OBJ(state);
 			}
+#endif
 
 ACTION_RETURN:
 

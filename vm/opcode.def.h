@@ -1,5 +1,5 @@
 OPCODE_GEN(NOP, "nop", N, {
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_NULL, "new_null", N, {
@@ -91,32 +91,32 @@ OPCODE_GEN(NE, "ne", N, CMP_BINOP_HANDLER(
 
 OPCODE_GEN(LT_R, "lt_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ < 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(LE_R, "le_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ <= 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(GT_R, "gt_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ > 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(GE_R, "ge_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ >= 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(EQ_R, "eq_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ == 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(NE_R, "ne_r", N, CMP_BINOP_HANDLER(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ != 0;
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 ))
 
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
@@ -126,7 +126,7 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 // no pop
@@ -137,7 +137,7 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, {
 	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 /*
@@ -182,7 +182,7 @@ OPCODE_GEN(GET_PROTO, "get_proto", N, {
 	_TMP_OBJ = IVM_OBJECT_GET(STACK_POP(), PROTO);
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_PROTO, "set_proto", N, {
@@ -200,7 +200,7 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
 									 SARG(), _INSTR_CACHE);
 
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
@@ -238,7 +238,7 @@ OPCODE_GEN(POP, "pop", N, {
 	CHECK_STACK(1);
 	STACK_POP();
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(DUP_N, "dup_n", I, {
@@ -249,7 +249,7 @@ OPCODE_GEN(DUP_N, "dup_n", I, {
 	_TMP_OBJ = STACK_BEFORE(i);
 	STACK_PUSH(_TMP_OBJ);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(DUP, "dup", N, {
@@ -258,7 +258,7 @@ OPCODE_GEN(DUP, "dup", N, {
 	_TMP_OBJ = STACK_TOP();
 	STACK_PUSH(_TMP_OBJ);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
@@ -267,7 +267,7 @@ OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
 	_TMP_OBJ = STACK_POP();
 	IVM_OUT("print: %p\n", (void *)_TMP_OBJ);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PRINT_NUM, "print_num", N, {
@@ -279,7 +279,7 @@ OPCODE_GEN(PRINT_NUM, "print_num", N, {
 	else
 		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PRINT_TYPE, "print_type", N, {
@@ -288,7 +288,7 @@ OPCODE_GEN(PRINT_TYPE, "print_type", N, {
 	_TMP_OBJ = STACK_POP();
 	IVM_TRACE("type: %s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "empty pointer");
 	
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PRINT_STR, "print_str", N, {
@@ -303,12 +303,12 @@ OPCODE_GEN(PRINT_STR, "print_str", N, {
 
 	IVM_OUT("%s\n", ivm_string_trimHead(str->val));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PRINT_STACK, "print_stack", N, {
 	ivm_dbg_stackState(_CORO, stderr);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 /*
@@ -427,7 +427,7 @@ OPCODE_GEN(FORK, "fork", N, {
 		IVM_AS(_TMP_OBJ, ivm_function_object_t)
 	);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(YIELD, "yield", N, {
@@ -458,7 +458,7 @@ OPCODE_GEN(JUMP_TRUE, "jump_true", I, {
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -466,7 +466,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", I, {
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -474,7 +474,7 @@ OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, {
 	if (_TMP_CMP_REG) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -482,7 +482,7 @@ OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", I, {
 	if (!_TMP_CMP_REG) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -490,7 +490,7 @@ OPCODE_GEN(JUMP_LT, "jump_lt", I, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ < 0) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 ))
 
@@ -498,7 +498,7 @@ OPCODE_GEN(JUMP_LE, "jump_le", I, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ <= 0) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 ))
 
@@ -506,7 +506,7 @@ OPCODE_GEN(JUMP_GT, "jump_gt", I, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ > 0) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 ))
 
@@ -514,28 +514,13 @@ OPCODE_GEN(JUMP_GE, "jump_ge", I, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ >= 0) {
 		NEXT_N_INSTR(IARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 ))
 
-OPCODE_GEN(TEST1, "test1", N, {
-	IVM_OUT("test1\n");
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(TEST2, "test2", I, { 
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(TEST3, "test3", S, {
-	IVM_OUT("morning! this is test3\n");
-	IVM_OUT("string argument: %s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR();
-})
-
 OPCODE_GEN(OUT, "out", S, {
 	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_NUM, "out_num", N, {
@@ -548,7 +533,7 @@ OPCODE_GEN(OUT_NUM, "out_num", N, {
 		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
 	}
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_STR, "out_str", N, {
@@ -561,12 +546,12 @@ OPCODE_GEN(OUT_STR, "out_str", N, {
 		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
 	}
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, {
 	IVM_TRACE("%ld\n", STACK_SIZE());
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_TYPE, "out_type", N, {
@@ -575,5 +560,5 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, {
 	_TMP_OBJ = STACK_TOP();
 	IVM_TRACE("%s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "<null pointer>");
 	
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
