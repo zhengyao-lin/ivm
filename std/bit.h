@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_BIT_H_
-#define _IVM_VM_BIT_H_
+#ifndef _IVM_STD_BIT_H_
+#define _IVM_STD_BIT_H_
 
 #define IVM_BIT_SET_FALSE(bit) ((bit) &= 0)
 #define IVM_BIT_SET_TRUE(bit) ((bit) |= 1)

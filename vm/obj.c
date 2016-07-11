@@ -50,40 +50,17 @@ ivm_type_free(ivm_type_t *type)
 }
 
 ivm_bool_t
-ivm_object_alwaysTrue(ivm_object_t *obj,
-					  ivm_vmstate_t *state)
-{
-	return IVM_TRUE;
-}
-
-ivm_bool_t
-ivm_object_alwaysFalse(ivm_object_t *obj,
-					   ivm_vmstate_t *state)
-{
-	return IVM_FALSE;
-}
-
-ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
-				  struct ivm_vmstate_t_tag *state)
+				  ivm_vmstate_t *state)
 {
-	ivm_bool_converter_t conv = IVM_OBJECT_GET(obj, TYPE_TO_BOOL);
+	ivm_type_t *type = IVM_TYPE_OF(obj);
+	ivm_bool_converter_t conv = type->to_bool;
 
 	if (conv)
 		return conv(obj, state);
 
-	return IVM_OBJECT_GET(obj, TYPE_CONST_BOOL);
+	return type->const_bool;
 }
-
-/*
-#define STR_IS_PROTO(str) \
-	str[0] == 'p' && \
-	str[1] == 'r' && \
-	str[2] == 'o' && \
-	str[3] == 't' && \
-	str[4] == 'o' && \
-	str[5] == '\0'
-*/
 
 void
 ivm_object_setSlot(ivm_object_t *obj,
@@ -91,18 +68,27 @@ ivm_object_setSlot(ivm_object_t *obj,
 				   const ivm_string_t *key,
 				   ivm_object_t *value)
 {
+	ivm_slot_table_t *slots;
 	ivm_slot_t *found;
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (!(found = ivm_slot_table_findSlot(obj->slots, state, key))) {
-		/* not found */
-		if (!obj->slots) {
-			obj->slots = ivm_slot_table_new(state);
+	slots = obj->slots;
+
+	if (slots) {
+		if (ivm_slot_table_isShared(slots)) {
+			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
 		}
-		ivm_slot_table_addSlot(obj->slots, state, key, value);
+
+		found = ivm_slot_table_findSlot(slots, state, key);
+		if (found) {
+			ivm_slot_setValue(found, state, value);
+		} else {
+			ivm_slot_table_addSlot(slots, state, key, value);
+		}
 	} else {
-		ivm_slot_setValue(found, state, value);
+		slots = obj->slots = ivm_slot_table_new(state);
+		ivm_slot_table_addSlot(slots, state, key, value);
 	}
 
 	return;
@@ -114,6 +100,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 					 const ivm_char_t *rkey,
 					 ivm_object_t *value)
 {
+	ivm_slot_table_t *slots;
 	ivm_slot_t *found;
 	const ivm_string_t *key;
 
@@ -122,14 +109,23 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 	key = (const ivm_string_t *)
 		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
 
-	if (!(found = ivm_slot_table_findSlot(obj->slots, state, key))) {
-		/* not found */
-		if (!obj->slots) {
-			obj->slots = ivm_slot_table_new(state);
+	slots = obj->slots;
+
+	if (slots) {
+		if (ivm_slot_table_isShared(slots)) {
+			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
 		}
-		ivm_slot_table_addSlot(obj->slots, state, key, value);
+
+		found = ivm_slot_table_findSlot(slots, state, key);
+		if (found) {
+			ivm_slot_setValue(found, state, value);
+		} else {
+			/* not found */
+			ivm_slot_table_addSlot(slots, state, key, value);
+		}
 	} else {
-		ivm_slot_setValue(found, state, value);
+		slots = obj->slots = ivm_slot_table_new(state);
+		ivm_slot_table_addSlot(slots, state, key, value);
 	}
 
 	return;
@@ -142,18 +138,28 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 					  ivm_object_t *value,
 					  ivm_instr_cache_t *cache)
 {
+	ivm_slot_table_t *slots;
 	ivm_slot_t *found;
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if (!(found = ivm_slot_table_findSlot_cc(obj->slots, state, key, cache))) {
-		/* not found */
-		if (!obj->slots) {
-			obj->slots = ivm_slot_table_new(state);
+	slots = obj->slots;
+
+	if (slots) {
+		if (ivm_slot_table_isShared(slots)) {
+			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
 		}
-		ivm_slot_table_addSlot_cc(obj->slots, state, key, value, cache);
+
+		found = ivm_slot_table_findSlot_cc(slots, state, key, cache);
+		if (found) {
+			ivm_slot_setValue(found, state, value);
+		} else {
+			/* not found */
+			ivm_slot_table_addSlot_cc(slots, state, key, value, cache);
+		}
 	} else {
-		ivm_slot_setValue(found, state, value);
+		slots = obj->slots = ivm_slot_table_new(state);
+		ivm_slot_table_addSlot(slots, state, key, value);
 	}
 
 	return;
@@ -169,8 +175,9 @@ ivm_object_setSlotIfExist(ivm_object_t *obj,
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if ((found = ivm_slot_table_findSlot(obj->slots, state, key))
-			   != IVM_NULL) {
+	found = ivm_slot_table_findSlot(obj->slots, state, key);
+
+	if (found) {
 		ivm_slot_setValue(found, state, value);
 	} else {
 		return IVM_FALSE;
@@ -189,8 +196,9 @@ ivm_object_setSlotIfExist_cc(ivm_object_t *obj,
 	ivm_slot_t *found;
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
-	if ((found = ivm_slot_table_findSlot_cc(obj->slots, state, key, cache))
-			   != IVM_NULL) {
+	found = ivm_slot_table_findSlot_cc(obj->slots, state, key, cache);
+
+	if (found) {
 		ivm_slot_setValue(found, state, value);
 	} else {
 		return IVM_FALSE;
@@ -210,23 +218,23 @@ ivm_object_searchProtoSlot(ivm_object_t *obj,
 
 	if (!i) return ret;
 
-	IVM_OBJECT_SET(obj, TRAV_PROTECT, IVM_TRUE);
+	// IVM_OBJECT_SET(obj, TRAV_PROTECT, IVM_TRUE);
 
-	while (i && !IVM_OBJECT_GET(i, TRAV_PROTECT)) {
-		IVM_OBJECT_SET(i, TRAV_PROTECT, IVM_TRUE);
+	/* no loop is allowed when setting proto */
+	while (i) {
 		ret = ivm_slot_getValue(ivm_slot_table_findSlot(i->slots, state, key),
 								state);
-		if (ret) {
-			break;
-		}
+		if (ret) break;
 		i = IVM_OBJECT_GET(i, PROTO);
 	}
 
+#if 0
 	i = obj;
 	while (i && IVM_OBJECT_GET(i, TRAV_PROTECT)) {
 		IVM_OBJECT_SET(i, TRAV_PROTECT, IVM_FALSE);
 		i = IVM_OBJECT_GET(i, PROTO);
 	}
+#endif
 
 	return ret;
 }

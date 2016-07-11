@@ -562,3 +562,9 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, {
 	
 	NEXT_INSTR();
 })
+
+OPCODE_GEN(CLONE, "clone", N, {
+	CHECK_STACK(1);
+	STACK_TOP_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
+	NEXT_INSTR();
+})

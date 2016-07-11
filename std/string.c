@@ -2,11 +2,11 @@
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/type.h"
-#include "pub/bit.h"
 
 #include "string.h"
 #include "heap.h"
 #include "hash.h"
+#include "bit.h"
 
 ivm_char_t *
 ivm_strdup(const ivm_char_t *src)

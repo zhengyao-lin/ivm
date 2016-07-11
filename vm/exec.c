@@ -140,9 +140,9 @@ ivm_exec_preproc(ivm_exec_t *exec,
 			}
 		}
 
-		if (exec->instrs &&
-			ivm_instr_opcode(exec->instrs + (exec->next - 1))
-			!= IVM_OPCODE(RETURN)) {
+		if (exec->next
+			&& (ivm_instr_opcode(exec->instrs + (exec->next - 1))
+				!= IVM_OPCODE(RETURN))) {
 			ivm_exec_addInstr(exec, RETURN);
 		}
 	}

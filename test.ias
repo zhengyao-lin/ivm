@@ -215,6 +215,29 @@ root {
 
 	new_func context_test1
 	invoke 0
+
+	new_obj
+	new_num_i 10
+	set_slot_b "a"
+	dup
+	clone
+	// new_str "no!!"
+	get_slot "a"
+	out_num
+	pop
+	get_slot "a"
+	out_num
+
+	new_obj
+	new_num_i 10
+	set_slot_b "a"
+	dup
+	clone
+	new_str "no!!"
+	set_slot_b "a"
+	pop
+	get_slot "a"
+	out_num
 }
 
 context_test1 {

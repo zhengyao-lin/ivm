@@ -7,6 +7,7 @@
 #include "std/hash.h"
 #include "std/string.h"
 #include "std/uid.h"
+#include "std/bit.h"
 
 #include "instr.h"
 
@@ -45,6 +46,7 @@ ivm_slot_getValue(ivm_slot_t *slot,
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_bool_t is_hash: 1;
+	ivm_bool_t is_shared: 1; // shared by multiple objects
 	ivm_size_t size;
 	ivm_uid_t uid;
 	ivm_slot_t *tabl;
@@ -63,6 +65,29 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 					struct ivm_heap_t_tag *heap);
 
 typedef ivm_slot_t *ivm_slot_table_iterator_t;
+
+IVM_INLINE
+ivm_slot_table_t *
+ivm_slot_table_copyShared(ivm_slot_table_t *table)
+{
+	IVM_BIT_SET_TRUE(table->is_shared);
+	return table;
+}
+
+#define ivm_slot_table_isShared(table) ((table)->is_shared)
+
+ivm_slot_table_t *
+_ivm_slot_table_copy_state(ivm_slot_table_t *table,
+						   struct ivm_vmstate_t_tag *state);
+
+IVM_INLINE
+ivm_slot_table_t *
+ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
+						   struct ivm_vmstate_t_tag *state)
+{
+	IVM_TRACE("COW!!\n");
+	return _ivm_slot_table_copy_state(table, state);
+}
 
 #define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
 #define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))

@@ -28,14 +28,12 @@ ivm_type_t static_type_list[] = {
 		IVM_UNDEFINED_T, "undefined", sizeof(ivm_object_t),
 
 		.const_bool = IVM_FALSE,
-		.to_bool = ivm_object_alwaysFalse
 	},
 
 	{
 		IVM_NULL_T, "null", sizeof(ivm_object_t),
 
 		.const_bool = IVM_FALSE,
-		.to_bool = ivm_object_alwaysFalse
 	},
 
 	{
@@ -47,7 +45,6 @@ ivm_type_t static_type_list[] = {
 	{
 		IVM_NUMERIC_T, "numeric", sizeof(ivm_numeric_t),
 
-		.const_bool = IVM_TRUE,
 		.to_bool = ivm_numeric_isTrue
 	},
 

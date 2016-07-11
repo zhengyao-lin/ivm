@@ -46,7 +46,9 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(30))
+print(fib(40))
+
+ret
 
 {
 	b: 10,

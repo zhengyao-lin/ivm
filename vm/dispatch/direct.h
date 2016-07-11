@@ -85,6 +85,9 @@
 	  ? SAVE_STACK_NOPUSH(), ivm_vmstack_inc_c(_STACK, _CORO), UPDATE_STACK() \
 	  : 0))
 
+#define STACK_TOP_OVERRIDE(obj) \
+	(*(tmp_sp - 1) = (obj))
+
 #define STACK_POP_NOCACHE() (*--tmp_sp)
 
 #define _STACK (tmp_stack)

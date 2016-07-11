@@ -9,10 +9,10 @@
 #include "std/hash.h"
 #include "std/string.h"
 #include "std/heap.h"
+#include "std/bit.h"
 
 #include "slot.h"
 #include "obj.h"
-#include "bit.h"
 
 #define SET_BIT_FALSE IVM_BIT_SET_FALSE
 #define SET_BIT_TRUE IVM_BIT_SET_TRUE
@@ -23,6 +23,7 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	SET_BIT_FALSE(ret->is_hash);
+	SET_BIT_FALSE(ret->is_shared);
 
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	ret->is_hash |= (IVM_DEFAULT_SLOT_TABLE_SIZE >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
@@ -47,6 +48,7 @@ ivm_slot_table_new_c(ivm_vmstate_t *state,
 	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	SET_BIT_FALSE(ret->is_hash);
+	SET_BIT_FALSE(ret->is_shared);
 
 	if (prealloc < IVM_DEFAULT_SLOT_TABLE_SIZE) {
 		prealloc = IVM_DEFAULT_SLOT_TABLE_SIZE;
@@ -77,11 +79,12 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 					ivm_heap_t *heap)
 {
 	ivm_slot_table_t *ret = IVM_NULL;
-	ivm_slot_t *tmp, *end;
+	// ivm_slot_t *tmp, *end;
 
 	if (table) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
 		ret->is_hash = table->is_hash;
+		SET_BIT_FALSE(ret->is_shared);
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_heap_alloc(heap,
@@ -91,13 +94,48 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 				 table->tabl,
 				 sizeof(*ret->tabl)
 				 * ret->size);
-
+#if 0
 		for (tmp = ret->tabl,
 			 end = ret->tabl + ret->size;
 			 tmp != end;
 			 tmp++) {
 			tmp->k = ivm_string_copyIfNotConst_heap(tmp->k, heap);
 		}
+#endif
+	}
+
+	return ret;
+}
+
+ivm_slot_table_t *
+_ivm_slot_table_copy_state(ivm_slot_table_t *table,
+						   ivm_vmstate_t *state)
+{
+	ivm_slot_table_t *ret = IVM_NULL;
+	// ivm_slot_t *tmp, *end;
+
+	if (table) {
+		ret = ivm_vmstate_alloc(state, sizeof(*ret));
+		ret->is_hash = table->is_hash;
+		SET_BIT_FALSE(ret->is_shared);
+		ret->size = table->size;
+		ret->uid = ivm_vmstate_genUID(state);
+		ret->tabl = ivm_vmstate_alloc(state,
+								   sizeof(*ret->tabl)
+								   * ret->size);
+		MEM_COPY(ret->tabl,
+				 table->tabl,
+				 sizeof(*ret->tabl)
+				 * ret->size);
+
+#if 0
+		for (tmp = ret->tabl,
+			 end = ret->tabl + ret->size;
+			 tmp != end;
+			 tmp++) {
+			tmp->k = ivm_string_copyIfNotConst_state(tmp->k, state);
+		}
+#endif
 	}
 
 	return ret;

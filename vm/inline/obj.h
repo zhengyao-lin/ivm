@@ -29,6 +29,25 @@ ivm_object_init(ivm_object_t *obj,
 
 IVM_INLINE
 ivm_object_t *
+ivm_object_clone(ivm_object_t *obj,
+				 ivm_vmstate_t *state)
+{
+	ivm_type_t *type = IVM_TYPE_OF(obj);
+	ivm_size_t size = type->size;
+	ivm_object_t *ret = ivm_vmstate_alloc(state, size);
+
+	MEM_COPY(ret, obj, size);
+	ivm_slot_table_copyShared(ret->slots);
+
+	if (type->clone) {
+		type->clone(ret, state);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_object_t *
 ivm_object_getSlotValue_np(ivm_object_t *obj,
 						   ivm_vmstate_t *state,
 						   const ivm_string_t *key)
