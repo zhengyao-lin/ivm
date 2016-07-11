@@ -16,8 +16,8 @@ IVM_COM_HEADER
 struct ivm_vmstate_t_tag;
 
 typedef struct ivm_coro_t_tag {
-	ivm_vmstack_t *stack;
-	ivm_frame_stack_t *frame_st;
+	ivm_vmstack_t stack;
+	ivm_frame_stack_t frame_st;
 	ivm_runtime_t *runtime;
 } ivm_coro_t;
 
@@ -28,8 +28,8 @@ typedef enum {
 	IVM_CORO_ACTION_YIELD
 } ivm_coro_action_t;
 
-#define IVM_CORO_GET_STACK(coro) ((coro)->stack)
-#define IVM_CORO_GET_FRAME_STACK(coro) ((coro)->frame_st)
+#define IVM_CORO_GET_STACK(coro) (&(coro)->stack)
+#define IVM_CORO_GET_FRAME_STACK(coro) (&(coro)->frame_st)
 #define IVM_CORO_GET_RUNTIME(coro) ((coro)->runtime)
 
 #define IVM_CORO_GET(obj, member) IVM_GET((obj), IVM_CORO, member)
@@ -41,7 +41,7 @@ void
 ivm_coro_free(ivm_coro_t *coro,
 			  struct ivm_vmstate_t_tag *state);
 
-#define ivm_coro_stackTop(coro) (ivm_vmstack_size(coro->stack))
+#define ivm_coro_stackTop(coro) (ivm_vmstack_size(&coro->stack))
 
 ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro,

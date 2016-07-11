@@ -113,6 +113,7 @@ ivm_function_invokeBase(const ivm_function_t *func,
 IVM_INLINE
 void
 ivm_function_setExec(ivm_function_t *func,
+					 ivm_vmstate_t *state,
 					 ivm_exec_t *body)
 {
 	IVM_ASSERT(!func->is_native, "set native exec");
@@ -121,6 +122,7 @@ ivm_function_setExec(ivm_function_t *func,
 
 	if (body) {
 		ivm_exec_copy(body, &func->u.body);
+		ivm_exec_preproc(&func->u.body, state);
 	} else {
 		MEM_INIT(&func->u.body, sizeof(func->u.body));
 	}

@@ -20,7 +20,7 @@ ivm_frame_new(ivm_vmstate_t *state,
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame"));
 
-	MEM_COPY(ret, runtime, sizeof(IVM_EXEC_INFO_HEAD_SIZE));
+	MEM_COPY(ret, runtime, sizeof(IVM_FRAME_HEADER_SIZE));
 
 	return ret;
 }

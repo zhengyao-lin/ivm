@@ -25,7 +25,10 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 {
 	char t;
 	char buffer[64];
-	ivm_ptrdiff_t pc = (ivm_ptr_t)ip - (ivm_ptr_t)ivm_exec_instrPtrStart(exec);
+	ivm_ptrdiff_t pc = (ivm_ptr_t)ip - 0;
+
+	if (exec)
+		pc = (ivm_ptr_t)ip - (ivm_ptr_t)ivm_exec_instrPtrStart(exec);
 
 	IVM_SNPRINTF(buffer, sizeof(buffer), format, pc / sizeof(*ip));
 	// "%4ld: "
@@ -47,7 +50,7 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 					ivm_opcode_arg_toFloat(ivm_instr_arg(ip)));
 			break;
 		case 'S':
-			if (ivm_exec_cached(exec)) {
+			if (!exec || ivm_exec_cached(exec)) {
 				fprintf(fp, "%s%-20s #?(\"%s\")",
 						buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
 						ivm_string_trimHead(
@@ -162,7 +165,7 @@ ivm_dbg_stackState(ivm_coro_t *coro, FILE *fp)
 		while (i != sp) {
 			if (frames && fi < fsize
 				&& IVM_FRAME_GET(tmp_fr = ivm_frame_stack_at(frames, fi), BP) == i) {
-				fprintf(fp, "exec at %p\n", (void *)IVM_FRAME_GET(tmp_fr, EXEC));
+				fprintf(fp, "ip at %p\n", (void *)IVM_FRAME_GET(tmp_fr, IP));
 				fi++;
 			}
 
@@ -201,9 +204,7 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 {
 	ivm_int_t i, tmp_cst = runtime.cst;
 	ivm_vmstack_t *stack = runtime.stack;
-	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);
-	ivm_uptr_t exec_id;
-	char buffer[64];
+	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);;
 
 	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d):\n",
 			  runtime.sp, runtime.bp, runtime.cst);
@@ -272,11 +273,7 @@ DRAW_END:
 
 	switch (runtime.action) {
 		case IVM_CORO_ACTION_NONE:
-			exec_id = (ivm_uptr_t)runtime.exec
-					  << ((sizeof(ivm_uptr_t) - sizeof(char)) * 8)
-					  >> ((sizeof(ivm_uptr_t) - sizeof(char)) * 8);
-			IVM_SNPRINTF(buffer, sizeof(buffer), "%p:%%zd> ", (void *)exec_id);
-			_ivm_dbg_printInstr(runtime.exec, runtime.ip, buffer, stderr);
+			_ivm_dbg_printInstr(IVM_NULL, runtime.ip, "> ", stderr);
 			break;
 		case IVM_CORO_ACTION_INVOKE:
 			if (!runtime.retval)

@@ -138,8 +138,8 @@ int test_fib()
 	ivm_exec_addInstr(exec2, RETURN);
 	/********** fib **********/
 
-	ivm_function_setExec(top, exec1);
-	ivm_function_setExec(fib, exec2);
+	ivm_function_setExec(top, state, exec1);
+	ivm_function_setExec(fib, state, exec2);
 
 #endif
 
@@ -262,7 +262,7 @@ int test_call()
 
 	/********************** code ***********************/
 
-	ivm_function_setExec(top, exec1);
+	ivm_function_setExec(top, state, exec1);
 
 	ivm_coro_setRoot(coro, state,
 					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top),
@@ -522,10 +522,10 @@ int test_vm()
 	IVM_TRACE("obj1: %p\n", (void *)obj1);
 	IVM_TRACE("obj2: %p\n", (void *)obj2);
 
-	ivm_function_setExec(func1, exec1);
-	ivm_function_setExec(func2, exec2);
-	ivm_function_setExec(func3, exec3);
-	ivm_function_setExec(func4, exec4);
+	ivm_function_setExec(func1, state, exec1);
+	ivm_function_setExec(func2, state, exec2);
+	ivm_function_setExec(func3, state, exec3);
+	ivm_function_setExec(func4, state, exec4);
 
 	/* init coroutines */
 

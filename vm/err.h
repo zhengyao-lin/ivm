@@ -17,6 +17,13 @@ IVM_COM_HEADER
 		IVM_ABORT(); \
 	}
 
+#define IVM_ASSERT_S(cond) \
+	if (!(cond)) { \
+		fprintf(IVM_STDERR, "at %s: line %d: assertion failed: %s\n", \
+				__FILE__, __LINE__, #cond); \
+		IVM_ABORT(); \
+	}
+
 #define IVM_FATAL(...) \
 	fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
 	fprintf(IVM_STDERR, __VA_ARGS__); \

@@ -31,7 +31,6 @@ typedef struct {
 
 	ivm_int_t cst;
 
-	ivm_exec_t *exec;
 	ivm_instr_t *ip;
 	ivm_size_t bp, sp;
 

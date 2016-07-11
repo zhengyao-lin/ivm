@@ -25,7 +25,6 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   const ivm_exec_t *exec,
 				   ivm_ctchain_t *context)
 {
-	runtime->exec = exec;
 	runtime->context = ivm_ctchain_addRef(context);
 	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->bp = runtime->sp;

@@ -12,14 +12,13 @@
 
 IVM_COM_HEADER
 
-#define IVM_EXEC_INFO_HEAD \
-	const ivm_exec_t *exec; \
+#define IVM_FRAME_HEADER \
 	struct ivm_ctchain_t_tag *context; \
 	ivm_instr_t *ip; \
 	struct ivm_object_t_tag **bp;
 
-#define IVM_EXEC_INFO_HEAD_SIZE \
-	(sizeof(struct { IVM_EXEC_INFO_HEAD } IVM_NOALIGN))
+#define IVM_FRAME_HEADER_SIZE \
+	(sizeof(struct { IVM_FRAME_HEADER }))
 
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
@@ -27,10 +26,9 @@ struct ivm_runtime_t_tag;
 struct ivm_object_t_tag;
 
 typedef struct ivm_frame_t_tag {
-	IVM_EXEC_INFO_HEAD
+	IVM_FRAME_HEADER
 } IVM_NOALIGN ivm_frame_t;
 
-#define IVM_FRAME_GET_EXEC(frame) ((frame)->exec)
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->context)
@@ -53,6 +51,12 @@ ivm_frame_stack_new();
 
 void
 ivm_frame_stack_free(ivm_frame_stack_t *stack);
+
+void
+ivm_frame_stack_init(ivm_frame_stack_t *stack);
+
+void
+ivm_frame_stack_dump(ivm_frame_stack_t *stack);
 
 void
 ivm_frame_stack_push(ivm_frame_stack_t *stack,

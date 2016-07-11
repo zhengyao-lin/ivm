@@ -5,7 +5,6 @@
 #define _RUNTIME (tmp_runtime)
 #define _CONTEXT (tmp_context)
 #define _STATE (state)
-#define _EXEC (tmp_exec)
 #define _INSTR (tmp_ip)
 #define _INSTR_CACHE (&(_INSTR->cache))
 #define _INSTR_CACHE_UID (_INSTR->cache.id)
@@ -15,7 +14,6 @@
 	(*_INSTR_CACHE = ivm_instr_cache_build(IVM_NULL, IVM_NULL))
 
 #define _DBG_RUNTIME_DEFAULT \
-	.exec = tmp_exec,                                     \
 	.ip = tmp_ip,                                         \
 	.bp = ivm_vmstack_offset(_STACK, tmp_bp),             \
 	.sp = ivm_vmstack_offset(_STACK, tmp_sp),             \

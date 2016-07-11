@@ -17,8 +17,8 @@ ivm_coro_new(ivm_vmstate_t *state)
 {
 	ivm_coro_t *ret = ivm_vmstate_allocCoro(state);
 
-	ret->stack = ivm_vmstack_new();
-	ret->frame_st = ivm_frame_stack_new();
+	ivm_vmstack_init(&ret->stack);
+	ivm_frame_stack_init(&ret->frame_st);
 	ret->runtime = IVM_NULL;
 
 	return ret;
@@ -31,12 +31,12 @@ ivm_coro_free(ivm_coro_t *coro,
 	ivm_frame_stack_iterator_t fsiter;
 
 	if (coro) {
-		IVM_FRAME_STACK_EACHPTR(coro->frame_st, fsiter) {
+		IVM_FRAME_STACK_EACHPTR(&coro->frame_st, fsiter) {
 			ivm_frame_free(IVM_FRAME_STACK_ITER_GET(fsiter), state);
 		}
 
-		ivm_vmstack_free(coro->stack);
-		ivm_frame_stack_free(coro->frame_st);
+		ivm_vmstack_dump(&coro->stack);
+		ivm_frame_stack_dump(&coro->frame_st);
 		ivm_runtime_free(coro->runtime, state);
 
 		ivm_vmstate_dumpCoro(state, coro);
@@ -76,12 +76,10 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_vmstack_t *tmp_stack;
 	ivm_frame_stack_t *tmp_frame_st;
 
-	const ivm_exec_t *tmp_exec;
 	ivm_ctchain_t *tmp_context;
 	const ivm_function_t *tmp_func = IVM_NULL;
 
-	ivm_instr_t *tmp_ip,
-				*tmp_ip_end;
+	register ivm_instr_t *tmp_ip;
 	// register ivm_size_t tmp_bp, tmp_sp;
 	ivm_object_t **tmp_st_end;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -164,37 +162,31 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		ivm_coro_kill(coro, state);
 	} else if (ivm_coro_isAsleep(coro)) {
 		tmp_runtime = coro->runtime;
-		tmp_stack = coro->stack;
-		tmp_frame_st = coro->frame_st;
+		tmp_stack = &coro->stack;
+		tmp_frame_st = &coro->frame_st;
 		tmp_st_end = ivm_vmstack_edge(tmp_stack);
 
 		UPDATE_STACK();
 
 		while (1) {
 ACTION_INVOKE:
-			tmp_exec = IVM_RUNTIME_GET(tmp_runtime, EXEC);
+			tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
-			if (tmp_exec) {
-				if (!ivm_exec_cached(tmp_exec))
-					ivm_exec_preproc((ivm_exec_t *)tmp_exec, state);
-
-				tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
-				tmp_ip_end = ivm_exec_instrPtrEnd(tmp_exec);
+			if (tmp_ip) {
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-				
-				if (tmp_ip != tmp_ip_end) {
-					/* for single line debug */
-					IVM_PER_INSTR_DBG(DBG_RUNTIME());
+			
+				/* for single line debug */
+				IVM_PER_INSTR_DBG(DBG_RUNTIME());
 
-					/* jump to the first opcode */
-					goto *(ivm_instr_entry(tmp_ip));
+				/* jump to the first opcode */
+				goto *(ivm_instr_entry(tmp_ip));
 
-					#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
-						#include "opcode.def.h"
-					#undef OPCODE_GEN
-				}
+				#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
+					#include "opcode.def.h"
+				#undef OPCODE_GEN
+
 #else
 				#error require a dispatch method
 #endif

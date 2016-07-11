@@ -20,6 +20,7 @@ _ivm_function_init(ivm_function_t *func,
 	func->is_native = IVM_FALSE;
 	if (body) {
 		ivm_exec_copy(body, &func->u.body);
+		ivm_exec_preproc(&func->u.body, state);
 	} else {
 		MEM_INIT(&func->u.body, sizeof(func->u.body));
 	}

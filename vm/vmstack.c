@@ -7,6 +7,23 @@
 #include "coro.h"
 #include "call.h"
 
+void
+ivm_vmstack_init(ivm_vmstack_t *stack)
+{
+	stack->size = IVM_DEFAULT_VMSTACK_BUFFER_SIZE;
+	stack->edge = (
+		(stack->bottom = MEM_ALLOC(
+			sizeof(*stack->bottom)
+			* IVM_DEFAULT_VMSTACK_BUFFER_SIZE,
+			ivm_object_t **
+		)) + IVM_DEFAULT_VMSTACK_BUFFER_SIZE
+	);
+
+	IVM_ASSERT(stack->bottom, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
+
+	return;
+}
+
 ivm_vmstack_t *
 ivm_vmstack_new()
 {
@@ -15,16 +32,7 @@ ivm_vmstack_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
 
-	ret->size = IVM_DEFAULT_VMSTACK_BUFFER_SIZE;
-	ret->edge = (
-		(ret->bottom = MEM_ALLOC(
-			sizeof(*ret->bottom)
-			* IVM_DEFAULT_VMSTACK_BUFFER_SIZE,
-			ivm_object_t **
-		)) + IVM_DEFAULT_VMSTACK_BUFFER_SIZE
-	);
-
-	IVM_ASSERT(ret->bottom, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
+	ivm_vmstack_init(ret);
 
 	return ret;
 }
@@ -35,6 +43,16 @@ ivm_vmstack_free(ivm_vmstack_t *stack)
 	if (stack) {
 		MEM_FREE(stack->bottom);
 		MEM_FREE(stack);
+	}
+
+	return;
+}
+
+void
+ivm_vmstack_dump(ivm_vmstack_t *stack)
+{
+	if (stack) {
+		MEM_FREE(stack->bottom);
 	}
 
 	return;

@@ -28,12 +28,6 @@ OPCODE_GEN(NEW_NUM_F, "new_num_f", F, {
 	NEXT_INSTR();
 })
 
-/*
-OPCODE_GEN(NEW_NUM_S, "new_num_s", S, {
-	NEXT_INSTR();
-})
-*/
-
 OPCODE_GEN(NEW_STR, "new_str", S, {
 	STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
 	NEXT_INSTR();
@@ -46,6 +40,12 @@ OPCODE_GEN(NEW_FUNC, "new_func", X, {
 			ivm_vmstate_getFunc(_STATE, XARG())
 		)
 	);
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(CLONE, "clone", N, {
+	CHECK_STACK(1);
+	STACK_TOP_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
 	NEXT_INSTR();
 })
 
@@ -560,11 +560,5 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, {
 	_TMP_OBJ = STACK_TOP();
 	IVM_TRACE("%s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "<null pointer>");
 	
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(CLONE, "clone", N, {
-	CHECK_STACK(1);
-	STACK_TOP_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
 	NEXT_INSTR();
 })

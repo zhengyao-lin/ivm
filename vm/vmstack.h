@@ -26,6 +26,12 @@ void
 ivm_vmstack_free(ivm_vmstack_t *stack);
 
 void
+ivm_vmstack_init(ivm_vmstack_t *stack);
+
+void
+ivm_vmstack_dump(ivm_vmstack_t *stack);
+
+void
 ivm_vmstack_inc(ivm_vmstack_t *stack,
 				struct ivm_frame_stack_t_tag *fstack);
 

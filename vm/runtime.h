@@ -18,12 +18,11 @@ struct ivm_vmstate_t_tag;
 struct ivm_object_t_tag;
 
 typedef struct ivm_runtime_t_tag {
-	IVM_EXEC_INFO_HEAD
+	IVM_FRAME_HEADER
 	struct ivm_object_t_tag **sp;
 } IVM_NOALIGN ivm_runtime_t;
 
-#define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->exec)
-#define IVM_RUNTIME_GET_EXEC(runtime) ((runtime)->exec)
+#define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->ip)
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
@@ -32,7 +31,6 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_SP_INC(runtime) ((runtime)->sp++)
 #define IVM_RUNTIME_GET_DEC_SP(runtime) (--(runtime)->sp)
 
-#define IVM_RUNTIME_GET_EXEC_PTR(runtime) (&(runtime)->exec)
 #define IVM_RUNTIME_GET_CONTEXT_PTR(runtime) (&(runtime)->context)
 #define IVM_RUNTIME_GET_IP_PTR(runtime) (&(runtime)->IP)
 
