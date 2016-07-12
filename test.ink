@@ -132,3 +132,19 @@ func = fn: {
 print(func())
 
 print(a + ", " + b)
+
+func = fn: {
+	let = {
+		a: "hola",
+		b: 20,
+		let: "yes"
+	}
+	let let
+}
+
+print(func())
+
+a = 10
+a.proto.double = fn: base * 2
+
+print(10.double())

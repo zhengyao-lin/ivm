@@ -301,11 +301,14 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_slot_expr_t *slot_expr = IVM_AS(expr, ilang_gen_slot_expr_t);
 	ivm_char_t *tmp_str;
 	ilang_gen_value_t ret = NORET();
+	ivm_bool_t is_proto;
 
 	tmp_str = ivm_parser_parseStr(
 		slot_expr->slot.val,
 		slot_expr->slot.len
 	);
+
+	is_proto = !IVM_STRCMP(tmp_str, "proto");
 
 	if (flag.is_left_val) {
 		slot_expr->obj->eval(
@@ -313,7 +316,13 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			FLAG(0),
 			env
 		);
-		ivm_exec_addInstr(env->cur_exec, SET_SLOT, tmp_str);
+		
+		if (is_proto) {
+			ivm_exec_addInstr(env->cur_exec, SET_PROTO);
+		} else {
+			ivm_exec_addInstr(env->cur_exec, SET_SLOT, tmp_str);
+		}
+
 		ivm_exec_addInstr(env->cur_exec, POP);
 	} else {
 		if (flag.is_top_level &&
@@ -331,10 +340,20 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (!flag.is_top_level) {
 			if (flag.is_callee) {
 				// leave base object on the stack
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				if (is_proto) {
+					ivm_exec_addInstr(env->cur_exec, DUP);
+					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
+				} else {
+					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				}
+
 				ret = RETVAL(.has_base = IVM_TRUE);
 			} else {
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+				if (is_proto) {
+					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
+				} else {
+					ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+				}
 			}
 		}
 	} // else neither left value nor top level: don't generate
