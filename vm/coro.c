@@ -177,12 +177,16 @@ ACTION_INVOKE:
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 			
 				/* for single line debug */
-				IVM_PER_INSTR_DBG(DBG_RUNTIME());
+				// IVM_PER_INSTR_DBG(DBG_RUNTIME());
 
 				/* jump to the first opcode */
 				goto *(ivm_instr_entry(tmp_ip));
 
-				#define OPCODE_GEN(o, name, arg, ...) OPCODE_##o: __VA_ARGS__
+				#define OPCODE_GEN(o, name, arg, ...) \
+					OPCODE_##o:                             \
+						IVM_PER_INSTR_DBG(DBG_RUNTIME());   \
+						__VA_ARGS__
+
 					#include "opcode.def.h"
 				#undef OPCODE_GEN
 

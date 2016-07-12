@@ -17,6 +17,7 @@
 	.ip = tmp_ip,                                         \
 	.bp = ivm_vmstack_offset(_STACK, tmp_bp),             \
 	.sp = ivm_vmstack_offset(_STACK, tmp_sp),             \
+	.cmp_reg = _TMP_CMP_REG,                              \
 	.state = _STATE,                                      \
 	.coro = _CORO,                                        \
 	.stack = _STACK                                       \
@@ -53,7 +54,6 @@
 
 
 #define NEXT_INSTR() \
-	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
 	if (ivm_vmstate_checkGC(state)) {         \
 		SAVE_STACK();                         \
 		ivm_vmstate_doGC(state);              \
@@ -61,7 +61,6 @@
 	goto *(ivm_instr_entry(++tmp_ip));
 
 #define NEXT_N_INSTR(n) \
-	IVM_PER_INSTR_DBG(DBG_RUNTIME());         \
 	goto *(ivm_instr_entry(tmp_ip += (n)));
 
 #define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD

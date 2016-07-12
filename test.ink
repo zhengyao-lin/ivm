@@ -129,6 +129,6 @@ func = fn: {
 	top b = "haha!"
 }
 
-func()
+print(func())
 
 print(a + ", " + b)

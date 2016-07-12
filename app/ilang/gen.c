@@ -314,9 +314,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			env
 		);
 		ivm_exec_addInstr(env->cur_exec, SET_SLOT, tmp_str);
-		if (flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, POP);
-		}
+		ivm_exec_addInstr(env->cur_exec, POP);
 	} else {
 		if (flag.is_top_level &&
 			!expr->check(expr, CHECK_SE())) {
@@ -838,6 +836,9 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
 
 	assign->rhe->eval(assign->rhe, FLAG(0), env);
+	if (!flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, DUP);
+	}
 	assign->lhe->eval(
 		assign->lhe,
 		FLAG(
