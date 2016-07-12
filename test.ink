@@ -48,7 +48,7 @@ fib = fn n: {
 
 print(fib(30))
 
-ret
+// ret
 
 {
 	b: 10,
@@ -107,3 +107,14 @@ while i < 10000: {
 	while 1: 1
 	cont 1
 }
+
+a = {
+	dummy: 0,
+	b: 2
+}
+
+b = clone a
+
+b.b = "no!!"
+
+print(a.b)

@@ -26,6 +26,7 @@ typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *s
 
 enum {
 	IVM_UNIOP_ID(NOT) = 0,
+	IVM_UNIOP_ID(CLONE),
 	IVM_UNIOP_COUNT
 };
 

@@ -85,7 +85,7 @@ ivm_slot_table_t *
 ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
 						   struct ivm_vmstate_t_tag *state)
 {
-	IVM_TRACE("COW!!\n");
+	// IVM_TRACE("COW!!\n");
 	return _ivm_slot_table_copy_state(table, state);
 }
 

@@ -42,13 +42,11 @@ void
 ivm_context_pool_dump(ivm_context_pool_t *pool,
 					  ivm_ctchain_t *chain)
 {
-	if (chain) {
-		if (!ivm_ref_dec(chain)) {
-			if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
-				ivm_ptpool_dump(pool->pools[chain->len], chain);
-			} else {
-				MEM_FREE(chain);
-			}
+	if (chain && !ivm_ref_dec(chain)) {
+		if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
+			ivm_ptpool_dump(pool->pools[chain->len], chain);
+		} else {
+			MEM_FREE(chain);
 		}
 	}
 

@@ -34,6 +34,8 @@ enum token_id_t {
 	T_CONT,
 	T_BREAK,
 
+	T_CLONE,
+
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
 	T_COLON,	// :
@@ -87,6 +89,8 @@ token_name_table[] = {
 	"keyword `ret`",
 	"keyword `cont`",
 	"keyword `break`",
+
+	"operator `clone`",
 
 	"semicolon",
 	"comma",
@@ -335,6 +339,8 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 		KEYWORD("ret", T_RET)
 		KEYWORD("cont", T_CONT)
 		KEYWORD("break", T_BREAK)
+
+		KEYWORD("clone", T_CLONE)
 #undef KEYWORD
 	};
 
@@ -817,6 +823,7 @@ RULE(postfix_expr)
 	unary_expr
 		: postfix_expr
 		| '!' unary_expr
+		| 'clone' unary_expr
  */
 RULE(unary_expr)
 {
@@ -832,6 +839,17 @@ RULE(unary_expr)
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(1).u.expr,
 				IVM_UNIOP_ID(NOT)
+			);
+		})
+		SUB_RULE(T(T_CLONE) R(nllo) R(unary_expr)
+		DBB(PRINT_MATCH_TOKEN("clone expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_unary_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr,
+				IVM_UNIOP_ID(CLONE)
 			);
 		})
 		SUB_RULE(R(postfix_expr)

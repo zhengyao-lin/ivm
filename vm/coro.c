@@ -80,8 +80,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	const ivm_function_t *tmp_func = IVM_NULL;
 
 	register ivm_instr_t *tmp_ip;
-	// register ivm_size_t tmp_bp, tmp_sp;
-	ivm_object_t **tmp_st_end;
+	register ivm_object_t **tmp_st_end;
 	register ivm_object_t **tmp_bp, **tmp_sp;
 
 	register ivm_object_t *tmp_obj1 = IVM_NULL;
