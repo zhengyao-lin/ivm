@@ -157,14 +157,32 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		id_expr->val.len
 	);
 
-	if (flag.is_left_val) {
-		if (!flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, DUP);
-		}
-		ivm_exec_addInstr(env->cur_exec, SET_CONTEXT_SLOT, tmp_str);
-	} else if (!flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, GET_CONTEXT_SLOT, tmp_str);
+#define ID_GEN(name, set_instr, get_instr) \
+	if (sizeof(name) == sizeof("")                                     \
+		|| !IVM_STRCMP(tmp_str, (name))) {                             \
+		if (flag.is_left_val) {                                        \
+			if (!flag.is_top_level) {                                  \
+				ivm_exec_addInstr(env->cur_exec, DUP);                 \
+			}                                                          \
+			set_instr;                                                 \
+		} else if (!flag.is_top_level) {                               \
+			get_instr;                                                 \
+		}                                                              \
 	}
+
+	ID_GEN("let",
+		ivm_exec_addInstr(env->cur_exec, SET_LOCAL_CONTEXT),
+		ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT))
+	else
+	ID_GEN("top",
+		ivm_exec_addInstr(env->cur_exec, SET_GLOBAL_CONTEXT),
+		ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT))
+	else
+	ID_GEN("",
+		ivm_exec_addInstr(env->cur_exec, SET_CONTEXT_SLOT, tmp_str),
+		ivm_exec_addInstr(env->cur_exec, GET_CONTEXT_SLOT, tmp_str))
+
+#undef ID_GEN
 
 	MEM_FREE(tmp_str);
 

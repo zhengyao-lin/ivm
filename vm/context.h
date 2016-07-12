@@ -108,6 +108,13 @@ ivm_ctchain_clone(ivm_ctchain_t *chain,
 
 #define ivm_ctchain_getLocal(chain) (ivm_ctchain_contextStart(chain)->ct)
 #define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextLast(chain)->ct)
+#define ivm_ctchain_setLocal(chain, c) (ivm_ctchain_contextStart(chain)->ct = (c))
+#define ivm_ctchain_setGlobal(chain, c) (ivm_ctchain_contextLast(chain)->ct = (c))
+
+#define ivm_ctchain_getLocalObj(chain) (ivm_context_toObject(ivm_ctchain_getLocal(chain)))
+#define ivm_ctchain_getGlobalObj(chain) (ivm_context_toObject(ivm_ctchain_getGlobal(chain)))
+#define ivm_ctchain_setLocalObj(chain, obj) (ivm_ctchain_setLocal((chain), ivm_context_fromObj(obj)))
+#define ivm_ctchain_setGlobalObj(chain, obj) (ivm_ctchain_setGlobal((chain), ivm_context_fromObj(obj)))
 
 ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,

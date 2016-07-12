@@ -118,3 +118,17 @@ b = clone a
 b.b = "no!!"
 
 print(a.b)
+
+print(top a.b)
+
+a = "yes!"
+b = "no!"
+
+func = fn: {
+	let a = "hey?"
+	top b = "haha!"
+}
+
+func()
+
+print(a + ", " + b)

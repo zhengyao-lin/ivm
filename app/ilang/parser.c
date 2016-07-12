@@ -25,7 +25,6 @@ enum token_id_t {
 
 	/* keywords */
 	T_FN,
-	T_LET,
 	T_IF,
 	T_ELIF,
 	T_ELSE,
@@ -81,7 +80,6 @@ token_name_table[] = {
 	"string",
 	
 	"keyword `fn`",
-	"keyword `let`",
 	"keyword `if`",
 	"keyword `elif`",
 	"keyword `else`",
@@ -331,7 +329,6 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 	} keywords[] = {
 #define KEYWORD(name, id) { (name), sizeof(name) - 1, (id) },
 		KEYWORD("fn", T_FN)
-		KEYWORD("let", T_LET)
 		KEYWORD("if", T_IF)
 		KEYWORD("elif", T_ELIF)
 		KEYWORD("else", T_ELSE)
@@ -757,6 +754,29 @@ RULE(postfix_expr_sub)
 			tmp_token = TOKEN_AT(0);
 			id = TOKEN_AT(1);
 			tmp_expr = RULE_RET_AT(1).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				);
+			}
+		})
+
+		SUB_RULE(T(T_ID) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
+		{
+			id = tmp_token = TOKEN_AT(0);
+			tmp_expr = RULE_RET_AT(0).u.expr;
 
 			if (tmp_expr) {
 				_RETVAL.expr = tmp_expr;
