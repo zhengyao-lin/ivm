@@ -148,3 +148,7 @@ a = 10
 a.proto.double = fn: base * 2
 
 print(10.double())
+
+a = ref: b
+
+*a = b
