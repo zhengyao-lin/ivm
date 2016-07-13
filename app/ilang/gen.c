@@ -238,7 +238,12 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 					tmp_entry.name.len
 				);
 
-				ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
+				if (!IVM_STRCMP(tmp_str, "proto")) {
+					ivm_exec_addInstr(env->cur_exec, DUP_N, 1);
+					ivm_exec_addInstr(env->cur_exec, SET_PROTO);
+				} else {
+					ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
+				}
 
 				MEM_FREE(tmp_str);
 			}

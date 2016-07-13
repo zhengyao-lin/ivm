@@ -149,6 +149,17 @@ a.proto.double = fn: base * 2
 
 print(10.double())
 
-a = ref: b
+TypeA = fn val: {
+	proto: 0,
+	val: val,
+	print: fn: print(base.val),
+	double: fn: val.double()
+}
 
-*a = b
+a = TypeA(1)
+
+i = 0
+
+// a.print()
+a.double()
+i = i + 1
