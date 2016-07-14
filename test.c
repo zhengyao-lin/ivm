@@ -380,13 +380,13 @@ int test_vm()
 
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 	ivm_exec_addInstr(exec1, NOT);
-	ivm_exec_addInstr(exec1, PRINT_NUM);
+	ivm_exec_addInstr(exec1, OUT_NUM);
 
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
 
 	ivm_exec_addInstr(exec1, ADD);
-	ivm_exec_addInstr(exec1, PRINT_NUM);
+	ivm_exec_addInstr(exec1, OUT_NUM);
 
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1023);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
@@ -449,7 +449,7 @@ int test_vm()
 
 		/* string test */
 		ivm_exec_addInstr(exec1, NEW_STR, "hey!");
-		ivm_exec_addInstr(exec1, PRINT_STR);
+		ivm_exec_addInstr(exec1, POP);
 	#endif
 
 		ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
@@ -481,11 +481,11 @@ int test_vm()
 	}*/
 
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1002);
-	ivm_exec_addInstr(exec1, PRINT_NUM);
+	ivm_exec_addInstr(exec1, OUT_NUM);
 	
 	ivm_exec_addInstr(exec1, SET_SLOT, "slot_a");
 	ivm_exec_addInstr(exec1, GET_SLOT, "slot_a");
-	ivm_exec_addInstr(exec1, PRINT_OBJ);
+	ivm_exec_addInstr(exec1, OUT_TYPE);
 	ivm_exec_addInstr(exec1, GET_SLOT, "slot_a");
 
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "c");
@@ -504,20 +504,20 @@ int test_vm()
 	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr4, addr2 - addr4);
 
-	ivm_exec_addInstr(exec1, PRINT_OBJ);
+	ivm_exec_addInstr(exec1, OUT_TYPE);
 	ivm_exec_addInstr(exec1, NEW_OBJ);
 	ivm_exec_addInstr(exec1, YIELD);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 9990);
 	ivm_exec_addInstr(exec1, YIELD);
 
 	ivm_exec_addInstr(exec2, NEW_OBJ);
-	ivm_exec_addInstr(exec2, PRINT_OBJ);
+	ivm_exec_addInstr(exec2, OUT_TYPE);
 	ivm_exec_addInstr(exec2, OUT, "yes, I am");
 	ivm_exec_addInstr(exec2, NEW_OBJ);
 	ivm_exec_addInstr(exec2, YIELD);
 	ivm_exec_addInstr(exec2, NEW_OBJ);
 	ivm_exec_addInstr(exec2, YIELD);
-	ivm_exec_addInstr(exec2, PRINT_NUM);
+	ivm_exec_addInstr(exec2, OUT_NUM);
 	ivm_exec_addInstr(exec2, NOP);
 
 	IVM_TRACE("obj1: %p\n", (void *)obj1);

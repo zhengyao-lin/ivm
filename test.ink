@@ -40,14 +40,28 @@ a = if a < b: {
 elif a > b: (0, 0, 0)
 else: c
 */
+/*
+0.proto.double = fn: base * 2
 
-let i = 0
-let tmp = let
+print(10.double())
 
-while tmp i < 1000000:
-	tmp i = let i + 1;
+TypeA = fn val: {
+	proto: 0,
+	val: val,
+	print: fn: print(base.val),
+	double: fn: val.double()
+}
 
-ret
+a = TypeA(1)
+
+i = 0
+
+// a.print()
+while i < 1000000: {
+	a.double()
+	i = i + 1
+}
+*/
 
 fib = fn n: {
 	if n < 2: ret 1
@@ -55,7 +69,7 @@ fib = fn n: {
 }
 
 print(fib(30))
-
+ret
 {
 	b: 10,
 	c: 10,

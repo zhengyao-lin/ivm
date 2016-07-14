@@ -48,37 +48,6 @@ ivm_object_clone(ivm_object_t *obj,
 
 IVM_INLINE
 ivm_object_t *
-ivm_object_getSlotValue_np(ivm_object_t *obj,
-						   ivm_vmstate_t *state,
-						   const ivm_string_t *key)
-{
-	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
-
-	return ivm_slot_getValue(
-		ivm_slot_table_findSlot(obj->slots, state, key),
-		state
-	);
-}
-
-IVM_INLINE
-ivm_object_t *
-ivm_object_getSlotValue_np_cc(ivm_object_t *obj,
-							  ivm_vmstate_t *state,
-							  const ivm_string_t *key,
-							  ivm_instr_cache_t *cache)
-{
-	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
-
-	return ivm_slot_getValue(
-		ivm_slot_table_findSlot_cc(obj->slots, state, key, cache),
-		state
-	);
-}
-
-#undef STR_IS_PROTO
-
-IVM_INLINE
-ivm_object_t *
 ivm_object_new(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));

@@ -107,18 +107,19 @@ ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
+/* be sure table is not null */
 IVM_INLINE
 ivm_bool_t
 ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 							   ivm_instr_cache_t *cache)
 {
-	return table && ivm_instr_cache_id(cache) == table->uid;
+	return ivm_instr_cache_id(cache) == table->uid;
 }
 
-#define ivm_slot_table_getCacheSlotValue(state, cache) \
+#define ivm_slot_table_getCacheSlot(state, cache) \
 	(ivm_slot_getValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state)))
 
-#define ivm_slot_table_setCacheSlotValue(state, cache, value) \
+#define ivm_slot_table_setCacheSlot(state, cache, value) \
 	(ivm_slot_setValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state), (value)))
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
@@ -127,7 +128,7 @@ ivm_bool_t /* type change? linear table -> hash table */
 _ivm_slot_table_expand(ivm_slot_table_t *table,
 					   struct ivm_vmstate_t_tag *state);
 
-#define ADD_SLOT(e1, e2) \
+#define SET_SLOT(e1, e2) \
 	{                                                                            \
 		ivm_hash_val_t hash;                                                     \
 		ivm_size_t osize;                                                        \
@@ -201,111 +202,110 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		}                                                                        \
                                                                                  \
 		return;                                                                  \
-	}
+	} int dummy()
+
+IVM_INLINE
+void
+ivm_slot_table_setSlot(ivm_slot_table_t *table,
+					   struct ivm_vmstate_t_tag *state,
+					   const ivm_string_t *key,
+					   struct ivm_object_t_tag *obj)
+SET_SLOT(0, 0);
 
 void
-ivm_slot_table_addSlot_r(ivm_slot_table_t *table,
+ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
 						 struct ivm_vmstate_t_tag *state,
 						 const ivm_char_t *rkey,
 						 struct ivm_object_t_tag *obj);
 
 IVM_INLINE
 void
-ivm_slot_table_addSlot_cc(ivm_slot_table_t *table,
+ivm_slot_table_setSlot_cc(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state,
 						  const ivm_string_t *key,
 						  struct ivm_object_t_tag *obj,
 						  ivm_instr_cache_t *cache)
-ADD_SLOT(
+SET_SLOT(
 	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)i),
 	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)tmp)
-)
+);
 
-IVM_INLINE
-void
-ivm_slot_table_addSlot(ivm_slot_table_t *table,
-					   struct ivm_vmstate_t_tag *state,
-					   const ivm_string_t *key,
-					   struct ivm_object_t_tag *obj)
-ADD_SLOT(0, 0)
-
-#define FIND_SLOT(e1, e2) \
+#define GET_SLOT(e1, e2) \
 	{                                                                                   \
 		ivm_hash_val_t hash;                                                            \
 		register ivm_slot_t *i, *tmp, *end;                                             \
                                                                                         \
-		if (table) {                                                                    \
-			if (table->is_hash) {                                                       \
-				hash = ivm_hash_fromString(ivm_string_trimHead(key)) % table->size;     \
+		if (table->is_hash) {                                                           \
+			hash = ivm_hash_fromString(ivm_string_trimHead(key)) % table->size;         \
                                                                                         \
-				tmp = table->tabl + hash;                                               \
-				end = table->tabl + table->size;                                        \
+			tmp = table->tabl + hash;                                                   \
+			end = table->tabl + table->size;                                            \
                                                                                         \
-				for (i = tmp; i != end; i++) {                                          \
-					if (IS_EMPTY_SLOT(i)) {                                             \
-						return IVM_NULL;                                                \
-					} else if (ivm_string_compare(i->k, key)) {                         \
-						e1;                                                             \
-						return i;                                                       \
-					}                                                                   \
+			for (i = tmp; i != end; i++) {                                              \
+				if (IS_EMPTY_SLOT(i)) {                                                 \
+					return IVM_NULL;                                                    \
+				} else if (ivm_string_compare(i->k, key)) {                             \
+					e1;                                                                 \
+					return i;                                                           \
 				}                                                                       \
+			}                                                                           \
                                                                                         \
-				for (i = table->tabl; i != tmp; i++) {                                  \
-					if (IS_EMPTY_SLOT(i)) {                                             \
-						return IVM_NULL;                                                \
-					} else if (ivm_string_compare(i->k, key)) {                         \
-						e1;                                                             \
-						return i;                                                       \
-					}                                                                   \
+			for (i = table->tabl; i != tmp; i++) {                                      \
+				if (IS_EMPTY_SLOT(i)) {                                                 \
+					return IVM_NULL;                                                    \
+				} else if (ivm_string_compare(i->k, key)) {                             \
+					e1;                                                                 \
+					return i;                                                           \
 				}                                                                       \
-			} else {                                                                    \
-				for (tmp = table->tabl,                                                 \
-					 end = table->tabl + table->size;                                   \
-					 tmp != end; tmp++) {                                               \
-					if (!tmp->k) {                                                      \
-						return IVM_NULL;                                                \
-					} else if (ivm_string_compare(tmp->k, key)) {                       \
-						e2;                                                             \
-						return tmp;                                                     \
-					}                                                                   \
+			}                                                                           \
+		} else {                                                                        \
+			for (tmp = table->tabl,                                                     \
+				 end = table->tabl + table->size;                                       \
+				 tmp != end; tmp++) {                                                   \
+				if (!tmp->k) {                                                          \
+					return IVM_NULL;                                                    \
+				} else if (ivm_string_compare(tmp->k, key)) {                           \
+					e2;                                                                 \
+					return tmp;                                                         \
 				}                                                                       \
 			}                                                                           \
 		}                                                                               \
                                                                                         \
 		return IVM_NULL;                                                                \
-	}
+	} int dummy()
+
+IVM_INLINE
+ivm_slot_t *
+ivm_slot_table_getSlot(ivm_slot_table_t *table,
+						struct ivm_vmstate_t_tag *state,
+						const ivm_string_t *key)
+GET_SLOT(0, 0);
 
 /* cache version */
 IVM_INLINE
 ivm_slot_t *
-ivm_slot_table_findSlot_cc(ivm_slot_table_t *table,
+ivm_slot_table_getSlot_cc(ivm_slot_table_t *table,
 						   struct ivm_vmstate_t_tag *state,
 						   const ivm_string_t *key,
 						   ivm_instr_cache_t *cache)
-FIND_SLOT(
+GET_SLOT(
 	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)i),
 	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)tmp)
-)
+);
 
-IVM_INLINE
-ivm_slot_t *
-ivm_slot_table_findSlot(ivm_slot_table_t *table,
-						struct ivm_vmstate_t_tag *state,
-						const ivm_string_t *key)
-FIND_SLOT(0, 0)
-
-#undef FIND_SLOT
+#undef SET_SLOT
+#undef GET_SLOT
 
 #undef IS_EMPTY_SLOT
 
 IVM_INLINE
 ivm_bool_t
-ivm_slot_table_setSlotIfExist(ivm_slot_table_t *table,
-							  struct ivm_vmstate_t_tag *state,
-							  const ivm_string_t *key,
-							  struct ivm_object_t_tag *obj)
+ivm_slot_table_setExistSlot(ivm_slot_table_t *table,
+							struct ivm_vmstate_t_tag *state,
+							const ivm_string_t *key,
+							struct ivm_object_t_tag *obj)
 {
-	ivm_slot_t *slot = ivm_slot_table_findSlot(table, state, key);
+	ivm_slot_t *slot = ivm_slot_table_getSlot(table, state, key);
 
 	if (slot) {
 		ivm_slot_setValue(slot, state, obj);
@@ -317,13 +317,13 @@ ivm_slot_table_setSlotIfExist(ivm_slot_table_t *table,
 
 IVM_INLINE
 ivm_bool_t
-ivm_slot_table_setSlotIfExist_cc(ivm_slot_table_t *table,
-								 struct ivm_vmstate_t_tag *state,
-								 const ivm_string_t *key,
-								 struct ivm_object_t_tag *obj,
-								 ivm_instr_cache_t *cache)
+ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
+							   struct ivm_vmstate_t_tag *state,
+							   const ivm_string_t *key,
+							   struct ivm_object_t_tag *obj,
+							   ivm_instr_cache_t *cache)
 {
-	ivm_slot_t *slot = ivm_slot_table_findSlot_cc(table, state, key, cache);
+	ivm_slot_t *slot = ivm_slot_table_getSlot_cc(table, state, key, cache);
 
 	if (slot) {
 		ivm_slot_setValue(slot, state, obj);

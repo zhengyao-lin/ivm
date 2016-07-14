@@ -258,15 +258,16 @@
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)
 #define _TMP_STR (tmp_str)
+#define _TMP_CTX (tmp_ctx)
 
 #if IVM_USE_INLINE_CACHE
 
 	/* return to _TMP_OBJ */
 	#define GET_SLOT(a, key) \
 		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                            \
-			_TMP_OBJ = ivm_object_getCacheSlotValue(_STATE, _INSTR_CACHE);              \
+			_TMP_OBJ = ivm_object_getCacheSlot(_STATE, _INSTR_CACHE);                   \
 		} else {                                                                        \
-			_TMP_OBJ = ivm_object_getSlotValue_cc(                                      \
+			_TMP_OBJ = ivm_object_getSlot_cc(                                           \
 				(a), _STATE,                                                            \
 				(key), _INSTR_CACHE                                                     \
 			);                                                                          \

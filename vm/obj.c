@@ -82,7 +82,7 @@ ivm_object_setSlot(ivm_object_t *obj,
 		slots = obj->slots = ivm_slot_table_new(state);
 	}
 
-	ivm_slot_table_addSlot(slots, state, key, value);
+	ivm_slot_table_setSlot(slots, state, key, value);
 
 	return;
 }
@@ -111,7 +111,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 		slots = obj->slots = ivm_slot_table_new(state);
 	}
 
-	ivm_slot_table_addSlot(slots, state, key, value);
+	ivm_slot_table_setSlot(slots, state, key, value);
 
 	return;
 }
@@ -132,30 +132,24 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+		} else if (ivm_slot_table_checkCacheValid(slots, cache)) {
+			ivm_slot_table_setCacheSlot(state, cache, value);
+			return;
 		}
-#if 0
-		found = ivm_slot_table_findSlot_cc(slots, state, key, cache);
-		if (found) {
-			ivm_slot_setValue(found, state, value);
-		} else {
-			/* not found */
-			ivm_slot_table_addSlot_cc(slots, state, key, value, cache);
-		}
-#endif
 	} else {
 		slots = obj->slots = ivm_slot_table_new(state);
 	}
 
-	ivm_slot_table_addSlot_cc(slots, state, key, value, cache);
+	ivm_slot_table_setSlot_cc(slots, state, key, value, cache);
 
 	return;
 }
 
 IVM_PRIVATE
 ivm_object_t *
-ivm_object_searchProtoSlot(ivm_object_t *obj,
-						   ivm_vmstate_t *state,
-						   const ivm_string_t *key)
+_ivm_object_searchProtoSlot(ivm_object_t *obj,
+							ivm_vmstate_t *state,
+							const ivm_string_t *key)
 {
 	ivm_object_t *i = IVM_OBJECT_GET(obj, PROTO),
 				 *ret = IVM_NULL;
@@ -166,57 +160,70 @@ ivm_object_searchProtoSlot(ivm_object_t *obj,
 
 	/* no loop is allowed when setting proto */
 	while (i) {
-		ret = ivm_slot_getValue(ivm_slot_table_findSlot(i->slots, state, key),
-								state);
+		if (i->slots) {
+			ret = ivm_slot_getValue(
+				ivm_slot_table_getSlot(i->slots, state, key),
+				state
+			);
+		}
 		if (ret) break;
 		i = IVM_OBJECT_GET(i, PROTO);
 	}
 
-#if 0
-	i = obj;
-	while (i && IVM_OBJECT_GET(i, TRAV_PROTECT)) {
-		IVM_OBJECT_SET(i, TRAV_PROTECT, IVM_FALSE);
-		i = IVM_OBJECT_GET(i, PROTO);
+	return ret;
+}
+
+ivm_object_t *
+ivm_object_getSlot(ivm_object_t *obj,
+				   ivm_vmstate_t *state,
+				   const ivm_string_t *key)
+{
+	ivm_object_t *ret = IVM_NULL;
+	ivm_slot_table_t *slots;
+
+	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
+
+	slots = obj->slots;
+
+	if (slots) {
+		ret = ivm_slot_getValue(
+			ivm_slot_table_getSlot(slots, state, key),
+			state
+		);
 	}
-#endif
+
+	if (!ret) {
+		ret = _ivm_object_searchProtoSlot(obj, state, key);
+	}
 
 	return ret;
 }
 
 ivm_object_t *
-ivm_object_getSlotValue(ivm_object_t *obj,
-						ivm_vmstate_t *state,
-						const ivm_string_t *key)
+ivm_object_getSlot_cc(ivm_object_t *obj,
+					  ivm_vmstate_t *state,
+					  const ivm_string_t *key,
+					  ivm_instr_cache_t *cache)
 {
-	ivm_object_t *ret;
+	ivm_object_t *ret = IVM_NULL;
+	ivm_slot_table_t *slots;
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	ret = ivm_slot_getValue(ivm_slot_table_findSlot(obj->slots, state, key),
-							state);
+	slots = obj->slots;
+	if (slots) {
+		if (ivm_slot_table_checkCacheValid(slots, cache)) {
+			return ivm_slot_table_getCacheSlot(state, cache);
+		}
 
-	if (!ret) {
-		ret = ivm_object_searchProtoSlot(obj, state, key);
+		ret = ivm_slot_getValue(
+			ivm_slot_table_getSlot_cc(slots, state, key, cache),
+			state
+		);
 	}
 
-	return ret;
-}
-
-ivm_object_t *
-ivm_object_getSlotValue_cc(ivm_object_t *obj,
-						   ivm_vmstate_t *state,
-						   const ivm_string_t *key,
-						   ivm_instr_cache_t *cache)
-{
-	ivm_object_t *ret;
-	
-	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
-
-	ret = ivm_slot_getValue(ivm_slot_table_findSlot_cc(obj->slots, state, key, cache),
-							state);
-
 	if (!ret) {
-		ret = ivm_object_searchProtoSlot(obj, state, key);
+		ret = _ivm_object_searchProtoSlot(obj, state, key);
 	}
 
 	return ret;

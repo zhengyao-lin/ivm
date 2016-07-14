@@ -76,30 +76,16 @@ ivm_ctchain_search_cc(ivm_ctchain_t *chain,
 					  ivm_instr_cache_t *cache)
 {
 	ivm_object_t *ret = IVM_NULL;
-	ivm_ctchain_sub_t *i, *end;
+	ivm_context_t *i, *end;
 
 	for (i = ivm_ctchain_contextStart(chain),
 		 end = i + chain->len;
 		 i != end; i++) {
-
 #if IVM_USE_INLINE_CACHE
-
-		if (ivm_slot_table_checkCacheValid(GET_CONTEXT(i), cache)) {
-			ret = ivm_slot_table_getCacheSlotValue(state, cache);
-		} else {
-			ret = ivm_slot_getValue(
-				ivm_slot_table_findSlot_cc(GET_CONTEXT(i), state, key, cache),
-				state
-			);
-		}
-
+		ret = ivm_context_getSlot_cc(i, state, key, cache);
 #else
-		ret = ivm_slot_getValue(
-			ivm_slot_table_findSlot(GET_CONTEXT(i), state, key),
-			state
-		);
+		ret = ivm_context_getSlot(i, state, key);
 #endif
-
 		if (ret) break;
 	}
 
@@ -107,66 +93,24 @@ ivm_ctchain_search_cc(ivm_ctchain_t *chain,
 }
 
 IVM_INLINE
-void
-ivm_ctchain_setLocalSlot_cc(ivm_ctchain_t *chain,
-							ivm_vmstate_t *state,
+ivm_bool_t
+ivm_ctchain_setExistSlot_cc(ivm_ctchain_t *chain,
+							struct ivm_vmstate_t_tag *state,
 							const ivm_string_t *key,
 							ivm_object_t *val,
 							ivm_instr_cache_t *cache)
 {
-	ivm_slot_table_t *slots = ivm_ctchain_getLocal(chain);
-
-	if (!slots) {
-		slots
-		= ivm_ctchain_contextStart(chain)->slots
-		= ivm_slot_table_new(state);
-	}
-
-#if IVM_USE_INLINE_CACHE
-
-	if (ivm_slot_table_checkCacheValid(slots, cache)) {
-		ivm_slot_table_setCacheSlotValue(state, cache, val);
-	} else {
-		ivm_slot_table_addSlot_cc(slots, state, key, val, cache);
-	}
-
-#else
-	ivm_slot_table_addSlot(slots, state, key, val);
-#endif
-
-	return;
-}
-
-IVM_INLINE
-ivm_bool_t
-ivm_ctchain_setSlotIfExist_cc(ivm_ctchain_t *chain,
-							  struct ivm_vmstate_t_tag *state,
-							  const ivm_string_t *key,
-							  ivm_object_t *val,
-							  ivm_instr_cache_t *cache)
-{
 	ivm_bool_t ret = IVM_FALSE;
-	ivm_ctchain_sub_t *i, *end;
+	ivm_context_t *i, *end;
 
 	for (i = ivm_ctchain_contextStart(chain),
 		 end = i + chain->len;
 		 i != end; i++) {
 
 #if IVM_USE_INLINE_CACHE
-		if (ivm_slot_table_checkCacheValid(GET_CONTEXT(i), cache)) {
-			ivm_slot_table_setCacheSlotValue(state, cache, val);
-			ret = IVM_TRUE;
-		} else {
-			ret = ivm_slot_table_setSlotIfExist_cc(
-				GET_CONTEXT(i), state,
-				key, val, cache
-			);
-		}
+		ret = ivm_context_setExistSlot_cc(i, state, key, val, cache);
 #else
-		ret = ivm_slot_table_setSlotIfExist(
-			GET_CONTEXT(i),
-			state, key, val
-		);
+		ret = ivm_context_setExistSlot(i, state, key, val, cache);
 #endif
 
 		if (ret) break;

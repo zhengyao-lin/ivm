@@ -122,8 +122,7 @@ OPCODE_GEN(NE_R, "ne_r", N, CMP_BINOP_HANDLER(
 OPCODE_GEN(GET_SLOT, "get_slot", S, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ = STACK_POP();
-	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
+	_TMP_OBJ = ivm_object_getSlot_cc(STACK_POP(), _STATE, SARG(), _INSTR_CACHE);
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
@@ -133,8 +132,7 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, {
 OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ = STACK_TOP();
-	GET_SLOT(_TMP_OBJ, SARG()); // result in _TMP_OBJ
+	_TMP_OBJ = ivm_object_getSlot_cc(STACK_TOP(), _STATE, SARG(), _INSTR_CACHE);
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
@@ -160,7 +158,7 @@ OPCODE_GEN(SET_SLOT, "set_slot", S, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ = STACK_POP();
-	SET_SLOT(_TMP_OBJ, SARG(), STACK_POP()); // result in _TMP_OBJ
+	ivm_object_setSlot_cc(_TMP_OBJ, _STATE, SARG(), STACK_POP(), _INSTR_CACHE);
 	STACK_PUSH(_TMP_OBJ);
 
 	NEXT_INSTR();
@@ -171,8 +169,7 @@ OPCODE_GEN(SET_SLOT_B, "set_slot_b", S, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ = STACK_POP();
-	_TMP_OBJ2 = STACK_TOP();
-	SET_SLOT(_TMP_OBJ2, SARG(), _TMP_OBJ);
+	ivm_object_setSlot_cc(STACK_TOP(), _STATE, SARG(), _TMP_OBJ, _INSTR_CACHE);
 
 	NEXT_INSTR();
 })
@@ -197,10 +194,12 @@ OPCODE_GEN(SET_PROTO, "set_proto", N, {
 })
 
 OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, {
-	_TMP_OBJ = ivm_ctchain_search_cc(_CONTEXT, _STATE,
-									 SARG(), _INSTR_CACHE);
-
+	_TMP_OBJ = ivm_ctchain_search_cc(
+		_CONTEXT, _STATE,
+		SARG(), _INSTR_CACHE
+	);
 	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
+
 	NEXT_INSTR();
 })
 
@@ -211,50 +210,127 @@ OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, {
 
 	_TMP_OBJ = STACK_POP();
 
-	if (!ivm_ctchain_setSlotIfExist_cc(
+	if (!ivm_ctchain_setExistSlot_cc( /* try to find and set existed slot */
 			_CONTEXT, _STATE, _TMP_STR,
 			_TMP_OBJ, _INSTR_CACHE
 		)) {
-		ivm_ctchain_setLocalSlot_cc(
-			_CONTEXT, _STATE, _TMP_STR,
-			_TMP_OBJ, _INSTR_CACHE
+		/* found no existed slot -> set local slot */
+		ivm_context_setSlot_cc(
+			ivm_ctchain_getLocal(_CONTEXT),
+			_STATE, _TMP_STR, _TMP_OBJ,
+			_INSTR_CACHE
 		);
 	}
 
 	NEXT_INSTR();
 })
 
+/* let object in ink */
 OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, {
-	_TMP_OBJ = ivm_object_new_t(_STATE, ivm_ctchain_getLocal(_CONTEXT));
+	_TMP_OBJ = ivm_object_new_t(
+		_STATE,
+		ivm_context_getSlotTable(
+			ivm_ctchain_getLocal(_CONTEXT)
+		)
+	);
 	STACK_PUSH(_TMP_OBJ);
+
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, {
 	CHECK_STACK(1);
-	ivm_ctchain_setLocal(_CONTEXT, IVM_OBJECT_GET(STACK_POP(), SLOTS));
+
+	ivm_context_setSlotTable(
+		ivm_ctchain_getLocal(_CONTEXT),
+		IVM_OBJECT_GET(STACK_POP(), SLOTS)
+	);
+
 	NEXT_INSTR();
 })
 
+/* top object in ink */
 OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, {
-	_TMP_OBJ = ivm_object_new_t(_STATE, ivm_ctchain_getGlobal(_CONTEXT));
+	_TMP_OBJ = ivm_object_new_t(
+		_STATE,
+		ivm_context_getSlotTable(
+			ivm_ctchain_getGlobal(_CONTEXT)
+		)
+	);
 	STACK_PUSH(_TMP_OBJ);
+
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, {
 	CHECK_STACK(1);
-	ivm_ctchain_setGlobal(_CONTEXT, IVM_OBJECT_GET(STACK_POP(), SLOTS));
+	
+	ivm_context_setSlotTable(
+		ivm_ctchain_getGlobal(_CONTEXT),
+		IVM_OBJECT_GET(STACK_POP(), SLOTS)
+	);
+
 	NEXT_INSTR();
 })
 
+#if 1
+
+OPCODE_GEN(SET_LOCAL_SLOT, "set_local_slot", S, {
+	CHECK_STACK(1);
+
+	ivm_context_setSlot_cc(
+		ivm_ctchain_getLocal(_CONTEXT),
+		_STATE, SARG(), STACK_POP(),
+		_INSTR_CACHE
+	);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(GET_LOCAL_SLOT, "get_local_slot", S, {
+	_TMP_OBJ = ivm_context_getSlot_cc(
+		ivm_ctchain_getLocal(_CONTEXT),
+		_STATE, SARG(), _INSTR_CACHE
+	);
+
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(SET_GLOBAL_SLOT, "set_global_slot", S, {
+	CHECK_STACK(1);
+
+	ivm_context_setSlot_cc(
+		ivm_ctchain_getGlobal(_CONTEXT),
+		_STATE, SARG(), STACK_POP(),
+		_INSTR_CACHE
+	);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, {
+	_TMP_OBJ = ivm_context_getSlot_cc(
+		ivm_ctchain_getGlobal(_CONTEXT),
+		_STATE, SARG(), _INSTR_CACHE
+	);
+
+	STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_UNDEFINED(_STATE));
+
+	NEXT_INSTR();
+})
+
+#endif
+
 OPCODE_GEN(SET_ARG, "set_arg", S, {
-	ivm_ctchain_setLocalSlot_cc(_CONTEXT, _STATE,
-								SARG(),
-								AVAIL_STACK >= 1
-								? STACK_POP()
-								: IVM_UNDEFINED(_STATE),
-								_INSTR_CACHE);
+	if (AVAIL_STACK >= 1) {
+		ivm_context_setSlot_cc(
+			ivm_ctchain_getLocal(_CONTEXT),
+			_STATE, SARG(), STACK_POP(),
+			_INSTR_CACHE
+		);
+	}
 
 	NEXT_INSTR();
 })
@@ -286,55 +362,54 @@ OPCODE_GEN(DUP, "dup", N, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(PRINT_OBJ, "print_obj", N, {
-	CHECK_STACK(1);
+#if 1
 
-	_TMP_OBJ = STACK_POP();
-	IVM_OUT("print: %p\n", (void *)_TMP_OBJ);
-
+OPCODE_GEN(OUT, "out", S, {
+	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(PRINT_NUM, "print_num", N, {
+OPCODE_GEN(OUT_NUM, "out_num", N, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ = STACK_POP();
-	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T)
-		IVM_TRACE("print num: %f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
-	else
+	_TMP_OBJ = STACK_TOP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T) {
+		IVM_TRACE("%.3f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
+	} else {
 		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
+	}
 
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(PRINT_TYPE, "print_type", N, {
+OPCODE_GEN(OUT_STR, "out_str", N, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ = STACK_POP();
-	IVM_TRACE("type: %s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "empty pointer");
+	_TMP_OBJ = STACK_TOP();
+	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_STRING_OBJECT_T) {
+		IVM_TRACE("%s\n", ivm_string_trimHead(IVM_AS(_TMP_OBJ, ivm_string_object_t)->val));
+	} else {
+		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
+	}
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, {
+	IVM_TRACE("%ld\n", STACK_SIZE());
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(OUT_TYPE, "out_type", N, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ = STACK_TOP();
+	IVM_TRACE("%s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "<null pointer>");
 	
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(PRINT_STR, "print_str", N, {
-	ivm_string_object_t *str;
-
-	CHECK_STACK(1);
-
-	str = IVM_AS(STACK_POP(), ivm_string_object_t);
-
-	IVM_ASSERT(IVM_IS_TYPE(str, IVM_STRING_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("string", IVM_OBJECT_GET(str, TYPE_NAME)));
-
-	IVM_OUT("%s\n", ivm_string_trimHead(str->val));
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(PRINT_STACK, "print_stack", N, {
-	ivm_dbg_stackState(_CORO, stderr);
-	NEXT_INSTR();
-})
+#endif
 
 /*
  * invoke:
@@ -542,48 +617,3 @@ OPCODE_GEN(JUMP_GE, "jump_ge", I, CMP_BINOP_HANDLER(
 		NEXT_INSTR();
 	}
 ))
-
-OPCODE_GEN(OUT, "out", S, {
-	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(OUT_NUM, "out_num", N, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ = STACK_TOP();
-	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_NUMERIC_T) {
-		IVM_TRACE("%.3f\n", IVM_AS(_TMP_OBJ, ivm_numeric_t)->val);
-	} else {
-		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
-	}
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(OUT_STR, "out_str", N, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ = STACK_TOP();
-	if (IVM_OBJECT_GET(_TMP_OBJ, TYPE_TAG) == IVM_STRING_OBJECT_T) {
-		IVM_TRACE("%s\n", ivm_string_trimHead(IVM_AS(_TMP_OBJ, ivm_string_object_t)->val));
-	} else {
-		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME));
-	}
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, {
-	IVM_TRACE("%ld\n", STACK_SIZE());
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(OUT_TYPE, "out_type", N, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ = STACK_TOP();
-	IVM_TRACE("%s\n", _TMP_OBJ ? IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME) : "<null pointer>");
-	
-	NEXT_INSTR();
-})

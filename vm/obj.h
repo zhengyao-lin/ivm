@@ -138,14 +138,6 @@ ivm_object_destruct(ivm_object_t *obj,
 
 	return;
 }
-	
-#if 0
-
-void
-ivm_object_free(ivm_object_t *obj,
-				struct ivm_vmstate_t_tag *state);
-
-#endif
 
 ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
@@ -177,15 +169,15 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	(ivm_slot_table_setSlotIfExist_cc((obj)->slots, (state), (key), (value), (cache)))
 
 ivm_object_t *
-ivm_object_getSlotValue(ivm_object_t *obj,
-						struct ivm_vmstate_t_tag *state,
-						const ivm_string_t *key);
+ivm_object_getSlot(ivm_object_t *obj,
+				   struct ivm_vmstate_t_tag *state,
+				   const ivm_string_t *key);
 
 ivm_object_t *
-ivm_object_getSlotValue_cc(ivm_object_t *obj,
-						   struct ivm_vmstate_t_tag *state,
-						   const ivm_string_t *key,
-						   ivm_instr_cache_t *cache);
+ivm_object_getSlot_cc(ivm_object_t *obj,
+					  struct ivm_vmstate_t_tag *state,
+					  const ivm_string_t *key,
+					  ivm_instr_cache_t *cache);
 
 IVM_INLINE
 ivm_bool_t
@@ -196,9 +188,9 @@ ivm_object_checkCacheValid(ivm_object_t *obj,
 }
 
 /* use checkCacheValid to check validity before using it */
-#define ivm_object_getCacheSlotValue ivm_slot_table_getCacheSlotValue
+#define ivm_object_getCacheSlot ivm_slot_table_getCacheSlot
 
-#define ivm_object_setCacheSlotValue ivm_slot_table_setCacheSlotValue
+#define ivm_object_setCacheSlot ivm_slot_table_setCacheSlot
 
 #if 0
 /* no prototype */

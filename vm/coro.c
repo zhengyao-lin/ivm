@@ -90,6 +90,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	register ivm_ptr_t tmp_cmp_reg = 0;
 
 	register const ivm_string_t *tmp_str;
+	// register ivm_context_t *tmp_ctx;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)

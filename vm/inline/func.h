@@ -47,10 +47,10 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 
 		ivm_runtime_invoke(runtime, state, &func->u.body, context);
 
-		ivm_ctchain_setLocalSlot(
-			context, state,
-			IVM_VMSTATE_CONST(state, C_BASE),
-			base
+		/* set base slot */
+		ivm_context_setSlot(
+			ivm_ctchain_getLocal(context), state,
+			IVM_VMSTATE_CONST(state, C_BASE), base
 		);
 	}
 

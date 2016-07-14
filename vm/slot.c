@@ -180,7 +180,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 			 i != end; i++) {
 			if (i->k != IVM_NULL) {
 				// IVM_TRACE("find slot: %s\n" ivm_string_trimHead(otable[i].k));
-				ivm_slot_table_addSlot(table, state, i->k, i->v);
+				ivm_slot_table_setSlot(table, state, i->k, i->v);
 			}
 		}
 	} else {
@@ -191,7 +191,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 }
 
 void
-ivm_slot_table_addSlot_r(ivm_slot_table_t *table,
+ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
 						 ivm_vmstate_t *state,
 						 const ivm_char_t *rkey,
 						 ivm_object_t *obj)
@@ -200,7 +200,7 @@ ivm_slot_table_addSlot_r(ivm_slot_table_t *table,
 	= (const ivm_string_t *)
 	  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
 
-	ivm_slot_table_addSlot(table, state, key, obj);
+	ivm_slot_table_setSlot(table, state, key, obj);
 	
 	return;
 }

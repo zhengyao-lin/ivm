@@ -10,7 +10,7 @@
 #define FLAG ilang_gen_flag_build
 #define CHECK_SE() ((ilang_gen_check_flag_t) { .has_side_effect = IVM_TRUE })
 #define RETVAL ilang_gen_value_build
-#define NORET() ((ilang_gen_value_t) { 0, 0 })
+#define NORET() ((ilang_gen_value_t) { 0, 0, 0, 0 })
 
 #define GEN_ERR(p, ...) \
 	IVM_TRACE("ilang generator error: at line %zd pos %zd: ", (p).line, (p).pos); \
@@ -151,15 +151,17 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_id_expr_t *id_expr = IVM_AS(expr, ilang_gen_id_expr_t);
 	ivm_char_t *tmp_str;
+	ilang_gen_value_t ret = NORET();
 
 	tmp_str = ivm_parser_parseStr(
 		id_expr->val.val,
 		id_expr->val.len
 	);
 
-#define ID_GEN(name, set_instr, get_instr) \
+#define ID_GEN(name, extra, set_instr, get_instr) \
 	if (sizeof(name) == sizeof("")                                     \
 		|| !IVM_STRCMP(tmp_str, (name))) {                             \
+		extra                                                          \
 		if (flag.is_left_val) {                                        \
 			if (!flag.is_top_level) {                                  \
 				ivm_exec_addInstr(env->cur_exec, DUP);                 \
@@ -171,14 +173,18 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 	ID_GEN("let",
+		{ ret.is_id_let = IVM_TRUE; } if (flag.is_slot_expr) { } else,
+		// avoid generate code if is the operand of slot expr
 		ivm_exec_addInstr(env->cur_exec, SET_LOCAL_CONTEXT),
 		ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT))
 	else
 	ID_GEN("top",
+		{ ret.is_id_top = IVM_TRUE; } if (flag.is_slot_expr) { } else,
+		// avoid generate code if is the operand of slot expr
 		ivm_exec_addInstr(env->cur_exec, SET_GLOBAL_CONTEXT),
 		ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT))
 	else
-	ID_GEN("",
+	ID_GEN("", { },
 		ivm_exec_addInstr(env->cur_exec, SET_CONTEXT_SLOT, tmp_str),
 		ivm_exec_addInstr(env->cur_exec, GET_CONTEXT_SLOT, tmp_str))
 
@@ -186,7 +192,7 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 
 	MEM_FREE(tmp_str);
 
-	return NORET();
+	return ret;
 }
 
 ilang_gen_value_t
@@ -307,6 +313,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	ilang_gen_value_t ret = NORET();
 	ivm_bool_t is_proto;
+	ilang_gen_value_t tmp_ret;
 
 	tmp_str = ivm_parser_parseStr(
 		slot_expr->slot.val,
@@ -316,28 +323,33 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	is_proto = !IVM_STRCMP(tmp_str, "proto");
 
 	if (flag.is_left_val) {
-		slot_expr->obj->eval(
+		tmp_ret = slot_expr->obj->eval(
 			slot_expr->obj,
-			FLAG(0),
+			FLAG(.is_slot_expr = IVM_TRUE),
 			env
 		);
 		
-		if (is_proto) {
+		if (tmp_ret.is_id_let) {
+			ivm_exec_addInstr(env->cur_exec, SET_LOCAL_SLOT, tmp_str);
+		} else if (tmp_ret.is_id_top) {
+			ivm_exec_addInstr(env->cur_exec, SET_GLOBAL_SLOT, tmp_str);
+		} else if (is_proto) {
 			ivm_exec_addInstr(env->cur_exec, SET_PROTO);
+			ivm_exec_addInstr(env->cur_exec, POP);
 		} else {
 			ivm_exec_addInstr(env->cur_exec, SET_SLOT, tmp_str);
+			ivm_exec_addInstr(env->cur_exec, POP);
 		}
-
-		ivm_exec_addInstr(env->cur_exec, POP);
 	} else {
 		if (flag.is_top_level &&
 			!expr->check(expr, CHECK_SE())) {
 			goto END;
 		}
 
-		slot_expr->obj->eval(
+		tmp_ret = slot_expr->obj->eval(
 			slot_expr->obj,
-			FLAG(.is_top_level = flag.is_top_level),
+			FLAG(.is_top_level = flag.is_top_level,
+				 .is_slot_expr = IVM_TRUE),
 			// is_top_level == true => has side effect => no need to get slot
 			env
 		);
@@ -345,7 +357,13 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (!flag.is_top_level) {
 			if (flag.is_callee) {
 				// leave base object on the stack
-				if (is_proto) {
+				if (tmp_ret.is_id_let) {
+					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT);
+					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				} else if (tmp_ret.is_id_top) {
+					ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT);
+					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				} else if (is_proto) {
 					ivm_exec_addInstr(env->cur_exec, DUP);
 					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
 				} else {
@@ -354,7 +372,11 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 
 				ret = RETVAL(.has_base = IVM_TRUE);
 			} else {
-				if (is_proto) {
+				if (tmp_ret.is_id_let) {
+					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_SLOT, tmp_str);
+				} else if (tmp_ret.is_id_top) {
+					ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_SLOT, tmp_str);
+				} else if (is_proto) {
 					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
 				} else {
 					ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);

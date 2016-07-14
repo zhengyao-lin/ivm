@@ -51,7 +51,7 @@ int main(int argc, const char **argv)
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
 	ivm_exec_unit_t *exec_unit;
 	ivm_vmstate_t *state;
-	ivm_ctchain_t *chain;
+	ivm_context_t *ctx;
 	ivm_bool_t suc;
 
 	if (argc == 2) {
@@ -111,10 +111,10 @@ int main(int argc, const char **argv)
 
 	ivm_vmstate_lockGCFlag(state);
 
-	chain = ivm_coro_getRuntimeContext(IVM_VMSTATE_GET(state, CUR_CORO));
+	ctx = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
 
-	ivm_ctchain_setLocalSlot_r(
-		chain, state, "print",
+	ivm_context_setSlot_r(
+		ctx, state, "print",
 		ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
 	);
 

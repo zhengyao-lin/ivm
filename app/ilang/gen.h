@@ -39,6 +39,7 @@ typedef struct {
 	ivm_bool_t is_top_level; // true: don't leave anything on the stack
 	ivm_bool_t if_use_cond_reg; // use (virtual)register to in condition expression
 	ivm_bool_t is_callee; // return base if possible
+	ivm_bool_t is_slot_expr;
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
@@ -46,6 +47,8 @@ typedef struct {
 typedef struct {
 	ivm_bool_t use_cond_reg; // return value to confirm the use of register
 	ivm_bool_t has_base; // has base object on the stack under top(second object)
+	ivm_bool_t is_id_let;
+	ivm_bool_t is_id_top;
 } ilang_gen_value_t;
 
 #define ilang_gen_value_build(...) ((ilang_gen_value_t) { __VA_ARGS__ })
