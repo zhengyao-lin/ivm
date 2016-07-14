@@ -78,14 +78,14 @@ ivm_coro_resume(ivm_coro_t *coro,
 }
 
 IVM_INLINE
-ivm_object_t *
-ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
+ivm_ctchain_t *
+ivm_coro_getRuntimeContext(ivm_coro_t *coro)
 {
 	ivm_ctchain_t *chain;
 
 	if (coro->runtime &&
 		(chain = IVM_RUNTIME_GET(coro->runtime, CONTEXT))) {
-		return ivm_context_toObject(ivm_ctchain_getGlobal(chain));
+		return chain;
 	}
 
 	return IVM_NULL;

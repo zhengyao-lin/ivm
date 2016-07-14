@@ -1,6 +1,7 @@
 #include "pub/type.h"
 #include "pub/vm.h"
 #include "pub/obj.h"
+#include "pub/inlines.h"
 
 #include "std/list.h"
 #include "std/io.h"
@@ -50,7 +51,7 @@ int main(int argc, const char **argv)
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
 	ivm_exec_unit_t *exec_unit;
 	ivm_vmstate_t *state;
-	ivm_object_t *global;
+	ivm_ctchain_t *chain;
 	ivm_bool_t suc;
 
 	if (argc == 2) {
@@ -110,10 +111,12 @@ int main(int argc, const char **argv)
 
 	ivm_vmstate_lockGCFlag(state);
 
-	global = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
+	chain = ivm_coro_getRuntimeContext(IVM_VMSTATE_GET(state, CUR_CORO));
 
-	ivm_object_setSlot_r(global, state, "print",
-						 ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print))));
+	ivm_ctchain_setLocalSlot_r(
+		chain, state, "print",
+		ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
+	);
 
 	ivm_vmstate_unlockGCFlag(state);
 

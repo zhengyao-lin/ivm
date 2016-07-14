@@ -8,7 +8,7 @@
 
 #include "context.h"
 
-#define GET_CONTEXT(chain_sub) ((chain_sub)->ct)
+#define GET_CONTEXT(chain_sub) ((chain_sub)->slots)
 
 ivm_ctchain_t *
 ivm_ctchain_new(ivm_vmstate_t *state, ivm_int_t len)
@@ -22,8 +22,7 @@ ivm_ctchain_new(ivm_vmstate_t *state, ivm_int_t len)
 
 ivm_ctchain_t *
 ivm_ctchain_appendContext(ivm_ctchain_t *chain,
-						  ivm_vmstate_t *state,
-						  ivm_context_t *ct)
+						  ivm_vmstate_t *state)
 {
 	ivm_ctchain_t *ret;
 
@@ -36,7 +35,7 @@ ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 		ret = ivm_vmstate_allocContext(state, 1);
 	}
 
-	ivm_ctchain_contextStart(ret)->ct = ct;
+	ivm_ctchain_contextStart(ret)->slots = IVM_NULL;
 
 	return ret;
 }
@@ -69,7 +68,10 @@ ivm_ctchain_search(ivm_ctchain_t *chain,
 	for (i = ivm_ctchain_contextStart(chain),
 		 end = i + chain->len;
 		 i != end; i++) {
-		ret = ivm_object_getSlotValue_np(GET_CONTEXT(i), state, key);
+		ret = ivm_slot_getValue(
+			ivm_slot_table_findSlot(GET_CONTEXT(i), state, key),
+			state
+		);
 		if (ret) break;
 	}
 
@@ -82,12 +84,34 @@ ivm_ctchain_setLocalSlot(ivm_ctchain_t *chain,
 						 const ivm_string_t *key,
 						 ivm_object_t *val)
 {
-	ivm_object_setSlot(
-		ivm_context_toObject(
-			ivm_ctchain_getLocal(chain)
-		),
-		state, key, val
-	);
+	ivm_slot_table_t *slots = ivm_ctchain_getLocal(chain);
+
+	if (!slots) {
+		slots
+		= ivm_ctchain_contextStart(chain)->slots
+		= ivm_slot_table_new(state);
+	}
+
+	ivm_slot_table_addSlot(slots, state, key, val);
+
+	return;
+}
+
+void
+ivm_ctchain_setLocalSlot_r(ivm_ctchain_t *chain,
+						   ivm_vmstate_t *state,
+						   const ivm_char_t *rkey,
+						   ivm_object_t *val)
+{
+	ivm_slot_table_t *slots = ivm_ctchain_getLocal(chain);
+
+	if (!slots) {
+		slots
+		= ivm_ctchain_contextStart(chain)->slots
+		= ivm_slot_table_new(state);
+	}
+
+	ivm_slot_table_addSlot_r(slots, state, rkey, val);
 
 	return;
 }
@@ -104,8 +128,10 @@ ivm_ctchain_setSlotIfExist(ivm_ctchain_t *chain,
 	for (i = ivm_ctchain_contextStart(chain),
 		 end = i + chain->len;
 		 i != end; i++) {
-		ret = ivm_object_setSlotIfExist(GET_CONTEXT(i),
-										state, key, val);
+		ret = ivm_slot_table_setSlotIfExist(
+			GET_CONTEXT(i),
+			state, key, val
+		);
 		if (ret) break;
 	}
 

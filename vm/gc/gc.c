@@ -44,17 +44,52 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 IVM_PRIVATE
 ivm_object_t *
 ivm_collector_copyObject(ivm_object_t *obj,
+						 ivm_traverser_arg_t *arg);
+
+IVM_PRIVATE
+ivm_slot_table_t *
+ivm_collector_copySlotTable(ivm_slot_table_t *table,
+							ivm_traverser_arg_t *arg)
+{
+	ivm_slot_table_t *ret = IVM_NULL;
+	ivm_slot_table_iterator_t siter;
+
+	if (!table) return IVM_NULL;
+
+	ret = ivm_slot_table_getCopy(table);
+	if (ret) return ret;
+	else if (ivm_heap_isIn(arg->heap, table))
+		return table;
+
+	ret = ivm_slot_table_copy(table, arg->state, arg->heap);
+
+	ivm_slot_table_setCopy(table, ret);
+
+	IVM_SLOT_TABLE_EACHPTR(ret, siter) {
+		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
+			// IVM_TRACE("copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
+			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+										ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
+																 arg));
+		}
+	}
+
+	return ret;
+}
+
+IVM_PRIVATE
+ivm_object_t *
+ivm_collector_copyObject(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
-	ivm_slot_table_iterator_t siter;
 	ivm_slot_table_t *tmp;
 
 	if (!obj) return IVM_NULL;
 
-	if (IVM_OBJECT_GET(obj, COPY))
-		return IVM_OBJECT_GET(obj, COPY);
+	ret = IVM_OBJECT_GET(obj, COPY);
+	if (ret) return ret;
 	else if (ivm_heap_isIn(arg->heap, obj))
 		return obj;
 
@@ -65,19 +100,8 @@ ivm_collector_copyObject(ivm_object_t *obj,
 
 	IVM_OBJECT_SET(
 		ret, SLOTS,
-		tmp = ivm_slot_table_copy(IVM_OBJECT_GET(ret, SLOTS), arg->state, arg->heap)
+		tmp = ivm_collector_copySlotTable(IVM_OBJECT_GET(ret, SLOTS), arg)
 	);
-
-	if (tmp) {
-		IVM_SLOT_TABLE_EACHPTR(tmp, siter) {
-			if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
-				// IVM_TRACE("copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
-				IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-											ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
-																	 arg));
-			}
-		}
-	}
 
 	IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
 
@@ -107,12 +131,15 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 {
 	ivm_ctchain_iterator_t iter;
 
-
 	if (chain) {
 		IVM_CTCHAIN_EACHPTR(chain, iter) {
-			IVM_CTCHAIN_ITER_SET(iter,
-								 ivm_collector_copyObject(IVM_CTCHAIN_ITER_GET(iter), arg));
-
+			IVM_CTCHAIN_ITER_SET(
+				iter,
+				ivm_collector_copySlotTable(
+					IVM_CTCHAIN_ITER_GET(iter),
+					arg
+				)
+			);
 		}
 	}
 

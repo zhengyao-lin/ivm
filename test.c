@@ -87,7 +87,7 @@ int test_fib()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_setObjAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
@@ -224,7 +224,7 @@ int test_call()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_setObjAt(chain, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
@@ -353,17 +353,18 @@ int test_vm()
 	ivm_vmstate_registerFunc(state, func4);
 	
 	chain = ivm_ctchain_new(state, 2);
-	ivm_ctchain_setAt(chain, 0, obj1);
-	ivm_ctchain_setAt(chain, 1, obj2);
-	ivm_ctchain_addRef(chain);
-
-	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
 	ivm_object_setSlot(obj1, state, STR("a", str_pool), obj2);
 	ivm_object_setSlot(obj1, state, STR("call_func", str_pool), obj3);
 	ivm_object_setSlot(obj2, state, STR("b", str_pool), obj1);
 	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
+
+	ivm_ctchain_setObjAt(chain, 0, obj1);
+	ivm_ctchain_setObjAt(chain, 1, obj2);
+	ivm_ctchain_addRef(chain);
+
+	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
 	/* add opcodes */
 	ivm_exec_addInstr(exec3, NOP);
@@ -624,9 +625,9 @@ int main(int argc, const char **argv)
 
 #if 1
 
-	//test_call();
+	test_call();
 	test_vm();
-	//test_fib();
+	test_fib();
 
 	ivm_perf_printElapsed();
 	// profile_type();

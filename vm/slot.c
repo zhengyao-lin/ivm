@@ -29,6 +29,7 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 	ret->is_hash |= (IVM_DEFAULT_SLOT_TABLE_SIZE >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 #endif
 
+	ret->mark = IVM_MARK_INIT;
 	ret->size = IVM_DEFAULT_SLOT_TABLE_SIZE;
 	ret->uid = ivm_vmstate_genUID(state);
 	ret->tabl = ivm_vmstate_alloc(state,
@@ -61,6 +62,7 @@ ivm_slot_table_new_c(ivm_vmstate_t *state,
 	}
 #endif
 
+	ret->mark = IVM_MARK_INIT;
 	ret->size = prealloc;
 	ret->uid = ivm_vmstate_genUID(state);
 	ret->tabl = ivm_vmstate_alloc(state,
@@ -85,6 +87,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
 		ret->is_hash = table->is_hash;
 		SET_BIT_FALSE(ret->is_shared);
+		ret->mark = IVM_MARK_INIT;
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_heap_alloc(heap,
@@ -118,11 +121,12 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 		ret = ivm_vmstate_alloc(state, sizeof(*ret));
 		ret->is_hash = table->is_hash;
 		SET_BIT_FALSE(ret->is_shared);
+		ret->mark = IVM_MARK_INIT;
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_vmstate_alloc(state,
-								   sizeof(*ret->tabl)
-								   * ret->size);
+									  sizeof(*ret->tabl)
+									  * ret->size);
 		MEM_COPY(ret->tabl,
 				 table->tabl,
 				 sizeof(*ret->tabl)
@@ -184,4 +188,19 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	}
 
 	return ret;
+}
+
+void
+ivm_slot_table_addSlot_r(ivm_slot_table_t *table,
+						 ivm_vmstate_t *state,
+						 const ivm_char_t *rkey,
+						 ivm_object_t *obj)
+{
+	const ivm_string_t *key
+	= (const ivm_string_t *)
+	  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
+
+	ivm_slot_table_addSlot(table, state, key, obj);
+	
+	return;
 }

@@ -103,6 +103,19 @@ ivm_object_new_c(struct ivm_vmstate_t_tag *state,
 
 IVM_INLINE
 ivm_object_t *
+ivm_object_new_t(struct ivm_vmstate_t_tag *state,
+				 ivm_slot_table_t *slots)
+{
+	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(ret, state, IVM_OBJECT_T);
+	ret->slots = slots;
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_object_t *
 ivm_object_newNull(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));

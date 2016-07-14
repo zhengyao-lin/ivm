@@ -45,12 +45,16 @@ ivm_slot_getValue(ivm_slot_t *slot,
 }
 
 typedef struct ivm_slot_table_t_tag {
+	ivm_mark_t mark;
 	ivm_size_t size;
 	ivm_slot_t *tabl;
 	ivm_uid_t uid;
 	ivm_int_t is_hash: 1;
 	ivm_int_t is_shared: 1; // shared by multiple objects
 } ivm_slot_table_t;
+
+#define ivm_slot_table_getCopy(table) ((ivm_slot_table_t *)(table)->mark)
+#define ivm_slot_table_setCopy(table, copy) ((table)->mark = (ivm_mark_t)(copy))
 
 ivm_slot_table_t *
 ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
@@ -110,6 +114,12 @@ ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 {
 	return table && ivm_instr_cache_id(cache) == table->uid;
 }
+
+#define ivm_slot_table_getCacheSlotValue(state, cache) \
+	(ivm_slot_getValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state)))
+
+#define ivm_slot_table_setCacheSlotValue(state, cache, value) \
+	(ivm_slot_setValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state), (value)))
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
@@ -192,6 +202,12 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
                                                                                  \
 		return;                                                                  \
 	}
+
+void
+ivm_slot_table_addSlot_r(ivm_slot_table_t *table,
+						 struct ivm_vmstate_t_tag *state,
+						 const ivm_char_t *rkey,
+						 struct ivm_object_t_tag *obj);
 
 IVM_INLINE
 void
@@ -278,10 +294,44 @@ ivm_slot_table_findSlot(ivm_slot_table_t *table,
 						const ivm_string_t *key)
 FIND_SLOT(0, 0)
 
-
 #undef FIND_SLOT
 
 #undef IS_EMPTY_SLOT
+
+IVM_INLINE
+ivm_bool_t
+ivm_slot_table_setSlotIfExist(ivm_slot_table_t *table,
+							  struct ivm_vmstate_t_tag *state,
+							  const ivm_string_t *key,
+							  struct ivm_object_t_tag *obj)
+{
+	ivm_slot_t *slot = ivm_slot_table_findSlot(table, state, key);
+
+	if (slot) {
+		ivm_slot_setValue(slot, state, obj);
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_slot_table_setSlotIfExist_cc(ivm_slot_table_t *table,
+								 struct ivm_vmstate_t_tag *state,
+								 const ivm_string_t *key,
+								 struct ivm_object_t_tag *obj,
+								 ivm_instr_cache_t *cache)
+{
+	ivm_slot_t *slot = ivm_slot_table_findSlot_cc(table, state, key, cache);
+
+	if (slot) {
+		ivm_slot_setValue(slot, state, obj);
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
 
 IVM_COM_END
 

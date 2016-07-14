@@ -24,8 +24,7 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 		context = ivm_ctchain_clone(context, state);
 		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
 	} else {
-		context = ivm_ctchain_appendContext(context, state,
-											ivm_context_new(state));
+		context = ivm_ctchain_appendContext(context, state);
 		ivm_runtime_invoke(runtime, state, &func->u.body, context);
 	}
 
@@ -40,20 +39,16 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_runtime_t *runtime,
 					   ivm_object_t *base)
 {
-	ivm_context_t *ct;
-
 	if (func->is_native) {
 		context = ivm_ctchain_clone(context, state);
 		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
 	} else {
-		context = ivm_ctchain_appendContext(context, state,
-											(ct = ivm_context_new(state)));
+		context = ivm_ctchain_appendContext(context, state);
 
 		ivm_runtime_invoke(runtime, state, &func->u.body, context);
 
-		ivm_object_setSlot(
-			ivm_context_toObject(ct),
-			state,
+		ivm_ctchain_setLocalSlot(
+			context, state,
 			IVM_VMSTATE_CONST(state, C_BASE),
 			base
 		);
