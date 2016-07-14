@@ -168,7 +168,7 @@ typedef struct ivm_ctchain_sub_t_tag *ivm_ctchain_iterator_t;
 		 (iter) != __ctx_end_##iter##__; (iter)++)
 
 typedef struct {
-	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN + 1];
+	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN];
 } ivm_context_pool_t;
 
 ivm_context_pool_t *

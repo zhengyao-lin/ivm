@@ -39,8 +39,8 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
 typedef struct ivm_frame_stack_t_tag {
-	ivm_size_t alloc;
-	ivm_size_t top;
+	ivm_uint_t alloc;
+	ivm_uint_t top;
 	ivm_frame_t *frames;
 } ivm_frame_stack_t;
 

@@ -143,14 +143,15 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
-void
+ivm_bool_t
 _ivm_slot_table_expand(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state) /* includes rehashing */
 {
 	ivm_size_t osize = table->size,
 			   dsize = osize << 1; /* dest size */
 	ivm_slot_t *otable = table->tabl;
-	ivm_size_t i;
+	ivm_slot_t *i, *end;
+	ivm_bool_t ret = IVM_FALSE;
 
 	table->uid = ivm_vmstate_genUID(state);
 	table->tabl = ivm_vmstate_alloc(state,
@@ -162,20 +163,25 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	table->size = dsize;
 
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
-	if (dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
+	if (!table->is_hash &&
+		dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
 		SET_BIT_TRUE(table->is_hash);
 		// dsize <<= 1;
+		ret = IVM_TRUE;
 	}
 #endif
 
 	if (table->is_hash) {
-		for (i = 0; i < osize; i++) {
-			if (otable[i].k != IVM_NULL)
-				ivm_slot_table_addSlot(table, state, otable[i].k, otable[i].v);
+		for (i = otable, end = i + osize;
+			 i != end; i++) {
+			if (i->k != IVM_NULL) {
+				// IVM_TRACE("find slot: %s\n" ivm_string_trimHead(otable[i].k));
+				ivm_slot_table_addSlot(table, state, i->k, i->v);
+			}
 		}
 	} else {
 		MEM_COPY(table->tabl, otable, sizeof(*table->tabl) * osize);
 	}
 
-	return;
+	return ret;
 }

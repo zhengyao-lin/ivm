@@ -45,11 +45,11 @@ ivm_slot_getValue(ivm_slot_t *slot,
 }
 
 typedef struct ivm_slot_table_t_tag {
-	ivm_bool_t is_hash: 1;
-	ivm_bool_t is_shared: 1; // shared by multiple objects
 	ivm_size_t size;
-	ivm_uid_t uid;
 	ivm_slot_t *tabl;
+	ivm_uid_t uid;
+	ivm_int_t is_hash: 1;
+	ivm_int_t is_shared: 1; // shared by multiple objects
 } ivm_slot_table_t;
 
 ivm_slot_table_t *
@@ -113,7 +113,7 @@ ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
-void
+ivm_bool_t /* type change? linear table -> hash table */
 _ivm_slot_table_expand(ivm_slot_table_t *table,
 					   struct ivm_vmstate_t_tag *state);
 
@@ -125,6 +125,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		register ivm_slot_t *i, *tmp, *end;                                      \
                                                                                  \
 		if (table->is_hash) {                                                    \
+		TO_HASH_TABLE:                                                           \
 			hash = ivm_hash_fromString(ivm_string_trimHead(key));                \
 			while (1) {                                                          \
 				tmp = table->tabl + hash % table->size;                          \
@@ -180,7 +181,9 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 			}                                                                    \
                                                                                  \
 			osize = table->size;                                                 \
-			_ivm_slot_table_expand(table, state);                                \
+			if (_ivm_slot_table_expand(table, state)) {                          \
+				goto TO_HASH_TABLE;                                              \
+			}                                                                    \
 			tmp = table->tabl + osize;                                           \
 			tmp->k = ivm_string_copyIfNotConst_pool(key, state);                 \
 			tmp->v = obj;                                                        \

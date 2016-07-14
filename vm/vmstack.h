@@ -14,9 +14,9 @@ struct ivm_frame_stack_t_tag;
 struct ivm_coro_t_tag;
 
 typedef struct {
-	ivm_size_t size;
 	struct ivm_object_t_tag **edge;
 	struct ivm_object_t_tag **bottom;
+	ivm_int_t size;
 } ivm_vmstack_t;
 
 ivm_vmstack_t *

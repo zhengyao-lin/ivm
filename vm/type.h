@@ -21,7 +21,7 @@ typedef uint16_t				ivm_uint16_t;
 typedef uint32_t				ivm_uint32_t;
 typedef uint64_t				ivm_uint64_t;
 
-typedef int						ivm_bool_t;
+typedef char					ivm_bool_t;
 typedef int						ivm_int_t;
 typedef unsigned int			ivm_uint_t;
 typedef long					ivm_long_t;

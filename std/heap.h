@@ -9,10 +9,9 @@
 IVM_COM_HEADER
 
 typedef struct ivm_heap_t_tag {
-	ivm_size_t bcount;
+	ivm_int_t bcount;
+	ivm_int_t btop; /* current block */
 	ivm_size_t bsize;
-	
-	ivm_size_t btop; /* current block */
 
 	ivm_byte_t *bendp; /* current block end pointer */
 	ivm_byte_t *bcurp; /* current pointer on the current block */

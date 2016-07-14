@@ -624,9 +624,9 @@ int main(int argc, const char **argv)
 
 #if 1
 
-	test_call();
+	//test_call();
 	test_vm();
-	test_fib();
+	//test_fib();
 
 	ivm_perf_printElapsed();
 	// profile_type();

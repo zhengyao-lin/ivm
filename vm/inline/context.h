@@ -22,7 +22,7 @@ ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len)
 {
 	ivm_ctchain_t *ret;
 
-	if (len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
+	if (len < IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
 		ret = (ivm_ctchain_t *)
 			  ivm_ptpool_alloc(pool->pools[len]);
 	} else {
@@ -43,7 +43,7 @@ ivm_context_pool_dump(ivm_context_pool_t *pool,
 					  ivm_ctchain_t *chain)
 {
 	if (chain && !ivm_ref_dec(chain)) {
-		if (chain->len <= IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
+		if (chain->len < IVM_CONTEXT_POOL_MAX_CACHE_LEN) {
 			ivm_ptpool_dump(pool->pools[chain->len], chain);
 		} else {
 			MEM_FREE(chain);

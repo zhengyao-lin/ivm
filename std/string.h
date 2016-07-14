@@ -43,8 +43,8 @@ ivm_strdup_heap(const ivm_char_t *src,
 				struct ivm_heap_t_tag *heap);
 
 typedef struct {
-	ivm_bool_t is_const;
 	ivm_uint_t len;
+	ivm_bool_t is_const;
 } ivm_string_t;
 
 #define IVM_STRING_GET_SIZE(len) \

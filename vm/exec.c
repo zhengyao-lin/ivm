@@ -21,10 +21,10 @@ _ivm_exec_init(ivm_exec_t *exec,
 	exec->cached = IVM_FALSE;
 	exec->pool = pool;
 	ivm_ref_inc(pool);
-	exec->alloc = IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE;
+	exec->alloc = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	exec->next = 0;
 	exec->instrs = MEM_ALLOC(sizeof(*exec->instrs)
-							* IVM_DEFAULT_INSTR_BLOCK_BUFFER_SIZE,
+							* IVM_DEFAULT_EXEC_BUFFER_SIZE,
 							ivm_instr_t *);
 
 	IVM_ASSERT(exec->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
