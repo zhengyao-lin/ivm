@@ -41,14 +41,33 @@ elif a > b: (0, 0, 0)
 else: c
 */
 
+0.proto.double = fn: base * 2
+
+print(10.double())
+
+TypeA = fn val: {
+	proto: 0,
+	val: val,
+	print: fn: print(base.val),
+	double: fn: val.double()
+}
+
+a = TypeA(1)
+
+i = 0
+
+// a.print()
+while i < 1000000: {
+	a.double()
+	i = i + 1
+}
+
 fib = fn n: {
 	if n < 2: ret 1
 	ret fib(n - 1) + fib(n - 2)
 }
 
 print(fib(30))
-
-// ret
 
 {
 	b: 10,

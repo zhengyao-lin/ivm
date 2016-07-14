@@ -15,8 +15,8 @@ IVM_COM_HEADER
 typedef struct {
 	ivm_size_t esize; /* element size */
 
-	ivm_heap_t *heap;
-	ivm_ptlist_t *freed; /* freed ptrs */
+	ivm_heap_t heap;
+	ivm_ptlist_t freed; /* freed ptrs */
 } ivm_ptpool_t;
 
 ivm_ptpool_t *
@@ -35,8 +35,8 @@ IVM_INLINE
 void
 ivm_ptpool_destruct_s(ivm_ptpool_t pool)
 {
-	ivm_heap_free(pool.heap);
-	ivm_ptlist_free(pool.freed);
+	ivm_heap_dump(&pool.heap);
+	ivm_ptlist_dump(&pool.freed);
 	return;
 }
 
@@ -45,8 +45,8 @@ void
 ivm_ptpool_destruct(ivm_ptpool_t *pool)
 {
 	if (pool) {
-		ivm_heap_free(pool->heap);
-		ivm_ptlist_free(pool->freed);
+		ivm_heap_dump(&pool->heap);
+		ivm_ptlist_dump(&pool->freed);
 	}
 
 	return;
@@ -58,8 +58,8 @@ ivm_ptpool_alloc(ivm_ptpool_t *pool)
 {
 	ivm_byte_t *tmp;
 
-	if (!(tmp = ivm_ptlist_pop(pool->freed))) {
-		return ivm_heap_alloc(pool->heap, pool->esize);
+	if (!(tmp = ivm_ptlist_pop(&pool->freed))) {
+		return ivm_heap_alloc(&pool->heap, pool->esize);
 	}
 
 	return tmp;
@@ -71,8 +71,8 @@ ivm_ptpool_alloc_s(ivm_ptpool_t pool)
 {
 	ivm_byte_t *tmp;
 
-	if (!(tmp = ivm_ptlist_pop(pool.freed))) {
-		return ivm_heap_alloc(pool.heap, pool.esize);
+	if (!(tmp = ivm_ptlist_pop(&pool.freed))) {
+		return ivm_heap_alloc(&pool.heap, pool.esize);
 	}
 
 	return tmp;
@@ -83,8 +83,8 @@ IVM_INLINE
 void
 ivm_ptpool_dumpAll(ivm_ptpool_t *pool)
 {
-	ivm_heap_reset(pool->heap);
-	ivm_ptlist_empty(pool->freed);
+	ivm_heap_reset(&pool->heap);
+	ivm_ptlist_empty(&pool->freed);
 	return;
 }
 
@@ -92,13 +92,13 @@ IVM_INLINE
 void
 ivm_ptpool_dumpAll_s(ivm_ptpool_t pool)
 {
-	ivm_heap_reset(pool.heap);
-	ivm_ptlist_empty(pool.freed);
+	ivm_heap_reset(&pool.heap);
+	ivm_ptlist_empty(&pool.freed);
 	return;
 }
 
-#define ivm_ptpool_dump(pool, ptr) (ivm_ptlist_push((pool)->freed, (ptr)))
-#define ivm_ptpool_dump_s(pool, ptr) (ivm_ptlist_push((pool).freed, (ptr)))
+#define ivm_ptpool_dump(pool, ptr) (ivm_ptlist_push(&(pool)->freed, (ptr)))
+#define ivm_ptpool_dump_s(pool, ptr) (ivm_ptlist_push(&(pool).freed, (ptr)))
 
 IVM_COM_END
 
