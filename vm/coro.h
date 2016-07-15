@@ -18,7 +18,8 @@ struct ivm_vmstate_t_tag;
 typedef struct ivm_coro_t_tag {
 	ivm_vmstack_t stack;
 	ivm_frame_stack_t frame_st;
-	ivm_runtime_t *runtime;
+	ivm_runtime_t runtime;
+	ivm_bool_t alive;
 } ivm_coro_t;
 
 typedef enum {
@@ -30,7 +31,7 @@ typedef enum {
 
 #define IVM_CORO_GET_STACK(coro) (&(coro)->stack)
 #define IVM_CORO_GET_FRAME_STACK(coro) (&(coro)->frame_st)
-#define IVM_CORO_GET_RUNTIME(coro) ((coro)->runtime)
+#define IVM_CORO_GET_RUNTIME(coro) (&(coro)->runtime)
 
 #define IVM_CORO_GET(obj, member) IVM_GET((obj), IVM_CORO, member)
 #define IVM_CORO_SET(obj, member, val) IVM_SET((obj), IVM_CORO, member, (val))
@@ -62,7 +63,7 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 struct ivm_vmstate_t_tag *state,
 				 ivm_function_object_t *root);
 
-#define ivm_coro_isAsleep(coro) ((coro)->runtime != IVM_NULL)
+#define ivm_coro_isAlive(coro) ((coro)->alive)
 
 IVM_INLINE
 ivm_object_t *
@@ -83,8 +84,8 @@ ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
 {
 	ivm_ctchain_t *chain;
 
-	if (coro->runtime &&
-		(chain = IVM_RUNTIME_GET(coro->runtime, CONTEXT))) {
+	if (coro->alive &&
+		(chain = IVM_RUNTIME_GET(&coro->runtime, CONTEXT))) {
 		return ivm_ctchain_getGlobal(chain);
 	}
 

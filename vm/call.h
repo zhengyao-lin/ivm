@@ -58,16 +58,8 @@ ivm_frame_stack_init(ivm_frame_stack_t *stack);
 void
 ivm_frame_stack_dump(ivm_frame_stack_t *stack);
 
-void
-ivm_frame_stack_push(ivm_frame_stack_t *stack,
-					 struct ivm_runtime_t_tag *runtime);
-
 #define ivm_frame_stack_size(stack) ((stack)->top)
 #define ivm_frame_stack_at(stack, i) ((stack)->frames + (i))
-
-ivm_frame_t *
-ivm_frame_stack_pop(ivm_frame_stack_t *stack,
-					struct ivm_runtime_t_tag *runtime);
 
 #define IVM_FRAME_STACK_ITER_SET(iter, val) (*(iter) = (val))
 #define IVM_FRAME_STACK_ITER_GET(iter) (iter)

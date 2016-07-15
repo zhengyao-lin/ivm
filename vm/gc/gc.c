@@ -229,7 +229,7 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	cbegin = IVM_CORO_LIST_ITER_BEGIN(coros);
 	IVM_CORO_LIST_EACHPTR(coros, citer) {
 		tmp_coro = IVM_CORO_LIST_ITER_GET(citer);
-		if (ivm_coro_isAsleep(tmp_coro)) {
+		if (ivm_coro_isAlive(tmp_coro)) {
 			ivm_collector_travCoro(tmp_coro, arg);
 			IVM_CORO_LIST_ITER_SET(cbegin, tmp_coro);
 

@@ -207,7 +207,7 @@ _ivm_vmstate_switchCoro(ivm_vmstate_t *state)
 	for (i = IVM_CORO_LIST_ITER_AT(list, state->cur_coro + 1),
 		 end = IVM_CORO_LIST_ITER_END(list);
 		 i != end; i++) {
-		if (ivm_coro_isAsleep(IVM_CORO_LIST_ITER_GET(i))) {
+		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
 			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
 			return IVM_TRUE;
 		}
@@ -216,7 +216,7 @@ _ivm_vmstate_switchCoro(ivm_vmstate_t *state)
 	for (end = i,
 		 i = IVM_CORO_LIST_ITER_BEGIN(list);
 		 i != end; i++) {
-		if (ivm_coro_isAsleep(IVM_CORO_LIST_ITER_GET(i))) {
+		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
 			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
 			return IVM_TRUE;
 		}

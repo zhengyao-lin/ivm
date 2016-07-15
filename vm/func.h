@@ -88,7 +88,7 @@ ivm_function_free(ivm_function_t *func,
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 
 #define ivm_function_callNative(func, state, context, arg) \
-	(func)->u.native((state), (context), (arg));
+	((func)->u.native((state), (context), (arg)))
 
 #if 0
 void

@@ -19,7 +19,8 @@ ivm_coro_new(ivm_vmstate_t *state)
 
 	ivm_vmstack_init(&ret->stack);
 	ivm_frame_stack_init(&ret->frame_st);
-	ret->runtime = IVM_NULL;
+	// ret->runtime
+	ret->alive = IVM_FALSE;
 
 	return ret;
 }
@@ -37,7 +38,6 @@ ivm_coro_free(ivm_coro_t *coro,
 
 		ivm_vmstack_dump(&coro->stack);
 		ivm_frame_stack_dump(&coro->frame_st);
-		ivm_runtime_free(coro->runtime, state);
 
 		ivm_vmstate_dumpCoro(state, coro);
 	}
@@ -50,20 +50,19 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_vmstate_t *state,
 				 ivm_function_object_t *root)
 {
-	coro->runtime
-	= ivm_function_createRuntime(
+	ivm_function_createRuntime(
 		ivm_function_object_getFunc(root),
 		state,
 		ivm_function_object_getClosure(root),
 		coro
 	);
+	coro->alive = IVM_TRUE;
 
 	return;
 }
 
 #define ivm_coro_kill(coro, state) \
-	ivm_runtime_free((coro)->runtime, (state)); \
-	(coro)->runtime = IVM_NULL;
+	(coro)->alive = IVM_FALSE;
 
 #include "opcode.req.h"
 
@@ -140,28 +139,28 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
-		IVM_ASSERT(!coro->runtime, IVM_ERROR_MSG_RESET_CORO_ROOT);
+		IVM_ASSERT(ivm_coro_isAlive(coro), IVM_ERROR_MSG_RESET_CORO_ROOT);
 
 		tmp_func = ivm_function_object_getFunc(root);
-		coro->runtime
-		= ivm_function_createRuntime(
+		ivm_function_createRuntime(
 			tmp_func, state,
 			ivm_function_object_getClosure(root),
 			coro
 		);
+		coro->alive = IVM_TRUE;
 	}
 
 	if (ivm_function_isNative(tmp_func)) {
 		_TMP_OBJ = ivm_function_callNative(tmp_func, state,
-										   IVM_RUNTIME_GET(coro->runtime, CONTEXT),
+										   IVM_RUNTIME_GET(&coro->runtime, CONTEXT),
 										   IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
 		if (!_TMP_OBJ) {
 			_TMP_OBJ = IVM_NULL_OBJ(state);
 		}
 
 		ivm_coro_kill(coro, state);
-	} else if (ivm_coro_isAsleep(coro)) {
-		tmp_runtime = coro->runtime;
+	} else if (ivm_coro_isAlive(coro)) {
+		tmp_runtime = &coro->runtime;
 		tmp_stack = &coro->stack;
 		tmp_frame_st = &coro->frame_st;
 		tmp_st_end = ivm_vmstack_edge(tmp_stack);
