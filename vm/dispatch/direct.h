@@ -262,38 +262,4 @@
 #define _TMP_ARGC (tmp_argc)
 #define _TMP_ARGV (tmp_argv)
 
-#if IVM_USE_INLINE_CACHE
-
-	/* return to _TMP_OBJ */
-	#define GET_SLOT(a, key) \
-		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                            \
-			_TMP_OBJ = ivm_object_getCacheSlot(_STATE, _INSTR_CACHE);                   \
-		} else {                                                                        \
-			_TMP_OBJ = ivm_object_getSlot_cc(                                           \
-				(a), _STATE,                                                            \
-				(key), _INSTR_CACHE                                                     \
-			);                                                                          \
-		}
-	
-	/* a[key] = b */
-	#define SET_SLOT(a, key, b) \
-		if (ivm_object_checkCacheValid((a), _INSTR_CACHE)) {                      \
-			ivm_object_setCacheSlotValue(_STATE, _INSTR_CACHE, (b));              \
-		} else {                                                                  \
-			ivm_object_setSlot_cc(                                                \
-				(a), _STATE, (key),                                               \
-				(b), _INSTR_CACHE                                                 \
-			);                                                                    \
-		}
-
-#else
-
-	#define GET_SLOT(a, key) \
-		(_TMP_OBJ = ivm_object_getSlotValue((a), _STATE, (key)))
-
-	#define SET_SLOT(a, key, b) \
-		(ivm_object_setSlot((a), _STATE, (key), (b)))
-
-#endif
-
 #endif

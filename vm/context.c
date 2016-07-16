@@ -35,7 +35,7 @@ ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 		ret = ivm_vmstate_allocContext(state, 1);
 	}
 
-	ivm_ctchain_contextStart(ret)->slots = IVM_NULL;
+	ret->chain[0].slots = IVM_NULL;
 
 	return ret;
 }

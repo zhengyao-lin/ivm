@@ -181,6 +181,7 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 typedef struct ivm_ctchain_t_tag {
 	IVM_REF_HEADER
 	ivm_uint_t len;
+	ivm_context_t chain[];
 } ivm_ctchain_t;
 
 #define ivm_ctchain_getSize(len) \
@@ -193,30 +194,30 @@ IVM_INLINE
 ivm_context_t *
 ivm_ctchain_contextStart(ivm_ctchain_t *chain) // local context
 {
-	return (ivm_context_t *)(chain + 1);
+	return chain->chain;
 }
 
 IVM_INLINE
 ivm_context_t *
 ivm_ctchain_contextLast(ivm_ctchain_t *chain) // global context
 {
-	return (ivm_context_t *)(chain + 1) + (chain->len - 1);
+	return chain->chain + chain->len - 1;
 }
 
 IVM_INLINE
 ivm_context_t *
 ivm_ctchain_contextEnd(ivm_ctchain_t *chain)
 {
-	return (ivm_context_t *)(chain + 1) + chain->len;
+	return chain->chain + chain->len;
 }
 
-#define ivm_ctchain_contextAt(chain, i) \
-	((((ivm_context_t *) \
-		 (((ivm_ctchain_t *) \
-			(chain)) + 1)) + (i)))
-
-#define ivm_ctchain_setAt(chain, i, table) \
-	(ivm_ctchain_contextAt((chain), (i))->slots = (table))
+IVM_INLINE
+ivm_context_t *
+ivm_ctchain_contextAt(ivm_ctchain_t *chain,
+					  ivm_int_t i)
+{
+	return chain->chain + i;
+}
 
 IVM_INLINE
 void
@@ -225,7 +226,7 @@ ivm_ctchain_setObjAt(ivm_ctchain_t *chain,
 					 ivm_object_t *obj)
 {
 	if (obj) {
-		ivm_ctchain_contextAt(chain, i)->slots
+		chain->chain[i].slots
 		= IVM_OBJECT_GET(obj, SLOTS);
 	}
 
@@ -254,8 +255,8 @@ ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain,
 				  struct ivm_vmstate_t_tag *state);
 
-#define ivm_ctchain_getLocal(chain) (ivm_ctchain_contextStart(chain))
-#define ivm_ctchain_getGlobal(chain) (ivm_ctchain_contextLast(chain))
+#define ivm_ctchain_getLocal ivm_ctchain_contextStart
+#define ivm_ctchain_getGlobal ivm_ctchain_contextLast
 
 
 /*
