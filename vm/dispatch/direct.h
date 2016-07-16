@@ -258,6 +258,9 @@
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)
 #define _TMP_STR (tmp_str)
+#define _TMP_FUNC (tmp_func)
+#define _TMP_ARGC (tmp_argc)
+#define _TMP_ARGV (tmp_argv)
 
 #if IVM_USE_INLINE_CACHE
 

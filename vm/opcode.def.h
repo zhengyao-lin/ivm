@@ -424,92 +424,77 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, {
  * 
  */
 OPCODE_GEN(INVOKE, "invoke", I, {
-	const ivm_function_t *func;
-	ivm_sint32_t arg_count = IARG();
-	ivm_object_t **args;
+	_TMP_ARGC = IARG();
 
-	CHECK_STACK(arg_count + 1);
-
+	CHECK_STACK(_TMP_ARGC + 1);
 	_TMP_OBJ = STACK_POP();
-	// IVM_TRACE("%p\n", obj);
 
 	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));
 	
-	func = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
-	args = STACK_CUT(arg_count);
+	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
+	_TMP_ARGV = STACK_CUT(_TMP_ARGC);
 
-	// IVM_TRACE("hola!\n");
-
-	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
 	SAVE_RUNTIME(_INSTR + 1);
 
-	ivm_function_invoke(func, _STATE,
+	ivm_function_invoke(_TMP_FUNC, _STATE,
 						ivm_function_object_getClosure(
 							IVM_AS(_TMP_OBJ, ivm_function_object_t)
-						),
-						_CORO);
+						), _CORO);
 	
 	UPDATE_STACK();
 
-	if (ivm_function_isNative(func)) {
+	if (ivm_function_isNative(_TMP_FUNC)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
-		_TMP_OBJ = ivm_function_callNative(func, _STATE, _CONTEXT,
-									  IVM_FUNCTION_SET_ARG_2(arg_count, args));
+		_TMP_OBJ = ivm_function_callNative(
+			_TMP_FUNC, _STATE, _CONTEXT,
+			IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
+		);
 		STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_NULL_OBJ(_STATE));
 	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
 
-		STACK_INC(arg_count);
+		STACK_INC(_TMP_ARGC);
 	}
 
 	INVOKE();
 })
 
 OPCODE_GEN(INVOKE_BASE, "invoke_base", I, {
-	const ivm_function_t *func;
-	ivm_sint32_t arg_count = IARG();
-	ivm_object_t **args;
+	_TMP_ARGC = IARG();
 
-	CHECK_STACK(arg_count + 1);
-
+	CHECK_STACK(_TMP_ARGC + 2);
 	_TMP_OBJ = STACK_POP();
-	// IVM_TRACE("%p\n", obj);
 
 	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));
 	
-	func = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
-	args = STACK_CUT(arg_count + 1);
+	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ, ivm_function_object_t));
+	_TMP_ARGV = STACK_CUT(_TMP_ARGC + 1);
 
-	// IVM_TRACE("hola!\n");
-
-	/* IVM_RUNTIME_SET(_RUNTIME, IP, _INSTR + 1); */
 	SAVE_RUNTIME(_INSTR + 1);
 
 	ivm_function_invokeBase(
-		func, _STATE,
+		_TMP_FUNC, _STATE,
 		ivm_function_object_getClosure(
 			IVM_AS(_TMP_OBJ, ivm_function_object_t)
-		),
-		_CORO, args[arg_count]
-	);
+		), _CORO, _TMP_ARGV[_TMP_ARGC]);
 	
 	UPDATE_STACK();
 
-	if (ivm_function_isNative(func)) {
+	if (ivm_function_isNative(_TMP_FUNC)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
 		_TMP_OBJ = ivm_function_callNative(
-			func, _STATE, _CONTEXT,
-			IVM_FUNCTION_SET_ARG_2(arg_count, args)
+			_TMP_FUNC, _STATE, _CONTEXT,
+			IVM_FUNCTION_SET_ARG_3(_TMP_ARGV[_TMP_ARGC], _TMP_ARGC, _TMP_ARGV)
 		);
 		STACK_PUSH(_TMP_OBJ ? _TMP_OBJ : IVM_NULL_OBJ(_STATE));
 	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
 
-		STACK_INC(arg_count);
+		STACK_INC(_TMP_ARGC);
 	}
 
 	INVOKE();

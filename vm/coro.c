@@ -76,7 +76,6 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_frame_stack_t *tmp_frame_st;
 
 	ivm_ctchain_t *tmp_context;
-	const ivm_function_t *tmp_func = IVM_NULL;
 
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -90,6 +89,9 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	register const ivm_string_t *tmp_str;
 	// register ivm_context_t *tmp_ctx;
+	register const ivm_function_t *tmp_func = IVM_NULL;
+	register ivm_sint32_t tmp_argc;
+	register ivm_object_t **tmp_argv;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
