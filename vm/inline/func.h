@@ -13,6 +13,33 @@
 
 IVM_COM_HEADER
 
+#if 0
+
+IVM_INLINE
+void
+_ivm_function_setParams(const ivm_function_t *func,
+						ivm_ctchain_t *context,
+						ivm_argc_t argc,
+						ivm_object_t **argv)
+{
+	ivm_param_list_iterator_t piter;
+
+	IVM_PARAM_LIST_EACHPTR(func->u.f.params, piter) {
+		if (argc) {
+			argc--;
+			ivm_context_setSlot(
+				ivm_ctchain_getLocal(context),
+				_STATE, IVM_PARAM_LIST_ITER_GET(piter),
+				argv[argc]
+			);
+		} else break;
+	}
+
+	return;
+}
+
+#endif
+
 IVM_INLINE
 void
 _ivm_function_invoke_c(const ivm_function_t *func,

@@ -186,6 +186,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #define ivm_vmstate_registerFunc(state, exec) (ivm_func_list_register((state)->func_list, (exec)))
 #define ivm_vmstate_getFunc(state, id) (ivm_func_list_at((state)->func_list, (id)))
+#define ivm_vmstate_getFuncID(state, func) (ivm_func_list_find((state)->func_list, (func)))
 
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
 

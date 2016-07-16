@@ -69,9 +69,9 @@
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
 #define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))
-#define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR)))
 // #define SARG() (ivm_exec_getString(_EXEC, ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR))))
 #define PARG(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg(_INSTR)))
+#define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR))) // (PARG(ivm_function_t *))
 #define SARG() (PARG(const ivm_string_t *))
 
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
@@ -258,7 +258,6 @@
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)
 #define _TMP_STR (tmp_str)
-#define _TMP_CTX (tmp_ctx)
 
 #if IVM_USE_INLINE_CACHE
 

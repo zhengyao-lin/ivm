@@ -11,6 +11,7 @@
 
 ivm_serial_exec_t
 _ivm_serial_serializeExec(ivm_exec_t *exec,
+						  ivm_vmstate_t *state,
 						  ivm_size_t pool_id)
 {
 	ivm_serial_exec_t ret = {
@@ -36,7 +37,7 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 		 end = i + ret.size;
 		 i != end; i++, tmp++) {
 		if (cached) {
-			tmp_instr = ivm_exec_decache(exec, i);
+			tmp_instr = ivm_exec_decache(exec, state, i);
 			*tmp = (ivm_serial_instr_t) {
 				.opc = ivm_instr_opcode(&tmp_instr),
 				.arg = ivm_instr_arg(&tmp_instr)
@@ -71,7 +72,8 @@ _ivm_serial_unserializeExec(ivm_serial_exec_t *exec,
 }
 
 ivm_serial_exec_list_t *
-_ivm_serial_serializeExecList(ivm_exec_list_t *list)
+_ivm_serial_serializeExecList(ivm_exec_list_t *list,
+							  ivm_vmstate_t *state)
 {
 	ivm_serial_exec_list_t *
 	ret = MEM_ALLOC(sizeof(*ret),
@@ -103,7 +105,7 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list)
 			);
 		}
 
-		*i++ = _ivm_serial_serializeExec(tmp_exec, tmp_id);
+		*i++ = _ivm_serial_serializeExec(tmp_exec, state, tmp_id);
 	}
 
 	return ret;
@@ -128,7 +130,8 @@ _ivm_serial_unserializeExecList(ivm_serial_exec_list_t *list)
 }
 
 ivm_serial_exec_unit_t *
-ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit)
+ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
+							 ivm_vmstate_t *state)
 {
 	ivm_serial_exec_unit_t *ret = MEM_ALLOC(
 		sizeof(*ret),
@@ -139,7 +142,7 @@ ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit)
 
 	ret->root = ivm_exec_unit_root(unit);
 	ret->list = _ivm_serial_serializeExecList(
-		ivm_exec_unit_execList(unit)
+		ivm_exec_unit_execList(unit), state
 	);
 
 	return ret;

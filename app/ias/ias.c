@@ -169,7 +169,7 @@ int main(int argc, const char **argv)
 		unit = ias_gen_env_generateExecUnit(env);
 
 		if (output_cache) {
-			s_unit = ivm_serial_serializeExecUnit(unit);
+			s_unit = ivm_serial_serializeExecUnit(unit, IVM_NULL);
 			ivm_serial_execUnitToFile(s_unit, output_cache);
 
 			ivm_serial_exec_unit_free(s_unit);

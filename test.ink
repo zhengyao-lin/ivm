@@ -62,6 +62,16 @@ while i < 1000000: {
 	i = i + 1
 }
 */
+/*
+f = fn:0
+
+i = 0
+while i < 10000000: {
+	f()
+	i = i + 1
+}
+ret
+*/
 
 fib = fn n: {
 	if n < 2: ret 1
@@ -70,6 +80,7 @@ fib = fn n: {
 
 print(fib(30))
 ret
+
 {
 	b: 10,
 	c: 10,

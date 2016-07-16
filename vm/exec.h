@@ -73,6 +73,7 @@ ivm_exec_preproc(ivm_exec_t *exec,
 
 ivm_instr_t
 ivm_exec_decache(ivm_exec_t *exec,
+				 struct ivm_vmstate_t_tag *state,
 				 ivm_instr_t *instr);
 
 typedef ivm_ptpool_t ivm_exec_pool_t;

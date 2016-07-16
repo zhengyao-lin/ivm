@@ -42,9 +42,10 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
 											ivm_function_arg_t arg)
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
 
+typedef const ivm_string_t *ivm_parameter_t;
+
 typedef ivm_ptlist_t ivm_param_list_t;
-typedef ivm_char_t *ivm_parameter_t;
-typedef ivm_parameter_t *ivm_param_list_iterator_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_parameter_t) ivm_param_list_iterator_t;
 
 #define ivm_parameter_getName(param) (param)
 
@@ -52,7 +53,7 @@ typedef ivm_parameter_t *ivm_param_list_iterator_t;
 #define ivm_param_list_free ivm_ptlist_free
 #define ivm_param_list_add ivm_ptlist_push
 #define ivm_param_list_size ivm_ptlist_size
-#define ivm_param_list_at(list, i) ((ivm_parameter_t *)ivm_ptlist_at((list), (i)))
+#define ivm_param_list_at(list, i) ((ivm_parameter_t)ivm_ptlist_at((list), (i)))
 
 #define IVM_PARAM_LIST_ITER_GET(iter) (*(iter))
 #define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_parameter_t)
@@ -134,6 +135,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_function_t *) ivm_func_list_iterator_t;
 #define ivm_func_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
 #define ivm_func_list_size ivm_ptlist_size
 #define ivm_func_list_at(list, i) ((ivm_function_t *)ivm_ptlist_at((list), (i)))
+#define ivm_func_list_find ivm_ptlist_find
 
 #define IVM_FUNC_LIST_ITER_INDEX IVM_PTLIST_ITER_INDEX
 #define IVM_FUNC_LIST_ITER_SET(iter, val) IVM_PTLIST_ITER_SET((iter), (val))

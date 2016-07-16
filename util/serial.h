@@ -34,7 +34,7 @@ typedef struct {
 } IVM_NOALIGN ivm_serial_exec_unit_t;
 
 ivm_serial_exec_unit_t *
-ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit);
+ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit, ivm_vmstate_t *state);
 
 ivm_exec_unit_t *
 ivm_serial_unserializeExecUnit(ivm_serial_exec_unit_t *unit);

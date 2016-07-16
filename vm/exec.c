@@ -127,7 +127,7 @@ ivm_exec_preproc(ivm_exec_t *exec,
 					/* string pool idx -> string pointer */
 					ivm_instr_setArg(i,
 						ivm_opcode_arg_fromPointer(
-							ivm_exec_getString(exec, /**/
+							ivm_exec_getString(exec,
 								ivm_opcode_arg_toInt(
 									ivm_instr_arg(
 										i
@@ -137,6 +137,22 @@ ivm_exec_preproc(ivm_exec_t *exec,
 						)
 					);
 					break;
+#if 0
+				case 'X':
+					/* function idx -> function pointer */
+					ivm_instr_setArg(i,
+						ivm_opcode_arg_fromPointer(
+							ivm_vmstate_getFunc(state,
+								ivm_opcode_arg_toInt(
+									ivm_instr_arg(
+										i
+									)
+								)
+							)
+						)
+					);
+					break;
+#endif
 			}
 		}
 
@@ -152,11 +168,13 @@ ivm_exec_preproc(ivm_exec_t *exec,
 
 ivm_instr_t
 ivm_exec_decache(ivm_exec_t *exec,
+				 ivm_vmstate_t *state,
 				 ivm_instr_t *instr)
 {
 	ivm_size_t tmp;
+	ivm_char_t arg = ivm_opcode_table_getParam(ivm_instr_opcode(instr))[0];
 
-	if (ivm_opcode_table_getParam(ivm_instr_opcode(instr))[0] == 'S') {
+	if (arg == 'S') {
 		tmp = ivm_string_pool_find(
 			exec->pool,
 			(const ivm_string_t *)ivm_opcode_arg_toPointer(ivm_instr_arg(instr))
@@ -168,7 +186,21 @@ ivm_exec_decache(ivm_exec_t *exec,
 			ivm_instr_opcode(instr),
 			ivm_opcode_arg_fromInt(tmp)
 		);
-	}
+	} /* else if (arg == 'X') {
+		IVM_ASSERT(state, IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE);
+
+		tmp = ivm_vmstate_getFuncID(
+			state,
+			(ivm_function_t *)ivm_opcode_arg_toPointer(ivm_instr_arg(instr))
+		);
+
+		IVM_ASSERT(tmp != -1, IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE);
+
+		return ivm_instr_build(
+			ivm_instr_opcode(instr),
+			ivm_opcode_arg_fromInt(tmp)
+		);
+	} */
 
 	return ivm_instr_build(
 		ivm_instr_opcode(instr),
