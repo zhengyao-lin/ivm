@@ -11,8 +11,8 @@
 #include "vm/dbg.h"
 #include "vm/env.h"
 
+#include "gen/gen.h"
 #include "parser.h"
-#include "gen.h"
 
 IVM_NATIVE_FUNC(print)
 {

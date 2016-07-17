@@ -1,5 +1,5 @@
-#ifndef _IVM_APP_ILANG_GEN_H_
-#define _IVM_APP_ILANG_GEN_H_
+#ifndef _IVM_APP_ILANG_GEN_GEN_H_
+#define _IVM_APP_ILANG_GEN_GEN_H_
 
 #include "pub/com.h"
 #include "pub/const.h"
@@ -32,6 +32,8 @@ typedef struct {
 	ivm_exec_t *cur_exec;
 	ivm_size_t continue_addr;
 	ivm_list_t *break_ref;
+	ivm_list_t *end_ref; // instrs that jump to branch end(if/while)
+	ivm_list_t *begin_ref; // instrs that jump to branch body(if/while)
 } ilang_gen_env_t;
 
 typedef struct {
@@ -40,6 +42,7 @@ typedef struct {
 	ivm_bool_t if_use_cond_reg; // use (virtual)register to in condition expression
 	ivm_bool_t is_callee; // return base if possible
 	ivm_bool_t is_slot_expr;
+	ivm_bool_t has_branch; // whether the parent expr has branch structure(if/while)
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
@@ -49,6 +52,7 @@ typedef struct {
 	ivm_bool_t has_base; // has base object on the stack under top(second object)
 	ivm_bool_t is_id_let;
 	ivm_bool_t is_id_top;
+	ivm_bool_t use_branch;
 } ilang_gen_value_t;
 
 #define ilang_gen_value_build(...) ((ilang_gen_value_t) { __VA_ARGS__ })
@@ -72,6 +76,7 @@ typedef ivm_bool_t (*ilang_gen_checker_t)(struct ilang_gen_expr_t_tag *expr, ila
 
 typedef struct ilang_gen_expr_t_tag {
 	ILANG_GEN_EXPR_HEADER
+	struct ilang_gen_expr_t_tag *oprs[];
 } ilang_gen_expr_t;
 
 IVM_INLINE
@@ -172,6 +177,11 @@ ilang_gen_value_t
 ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_flag_t flag,
 						ilang_gen_env_t *env);
+
+ilang_gen_value_t
+ilang_gen_logic_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env);
 
 ilang_gen_value_t
 ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
@@ -386,6 +396,26 @@ COMMON_EXPR(cmp_expr, "compare expression", {
 	ret->cmp_type = cmp_type;
 }, ilang_gen_expr_t *op1, ilang_gen_expr_t *op2, ivm_int_t cmp_type);
 
+/* logic expr */
+
+enum {
+	ILANG_GEN_LOGIC_AND = 0,
+	ILANG_GEN_LOGIC_OR = 1
+};
+
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *lhe;
+	ilang_gen_expr_t *rhe;
+	ivm_int_t type;
+} ilang_gen_logic_expr_t;
+
+COMMON_EXPR(logic_expr, "logic expression", {
+	ret->lhe = lhe;
+	ret->rhe = rhe;
+	ret->type = type;
+}, ilang_gen_expr_t *lhe, ilang_gen_expr_t *rhe, ivm_int_t type);
+
 typedef ilang_gen_token_value_t ilang_gen_param_t;
 typedef ivm_list_t ilang_gen_param_list_t;
 typedef IVM_LIST_ITER_TYPE(ilang_gen_param_t) ilang_gen_param_list_iterator_t;
@@ -446,6 +476,7 @@ ilang_gen_branch_list_new(ilang_gen_trans_unit_t *unit)
 #define ILANG_GEN_BRANCH_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ilang_gen_branch_t)
+#define ILANG_GEN_BRANCH_LIST_ITER_IS_LAST(list, iter) IVM_LIST_ITER_IS_LAST((list), (iter), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ilang_gen_branch_t)
 

@@ -7,7 +7,7 @@
 
 #include "std/list.h"
 
-#include "gen.h"
+#include "gen/gen.h"
 
 IVM_COM_HEADER
 

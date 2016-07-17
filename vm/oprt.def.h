@@ -26,6 +26,18 @@ BINOP_GEN(NUMERIC, CMP, NUMERIC, {
 	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) - ivm_numeric_getValue(_OP2));
 })
 
+BINOP_GEN(NUMERIC, AND, NUMERIC, {
+	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) & (ivm_long_t)ivm_numeric_getValue(_OP2));
+})
+
+BINOP_GEN(NUMERIC, EOR, NUMERIC, {
+	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) ^ (ivm_long_t)ivm_numeric_getValue(_OP2));
+})
+
+BINOP_GEN(NUMERIC, IOR, NUMERIC, {
+	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) | (ivm_long_t)ivm_numeric_getValue(_OP2));
+})
+
 BINOP_GEN(STRING_OBJECT, ADD, STRING_OBJECT, {
 	const ivm_string_t *str1 = ivm_string_object_getValue(_OP1);
 	const ivm_string_t *str2 = ivm_string_object_getValue(_OP2);

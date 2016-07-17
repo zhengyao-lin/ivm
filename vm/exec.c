@@ -156,11 +156,13 @@ ivm_exec_preproc(ivm_exec_t *exec,
 			}
 		}
 
-		if (!exec->next
+		ivm_exec_addInstr(exec, RETURN);
+		/*if (!exec->next
 			|| (ivm_instr_opcode(exec->instrs + (exec->next - 1))
 				!= IVM_OPCODE(RETURN))) {
+			// avoid empty address
 			ivm_exec_addInstr(exec, RETURN);
-		}
+		}*/
 	}
 
 	return;

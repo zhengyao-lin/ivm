@@ -37,6 +37,9 @@ enum {
 	IVM_BINOP_ID(DIV),
 	IVM_BINOP_ID(MOD),
 	IVM_BINOP_ID(CMP),
+	IVM_BINOP_ID(AND),
+	IVM_BINOP_ID(IOR), // inclusive or
+	IVM_BINOP_ID(EOR), // exclusive or
 	IVM_BINOP_COUNT
 };
 
