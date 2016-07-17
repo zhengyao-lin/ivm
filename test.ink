@@ -123,6 +123,8 @@ fib = fn n: {
 
 print(fib(30))
 
+ret
+
 {
 	b: 10,
 	c: 10,

@@ -24,7 +24,7 @@
 		CHECK_STACK(1);                                                                        \
                                                                                                \
 		_TMP_OBJ = STACK_POP();                                                                \
-		_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(op, _TMP_OBJ);                               \
+		_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ, op);                               \
                                                                                                \
 		IVM_ASSERT(_TMP_UNI_PROC,                                                              \
 				   IVM_ERROR_MSG_NO_UNIOP_FOR(op_name,                                         \

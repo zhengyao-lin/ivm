@@ -604,7 +604,7 @@ _ias_parser_tokenToEnv(ivm_list_t *tokens)
 
 	RULE_START(trans_unit, &env, &ret, tokens, suc);
 
-	return suc ? ret.u.env : IVM_NULL;
+	return suc ? ret.u.env : ret.u.env;
 }
 
 ias_gen_env_t *

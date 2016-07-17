@@ -61,6 +61,7 @@ ivm_type_free(ivm_type_t *type);
 
 // #define ivm_type_setBinopTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
 #define ivm_type_getBinopTable(type, op) ((type)->binops + IVM_BINOP_ID(op))
+#define ivm_type_getBinopTable_r(type, i) ((type)->binops + (i))
 
 #define ivm_type_getUniopTable(type) ((type)->uniops)
 
@@ -111,6 +112,7 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
 
 #define IVM_OBJECT_GET_BINOP(obj, op) (ivm_type_getBinopTable((obj)->type, op))
+#define IVM_OBJECT_GET_BINOP_R(obj, i) (ivm_type_getBinopTable_r((obj)->type, (i)))
 #define IVM_OBJECT_GET_UNIOP(obj) (ivm_type_getUniopTable((obj)->type))
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
@@ -122,8 +124,15 @@ typedef struct ivm_object_t_tag {
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
 
-#define IVM_OBJECT_GET_UNIOP_PROC(op, op1) \
+#define IVM_OBJECT_GET_BINOP_PROC_R(op1, i, op2) \
+	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), \
+						 IVM_OBJECT_GET((op2), TYPE_TAG)))
+
+#define IVM_OBJECT_GET_UNIOP_PROC(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), IVM_UNIOP_ID(op)))
+
+#define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
+	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
 
 IVM_INLINE
 void
