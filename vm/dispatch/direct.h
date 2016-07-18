@@ -84,7 +84,7 @@
 	    UPDATE_STACK()                      \
 	  : 0))
 
-#define STACK_TOP_OVERRIDE(obj) \
+#define STACK_OVERRIDE(obj) \
 	(*(tmp_sp - 1) = (obj))
 
 #define STACK_POP_NOCACHE() (*--tmp_sp)

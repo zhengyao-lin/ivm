@@ -78,8 +78,6 @@ ivm_dbg_printExec(ivm_exec_t *exec,
 	ivm_instr_t *ip = ivm_exec_instrPtrStart(exec),
 				*end = ivm_exec_instrPtrEnd(exec);
 
-	IVM_TRACE("%p\n", exec);
-
 	for (; ip != end; ip++) {
 		fprintf(fp, "%s", prefix);
 		_ivm_dbg_printInstr(exec, ip, "%4ld: ", fp);

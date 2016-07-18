@@ -45,7 +45,7 @@ OPCODE_GEN(NEW_FUNC, "new_func", X, 1, {
 
 OPCODE_GEN(CLONE, "clone", N, 1, {
 	CHECK_STACK(1);
-	STACK_TOP_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
+	STACK_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
 	NEXT_INSTR();
 })
 
