@@ -19,7 +19,8 @@ typedef struct ivm_object_t_tag *(*ivm_uniop_proc_t)(struct ivm_vmstate_t_tag *s
 
 typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *state,
 													 struct ivm_object_t_tag *op1,
-													 struct ivm_object_t_tag *op2);
+													 struct ivm_object_t_tag *op2,
+													 struct ivm_object_t_tag *assign);
 
 #define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
@@ -40,6 +41,7 @@ enum {
 	IVM_BINOP_ID(AND),
 	IVM_BINOP_ID(IOR), // inclusive or
 	IVM_BINOP_ID(EOR), // exclusive or
+	IVM_BINOP_ID(IDX),
 	IVM_BINOP_COUNT
 };
 

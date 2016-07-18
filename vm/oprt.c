@@ -19,14 +19,16 @@
 	__VA_ARGS__
 
 #define BINOP_GEN(t1, op, t2, ...) \
-	IVM_PRIVATE ivm_object_t * BINOP_PROC_NAME(t1, op, t2)(ivm_vmstate_t *__state__, \
-														   ivm_object_t *__op1__, \
-														   ivm_object_t *__op2__) \
+	IVM_PRIVATE ivm_object_t * BINOP_PROC_NAME(t1, op, t2)(ivm_vmstate_t *__state__,   \
+														   ivm_object_t *__op1__,      \
+														   ivm_object_t *__op2__,      \
+														   ivm_object_t *__assign__)   \
 	__VA_ARGS__
 
 #define _STATE (__state__)
 #define _OP1 (__op1__)
 #define _OP2 (__op2__)
+#define _ASSIGN (__assign__)
 
 	#include "oprt.req.h"
 	#include "oprt.def.h"
@@ -34,6 +36,8 @@
 #undef _STATE
 #undef _OP1
 #undef _OP2
+#undef _ASSIGN
+
 #undef UNIOP_GEN
 #undef BINOP_GEN
 

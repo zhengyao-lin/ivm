@@ -46,7 +46,9 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_binary_expr_t *binary_expr = IVM_AS(expr, ilang_gen_binary_expr_t);
 	ilang_gen_expr_t *op1, *op2;
 
-	GEN_ASSERT_NOT_LEFT_VALUE(expr, "binary expression", flag);
+	if (binary_expr->type != IVM_BINOP_ID(IDX)) {
+		GEN_ASSERT_NOT_LEFT_VALUE(expr, "binary expression(except index expression)", flag);
+	}
 
 	op1 = binary_expr->op1;
 	op2 = binary_expr->op2;
@@ -78,6 +80,14 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 		BR(AND)
 		BR(EOR)
 		BR(IOR)
+		case IVM_BINOP_ID(IDX):
+			if (flag.is_left_val) {
+				ivm_exec_addInstr(env->cur_exec, IDX_ASSIGN);
+				ivm_exec_addInstr(env->cur_exec, POP);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, IDX);
+			}
+			break;
 		default:
 			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_BINARY_OP(binary_expr->type));
 	}

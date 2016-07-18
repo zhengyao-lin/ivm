@@ -11,4 +11,18 @@
 #include "num.h"
 #include "strobj.h"
 
+#define GET_STRING_INDEX() \
+	{                                                                                         \
+		ivm_object_t *tmp_obj;                                                                \
+                                                                                              \
+		if (_ASSIGN) {                                                                        \
+			ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _ASSIGN);      \
+			return _ASSIGN;                                                                   \
+		}                                                                                     \
+                                                                                              \
+		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));         \
+                                                                                              \
+		return tmp_obj ? tmp_obj : IVM_NULL_OBJ(_STATE);                                      \
+	}
+
 #endif

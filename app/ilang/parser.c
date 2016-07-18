@@ -752,7 +752,7 @@ RULE(arg_list_opt)
 RULE(postfix_expr_sub)
 {
 	struct token_t *tmp_token, *id;
-	ilang_gen_expr_t *tmp_expr = IVM_NULL;
+	ilang_gen_expr_t *tmp_expr = IVM_NULL, *tmp_idx;
 	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
 
 	SUB_RULE_SET(
@@ -802,6 +802,33 @@ RULE(postfix_expr_sub)
 				_RETVAL.expr = ilang_gen_slot_expr_new(
 					_ENV->unit,
 					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				);
+			}
+		})
+
+		SUB_RULE(R(nllo) T(T_LBRAKT) R(expr) T(T_RBRAKT) R(postfix_expr_sub)
+		DBB(PRINT_MATCH_TOKEN("index expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			tmp_idx = RULE_RET_AT(1).u.expr;
+			tmp_expr = RULE_RET_AT(2).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_binary_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, tmp_idx,
+					IVM_BINOP_ID(IDX)
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_binary_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, tmp_idx,
+					IVM_BINOP_ID(IDX)
 				);
 			}
 		})

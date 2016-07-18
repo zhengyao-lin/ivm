@@ -115,9 +115,6 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		|| !IVM_STRCMP(tmp_str, (name))) {                             \
 		extra                                                          \
 		if (flag.is_left_val) {                                        \
-			if (!flag.is_top_level) {                                  \
-				ivm_exec_addInstr(env->cur_exec, DUP);                 \
-			}                                                          \
 			set_instr;                                                 \
 		} else if (!flag.is_top_level) {                               \
 			get_instr;                                                 \

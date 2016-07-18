@@ -34,7 +34,7 @@
 		NEXT_INSTR();                                                                          \
 	}
 
-#define DEFAULT_BINOP_HANDLER(op, op_name) \
+#define DEFAULT_BINOP_HANDLER(op, op_name, assign) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -47,7 +47,7 @@
 				   							  op_name,                                         \
 											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		STACK_PUSH(_TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2));                                \
+		STACK_PUSH(_TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2, (assign)));                      \
 		NEXT_INSTR();                                                                          \
 	}
 
@@ -64,7 +64,7 @@
 				   							  "<=>",                                           \
 											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		_TMP_OBJ = _TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2);                                 \
+		_TMP_OBJ = _TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2, IVM_NULL);                       \
 		todo;                                                                                  \
 		NEXT_INSTR();                                                                          \
 	}

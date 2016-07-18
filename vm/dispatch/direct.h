@@ -77,8 +77,8 @@
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
 
 #define STACK_PUSH_NOCACHE(obj) \
-	(*tmp_sp++ = (obj),                     \
-	 (tmp_sp == tmp_st_end                  \
+	(*tmp_sp = (obj),                       \
+	 (++tmp_sp == tmp_st_end                \
 	  ? SAVE_STACK_NOPUSH(),                \
 	    ivm_vmstack_inc_c(_STACK, _CORO),   \
 	    UPDATE_STACK()                      \

@@ -113,8 +113,7 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 	assign->lhe->eval(
 		assign->lhe,
 		FLAG(
-			.is_left_val = IVM_TRUE,
-			.is_top_level = flag.is_top_level
+			.is_left_val = IVM_TRUE
 		),
 		env
 	);
