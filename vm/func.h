@@ -91,6 +91,16 @@ ivm_function_free(ivm_function_t *func,
 #define ivm_function_callNative(func, state, context, arg) \
 	((func)->u.native((state), (context), (arg)))
 
+/*
+IVM_INLINE
+ivm_int_t
+ivm_function_getMaxStack(const ivm_function_t *func)
+{
+	if (!func->is_native) return func->u.body.max_stack;
+	return 0;
+}
+*/
+
 #if 0
 void
 ivm_function_setParam(const ivm_function_t *func,

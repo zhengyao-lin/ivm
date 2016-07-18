@@ -72,11 +72,13 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 
 void
 ivm_dbg_printExec(ivm_exec_t *exec,
-				   const char *prefix,
-				   FILE *fp)
+				  const char *prefix,
+				  FILE *fp)
 {
 	ivm_instr_t *ip = ivm_exec_instrPtrStart(exec),
 				*end = ivm_exec_instrPtrEnd(exec);
+
+	IVM_TRACE("%p\n", exec);
 
 	for (; ip != end; ip++) {
 		fprintf(fp, "%s", prefix);

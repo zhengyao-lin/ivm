@@ -73,7 +73,7 @@ while i < 100000000: {
 }
 ret
 */
-
+if 0: {
 i = 1
 
 while i < 1000000 && i > 0:
@@ -115,6 +115,7 @@ if 1 && 0 || (1 && (0 || 1)): print("yes!")
 if 1 && (0 || (1 && (0 || 1))): print("yes!")
 
 ret
+}
 
 fib = fn n: {
 	if n < 2: ret 1

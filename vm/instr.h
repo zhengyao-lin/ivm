@@ -67,7 +67,7 @@ typedef struct ivm_instr_t_tag {
 #define IVM_INSTR_GEN(o, ...) \
 	(ivm_instr_gen_##o(__VA_ARGS__))
 
-#define OPCODE_GEN(o, name, arg, ...) \
+#define OPCODE_GEN(o, name, arg, st_inc, ...) \
 	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 								  struct ivm_exec_t_tag *exec);
 

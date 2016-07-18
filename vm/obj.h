@@ -18,8 +18,15 @@ IVM_COM_HEADER
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type; \
 	ivm_slot_table_t *slots; \
-	ivm_mark_t mark; \
-	struct ivm_object_t_tag *proto;
+	struct ivm_object_t_tag *proto; \
+	ivm_mark_t mark;
+
+/*
+#define IVM_OBJECT_HEADER \
+	ivm_int_t type: 8;    \
+	ivm_int_t size: 8;    \
+	ivm_mark_t mark: 48;
+*/
 
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;

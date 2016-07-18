@@ -20,7 +20,7 @@ struct ivm_instr_t_tag;
 
 typedef enum {
 	IVM_OPCODE(FIRST) = -1, /* to make NOP the 0 */
-#define OPCODE_GEN(o, name, arg, ...) IVM_OPCODE(o),
+#define OPCODE_GEN(o, name, arg, st_inc, ...) IVM_OPCODE(o),
 	#include "opcode.def.h"
 #undef OPCODE_GEN
 	IVM_OPCODE(LAST)
@@ -38,10 +38,14 @@ typedef struct {
 	const ivm_char_t *name;
 	const ivm_char_t *param;
 	void *entry; /* in direct threading */
+	ivm_int_t st_inc; /* stack increase */
 } ivm_opcode_entry_t;
+
+#define IVM_OPCODE_VARIABLE_STACK_INC 10
 
 const ivm_char_t *
 ivm_opcode_table_getParam(ivm_opcode_t opc);
+
 const ivm_char_t *
 ivm_opcode_table_getName(ivm_opcode_t opc);
 
@@ -54,6 +58,9 @@ void *
 ivm_opcode_table_getEntry(ivm_opcode_t opc);
 
 #endif
+
+ivm_int_t
+ivm_opcode_table_getStackInc(ivm_opcode_t opc);
 
 /* return LAST if the name is not found */
 ivm_opcode_t

@@ -50,9 +50,15 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_vmstate_t *state,
 				 ivm_function_object_t *root)
 {
+	const ivm_function_t *tmp_func = ivm_function_object_getFunc(root);
+
+	IVM_ASSERT(!ivm_coro_isAlive(coro), IVM_ERROR_MSG_RESET_CORO_ROOT);
+
+	// IVM_TRACE("init: %d\n", ivm_function_getMaxStack(tmp_func));
+	// ivm_vmstack_inc_c(&coro->stack, coro, ivm_function_getMaxStack(tmp_func));
+
 	ivm_function_createRuntime(
-		ivm_function_object_getFunc(root),
-		state,
+		tmp_func, state,
 		ivm_function_object_getClosure(root),
 		coro
 	);
@@ -141,15 +147,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
-		IVM_ASSERT(ivm_coro_isAlive(coro), IVM_ERROR_MSG_RESET_CORO_ROOT);
-
-		tmp_func = ivm_function_object_getFunc(root);
-		ivm_function_createRuntime(
-			tmp_func, state,
-			ivm_function_object_getClosure(root),
-			coro
-		);
-		coro->alive = IVM_TRUE;
+		ivm_coro_setRoot(coro, state, root);
 	}
 
 	if (ivm_function_isNative(tmp_func)) {
@@ -184,7 +182,7 @@ ACTION_INVOKE:
 				/* jump to the first opcode */
 				goto *(ivm_instr_entry(tmp_ip));
 
-				#define OPCODE_GEN(o, name, arg, ...) \
+				#define OPCODE_GEN(o, name, arg, st_inc, ...) \
 					OPCODE_##o:                             \
 						IVM_PER_INSTR_DBG(DBG_RUNTIME());   \
 						__VA_ARGS__

@@ -14,13 +14,13 @@
 
 #include "opcode.req.h"
 
-#define OPCODE_MAPPING(op, name, args) { IVM_OPCODE(op), (name), (args), IVM_NULL }
+#define OPCODE_MAPPING(op, name, args, st_inc) { IVM_OPCODE(op), (name), (args), IVM_NULL, (st_inc) }
 
 IVM_PRIVATE
 ivm_opcode_entry_t
 opcode_table[] = {
 
-#define OPCODE_GEN(o, name, arg, ...) OPCODE_MAPPING(o, name, #arg),
+#define OPCODE_GEN(o, name, arg, st_inc, ...) OPCODE_MAPPING(o, (name), #arg, (st_inc)),
 	#include "opcode.def.h"
 #undef OPCODE_GEN
 
@@ -79,6 +79,13 @@ ivm_opcode_table_getEntry(ivm_opcode_t opc)
 }
 
 #endif
+
+ivm_int_t
+ivm_opcode_table_getStackInc(ivm_opcode_t opc)
+{
+	checkLegal(opc);
+	return opcode_table[opc].st_inc;
+}
 
 ivm_opcode_t
 ivm_opcode_searchOp(const ivm_char_t *name)

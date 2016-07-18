@@ -24,7 +24,7 @@
 	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str))
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#define OPCODE_GEN(o, name, arg, ...) \
+	#define OPCODE_GEN(o, name, arg, st_inc, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 									  ivm_exec_t *exec) \
 		{ \
@@ -39,7 +39,7 @@
 
 	#undef OPCODE_GEN
 #else
-	#define OPCODE_GEN(o, name, arg, ...) \
+	#define OPCODE_GEN(o, name, arg, st_inc, ...) \
 		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG \
 									  ivm_exec_t *exec) \
 		{ \

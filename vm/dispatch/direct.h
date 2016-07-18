@@ -77,9 +77,11 @@
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
 
 #define STACK_PUSH_NOCACHE(obj) \
-	(*tmp_sp++ = (obj), \
-	 (tmp_sp == tmp_st_end \
-	  ? SAVE_STACK_NOPUSH(), ivm_vmstack_inc_c(_STACK, _CORO), UPDATE_STACK() \
+	(*tmp_sp++ = (obj),                     \
+	 (tmp_sp == tmp_st_end                  \
+	  ? SAVE_STACK_NOPUSH(),                \
+	    ivm_vmstack_inc_c(_STACK, _CORO),   \
+	    UPDATE_STACK()                      \
 	  : 0))
 
 #define STACK_TOP_OVERRIDE(obj) \
@@ -222,14 +224,12 @@
 #endif
 
 #if IVM_STACK_CACHE_N_TOS != 0
-
 	#define AVAIL_STACK ((((ivm_ptr_t)tmp_sp - (ivm_ptr_t)tmp_bp) / sizeof(ivm_object_t *)) + cst)
-
 #else
-
 	#define AVAIL_STACK (((ivm_ptr_t)tmp_sp - (ivm_ptr_t)tmp_bp) / sizeof(ivm_object_t *))
-
 #endif
+
+#define AVAIL_STACK_SIZE (((ivm_ptr_t)tmp_st_end - (ivm_ptr_t)tmp_sp) / sizeof(ivm_object_t *))
 
 #define CHECK_STACK(req) \
 	IVM_ASSERT(AVAIL_STACK >= (req), \

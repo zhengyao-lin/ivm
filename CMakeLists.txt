@@ -12,7 +12,7 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wno-unused-value")
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

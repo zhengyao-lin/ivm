@@ -23,6 +23,9 @@ typedef struct ivm_exec_t_tag {
 	ivm_bool_t cached;
 	ivm_string_pool_t *pool;
 
+	// ivm_int_t max_stack; // max stack size needed
+	// ivm_int_t fin_stack; // final stack size
+
 	ivm_size_t alloc;
 	ivm_size_t next;
 	ivm_instr_t *instrs;
