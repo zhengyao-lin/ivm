@@ -230,8 +230,6 @@
 	#define AVAIL_STACK (((ivm_ptr_t)tmp_sp - (ivm_ptr_t)tmp_bp) / sizeof(ivm_object_t *))
 #endif
 
-#define AVAIL_STACK_SIZE (((ivm_ptr_t)tmp_st_end - (ivm_ptr_t)tmp_sp) / sizeof(ivm_object_t *))
-
 #define CHECK_STACK(req) \
 	IVM_ASSERT(AVAIL_STACK >= (req), \
 			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
@@ -240,21 +238,19 @@
 	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())
 
 #define SAVE_STACK() \
-	(STC_PUSHBACK(),                          \
-	 IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp),   \
-	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
+	(STC_PUSHBACK(), IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define SAVE_STACK_NOPUSH() \
-	(IVM_RUNTIME_SET(_RUNTIME, BP, tmp_bp),   \
-	 IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
+	(IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))
 
 #define UPDATE_STACK() \
 	(tmp_st_end = ivm_vmstack_edge(tmp_stack),   \
 	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
-#define INVOKE_STACK() \
-	(tmp_bp = tmp_sp)
+#define INVOKE_STACK() (tmp_bp = tmp_sp)
+#define RETURN_STACK() \
+	(tmp_sp = tmp_bp, tmp_bp = IVM_RUNTIME_GET(tmp_runtime, BP))
 
 #define _TMP_OBJ1 (tmp_obj1)
 #define _TMP_OBJ2 (tmp_obj2)

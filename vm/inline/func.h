@@ -21,7 +21,7 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_runtime_t *runtime)
 {
 	if (func->is_native) {
-		context = ivm_ctchain_clone(context, state);
+		// context = ivm_ctchain_clone(context, state);
 		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
 
 		return IVM_TRUE;
@@ -43,7 +43,7 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_object_t *base)
 {
 	if (func->is_native) {
-		context = ivm_ctchain_clone(context, state);
+		// context = ivm_ctchain_clone(context, state);
 		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
 
 		return IVM_TRUE;
@@ -62,7 +62,7 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 }
 
 IVM_INLINE
-void
+ivm_bool_t
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state,
 						   ivm_ctchain_t *context,
@@ -73,9 +73,7 @@ ivm_function_createRuntime(const ivm_function_t *func,
 
 	IVM_RUNTIME_SET(runtime, SP, sp);
 	IVM_RUNTIME_SET(runtime, BP, sp);
-	_ivm_function_invoke_c(func, state, context, runtime);
-
-	return;
+	return _ivm_function_invoke_c(func, state, context, runtime);
 }
 
 IVM_INLINE

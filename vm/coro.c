@@ -51,17 +51,21 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_function_object_t *root)
 {
 	const ivm_function_t *tmp_func = ivm_function_object_getFunc(root);
+	ivm_bool_t ret;
 
 	IVM_ASSERT(!ivm_coro_isAlive(coro), IVM_ERROR_MSG_RESET_CORO_ROOT);
 
 	// IVM_TRACE("init: %d\n", ivm_function_getMaxStack(tmp_func));
 	// ivm_vmstack_inc_c(&coro->stack, coro, ivm_function_getMaxStack(tmp_func));
 
-	ivm_function_createRuntime(
+	ret = ivm_function_createRuntime(
 		tmp_func, state,
 		ivm_function_object_getScope(root),
 		coro
 	);
+
+	IVM_ASSERT(!ret, IVM_ERROR_MSG_CORO_NATIVE_ROOT);
+
 	coro->alive = IVM_TRUE;
 
 	return;
@@ -150,7 +154,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		ivm_coro_setRoot(coro, state, root);
 	}
 
-	if (ivm_function_isNative(tmp_func)) {
+	/* if (ivm_function_isNative(tmp_func)) {
 		_TMP_OBJ1 = ivm_function_callNative(tmp_func, state,
 											IVM_RUNTIME_GET(&coro->runtime, CONTEXT),
 											IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
@@ -159,7 +163,9 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		}
 
 		ivm_coro_kill(coro, state);
-	} else if (ivm_coro_isAlive(coro)) {
+	} else */
+
+	if (ivm_coro_isAlive(coro)) {
 		tmp_runtime = &coro->runtime;
 		tmp_stack = &coro->stack;
 		tmp_frame_st = &coro->frame_st;
@@ -215,7 +221,7 @@ ACTION_RETURN:
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
-				UPDATE_STACK();
+				RETURN_STACK();
 				STACK_PUSH(_TMP_OBJ1);
 			} else {
 				/* no more callee to restore, end coro */

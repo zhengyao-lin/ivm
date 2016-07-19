@@ -55,6 +55,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_FILE_FORMAT_ERR(file, format)		"wrong file format of file %s, expecting %s file", (file), (format)
 #define IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, max)		"illegal string len %lu(expect less than %lu)", (ivm_ulong_t)(len), (ivm_ulong_t)(max)
 #define IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE		("decache function id without vm state")
+#define IVM_ERROR_MSG_CORO_NATIVE_ROOT					("root function of coroutine cannot be native")
 
 IVM_COM_END
 
