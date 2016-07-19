@@ -134,5 +134,9 @@ int main(int argc, const char **argv)
 
 	ivm_vmstate_free(state);
 
+	// IVM_TRACE("instr: %d\n", sizeof(ivm_instr_t));
+	// IVM_TRACE("arg: %d\n", sizeof(ivm_opcode_arg_t));
+	// IVM_TRACE("arg: %d\n", sizeof(ivm_instr_cache_t));
+
 	return 0;
 }

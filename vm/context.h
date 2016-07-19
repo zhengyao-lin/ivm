@@ -75,21 +75,21 @@ ivm_context_setSlot_cc(ivm_context_t *ctx,
 					   struct ivm_vmstate_t_tag *state,
 					   const ivm_string_t *key,
 					   struct ivm_object_t_tag *value,
-					   ivm_instr_cache_t *cache)
+					   ivm_instr_t *instr)
 {
 	ivm_slot_table_t *slots = ctx->slots;
 
 	if (slots) {
 		/* check cache */
-		if (ivm_slot_table_checkCacheValid(slots, cache)) {
-			ivm_slot_table_setCacheSlot(state, cache, value);
+		if (ivm_slot_table_checkCacheValid(slots, instr)) {
+			ivm_slot_table_setCacheSlot(state, instr, value);
 			return;
 		}
 	} else {
 		slots = ctx->slots = ivm_slot_table_new(state);
 	}
 
-	ivm_slot_table_setSlot_cc(slots, state, key, value, cache);
+	ivm_slot_table_setSlot_cc(slots, state, key, value, instr);
 
 	return;
 }
@@ -111,18 +111,18 @@ ivm_object_t *
 ivm_context_getSlot_cc(ivm_context_t *ctx,
 					   struct ivm_vmstate_t_tag *state,
 					   const ivm_string_t *key,
-					   ivm_instr_cache_t *cache)
+					   ivm_instr_t *instr)
 {
 	ivm_slot_table_t *slots = ctx->slots;
 
 	if (!slots) return IVM_NULL;
 
-	if (ivm_slot_table_checkCacheValid(slots, cache)) {
-		return ivm_slot_table_getCacheSlot(state, cache);
+	if (ivm_slot_table_checkCacheValid(slots, instr)) {
+		return ivm_slot_table_getCacheSlot(state, instr);
 	}
 
 	return ivm_slot_getValue(
-		ivm_slot_table_getSlot_cc(ctx->slots, state, key, cache),
+		ivm_slot_table_getSlot_cc(ctx->slots, state, key, instr),
 		state
 	);
 }
@@ -152,13 +152,13 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 							struct ivm_vmstate_t_tag *state,
 							const ivm_string_t *key,
 							struct ivm_object_t_tag *value,
-							ivm_instr_cache_t *cache)
+							ivm_instr_t *instr)
 {
 	ivm_slot_table_t *slots = ctx->slots;
 
 	if (slots) {
-		if (ivm_slot_table_checkCacheValid(slots, cache)) {
-			ivm_slot_table_setCacheSlot(state, cache, value);
+		if (ivm_slot_table_checkCacheValid(slots, instr)) {
+			ivm_slot_table_setCacheSlot(state, instr, value);
 			return IVM_TRUE;
 		}
 	} else {
@@ -167,7 +167,7 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 
 	return ivm_slot_table_setExistSlot_cc(
 		ctx->slots, state,
-		key, value, cache
+		key, value, instr
 	);
 }
 

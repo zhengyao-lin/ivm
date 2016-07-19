@@ -111,16 +111,16 @@ ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
 IVM_INLINE
 ivm_bool_t
 ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
-							   ivm_instr_cache_t *cache)
+							   ivm_instr_t *instr)
 {
-	return ivm_instr_cache_id(cache) == table->uid;
+	return ivm_instr_cacheID(instr) == table->uid;
 }
 
-#define ivm_slot_table_getCacheSlot(state, cache) \
-	(ivm_slot_getValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state)))
+#define ivm_slot_table_getCacheSlot(state, instr) \
+	(ivm_slot_getValue(((ivm_slot_t *)ivm_instr_cacheData(instr)), (state)))
 
-#define ivm_slot_table_setCacheSlot(state, cache, value) \
-	(ivm_slot_setValue(((ivm_slot_t *)ivm_instr_cache_data(cache)), (state), (value)))
+#define ivm_slot_table_setCacheSlot(state, instr, value) \
+	(ivm_slot_setValue(((ivm_slot_t *)ivm_instr_cacheData(instr)), (state), (value)))
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
@@ -224,10 +224,10 @@ ivm_slot_table_setSlot_cc(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state,
 						  const ivm_string_t *key,
 						  struct ivm_object_t_tag *obj,
-						  ivm_instr_cache_t *cache)
+						  ivm_instr_t *instr)
 SET_SLOT(
-	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)i),
-	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)tmp)
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i),
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)tmp)
 );
 
 #define GET_SLOT(e1, e2) \
@@ -287,10 +287,10 @@ ivm_slot_t *
 ivm_slot_table_getSlot_cc(ivm_slot_table_t *table,
 						   struct ivm_vmstate_t_tag *state,
 						   const ivm_string_t *key,
-						   ivm_instr_cache_t *cache)
+						   ivm_instr_t *instr)
 GET_SLOT(
-	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)i),
-	*cache = ivm_instr_cache_build(table->uid, (ivm_ptr_t)tmp)
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i),
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)tmp)
 );
 
 #undef SET_SLOT
@@ -321,9 +321,9 @@ ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
 							   struct ivm_vmstate_t_tag *state,
 							   const ivm_string_t *key,
 							   struct ivm_object_t_tag *obj,
-							   ivm_instr_cache_t *cache)
+							   ivm_instr_t *instr)
 {
-	ivm_slot_t *slot = ivm_slot_table_getSlot_cc(table, state, key, cache);
+	ivm_slot_t *slot = ivm_slot_table_getSlot_cc(table, state, key, instr);
 
 	if (slot) {
 		ivm_slot_setValue(slot, state, obj);

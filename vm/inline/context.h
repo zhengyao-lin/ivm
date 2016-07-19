@@ -73,7 +73,7 @@ ivm_object_t *
 ivm_ctchain_search_cc(ivm_ctchain_t *chain,
 					  ivm_vmstate_t *state,
 					  const ivm_string_t *key,
-					  ivm_instr_cache_t *cache)
+					  ivm_instr_t *instr)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_context_t *i, *end;
@@ -82,7 +82,7 @@ ivm_ctchain_search_cc(ivm_ctchain_t *chain,
 		 end = i + chain->len;
 		 i != end; i++) {
 #if IVM_USE_INLINE_CACHE
-		ret = ivm_context_getSlot_cc(i, state, key, cache);
+		ret = ivm_context_getSlot_cc(i, state, key, instr);
 #else
 		ret = ivm_context_getSlot(i, state, key);
 #endif
@@ -98,7 +98,7 @@ ivm_ctchain_setExistSlot_cc(ivm_ctchain_t *chain,
 							struct ivm_vmstate_t_tag *state,
 							const ivm_string_t *key,
 							ivm_object_t *val,
-							ivm_instr_cache_t *cache)
+							ivm_instr_t *instr)
 {
 	ivm_bool_t ret = IVM_FALSE;
 	ivm_context_t *i, *end;
@@ -108,9 +108,9 @@ ivm_ctchain_setExistSlot_cc(ivm_ctchain_t *chain,
 		 i != end; i++) {
 
 #if IVM_USE_INLINE_CACHE
-		ret = ivm_context_setExistSlot_cc(i, state, key, val, cache);
+		ret = ivm_context_setExistSlot_cc(i, state, key, val, instr);
 #else
-		ret = ivm_context_setExistSlot(i, state, key, val, cache);
+		ret = ivm_context_setExistSlot(i, state, key, val);
 #endif
 
 		if (ret) break;

@@ -7,12 +7,6 @@
 #define _STATE (state)
 #define _FRAME_STACK (tmp_frame_st)
 #define _INSTR (tmp_ip)
-#define _INSTR_CACHE (&(_INSTR->cache))
-#define _INSTR_CACHE_UID (_INSTR->cache.id)
-#define _INSTR_CACHE_DATA (_INSTR->cache.data)
-
-#define CLEAR_INSTR_CACHE() \
-	(*_INSTR_CACHE = ivm_instr_cache_build(IVM_NULL, IVM_NULL))
 
 #define _DBG_RUNTIME_DEFAULT \
 	.ip = tmp_ip,                                         \

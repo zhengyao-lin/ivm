@@ -13,6 +13,7 @@ IVM_COM_HEADER
 
 struct ivm_exec_t_tag;
 
+/*
 typedef struct {
 	ivm_uid_t id;
 	ivm_ptr_t data;
@@ -22,15 +23,32 @@ typedef struct {
 
 #define ivm_instr_cache_id(cache) ((cache)->id)
 #define ivm_instr_cache_data(cache) ((cache)->data)
+*/
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 
 typedef struct ivm_instr_t_tag {
-	ivm_byte_t opc;
-	ivm_opcode_arg_t arg;
 	void *entry;
-	ivm_instr_cache_t cache;
+	ivm_opcode_arg_t arg;
+	ivm_ptr_t cc_data;
+	ivm_uid_t cc_id;
+	ivm_byte_t opc;
 } ivm_instr_t;
+
+#define ivm_instr_cacheID(instr) ((instr)->cc_id)
+#define ivm_instr_cacheData(instr) ((instr)->cc_data)
+
+#define ivm_instr_setCacheID(instr, id) ((instr)->cc_id = (id))
+#define ivm_instr_setCacheData(instr, data) ((instr)->cc_data = (data))
+
+IVM_INLINE
+void
+ivm_instr_setCache(ivm_instr_t *instr, ivm_uid_t id, ivm_ptr_t data)
+{
+	instr->cc_id = id;
+	instr->cc_data = data;
+	return;
+}
 
 #else
 

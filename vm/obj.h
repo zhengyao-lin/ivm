@@ -176,13 +176,13 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_object_t *value,
-					  ivm_instr_cache_t *cache);
+					  ivm_instr_t *instr);
 
 #define ivm_object_setSlotIfExist(obj, state, key, value) \
 	(ivm_slot_table_setSlotIfExist((obj)->slots, (state), (key), (value)))
 
-#define ivm_object_setSlotIfExist_cc(obj, state, key, value, cache) \
-	(ivm_slot_table_setSlotIfExist_cc((obj)->slots, (state), (key), (value), (cache)))
+#define ivm_object_setSlotIfExist_cc(obj, state, key, value, instr) \
+	(ivm_slot_table_setSlotIfExist_cc((obj)->slots, (state), (key), (value), (instr)))
 
 ivm_object_t *
 ivm_object_getSlot(ivm_object_t *obj,
@@ -193,14 +193,14 @@ ivm_object_t *
 ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
-					  ivm_instr_cache_t *cache);
+					  ivm_instr_t *instr);
 
 IVM_INLINE
 ivm_bool_t
 ivm_object_checkCacheValid(ivm_object_t *obj,
-						   ivm_instr_cache_t *cache)
+						   ivm_instr_t *instr)
 {
-	return ivm_slot_table_checkCacheValid(obj->slots, cache);
+	return ivm_slot_table_checkCacheValid(obj->slots, instr);
 }
 
 /* use checkCacheValid to check validity before using it */

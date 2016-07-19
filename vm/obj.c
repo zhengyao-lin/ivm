@@ -121,7 +121,7 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_object_t *value,
-					  ivm_instr_cache_t *cache)
+					  ivm_instr_t *instr)
 {
 	ivm_slot_table_t *slots;
 
@@ -132,15 +132,15 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
-		} else if (ivm_slot_table_checkCacheValid(slots, cache)) {
-			ivm_slot_table_setCacheSlot(state, cache, value);
+		} else if (ivm_slot_table_checkCacheValid(slots, instr)) {
+			ivm_slot_table_setCacheSlot(state, instr, value);
 			return;
 		}
 	} else {
 		slots = obj->slots = ivm_slot_table_new(state);
 	}
 
-	ivm_slot_table_setSlot_cc(slots, state, key, value, cache);
+	ivm_slot_table_setSlot_cc(slots, state, key, value, instr);
 
 	return;
 }
@@ -203,7 +203,7 @@ ivm_object_t *
 ivm_object_getSlot_cc(ivm_object_t *obj,
 					  ivm_vmstate_t *state,
 					  const ivm_string_t *key,
-					  ivm_instr_cache_t *cache)
+					  ivm_instr_t *instr)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_slot_table_t *slots;
@@ -212,12 +212,12 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 
 	slots = obj->slots;
 	if (slots) {
-		if (ivm_slot_table_checkCacheValid(slots, cache)) {
-			return ivm_slot_table_getCacheSlot(state, cache);
+		if (ivm_slot_table_checkCacheValid(slots, instr)) {
+			return ivm_slot_table_getCacheSlot(state, instr);
 		}
 
 		ret = ivm_slot_getValue(
-			ivm_slot_table_getSlot_cc(slots, state, key, cache),
+			ivm_slot_table_getSlot_cc(slots, state, key, instr),
 			state
 		);
 	}
