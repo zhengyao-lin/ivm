@@ -247,6 +247,7 @@ ivm_ctchain_addRef(ivm_ctchain_t *chain)
 ivm_ctchain_t *
 ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
 
+/*
 ivm_ctchain_t *
 ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 						  struct ivm_vmstate_t_tag *state);
@@ -254,7 +255,8 @@ ivm_ctchain_appendContext(ivm_ctchain_t *chain,
 ivm_ctchain_t *
 ivm_ctchain_clone(ivm_ctchain_t *chain,
 				  struct ivm_vmstate_t_tag *state);
-
+*/
+				  
 #define ivm_ctchain_getLocal ivm_ctchain_contextStart
 #define ivm_ctchain_getGlobal ivm_ctchain_contextLast
 

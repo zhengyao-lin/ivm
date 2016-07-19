@@ -5,6 +5,7 @@
 #define _RUNTIME (tmp_runtime)
 #define _CONTEXT (tmp_context)
 #define _STATE (state)
+#define _FRAME_STACK (tmp_frame_st)
 #define _INSTR (tmp_ip)
 #define _INSTR_CACHE (&(_INSTR->cache))
 #define _INSTR_CACHE_UID (_INSTR->cache.id)
@@ -252,7 +253,10 @@
 	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
-#define _TMP_OBJ (tmp_obj1)
+#define INVOKE_STACK() \
+	(tmp_bp = tmp_sp)
+
+#define _TMP_OBJ1 (tmp_obj1)
 #define _TMP_OBJ2 (tmp_obj2)
 #define _TMP_UNI_PROC (tmp_uni_proc)
 #define _TMP_BIN_PROC (tmp_bin_proc)

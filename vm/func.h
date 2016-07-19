@@ -110,7 +110,7 @@ ivm_function_setParam(const ivm_function_t *func,
 
 typedef struct {
 	IVM_OBJECT_HEADER
-	ivm_ctchain_t *closure;
+	ivm_ctchain_t *scope;
 	const ivm_function_t *val;
 } ivm_function_object_t;
 
@@ -127,7 +127,7 @@ void
 ivm_function_object_traverser(ivm_object_t *obj,
 							  struct ivm_traverser_arg_t_tag *arg);
 
-#define ivm_function_object_getClosure(obj) ((obj)->closure)
+#define ivm_function_object_getScope(obj) ((obj)->scope)
 #define ivm_function_object_getFunc(obj) ((obj)->val)
 
 typedef ivm_ptpool_t ivm_function_pool_t;

@@ -13,7 +13,7 @@
 IVM_COM_HEADER
 
 #define IVM_FRAME_HEADER \
-	struct ivm_ctchain_t_tag *context; \
+	struct ivm_ctchain_t_tag *ctx; \
 	ivm_instr_t *ip; \
 	struct ivm_object_t_tag **bp;
 
@@ -31,7 +31,7 @@ typedef struct ivm_frame_t_tag {
 
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
-#define IVM_FRAME_GET_CONTEXT(frame) ((frame)->context)
+#define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
 
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
 

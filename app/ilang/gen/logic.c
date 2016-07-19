@@ -9,14 +9,10 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	/*
 		and(value version):
 				[lhe]
-				jump_false end
+				jump_false_n end
+				pop
 				[rhe]
-				jump_false end
-				new_num_i 1
-				jump very_end
 			end:
-				new_num_i 0
-			very_end:
 
 		and(branch version):
 				[lhe]
@@ -30,8 +26,8 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	 */
 	
 	ilang_gen_expr_t *lhe, *rhe;
-	ivm_size_t addr1, addr2, cur;
-	ivm_list_t *end_ref, *begin_ref;
+	ivm_size_t addr1, cur;
+	ivm_list_t *begin_ref;
 	ivm_list_t *end_ref_back, *begin_ref_back;
 	ilang_gen_value_t tmp_ret;
 	ilang_gen_value_t ret = NORET();
@@ -97,78 +93,20 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ivm_list_push(env->begin_ref, &addr1); // add begin ref
 	} else {
 		// value version
-		
-		// create end ref list
-		env->end_ref = end_ref = ivm_list_new(sizeof(ivm_size_t));
-		env->begin_ref = begin_ref = ivm_list_new(sizeof(ivm_size_t));
 
 		/******** lhe *******/
+		lhe->eval(lhe, FLAG(0), env);
+		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_N, 0);
 
-		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
-
-		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			}
-
-			ivm_list_push(end_ref, &addr1);
-		}
-
-		cur = ivm_exec_cur(env->cur_exec);
-
-		// all ref to body begin redirected to rhe gen
-		{
-			IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-		ivm_list_empty(begin_ref);
+		ivm_exec_addInstr(env->cur_exec, POP);
 
 		/******** rhe *******/
+		rhe->eval(rhe, FLAG(0), env);
+		ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
-		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
-
-		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			}
-
-			ivm_list_push(end_ref, &addr1);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
 		}
-
-		// true
-		cur = ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, 1);
-
-		{
-			IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-
-		// jump to end
-		addr2 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-
-		// false
-		cur = ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, 0);
-
-		{
-			IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-
-		// end of the whole expr
-		ivm_exec_setArgAt(env->cur_exec, addr2, ivm_exec_cur(env->cur_exec) - addr2);
-
-		ivm_list_free(end_ref);
-		ivm_list_free(begin_ref);
 	}
 
 	env->end_ref = end_ref_back;
@@ -186,14 +124,10 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	/*
 		or(value version):
 				[lhe]
-				jump_true begin
+				jump_true_n begin
+				pop
 				[rhe]
-				jump_true begin
-				new_num_i 0
-				jump very_end
 			begin:
-				new_num_i 1
-			very_end:
 
 		or(branch version):
 				[lhe]
@@ -207,8 +141,8 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	 */
 	
 	ilang_gen_expr_t *lhe, *rhe;
-	ivm_size_t addr1, addr2, cur;
-	ivm_list_t *end_ref, *begin_ref;
+	ivm_size_t addr1, cur;
+	ivm_list_t *end_ref;
 	ivm_list_t *end_ref_back, *begin_ref_back;
 	ilang_gen_value_t tmp_ret;
 	ilang_gen_value_t ret = NORET();
@@ -275,82 +209,20 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ivm_list_push(env->end_ref, &addr1); // add begin ref
 	} else {
 		// value version
-		
-		// create end ref list
-		env->end_ref = end_ref = ivm_list_new(sizeof(ivm_size_t));
-		env->begin_ref = begin_ref = ivm_list_new(sizeof(ivm_size_t));
 
 		/******** lhe *******/
+		lhe->eval(lhe, FLAG(0), env);
+		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_N, 0);
 
-		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
-
-		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			}
-
-			ivm_list_push(begin_ref, &addr1);
-		}
-
-		cur = ivm_exec_cur(env->cur_exec);
-
-		// all end ref redirected to rhe gen
-		{
-			IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-		ivm_list_empty(end_ref);
+		ivm_exec_addInstr(env->cur_exec, POP);
 
 		/******** rhe *******/
+		rhe->eval(rhe, FLAG(0), env);
+		ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
-		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
-
-		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			}
-
-			ivm_list_push(begin_ref, &addr1);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
 		}
-
-		cur = ivm_exec_cur(env->cur_exec);
-
-		{
-			IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-
-		// false
-		cur = ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, 0);
-
-		// jump to end
-		addr2 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-
-		// true
-		cur = ivm_exec_cur(env->cur_exec);
-
-		{
-			IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
-				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
-			}
-		}
-
-		cur = ivm_exec_addInstr(env->cur_exec, NEW_NUM_I, 1);
-
-		// end of the whole expr
-		ivm_exec_setArgAt(env->cur_exec, addr2, ivm_exec_cur(env->cur_exec) - addr2);
-
-		ivm_list_free(end_ref);
-		ivm_list_free(begin_ref);
 	}
 
 	env->end_ref = end_ref_back;

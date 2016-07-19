@@ -20,43 +20,6 @@ ivm_ctchain_new(ivm_vmstate_t *state, ivm_int_t len)
 	return ret;
 }
 
-ivm_ctchain_t *
-ivm_ctchain_appendContext(ivm_ctchain_t *chain,
-						  ivm_vmstate_t *state)
-{
-	ivm_ctchain_t *ret;
-
-	if (chain) {
-		ret = ivm_vmstate_allocContext(state, chain->len + 1);
-		MEM_COPY(ivm_ctchain_contextAt(ret, 1),
-				 ivm_ctchain_contextStart(chain),
-				 ivm_ctchain_getContextSize(chain));
-	} else {
-		ret = ivm_vmstate_allocContext(state, 1);
-	}
-
-	ret->chain[0].slots = IVM_NULL;
-
-	return ret;
-}
-
-ivm_ctchain_t *
-ivm_ctchain_clone(ivm_ctchain_t *chain,
-				  ivm_vmstate_t *state)
-{
-	ivm_ctchain_t *ret = IVM_NULL;
-
-	if (chain) {
-		ret = ivm_vmstate_allocContext(state, chain->len);
-		ivm_ref_init(ret);
-		MEM_COPY(ivm_ctchain_contextStart(ret),
-				 ivm_ctchain_contextStart(chain),
-				 ivm_ctchain_getContextSize(chain));
-	}
-
-	return ret;
-}
-
 ivm_object_t *
 ivm_ctchain_search(ivm_ctchain_t *chain,
 				   ivm_vmstate_t *state,

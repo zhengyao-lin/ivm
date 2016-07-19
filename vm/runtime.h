@@ -23,16 +23,13 @@ typedef struct ivm_runtime_t_tag {
 } IVM_NOALIGN ivm_runtime_t;
 
 #define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->ip)
-#define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->context)
+#define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->ctx)
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
 
 #define IVM_RUNTIME_GET_SP_INC(runtime) ((runtime)->sp++)
 #define IVM_RUNTIME_GET_DEC_SP(runtime) (--(runtime)->sp)
-
-#define IVM_RUNTIME_GET_CONTEXT_PTR(runtime) (&(runtime)->context)
-#define IVM_RUNTIME_GET_IP_PTR(runtime) (&(runtime)->IP)
 
 #define IVM_RUNTIME_SET_IP(runtime, val) ((runtime)->ip = (val))
 #define IVM_RUNTIME_SET_BP(runtime, val) ((runtime)->bp = (val))
@@ -58,7 +55,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_ctchain_t *context);
 
 #define ivm_runtime_dump(runtime, state) \
-	(ivm_ctchain_free((runtime)->context, (state)))
+	(ivm_ctchain_free((runtime)->ctx, (state)))
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;
 

@@ -59,7 +59,7 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 	ivm_function_createRuntime(
 		tmp_func, state,
-		ivm_function_object_getClosure(root),
+		ivm_function_object_getScope(root),
 		coro
 	);
 	coro->alive = IVM_TRUE;
@@ -151,11 +151,11 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	}
 
 	if (ivm_function_isNative(tmp_func)) {
-		_TMP_OBJ = ivm_function_callNative(tmp_func, state,
-										   IVM_RUNTIME_GET(&coro->runtime, CONTEXT),
-										   IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
-		if (!_TMP_OBJ) {
-			_TMP_OBJ = IVM_NULL_OBJ(state);
+		_TMP_OBJ1 = ivm_function_callNative(tmp_func, state,
+											IVM_RUNTIME_GET(&coro->runtime, CONTEXT),
+											IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
+		if (!_TMP_OBJ1) {
+			_TMP_OBJ1 = IVM_NULL_OBJ(state);
 		}
 
 		ivm_coro_kill(coro, state);
@@ -183,8 +183,8 @@ ACTION_INVOKE:
 				goto *(ivm_instr_entry(tmp_ip));
 
 				#define OPCODE_GEN(o, name, arg, st_inc, ...) \
-					OPCODE_##o:                             \
-						IVM_PER_INSTR_DBG(DBG_RUNTIME());   \
+					OPCODE_##o:                               \
+						IVM_PER_INSTR_DBG(DBG_RUNTIME());     \
 						__VA_ARGS__
 
 					#include "opcode.def.h"
@@ -198,15 +198,15 @@ ACTION_INVOKE:
 END_EXEC:
 
 			if (AVAIL_STACK) {
-				_TMP_OBJ = STACK_POP();
+				_TMP_OBJ1 = STACK_POP();
 			} else {
-				_TMP_OBJ = IVM_NULL_OBJ(state);
+				_TMP_OBJ1 = IVM_NULL_OBJ(state);
 			}
 #endif
 
 ACTION_RETURN:
 
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ));
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
 
 			ivm_runtime_dump(tmp_runtime, state);
 
@@ -216,7 +216,7 @@ ACTION_RETURN:
 					goto END;
 				}
 				UPDATE_STACK();
-				STACK_PUSH(_TMP_OBJ);
+				STACK_PUSH(_TMP_OBJ1);
 			} else {
 				/* no more callee to restore, end coro */
 				ivm_coro_kill(coro, state);
@@ -226,11 +226,11 @@ ACTION_RETURN:
 
 goto ACTION_YIELD_END;
 ACTION_YIELD:
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, _TMP_OBJ));
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, _TMP_OBJ1));
 ACTION_YIELD_END: ;
 	}
 
 END:
 
-	return _TMP_OBJ;
+	return _TMP_OBJ1;
 }

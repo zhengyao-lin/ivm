@@ -35,13 +35,12 @@ IVM_NATIVE_FUNC(test)
 IVM_NATIVE_FUNC(call_func)
 {
 	ivm_function_object_t *func = IVM_AS(arg.argv[0], ivm_function_object_t);
+	ivm_coro_t *coro = IVM_VMSTATE_GET(state, CUR_CORO);
+
 	IVM_OUT("call function!!\n");
 
-	// ivm_dbg_stackState(IVM_VMSTATE_GET(state, CUR_CORO), stderr);
-
-	ivm_function_invoke(func->val, state,
-						func->closure, IVM_VMSTATE_GET(state, CUR_CORO));
-	ivm_coro_resume(IVM_VMSTATE_GET(state, CUR_CORO), state, IVM_NULL);
+	ivm_function_object_invoke(func, state, coro);
+	ivm_coro_resume(coro, state, IVM_NULL);
 
 	return ivm_numeric_new(state, 10016);
 }

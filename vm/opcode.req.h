@@ -23,14 +23,14 @@
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
-		_TMP_OBJ = STACK_POP();                                                                \
-		_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ, op);                               \
+		_TMP_OBJ1 = STACK_POP();                                                               \
+		_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ1, op);                              \
                                                                                                \
 		IVM_ASSERT(_TMP_UNI_PROC,                                                              \
 				   IVM_ERROR_MSG_NO_UNIOP_FOR(op_name,                                         \
-											  IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME)));           \
+											  IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));          \
                                                                                                \
-		STACK_PUSH(_TMP_UNI_PROC(_STATE, _TMP_OBJ));                                           \
+		STACK_PUSH(_TMP_UNI_PROC(_STATE, _TMP_OBJ1));                                          \
 		NEXT_INSTR();                                                                          \
 	}
 
@@ -39,15 +39,16 @@
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
-		_TMP_OBJ = STACK_POP();                                                                \
-		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ, op, _TMP_OBJ2);                    \
+		_TMP_OBJ1 = STACK_POP();                                                               \
+		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);                   \
                                                                                                \
 		IVM_ASSERT(_TMP_BIN_PROC,                                                              \
-				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME),             \
+				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
 				   							  op_name,                                         \
 											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		STACK_PUSH(_TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2, (assign)));                      \
+        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, (assign));                     \
+		STACK_PUSH(_TMP_OBJ1);                                                                 \
 		NEXT_INSTR();                                                                          \
 	}
 
@@ -56,15 +57,15 @@
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
-		_TMP_OBJ = STACK_POP();                                                                \
-		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ, CMP, _TMP_OBJ2);                   \
+		_TMP_OBJ1 = STACK_POP();                                                               \
+		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);                  \
                                                                                                \
 		IVM_ASSERT(_TMP_BIN_PROC,                                                              \
-				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ, TYPE_NAME),             \
+				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
 				   							  "<=>",                                           \
 											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
                                                                                                \
-		_TMP_OBJ = _TMP_BIN_PROC(_STATE, _TMP_OBJ, _TMP_OBJ2, IVM_NULL);                       \
+		_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                     \
 		todo;                                                                                  \
 		NEXT_INSTR();                                                                          \
 	}
