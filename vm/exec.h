@@ -69,6 +69,7 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 
 #define ivm_exec_cached(exec) ((exec)->cached)
 #define ivm_exec_pool(exec) ((exec)->pool)
+#define ivm_exec_instrs(exec) ((exec)->instrs)
 	
 void
 ivm_exec_preproc(ivm_exec_t *exec,

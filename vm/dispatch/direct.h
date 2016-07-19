@@ -64,6 +64,9 @@
 #define NEXT_N_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip += (n)));
 
+#define GOTO_SET_INSTR(n) \
+	goto *(ivm_instr_entry(tmp_ip = (n)));
+
 #define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
@@ -74,6 +77,7 @@
 #define PARG(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg(_INSTR)))
 #define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR))) // (PARG(ivm_function_t *))
 #define SARG() (PARG(const ivm_string_t *))
+#define ADDR_ARG() (PARG(ivm_instr_t *))
 
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
 

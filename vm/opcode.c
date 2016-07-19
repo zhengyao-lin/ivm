@@ -14,7 +14,7 @@
 
 #include "opcode.req.h"
 
-#define OPCODE_MAPPING(op, name, args, st_inc) { IVM_OPCODE(op), (name), (args), IVM_NULL, (st_inc) }
+#define OPCODE_MAPPING(op, name, args, st_inc) { IVM_OPCODE(op), (name), (args), IVM_NULL, (st_inc), IVM_FALSE }
 
 IVM_PRIVATE
 ivm_opcode_entry_t
@@ -85,6 +85,24 @@ ivm_opcode_table_getStackInc(ivm_opcode_t opc)
 {
 	checkLegal(opc);
 	return opcode_table[opc].st_inc;
+}
+
+#define IS_JUMP(name) \
+	((name)[0] == 'j' && \
+	 (name)[1] == 'u' && \
+	 (name)[2] == 'm' && \
+	 (name)[3] == 'p')
+
+ivm_bool_t
+ivm_opcode_table_isJump(ivm_opcode_t opc)
+{
+	ivm_opcode_entry_t entry;
+	checkLegal(opc);
+
+	entry = opcode_table[opc];
+
+	return entry.is_jump ||
+		   (opcode_table[opc].is_jump = IS_JUMP(entry.name));
 }
 
 ivm_opcode_t

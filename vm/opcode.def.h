@@ -547,12 +547,12 @@ OPCODE_GEN(RETURN, "return", N, -1, {
 })
 
 OPCODE_GEN(JUMP, "jump", I, 0, {
-	NEXT_N_INSTR(IARG());
+	GOTO_SET_INSTR(ADDR_ARG());
 })
 
 OPCODE_GEN(JUMP_TRUE, "jump_true", I, -1, {
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -560,7 +560,7 @@ OPCODE_GEN(JUMP_TRUE, "jump_true", I, -1, {
 
 OPCODE_GEN(JUMP_FALSE, "jump_false", I, -1, {
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -568,7 +568,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", I, -1, {
 
 OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, 0, {
 	if (_TMP_CMP_REG) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -576,19 +576,16 @@ OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, 0, {
 
 OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", I, 0, {
 	if (!_TMP_CMP_REG) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
 })
 
-/*
-	jump_true/false_n
-		no pop
- */
+/* no pop */
 OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", I, -1, {
 	if (ivm_object_toBool(STACK_TOP(), _STATE)) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -596,7 +593,7 @@ OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", I, -1, {
 
 OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", I, -1, {
 	if (!ivm_object_toBool(STACK_TOP(), _STATE)) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -604,7 +601,7 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", I, -1, {
 
 OPCODE_GEN(JUMP_LT, "jump_lt", I, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 < 0) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -612,7 +609,7 @@ OPCODE_GEN(JUMP_LT, "jump_lt", I, -2, CMP_BINOP_HANDLER(
 
 OPCODE_GEN(JUMP_LE, "jump_le", I, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 <= 0) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -620,7 +617,7 @@ OPCODE_GEN(JUMP_LE, "jump_le", I, -2, CMP_BINOP_HANDLER(
 
 OPCODE_GEN(JUMP_GT, "jump_gt", I, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 > 0) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}
@@ -628,7 +625,7 @@ OPCODE_GEN(JUMP_GT, "jump_gt", I, -2, CMP_BINOP_HANDLER(
 
 OPCODE_GEN(JUMP_GE, "jump_ge", I, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 >= 0) {
-		NEXT_N_INSTR(IARG());
+		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR();
 	}

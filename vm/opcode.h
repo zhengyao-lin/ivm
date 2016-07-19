@@ -39,6 +39,7 @@ typedef struct {
 	const ivm_char_t *param;
 	void *entry; /* in direct threading */
 	ivm_int_t st_inc; /* stack increase */
+	ivm_bool_t is_jump;
 } ivm_opcode_entry_t;
 
 #define IVM_OPCODE_VARIABLE_STACK_INC 10
@@ -61,6 +62,9 @@ ivm_opcode_table_getEntry(ivm_opcode_t opc);
 
 ivm_int_t
 ivm_opcode_table_getStackInc(ivm_opcode_t opc);
+
+ivm_bool_t
+ivm_opcode_table_isJump(ivm_opcode_t opc);
 
 /* return LAST if the name is not found */
 ivm_opcode_t

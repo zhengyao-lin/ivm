@@ -137,12 +137,14 @@ void
 ivm_exec_preproc(ivm_exec_t *exec,
 				 ivm_vmstate_t *state)
 {
-	ivm_instr_t *i, *end;
+	ivm_size_t addr, end;
+	ivm_instr_t *i, *j;
 
 	if (!exec->cached) {
 		exec->cached = IVM_TRUE;
-		for (i = exec->instrs, end = i + exec->next;
-			 i != end; i++) {
+		for (addr = 0, end = exec->next;
+			 addr != end; addr++) {
+			i = exec->instrs + addr;
 			switch (ivm_opcode_table_getParam(ivm_instr_opcode(i))[0]) {
 				case 'S':
 					/* string pool idx -> string pointer */
@@ -150,40 +152,42 @@ ivm_exec_preproc(ivm_exec_t *exec,
 						ivm_opcode_arg_fromPointer(
 							ivm_exec_getString(exec,
 								ivm_opcode_arg_toInt(
-									ivm_instr_arg(
-										i
-									)
+									ivm_instr_arg(i)
 								)
 							)
 						)
 					);
 					break;
-#if 0
-				case 'X':
-					/* function idx -> function pointer */
-					ivm_instr_setArg(i,
-						ivm_opcode_arg_fromPointer(
-							ivm_vmstate_getFunc(state,
-								ivm_opcode_arg_toInt(
-									ivm_instr_arg(
-										i
-									)
-								)
-							)
-						)
-					);
-					break;
-#endif
+			}
+
+			if (ivm_opcode_table_isJump(ivm_instr_opcode(i)) &&
+				ivm_opcode_arg_toInt(ivm_instr_arg(i)) + addr >= end) {
+				// jump exceed
+				ivm_exec_addInstr(exec, RETURN);
+				end = exec->next; // update end
 			}
 		}
 
-		ivm_exec_addInstr(exec, RETURN);
-		/*if (!exec->next
+		if (!exec->next
 			|| (ivm_instr_opcode(exec->instrs + (exec->next - 1))
 				!= IVM_OPCODE(RETURN))) {
 			// avoid empty address
 			ivm_exec_addInstr(exec, RETURN);
-		}*/
+		}
+
+		for (i = exec->instrs, j = i + exec->next;
+			 i != j; i++) {
+			// cache final jump addr of jump instr
+			if (ivm_opcode_table_isJump(ivm_instr_opcode(i))) {
+				ivm_instr_setArg(i,
+					ivm_opcode_arg_fromPointer(
+						i + ivm_opcode_arg_toInt(
+							ivm_instr_arg(i)
+						)
+					)
+				);
+			}
+		}
 	}
 
 	return;
@@ -196,6 +200,7 @@ ivm_exec_decache(ivm_exec_t *exec,
 {
 	ivm_size_t tmp;
 	ivm_char_t arg = ivm_opcode_table_getParam(ivm_instr_opcode(instr))[0];
+	ivm_ptr_t tmp_instr;
 
 	if (arg == 'S') {
 		tmp = ivm_string_pool_find(
@@ -209,21 +214,13 @@ ivm_exec_decache(ivm_exec_t *exec,
 			ivm_instr_opcode(instr),
 			ivm_opcode_arg_fromInt(tmp)
 		);
-	} /* else if (arg == 'X') {
-		IVM_ASSERT(state, IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE);
-
-		tmp = ivm_vmstate_getFuncID(
-			state,
-			(ivm_function_t *)ivm_opcode_arg_toPointer(ivm_instr_arg(instr))
-		);
-
-		IVM_ASSERT(tmp != -1, IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE);
-
+	} else if (ivm_opcode_table_isJump(ivm_instr_opcode(instr))) {
+		tmp_instr = ivm_opcode_arg_toPointer(ivm_instr_arg(instr));
 		return ivm_instr_build(
 			ivm_instr_opcode(instr),
-			ivm_opcode_arg_fromInt(tmp)
+			ivm_opcode_arg_fromInt((tmp_instr - (ivm_ptr_t)instr) / sizeof(instr))
 		);
-	} */
+	}
 
 	return ivm_instr_build(
 		ivm_instr_opcode(instr),
@@ -278,7 +275,7 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 			root = func;
 		}
 
-		ivm_exec_preproc(exec, state);
+		// ivm_exec_preproc(exec, state);
 	}
 
 	if (root) {
