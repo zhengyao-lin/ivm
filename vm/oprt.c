@@ -87,17 +87,17 @@ ivm_binop_table_dump(ivm_binop_table_t *table)
 void
 ivm_oprt_initType(ivm_vmstate_t *state)
 {
-	ivm_type_list_t *type_list = IVM_VMSTATE_GET(state, TYPE_LIST);
+	ivm_type_t *type_list = IVM_VMSTATE_GET(state, TYPE_LIST);
 	ivm_binop_table_t *tmp_table;
 	ivm_type_t *tmp_type;
 
 #define BINOP_GEN(t1, op, t2, ...) \
-	(tmp_table = ivm_type_getBinopTable((tmp_type = ivm_type_list_at(type_list, TYPE_TAG_OF(t1))), op), \
+	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + TYPE_TAG_OF(t1)), op), \
 	 /* tmp_table ? 0 : (tmp_table = ivm_type_setBinopTable(tmp_type, op, ivm_binop_table_new())), */ \
 	 ivm_binop_table_set(tmp_table, TYPE_TAG_OF(t2), BINOP_PROC_NAME(t1, op, t2)));
 
 #define UNIOP_GEN(op, t, ...) \
-	(ivm_uniop_table_set(ivm_type_getUniopTable(ivm_type_list_at(type_list, TYPE_TAG_OF(t))), \
+	(ivm_uniop_table_set(ivm_type_getUniopTable(type_list + TYPE_TAG_OF(t)), \
 						 IVM_UNIOP_ID(op), UNIOP_PROC_NAME(op, t)));
 
 	#include "oprt.def.h"

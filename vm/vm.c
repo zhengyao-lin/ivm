@@ -25,38 +25,50 @@
 IVM_PRIVATE
 ivm_type_t static_type_list[] = {
 	{
-		IVM_UNDEFINED_T, "undefined", sizeof(ivm_object_t),
+		.tag = IVM_UNDEFINED_T,
+		.name = "undefined",
+		.size = sizeof(ivm_object_t),
 
 		.const_bool = IVM_FALSE,
 	},
 
 	{
-		IVM_NULL_T, "null", sizeof(ivm_object_t),
+		.tag = IVM_NULL_T,
+		.name = "null",
+		.size = sizeof(ivm_object_t),
 
 		.const_bool = IVM_FALSE,
 	},
 
 	{
-		IVM_OBJECT_T, "object", sizeof(ivm_object_t),
+		.tag = IVM_OBJECT_T,
+		.name = "object",
+		.size = sizeof(ivm_object_t),
 
 		.const_bool = IVM_TRUE,
 	},
 
 	{
-		IVM_NUMERIC_T, "numeric", sizeof(ivm_numeric_t),
+		.tag = IVM_NUMERIC_T,
+		.name = "numeric",
+		.size = sizeof(ivm_numeric_t),
 
 		.to_bool = ivm_numeric_isTrue
 	},
 
 	{
-		IVM_STRING_OBJECT_T, "string", sizeof(ivm_string_object_t),
+		.tag = IVM_STRING_OBJECT_T,
+		.name = "string",
+		.size = sizeof(ivm_string_object_t),
 
 		.trav = ivm_string_object_traverser,
 		.const_bool = IVM_TRUE
 	},
 
 	{
-		IVM_FUNCTION_OBJECT_T, "function", sizeof(ivm_function_object_t),
+		.tag = IVM_FUNCTION_OBJECT_T,
+		.name = "function",
+		.size = sizeof(ivm_function_object_t),
 
 		.des = ivm_function_object_destructor,
 		.trav = ivm_function_object_traverser,
@@ -72,9 +84,8 @@ ivm_vmstate_new()
 {
 	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret),
 								   ivm_vmstate_t *);
-	ivm_type_t *tmp_type;
+	ivm_type_t *tmp_type, *end;
 	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
-	ivm_type_list_iterator_t titer;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
@@ -84,8 +95,8 @@ ivm_vmstate_new()
 	ret->cur_coro = 0;
 	ivm_coro_list_init(&ret->coro_list);
 	
-	ivm_type_list_init(&ret->type_list);
-	ret->func_list = ivm_func_list_new();
+	// ivm_type_list_init(&ret->type_list);
+	ivm_func_list_init(&ret->func_list);
 
 	ret->func_pool = ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
 	ret->ct_pool = ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
@@ -105,13 +116,13 @@ ivm_vmstate_new()
 
 	ivm_vmstate_lockGCFlag(ret);
 
-	for (i = 0; i < type_count; i++) {
-		tmp_type = ivm_type_new(static_type_list[i]);
-		ivm_type_list_register(&ret->type_list, tmp_type);
+	for (i = 0, tmp_type = ret->type_list, end = tmp_type + type_count;
+		 tmp_type != end; tmp_type++, i++) {
+		ivm_type_init(tmp_type, static_type_list + i);
 	}
 
-	IVM_TYPE_LIST_EACHPTR(&ret->type_list, titer) {
-		tmp_type = IVM_TYPE_LIST_ITER_GET(titer);
+	for (tmp_type = ret->type_list, end = tmp_type + type_count;
+		 tmp_type != end; tmp_type++) {
 		ivm_proto_initType(tmp_type, ret);
 	}
 
@@ -128,7 +139,7 @@ void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	ivm_coro_list_iterator_t citer;
-	ivm_type_list_iterator_t titer;
+	ivm_type_t *i, *end;
 
 	if (state) {
 		ivm_collector_free(GC(state), state);
@@ -141,7 +152,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 		ivm_coro_list_dump(&state->coro_list);
 
-		ivm_func_list_free(state->func_list, state);
+		ivm_func_list_dump(&state->func_list, state);
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_free(state->ct_pool);
@@ -149,10 +160,10 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 		ivm_string_pool_free(state->const_pool);
 
-		IVM_TYPE_LIST_EACHPTR(&state->type_list, titer) {
-			ivm_type_free(IVM_TYPE_LIST_ITER_GET(titer));
+		for (i = state->type_list, end = i + IVM_TYPE_COUNT;
+			 i != end; i++) {
+			ivm_type_dump(i);
 		}
-		ivm_type_list_dump(&state->type_list);
 
 		MEM_FREE(state);
 	}
@@ -174,7 +185,7 @@ ivm_vmstate_reinit(ivm_vmstate_t *state)
 	}
 	ivm_coro_list_empty(&state->coro_list);
 
-	ivm_func_list_empty(state->func_list, state);
+	ivm_func_list_empty(&state->func_list, state);
 
 	ivm_function_pool_dumpAll(state->func_pool);
 	ivm_context_pool_dumpAll(state->ct_pool);

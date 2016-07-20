@@ -19,37 +19,41 @@
 IVM_COM_HEADER
 
 typedef struct ivm_vmstate_t_tag {
-	ivm_heap_t cur_heap;
-	ivm_heap_t empty_heap;
+	ivm_type_t type_list[IVM_TYPE_COUNT];		// 240 * 6 = 1440
 
-	ivm_size_t cur_coro;
-	ivm_coro_list_t coro_list;
+	ivm_coro_pool_t cr_pool;					// 72
 
-	ivm_type_list_t type_list;
-	ivm_func_list_t *func_list;
+	ivm_function_pool_t *func_pool;				// 8
 
-	ivm_function_pool_t *func_pool;
-	ivm_context_pool_t *ct_pool;
-	ivm_coro_pool_t cr_pool;
+	ivm_heap_t cur_heap;						// 40
+	ivm_heap_t empty_heap;						// 40
 
-	ivm_string_pool_t *const_pool;
+	ivm_context_pool_t *ct_pool;				// 8
+
+	ivm_coro_list_t coro_list;					// 24
+
+	// ivm_type_list_t type_list;
+	ivm_func_list_t func_list;					// 24
+
+	ivm_string_pool_t *const_pool;				// 8
+	ivm_collector_t *gc;						// 8
 
 #define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
-	#include "vm.const.h"
+	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
-	ivm_int_t gc_flag; /* gc flag:
+	ivm_size_t cur_coro;						// 8
+	ivm_int_t gc_flag; /* gc flag:				// 4
 						  > 0: open
 						  = 0: closed
 						  < 0: locked */
-	ivm_collector_t *gc;
 
-	ivm_uid_gen_t uid_gen;
+	ivm_uid_gen_t uid_gen;						// 4
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at(&(state)->coro_list, (state)->cur_coro))
 #define IVM_VMSTATE_GET_CORO_LIST(state) (&(state)->coro_list)
-#define IVM_VMSTATE_GET_TYPE_LIST(state) (&(state)->type_list)
+#define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) (&(state)->cur_heap)
 #define IVM_VMSTATE_GET_EMPTY_HEAP(state) (&(state)->empty_heap)
@@ -177,15 +181,14 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
 
-#define ivm_vmstate_registerType(state, type) (ivm_type_list_register(&(state)->type_list, (type)))
-#define ivm_vmstate_getType(state, tag) (ivm_type_list_at(&(state)->type_list, (tag)))
+#define ivm_vmstate_getType(state, tag) (&(state)->type_list[tag])
 #define ivm_vmstate_getTypeProto(state, tag) \
 	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
 #define ivm_vmstate_getTypeHeader(state, tag) \
 	(ivm_type_getHeader(ivm_vmstate_getType((state), (tag))))
 
-#define ivm_vmstate_registerFunc(state, exec) (ivm_func_list_register((state)->func_list, (exec)))
-#define ivm_vmstate_getFunc(state, id) (ivm_func_list_at((state)->func_list, (id)))
+#define ivm_vmstate_registerFunc(state, exec) (ivm_func_list_register(&(state)->func_list, (exec)))
+#define ivm_vmstate_getFunc(state, id) (ivm_func_list_at(&(state)->func_list, (id)))
 #define ivm_vmstate_getFuncID(state, func) (ivm_func_list_find((state)->func_list, (func)))
 
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))

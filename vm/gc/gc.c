@@ -219,10 +219,9 @@ void
 ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
 	ivm_coro_list_t *coros = IVM_VMSTATE_GET(arg->state, CORO_LIST);
-	ivm_type_list_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST);
+	ivm_type_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST), *end;
 	ivm_coro_t *tmp_coro, *cur_coro;
 	ivm_coro_list_iterator_t citer, cbegin;
-	ivm_type_list_iterator_t titer;
 
 	cur_coro = IVM_VMSTATE_GET(arg->state, CUR_CORO);
 
@@ -250,8 +249,9 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	ivm_coro_list_setSize(coros, IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
 	// IVM_TRACE("remain coro: %ld\n", IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
 
-	IVM_TYPE_LIST_EACHPTR(types, titer) {
-		ivm_collector_travType(IVM_TYPE_LIST_ITER_GET(titer),
+	for (end = types + IVM_TYPE_COUNT;
+		 types != end; types++) {
+		ivm_collector_travType(types,
 							   arg);
 	}
 

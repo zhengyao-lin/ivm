@@ -143,6 +143,7 @@ typedef ivm_ptlist_t ivm_func_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_function_t *) ivm_func_list_iterator_t;
 
 #define ivm_func_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
+#define ivm_func_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
 #define ivm_func_list_size ivm_ptlist_size
 #define ivm_func_list_at(list, i) ((ivm_function_t *)ivm_ptlist_at((list), (i)))
 #define ivm_func_list_find ivm_ptlist_find
@@ -179,6 +180,23 @@ ivm_func_list_free(ivm_func_list_t *list,
 			ivm_function_free(IVM_FUNC_LIST_ITER_GET(fiter), state);
 		}
 		ivm_ptlist_free(list);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_func_list_dump(ivm_func_list_t *list,
+				   struct ivm_vmstate_t_tag *state)
+{
+	ivm_func_list_iterator_t fiter;
+
+	if (list) {
+		IVM_FUNC_LIST_EACHPTR(list, fiter) {
+			ivm_function_free(IVM_FUNC_LIST_ITER_GET(fiter), state);
+		}
+		ivm_ptlist_dump(list);
 	}
 
 	return;

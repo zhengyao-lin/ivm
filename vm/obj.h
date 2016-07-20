@@ -40,20 +40,22 @@ typedef ivm_bool_t (*ivm_bool_converter_t)(struct ivm_object_t_tag *, struct ivm
 typedef void (*ivm_cloner_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
 
 typedef struct ivm_type_t_tag {
-	ivm_type_tag_t tag;
-	const ivm_char_t *name;
-	ivm_size_t size;
-	struct ivm_object_t_tag *proto; /* default prototype */
+	ivm_binop_table_t binops[IVM_BINOP_COUNT];
+	ivm_uniop_table_t uniops;
 
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
 
-	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 	ivm_bool_converter_t to_bool;
 	ivm_cloner_t clone;
 
-	ivm_binop_table_t binops[IVM_BINOP_COUNT];
-	ivm_uniop_table_t uniops;
+	const ivm_char_t *name;
+	ivm_size_t size;
+	struct ivm_object_t_tag *proto; /* default prototype */
+
+	ivm_type_tag_t tag;
+
+	ivm_bool_t const_bool; /* if to_bool is null, this is the value returned */
 } ivm_type_t;
 
 ivm_type_t *
@@ -61,6 +63,12 @@ ivm_type_new(ivm_type_t type);
 
 void
 ivm_type_free(ivm_type_t *type);
+
+void
+ivm_type_init(ivm_type_t *type, ivm_type_t *src);
+
+void
+ivm_type_dump(ivm_type_t *type);
 
 #define ivm_type_setTag(type, t) ((type)->tag = (t))
 #define ivm_type_setProto(type, p) ((type)->proto = (p))

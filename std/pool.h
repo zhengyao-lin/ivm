@@ -13,9 +13,8 @@
 IVM_COM_HEADER
 
 typedef struct {
-	ivm_size_t esize; /* element size */
-
 	ivm_heap_t heap;
+	ivm_size_t esize; /* element size */
 	ivm_ptlist_t freed; /* freed ptrs */
 } ivm_ptpool_t;
 

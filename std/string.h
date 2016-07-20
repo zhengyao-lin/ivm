@@ -124,13 +124,13 @@ typedef ivm_ptlist_t ivm_string_list_t;
 #define ivm_string_list_indexOf(list, str) (ivm_ptlist_indexOf((list), (void *)(str), ivm_string_compareToRaw))
 
 typedef struct ivm_string_pool_t_tag {
-	IVM_REF_HEADER
-
 	struct ivm_heap_t_tag *heap;
 
-	ivm_bool_t is_fixed;
 	ivm_size_t size;
 	const ivm_string_t **table;
+
+	IVM_REF_HEADER
+	ivm_bool_t is_fixed;
 } ivm_string_pool_t;
 
 ivm_string_pool_t *

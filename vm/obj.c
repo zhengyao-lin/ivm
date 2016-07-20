@@ -17,18 +17,10 @@ ivm_type_new(ivm_type_t type)
 {
 	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret),
 								ivm_type_t *);
-	ivm_binop_table_t *i, *end;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
 
-	MEM_COPY(ret, &type, sizeof(*ret));
-
-	for (i = ret->binops, end = i + IVM_ARRLEN(ret->binops);
-		 i != end; i++) {
-		ivm_binop_table_init(i);
-	}
-
-	ivm_uniop_table_init(ret->uniops);
+	ivm_type_init(ret, &type);
 
 	return ret;
 }
@@ -44,6 +36,37 @@ ivm_type_free(ivm_type_t *type)
 		}
 
 		MEM_FREE(type);
+	}
+
+	return;
+}
+
+void
+ivm_type_init(ivm_type_t *type, ivm_type_t *src)
+{
+	ivm_binop_table_t *i, *end;
+
+	MEM_COPY(type, src, sizeof(*type));
+
+	for (i = type->binops, end = i + IVM_ARRLEN(type->binops);
+		 i != end; i++) {
+		ivm_binop_table_init(i);
+	}
+
+	ivm_uniop_table_init(type->uniops);
+
+	return;
+}
+
+void
+ivm_type_dump(ivm_type_t *type)
+{
+	ivm_int_t i;
+
+	if (type) {
+		for (i = 0; i < IVM_BINOP_COUNT; i++) {
+			ivm_binop_table_dump(type->binops + i);
+		}
 	}
 
 	return;
