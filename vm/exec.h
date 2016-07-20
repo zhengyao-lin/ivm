@@ -62,12 +62,22 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_instrPtrStart(exec) ((exec)->instrs)
 #define ivm_exec_instrPtrEnd(exec) ((exec)->instrs + (exec)->next)
 
+IVM_INLINE
+void
+ivm_exec_empty(ivm_exec_t *exec)
+{
+	exec->cached = IVM_FALSE;
+	exec->next = 0;
+	return;
+}
+
 #define ivm_exec_setArgAt(exec, i, val) ((exec)->instrs[i].arg = ivm_opcode_arg_fromInt(val))
 
 #define ivm_exec_argAt(exec, i) ((exec)->instrs[i].arg)
 #define ivm_exec_opcAt(exec, i) ((exec)->instrs[i].opc)
 
 #define ivm_exec_cached(exec) ((exec)->cached)
+#define ivm_exec_setCached(exec, val) ((exec)->cached = (val))
 #define ivm_exec_pool(exec) ((exec)->pool)
 #define ivm_exec_instrs(exec) ((exec)->instrs)
 	

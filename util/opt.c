@@ -45,6 +45,8 @@ ivm_opt_il_free(ivm_opt_il_t *il)
 	}
 	ivm_opt_instr_list_free(il->instrs);
 
+	MEM_FREE(il);
+
 	return;
 }
 
@@ -71,7 +73,8 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 		 i != end; i++, pos++) {
 		tmp = ivm_opt_instr_build(
 			.opc = ivm_instr_opcode(i),
-			.arg = ivm_instr_arg(i)
+			.arg = ivm_instr_arg(i),
+			.addr = -1
 		);
 		ivm_opt_instr_list_push(instrs, &tmp);
 
@@ -83,7 +86,8 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 
 	if (out_ref) {
 		tmp = ivm_opt_instr_build(
-			.opc = IVM_OPCODE(RETURN)
+			.opc = IVM_OPCODE(RETURN),
+			.addr = -1
 		);
 		ivm_opt_instr_list_push(instrs, &tmp);
 	}
@@ -105,6 +109,56 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 	}
 
 	return ret;
+}
+
+IVM_INLINE
+ivm_size_t
+_ivm_opt_getRealRefCount(ivm_ptlist_t *refs)
+{
+	ivm_size_t ret = 0;
+	ivm_ptlist_iterator_t iter;
+
+	IVM_PTLIST_EACHPTR(refs, iter, void *) {
+		if (IVM_PTLIST_ITER_GET(iter))
+			ret++;
+	}
+
+	return ret;
+}
+
+void
+ivm_opt_il_generateExec(ivm_opt_il_t *il,
+						ivm_exec_t *dest)
+{
+	ivm_opt_instr_list_iterator_t iter;
+	ivm_opt_instr_t *cur, *tmp;
+
+	ivm_exec_setCached(dest, il->cached);
+
+	{
+		IVM_OPT_INSTR_LIST_EACHPTR(il->instrs, iter) {
+			cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
+			if (cur->opc != IVM_OPCODE(NOP) ||
+				_ivm_opt_getRealRefCount(cur->refs)) { // don't gen nop(if no ref toward it)
+				cur->addr = ivm_exec_addInstr_c(dest, ivm_instr_build(cur->opc, cur->arg));
+			}
+		}
+	}
+
+	{
+		// rewrite jump addr
+		IVM_OPT_INSTR_LIST_EACHPTR(il->instrs, iter) {
+			cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
+			if (_is_jump(cur) && cur->addr != -1) {
+				// is jump instr and is generated
+				tmp = cur->jmpto;
+				IVM_ASSERT(tmp->addr != -1, IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO);
+				ivm_exec_setArgAt(dest, cur->addr, tmp->addr - cur->addr);
+			}
+		}
+	}
+
+	return;
 }
 
 IVM_INLINE
@@ -131,8 +185,22 @@ _is_same_cond_jump(ivm_opt_instr_t *from,
 									 from->opc == IVM_OPCODE(JUMP_FALSE_N)));
 }
 
+IVM_INLINE
 void
-ivm_opt_jumpReduce(ivm_opt_il_t *il)
+ivm_ptlist_findAndRemove(ivm_ptlist_t *list, void *p)
+{
+	ivm_size_t i = ivm_ptlist_find(list, p);
+	
+	if (i != -1) {
+		ivm_ptlist_set(list, i, IVM_NULL);
+	}
+
+	return;
+}
+
+IVM_PRIVATE
+void
+_ivm_opt_jumpReduce(ivm_opt_il_t *il)
 {
 	ivm_opt_instr_list_t *instrs = il->instrs;
 	ivm_opt_instr_list_iterator_t iter;
@@ -147,11 +215,29 @@ ivm_opt_jumpReduce(ivm_opt_il_t *il)
 			for (tmp = cur->jmpto;
 				 tmp->jmpto && _is_same_cond_jump(cur, tmp);
 				 tmp = tmp->jmpto) ;
-			cur->jmpto = tmp;
+
+			if (tmp != cur->jmpto) {
+				ivm_ptlist_findAndRemove(cur->jmpto->refs, cur);
+				cur->jmpto = tmp;
+			}
 
 			// _is_opposite_cond_jump(
 		}
 	}
+
+	return;
+}
+
+void
+ivm_opt_optExec(ivm_exec_t *exec)
+{
+	ivm_opt_il_t *il = ivm_opt_il_convertFromExec(exec);
+
+	ivm_exec_empty(exec);
+	_ivm_opt_jumpReduce(il);
+
+	ivm_opt_il_generateExec(il, exec);
+	ivm_opt_il_free(il);
 
 	return;
 }

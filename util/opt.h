@@ -16,6 +16,7 @@ typedef ivm_list_t ivm_opt_instr_list_t;
 typedef struct ivm_opt_instr_t_tag {
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
+	ivm_size_t addr;
 	struct ivm_opt_instr_t_tag *jmpto;
 	ivm_ptlist_t *refs;
 } ivm_opt_instr_t;
@@ -44,6 +45,13 @@ ivm_opt_il_free(ivm_opt_il_t *il);
 
 ivm_opt_il_t *
 ivm_opt_il_convertFromExec(ivm_exec_t *exec);
+
+void
+ivm_opt_il_generateExec(ivm_opt_il_t *il,
+						ivm_exec_t *dest);
+
+void
+ivm_opt_optExec(ivm_exec_t *exec);
 
 IVM_COM_END
 

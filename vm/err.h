@@ -56,6 +56,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, max)		"illegal string len %lu(expect less than %lu)", (ivm_ulong_t)(len), (ivm_ulong_t)(max)
 #define IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE		("decache function id without vm state")
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT					("root function of coroutine cannot be native")
+#define IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO				("no code generated for target address")
 
 IVM_COM_END
 

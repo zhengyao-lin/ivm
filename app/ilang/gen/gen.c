@@ -1,3 +1,5 @@
+#include "util/opt.h"
+
 #include "priv.h"
 
 ilang_gen_value_t
@@ -56,6 +58,8 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 		unit->top_level,
 		FLAG(.is_top_level = IVM_TRUE), &env
 	);
+
+	ivm_opt_optExec(top_level);
 
 	return ret;
 }

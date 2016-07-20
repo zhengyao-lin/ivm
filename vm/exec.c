@@ -263,13 +263,10 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 	ivm_size_t i = 0;
 
 	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
-		ivm_vmstate_registerFunc(
-			state,
-			(func = ivm_function_new(
-				state,
-				(exec = IVM_EXEC_LIST_ITER_GET(eiter))
-			))
-		);
+		exec = IVM_EXEC_LIST_ITER_GET(eiter);
+
+		func = ivm_function_new(state, exec);
+		ivm_vmstate_registerFunc(state, func);
 
 		if (i++ == unit->root) {
 			root = func;

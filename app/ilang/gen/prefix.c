@@ -42,6 +42,8 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 
 		env->cur_exec = exec_backup;
 		ivm_exec_addInstr(env->cur_exec, NEW_FUNC, exec_id);
+
+		ivm_opt_optExec(exec);
 	}
 
 	return NORET();
