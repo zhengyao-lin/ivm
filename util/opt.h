@@ -30,8 +30,10 @@ typedef IVM_LIST_ITER_TYPE(ivm_opt_instr_t) ivm_opt_instr_list_iterator_t;
 #define ivm_opt_instr_list_push ivm_list_push
 #define ivm_opt_instr_list_size ivm_list_size
 #define ivm_opt_instr_list_at(list, i) ((ivm_opt_instr_t *)ivm_list_at((list), (i)))
+#define ivm_opt_instr_list_isLast ivm_list_isLast
 
 #define IVM_OPT_INSTR_LIST_ITER_GET(iter) (IVM_LIST_ITER_GET_PTR(iter, ivm_opt_instr_t))
+#define IVM_OPT_INSTR_LIST_ITER_IS_LAST(list, iter) (IVM_LIST_ITER_IS_LAST((list), (iter), ivm_opt_instr_t))
 #define IVM_OPT_INSTR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_opt_instr_t)
 
 typedef struct {

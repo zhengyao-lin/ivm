@@ -84,7 +84,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 		}
 	}
 
-	if (out_ref) {
+	if (out_ref || ivm_instr_opcode(i - 1) != IVM_OPCODE(RETURN)) {
 		tmp = ivm_opt_instr_build(
 			.opc = IVM_OPCODE(RETURN),
 			.addr = -1
@@ -118,9 +118,11 @@ _ivm_opt_getRealRefCount(ivm_ptlist_t *refs)
 	ivm_size_t ret = 0;
 	ivm_ptlist_iterator_t iter;
 
-	IVM_PTLIST_EACHPTR(refs, iter, void *) {
-		if (IVM_PTLIST_ITER_GET(iter))
-			ret++;
+	if (refs) {
+		IVM_PTLIST_EACHPTR(refs, iter, void *) {
+			if (IVM_PTLIST_ITER_GET(iter))
+				ret++;
+		}
 	}
 
 	return ret;
@@ -138,10 +140,13 @@ ivm_opt_il_generateExec(ivm_opt_il_t *il,
 	{
 		IVM_OPT_INSTR_LIST_EACHPTR(il->instrs, iter) {
 			cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
-			if (cur->opc != IVM_OPCODE(NOP) ||
-				_ivm_opt_getRealRefCount(cur->refs)) { // don't gen nop(if no ref toward it)
-				cur->addr = ivm_exec_addInstr_c(dest, ivm_instr_build(cur->opc, cur->arg));
+
+			if (cur->opc == IVM_OPCODE(NOP) &&
+				!_ivm_opt_getRealRefCount(cur->refs)) { // don't gen nop(if no ref toward it)
+				continue;
 			}
+
+			cur->addr = ivm_exec_addInstr_c(dest, ivm_instr_build(cur->opc, cur->arg));
 		}
 	}
 
@@ -205,9 +210,11 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 	ivm_opt_instr_list_t *instrs = il->instrs;
 	ivm_opt_instr_list_iterator_t iter;
 	ivm_opt_instr_t *cur, *tmp;
+	ivm_bool_t suc_jump = IVM_FALSE;
 
 	IVM_OPT_INSTR_LIST_EACHPTR(instrs, iter) {
 		cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
+
 		if (cur->jmpto) {
 			// jump_xx addr1 => jump_xx addr2
 			// ...
@@ -221,7 +228,42 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 				cur->jmpto = tmp;
 			}
 
-			// _is_opposite_cond_jump(
+			if (_is_opposite_cond_jump(cur, tmp)) {
+				cur->jmpto = tmp + 1;
+			}
+		}
+
+		/*
+			addr1: jump_false addr2 => jump_true addr3 (vice versa)
+			addr2: jump addr3
+		 */
+
+		if (cur->opc == IVM_OPCODE(JUMP_FALSE) &&
+			cur->jmpto == cur + 2 &&
+			(cur + 1)->opc == IVM_OPCODE(JUMP)) {
+			cur->jmpto = (cur + 1)->jmpto;
+			cur->opc = IVM_OPCODE(JUMP_TRUE);
+		} else if (cur->opc == IVM_OPCODE(JUMP_TRUE) &&
+				   cur->jmpto == cur + 2 &&
+				   (cur + 1)->opc == IVM_OPCODE(JUMP)) {
+			cur->jmpto = (cur + 1)->jmpto;
+			cur->opc = IVM_OPCODE(JUMP_FALSE);
+		}
+
+		/*
+			jump addr3 => jump addr3
+			jump addr2 => nop
+		 */
+		if (cur->opc == IVM_OPCODE(JUMP)) {
+			if (suc_jump || cur->jmpto == cur + 1) {
+				// if there are successive jumps or jump argument is next instr
+				// do not gen
+				cur->opc = IVM_OPCODE(NOP);
+			} else {
+				suc_jump = IVM_TRUE;
+			}
+		} else {
+			suc_jump = IVM_FALSE;
 		}
 	}
 
