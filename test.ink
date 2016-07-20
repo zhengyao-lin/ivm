@@ -119,7 +119,7 @@ if 0: {
 	if 1 && 0 || (1 && (0 || 1)): print("yes!")
 	if 1 && (0 || (1 && (0 || 1))): print("yes!")
 
-	ret
+	// ret
 }
 
 /*
@@ -137,7 +137,7 @@ fib = fn n: {
 
 print(fib(30))
 
-ret
+// ret
 
 {
 	b: 10,
@@ -214,7 +214,7 @@ a = "yes!"
 b = "no!"
 
 func = fn: {
-	let a = "hey?"
+	loc a = "hey?"
 	top b = "haha!"
 }
 
@@ -223,12 +223,12 @@ print(func())
 print(a + ", " + b)
 
 func = fn: {
-	let = {
+	loc = {
 		a: "hola",
 		b: 20,
-		let: "yes"
+		loc: "yes"
 	}
-	let let
+	loc loc
 }
 
 print(func())

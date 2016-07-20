@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
 	ivm_bool_t use_cond_reg; // return value to confirm the use of register
 	ivm_bool_t has_base; // has base object on the stack under top(second object)
-	ivm_bool_t is_id_let;
+	ivm_bool_t is_id_loc;
 	ivm_bool_t is_id_top;
 	ivm_bool_t use_branch;
 } ilang_gen_value_t;

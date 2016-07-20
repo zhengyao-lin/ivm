@@ -70,7 +70,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			env
 		);
 		
-		if (tmp_ret.is_id_let) {
+		if (tmp_ret.is_id_loc) {
 			ivm_exec_addInstr(env->cur_exec, SET_LOCAL_SLOT, tmp_str);
 		} else if (tmp_ret.is_id_top) {
 			ivm_exec_addInstr(env->cur_exec, SET_GLOBAL_SLOT, tmp_str);
@@ -98,7 +98,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (!flag.is_top_level) {
 			if (flag.is_callee) {
 				// leave base object on the stack
-				if (tmp_ret.is_id_let) {
+				if (tmp_ret.is_id_loc) {
 					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT);
 					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
 				} else if (tmp_ret.is_id_top) {
@@ -113,7 +113,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 
 				ret = RETVAL(.has_base = IVM_TRUE);
 			} else {
-				if (tmp_ret.is_id_let) {
+				if (tmp_ret.is_id_loc) {
 					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_SLOT, tmp_str);
 				} else if (tmp_ret.is_id_top) {
 					ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_SLOT, tmp_str);

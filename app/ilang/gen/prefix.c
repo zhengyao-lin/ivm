@@ -1,3 +1,5 @@
+#include "util/opt.h"
+
 #include "priv.h"
 
 ilang_gen_value_t

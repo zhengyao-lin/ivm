@@ -121,8 +121,8 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		}                                                              \
 	}
 
-	ID_GEN("let",
-		{ ret.is_id_let = IVM_TRUE; } if (flag.is_slot_expr) { } else,
+	ID_GEN("loc",
+		{ ret.is_id_loc = IVM_TRUE; } if (flag.is_slot_expr) { } else,
 		// avoid generate code if is the operand of slot expr
 		ivm_exec_addInstr(env->cur_exec, SET_LOCAL_CONTEXT),
 		ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT))
