@@ -12,8 +12,6 @@
 #include "obj.h"
 #include "coro.h"
 #include "func.h"
-#include "num.h"
-#include "strobj.h"
 #include "oprt.h"
 #include "proto.h"
 
@@ -21,6 +19,8 @@
 #define HEAP1(state) (&(state)->cur_heap)
 #define HEAP2(state) (&(state)->empty_heap)
 #define HEAP_CUR HEAP1
+
+#include "type.req.h"
 
 IVM_PRIVATE
 ivm_type_t static_type_list[] = {

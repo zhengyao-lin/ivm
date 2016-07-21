@@ -48,6 +48,25 @@ ilang_gen_table_expr_check(ilang_gen_expr_t *expr,
 }
 
 ivm_bool_t
+ilang_gen_list_expr_check(ilang_gen_expr_t *expr,
+						  ilang_gen_check_flag_t flag)
+{
+	ilang_gen_list_expr_t *list_expr = IVM_AS(expr, ilang_gen_list_expr_t);
+	ilang_gen_expr_list_t *elems = list_expr->elems;
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_elem;
+
+	ILANG_GEN_EXPR_LIST_EACHPTR(elems, eiter) {
+		tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+		if (tmp_elem->check(tmp_elem, flag)) {
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
+}
+
+ivm_bool_t
 ilang_gen_call_expr_check(ilang_gen_expr_t *expr,
 						  ilang_gen_check_flag_t flag)
 {

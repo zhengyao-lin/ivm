@@ -28,6 +28,12 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 		case IVM_UNIOP_ID(NOT):
 			ivm_exec_addInstr(env->cur_exec, NOT);
 			break;
+		case IVM_UNIOP_ID(NEG):
+			ivm_exec_addInstr(env->cur_exec, NEG);
+			break;
+		case IVM_UNIOP_ID(POS):
+			ivm_exec_addInstr(env->cur_exec, POS);
+			break;
 		case IVM_UNIOP_ID(CLONE):
 			ivm_exec_addInstr(env->cur_exec, CLONE);
 			break;

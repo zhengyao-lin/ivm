@@ -43,6 +43,18 @@ OPCODE_GEN(NEW_FUNC, "new_func", X, 1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(NEW_LIST, "new_list", I, 1, {
+	_TMP_ARGC = IARG();
+
+	CHECK_STACK(_TMP_ARGC);
+
+	_TMP_ARGV = STACK_CUT(_TMP_ARGC);
+	_TMP_OBJ1 = ivm_list_object_new_c(_STATE, _TMP_ARGV, _TMP_ARGC);
+	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(CLONE, "clone", N, 1, {
 	CHECK_STACK(1);
 	STACK_OVERRIDE(ivm_object_clone(STACK_TOP(), _STATE));
@@ -51,6 +63,8 @@ OPCODE_GEN(CLONE, "clone", N, 1, {
 
 /* unary operations */
 OPCODE_GEN(NOT, "not", N, 0, DEFAULT_UNIOP_HANDLER(NOT, "!"))
+OPCODE_GEN(NEG, "neg", N, 0, DEFAULT_UNIOP_HANDLER(NEG, "-"))
+OPCODE_GEN(POS, "pos", N, 0, DEFAULT_UNIOP_HANDLER(POS, "+"))
 
 /* binary operations */
 OPCODE_GEN(ADD, "add", N, -1, DEFAULT_BINOP_HANDLER(ADD, "+", IVM_NULL))

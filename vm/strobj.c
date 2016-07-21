@@ -1,5 +1,3 @@
-#include "pub/mem.h"
-#include "pub/err.h"
 #include "pub/type.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"

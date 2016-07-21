@@ -10,6 +10,7 @@
 #include "obj.h"
 #include "num.h"
 #include "strobj.h"
+#include "listobj.h"
 
 #define GET_STRING_INDEX() \
 	{                                                                                         \

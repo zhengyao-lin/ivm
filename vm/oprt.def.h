@@ -2,6 +2,14 @@ UNIOP_GEN(NOT, NUMERIC, {
 	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
 })
 
+UNIOP_GEN(NEG, NUMERIC, {
+	return ivm_numeric_new(_STATE, -ivm_numeric_getValue(_OP1));
+})
+
+UNIOP_GEN(POS, NUMERIC, {
+	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1));
+})
+
 BINOP_GEN(NUMERIC, ADD, NUMERIC, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) + ivm_numeric_getValue(_OP2));
 })
@@ -61,3 +69,26 @@ BINOP_GEN(OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
 BINOP_GEN(NUMERIC, IDX, STRING_OBJECT, GET_STRING_INDEX())
 BINOP_GEN(STRING_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
 BINOP_GEN(FUNCTION_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
+BINOP_GEN(LIST_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
+
+BINOP_GEN(LIST_OBJECT, IDX, NUMERIC, {
+	ivm_object_t *tmp;
+
+	if (_ASSIGN) {
+		return ivm_list_object_set(
+			IVM_AS(_OP1, ivm_list_object_t),
+			_STATE, ivm_numeric_getValue(_OP2),
+			_ASSIGN
+		);
+	}
+
+	tmp = ivm_list_object_get(IVM_AS(_OP1, ivm_list_object_t), ivm_numeric_getValue(_OP2));
+
+	return tmp ? tmp : IVM_UNDEFINED(_STATE);
+})
+
+BINOP_GEN(LIST_OBJECT, ADD, LIST_OBJECT, {
+	return ivm_list_object_link(IVM_AS(_OP1, ivm_list_object_t),
+								IVM_AS(_OP2, ivm_list_object_t),
+								_STATE);
+})

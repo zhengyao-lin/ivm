@@ -154,6 +154,11 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 						  ilang_gen_env_t *env);
 
 ilang_gen_value_t
+ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
+						 ilang_gen_flag_t flag,
+						 ilang_gen_env_t *env);
+
+ilang_gen_value_t
 ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 						 ilang_gen_flag_t flag,
 						 ilang_gen_env_t *env);
@@ -322,6 +327,16 @@ typedef struct {
 COMMON_EXPR(table_expr, "table expression", {
 	ret->list = list;
 }, ilang_gen_table_entry_list_t *list);
+
+/* list expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_list_t *elems;
+} ilang_gen_list_expr_t;
+
+COMMON_EXPR(list_expr, "list expression", {
+	ret->elems = elems;
+}, ilang_gen_expr_list_t *elems);
 
 /* call expr */
 typedef struct {

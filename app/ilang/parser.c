@@ -607,6 +607,7 @@ RULE(slot_list_opt)
 RULE(expr);
 RULE(expr_list);
 RULE(expr_list_opt);
+RULE(arg_list_opt);
 RULE(primary_expr)
 {
 	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
@@ -679,6 +680,18 @@ RULE(primary_expr)
 				RULE_RET_AT(1).u.slot_list
 			);
 		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo)
+				 R(arg_list_opt)
+				 R(nllo) T(T_RBRAKT)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_list_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr_list
+			);
+		})
 	);
 
 	FAILED({})
@@ -687,7 +700,7 @@ RULE(primary_expr)
 
 /*
 	arg_list_sub
-		: ',' prefix_expr arg_list_sub
+		: nllo ',' nllo prefix_expr arg_list_sub
 		| %empty
  */
 RULE(prefix_expr);
@@ -697,10 +710,10 @@ RULE(arg_list_sub)
 	struct rule_val_t tmp_ret;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(prefix_expr) R(arg_list_sub)
+		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(prefix_expr) R(arg_list_sub)
 		{
-			tmp_ret = RULE_RET_AT(0);
-			tmp_list = _RETVAL.expr_list = RULE_RET_AT(1).u.expr_list;
+			tmp_ret = RULE_RET_AT(2);
+			tmp_list = _RETVAL.expr_list = RULE_RET_AT(3).u.expr_list;
 			ilang_gen_expr_list_push(tmp_list, tmp_ret.u.expr);
 		})
 
@@ -919,6 +932,28 @@ RULE(unary_expr)
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(1).u.expr,
 				IVM_UNIOP_ID(NOT)
+			);
+		})
+		SUB_RULE(T(T_SUB) R(nllo) R(unary_expr)
+		DBB(PRINT_MATCH_TOKEN("neg expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_unary_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr,
+				IVM_UNIOP_ID(NEG)
+			);
+		})
+		SUB_RULE(T(T_ADD) R(nllo) R(unary_expr)
+		DBB(PRINT_MATCH_TOKEN("pos expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_unary_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr,
+				IVM_UNIOP_ID(POS)
 			);
 		})
 		SUB_RULE(T(T_CLONE) R(nllo) R(unary_expr)

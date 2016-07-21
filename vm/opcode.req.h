@@ -9,8 +9,9 @@
 #include "pub/inlines.h"
 
 #include "obj.h"
-#include "strobj.h"
 #include "num.h"
+#include "strobj.h"
+#include "listobj.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"

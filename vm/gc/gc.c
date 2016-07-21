@@ -23,18 +23,78 @@ ivm_collector_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
-	ret->des_log[0] = ivm_destruct_list_new();
-	ret->des_log[1] = ivm_destruct_list_new();
+	ivm_destruct_list_init(&ret->des_log[0]);
+	ivm_destruct_list_init(&ret->des_log[1]);
 
 	return ret;
+}
+
+#define ADD_EMPTY_LIST(collector, obj) \
+	(ivm_destruct_list_add(&(collector)->des_log[1], (obj)))
+
+IVM_PRIVATE
+IVM_INLINE
+void
+ivm_collector_checkIfDestruct(ivm_collector_t *collector,
+							  ivm_object_t *obj,
+							  ivm_vmstate_t *state)
+{
+	if (!IVM_OBJECT_GET(obj, COPY)) {
+		ivm_object_destruct(obj, state);
+	} else {
+		/* copy to another log */
+		ADD_EMPTY_LIST(collector, IVM_OBJECT_GET(obj, COPY));
+	}
+
+	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+ivm_collector_triggerDestructor(ivm_collector_t *collector,
+								ivm_vmstate_t *state)
+{
+	ivm_destruct_list_t tmp;
+	ivm_destruct_list_iterator_t iter;
+
+	ivm_destruct_list_empty(&collector->des_log[1]);
+
+	IVM_DESTRUCT_LIST_EACHPTR(&collector->des_log[0], iter) {
+		ivm_collector_checkIfDestruct(collector,
+									  IVM_DESTRUCT_LIST_ITER_GET(iter),
+									  state);
+	}
+
+	tmp = collector->des_log[0];
+	collector->des_log[0] = collector->des_log[1];
+	collector->des_log[1] = tmp;
+
+	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+ivm_collector_triggerAllDestructor(ivm_collector_t *collector,
+								   ivm_vmstate_t *state)
+{
+	ivm_destruct_list_iterator_t iter;
+
+	IVM_DESTRUCT_LIST_EACHPTR(&collector->des_log[0], iter) {
+		ivm_object_destruct(IVM_DESTRUCT_LIST_ITER_GET(iter), state);
+	}
+
+	return;
 }
 
 void
 ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 {
 	if (collector) {
-		ivm_destruct_list_free(collector->des_log[0]);
-		ivm_destruct_list_free(collector->des_log[1]);
+		ivm_collector_triggerAllDestructor(collector, state);
+		ivm_destruct_list_dump(&collector->des_log[0]);
+		ivm_destruct_list_dump(&collector->des_log[1]);
 		MEM_FREE(collector);
 	}
 
@@ -258,50 +318,6 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	return;
 }
 
-#define ADD_EMPTY_LIST(collector, obj) \
-	(ivm_destruct_list_add((collector)->des_log[1], (obj)))
-
-IVM_PRIVATE
-IVM_INLINE
-void
-ivm_collector_checkIfDestruct(ivm_collector_t *collector,
-							  ivm_object_t *obj,
-							  ivm_vmstate_t *state)
-{
-	if (!IVM_OBJECT_GET(obj, COPY)) {
-		ivm_object_destruct(obj, state);
-	} else {
-		/* copy to another log */
-		ADD_EMPTY_LIST(collector, IVM_OBJECT_GET(obj, COPY));
-	}
-
-	return;
-}
-
-IVM_PRIVATE
-IVM_INLINE
-void
-ivm_collector_triggerDestructor(ivm_collector_t *collector,
-								ivm_vmstate_t *state)
-{
-	ivm_destruct_list_t *tmp;
-	ivm_destruct_list_iterator_t iter;
-
-	ivm_destruct_list_empty(collector->des_log[1]);
-
-	IVM_DESTRUCT_LIST_EACHPTR(collector->des_log[0], iter) {
-		ivm_collector_checkIfDestruct(collector,
-									  IVM_DESTRUCT_LIST_ITER_GET(iter),
-									  state);
-	}
-
-	tmp = collector->des_log[0];
-	collector->des_log[0] = collector->des_log[1];
-	collector->des_log[1] = tmp;
-
-	return;
-}
-
 #if IVM_USE_PERF_PROFILE
 
 clock_t ivm_perf_gc_time = 0;
@@ -325,6 +341,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 	arg.collector = collector;
 	arg.trav_ctchain = ivm_collector_travContextChain;
+	arg.trav_obj = ivm_collector_copyObject;
 
 	ivm_heap_reset(arg.heap);
 

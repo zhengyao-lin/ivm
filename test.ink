@@ -78,6 +78,23 @@ while i < 1000000: {
 ret
  */
 
+
+// a = i[1]
+
+i = 0
+
+list = [1, 2, 3, 4, 5] + [2, 4, 5]
+a = 0
+while i < 100000: {
+
+	list[i] = 10
+
+	//print(list[2])
+	i = i + 1
+}
+
+ret
+
 if 0: {
 	i = 1
 
@@ -137,7 +154,7 @@ fib = fn n: {
 
 print(fib(30))
 
-// ret
+ret
 
 {
 	b: 10,

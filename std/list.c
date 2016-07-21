@@ -11,6 +11,8 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist"));
 
+	if (!buf_size) buf_size = 1;
+
 	ret->alloc
 	= buf_size;
 
@@ -89,6 +91,8 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 								ivm_list_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list"));
+
+	if (!buf_size) buf_size = 1;
 
 	ret->esize = esize;
 	ret->alloc = buf_size;

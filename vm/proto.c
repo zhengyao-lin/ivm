@@ -8,6 +8,8 @@
 
 #define PROTO_INIT_NAME(tname) _proto_init_##tname
 
+#include "type.req.h"
+
 #define TYPE_GEN(tag, name, size, proto_init, ...) \
 	IVM_PRIVATE                                                      \
 	void                                                             \

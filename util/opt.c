@@ -84,7 +84,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 		}
 	}
 
-	if (out_ref || ivm_instr_opcode(i - 1) != IVM_OPCODE(RETURN)) {
+	if (out_ref || !len || ivm_instr_opcode(i - 1) != IVM_OPCODE(RETURN)) {
 		tmp = ivm_opt_instr_build(
 			.opc = IVM_OPCODE(RETURN),
 			.addr = -1

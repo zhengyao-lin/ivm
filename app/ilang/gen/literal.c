@@ -207,3 +207,30 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 
 	return NORET();
 }
+
+ilang_gen_value_t
+ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
+						 ilang_gen_flag_t flag,
+						 ilang_gen_env_t *env)
+{
+	ilang_gen_list_expr_t *list_expr = IVM_AS(expr, ilang_gen_list_expr_t);
+	ilang_gen_expr_list_t *elems = list_expr->elems;
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_elem;
+
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
+	ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+		tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+		tmp_elem->eval(tmp_elem, FLAG(.is_top_level = flag.is_top_level), env);
+	}
+
+	if (!flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, NEW_LIST, ilang_gen_expr_list_size(elems));
+	}
+
+	return NORET();
+}
