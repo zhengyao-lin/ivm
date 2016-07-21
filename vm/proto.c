@@ -6,60 +6,24 @@
 #include "strobj.h"
 #include "num.h"
 
-IVM_PRIVATE
-void
-init_object(ivm_type_t *type,
-			ivm_vmstate_t *state)
-{
-	ivm_type_setProto(type, ivm_object_new(state));
-	return;
-}
+#define PROTO_INIT_NAME(tname) _proto_init_##tname
 
-IVM_PRIVATE
-void
-init_numeric(ivm_type_t *type,
-			 ivm_vmstate_t *state)
-{
-	ivm_object_t *tmp = ivm_numeric_new(state, IVM_NUM(0));
-	ivm_type_setProto(type, tmp);
-	IVM_OBJECT_SET(tmp, PROTO, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
+#define TYPE_GEN(tag, name, size, proto_init, ...) \
+	IVM_PRIVATE                                                      \
+	void                                                             \
+	PROTO_INIT_NAME(name)(ivm_type_t *_TYPE, ivm_vmstate_t *_STATE)  \
+	proto_init
 
-	return;
-}
+#include "type.def.h"
 
-IVM_PRIVATE
-void
-init_string(ivm_type_t *type,
-			ivm_vmstate_t *state)
-{
-	ivm_object_t *tmp = ivm_string_object_new(state, IVM_NULL);
-	ivm_type_setProto(type, tmp);
-	IVM_OBJECT_SET(tmp, PROTO, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
-	
-	return;
-}
-
-IVM_PRIVATE
-void
-init_function(ivm_type_t *type,
-			  ivm_vmstate_t *state)
-{
-	ivm_object_t *tmp = ivm_function_object_new(state, IVM_NULL, IVM_NULL);
-	ivm_type_setProto(type, tmp);
-	IVM_OBJECT_SET(tmp, PROTO, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
-	
-	return;
-}
+#undef TYPE_GEN
 
 IVM_PRIVATE
 ivm_type_init_proc_t
 init_proc[] = {
-	IVM_NULL,
-	IVM_NULL,
-	init_object,
-	init_numeric,
-	init_string,
-	init_function
+#define TYPE_GEN(tag, name, size, proto_init, ...) PROTO_INIT_NAME(name),
+	#include "type.def.h"
+#undef TYPE_GEN
 };
 
 void
@@ -68,9 +32,9 @@ ivm_proto_initType(ivm_type_t *type,
 {
 	ivm_type_init_proc_t tmp = init_proc[type->tag];
 
-	if (tmp) {
-		tmp(type, state);
-	}
+	// if (tmp) {
+	tmp(type, state);
+	// }
 
 	return;
 }

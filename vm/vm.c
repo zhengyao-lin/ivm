@@ -24,56 +24,17 @@
 
 IVM_PRIVATE
 ivm_type_t static_type_list[] = {
-	{
-		.tag = IVM_UNDEFINED_T,
-		.name = "undefined",
-		.size = sizeof(ivm_object_t),
-
-		.const_bool = IVM_FALSE,
+#define TYPE_GEN(t, n, s, proto_init, ...) \
+	{                                      \
+		.tag = t,                          \
+		.name = #n,                        \
+		.size = s,                         \
+		__VA_ARGS__                        \
 	},
 
-	{
-		.tag = IVM_NULL_T,
-		.name = "null",
-		.size = sizeof(ivm_object_t),
+	#include "type.def.h"
 
-		.const_bool = IVM_FALSE,
-	},
-
-	{
-		.tag = IVM_OBJECT_T,
-		.name = "object",
-		.size = sizeof(ivm_object_t),
-
-		.const_bool = IVM_TRUE,
-	},
-
-	{
-		.tag = IVM_NUMERIC_T,
-		.name = "numeric",
-		.size = sizeof(ivm_numeric_t),
-
-		.to_bool = ivm_numeric_isTrue
-	},
-
-	{
-		.tag = IVM_STRING_OBJECT_T,
-		.name = "string",
-		.size = sizeof(ivm_string_object_t),
-
-		.trav = ivm_string_object_traverser,
-		.const_bool = IVM_TRUE
-	},
-
-	{
-		.tag = IVM_FUNCTION_OBJECT_T,
-		.name = "function",
-		.size = sizeof(ivm_function_object_t),
-
-		.des = ivm_function_object_destructor,
-		.trav = ivm_function_object_traverser,
-		.const_bool = IVM_TRUE
-	}
+#undef TYPE_GEN
 };
 
 #define SET_TYPE_PROTO(state, tag, obj) \
@@ -85,7 +46,7 @@ ivm_vmstate_new()
 	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret),
 								   ivm_vmstate_t *);
 	ivm_type_t *tmp_type, *end;
-	ivm_int_t i, type_count = sizeof(static_type_list) / sizeof(ivm_type_t);
+	ivm_int_t i;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
 	
@@ -116,12 +77,12 @@ ivm_vmstate_new()
 
 	ivm_vmstate_lockGCFlag(ret);
 
-	for (i = 0, tmp_type = ret->type_list, end = tmp_type + type_count;
+	for (i = 0, tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++, i++) {
 		ivm_type_init(tmp_type, static_type_list + i);
 	}
 
-	for (tmp_type = ret->type_list, end = tmp_type + type_count;
+	for (tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++) {
 		ivm_proto_initType(tmp_type, ret);
 	}

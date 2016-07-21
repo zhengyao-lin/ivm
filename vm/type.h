@@ -47,12 +47,10 @@ typedef ivm_double_t			ivm_number_t;
 typedef ivm_size_t				ivm_function_id_t;
 
 enum {
-	IVM_UNDEFINED_T = 0,
-	IVM_NULL_T,
-	IVM_OBJECT_T,
-	IVM_NUMERIC_T,
-	IVM_STRING_OBJECT_T,
-	IVM_FUNCTION_OBJECT_T,
+	IVM_TYPE_FIRST = -1,
+#define TYPE_GEN(tag, name, size, proto_init, ...) tag,
+	#include "type.def.h"
+#undef TYPE_GEN
 	IVM_TYPE_COUNT
 };
 

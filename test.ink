@@ -78,7 +78,18 @@ while i < 1000000: {
 ret
  */
 
-print(1 || 0) // 1
+if 0: {
+	i = 1
+
+/*	while i < 1000000 && i > 0:
+		if i == 2 && 0: i = 0
+		elif 1:
+			if 0 && 1: 0
+			else: i = i + 1
+
+	ret
+*/
+	print(1 || 0) // 1
 
 	print(0 || 1) // 1
 
@@ -108,20 +119,7 @@ print(1 || 0) // 1
 	if 1 && 0 || (1 && (0 || 1)): print("yes!")
 	if 1 && (0 || (1 && (0 || 1))): print("yes!")
 
-/*
-
-if 1: {
-	i = 1
-
-/*	while i < 1000000 && i > 0:
-		if i == 2 && 0: i = 0
-		elif 1:
-			if 0 && 1: 0
-			else: i = i + 1
-
-	ret
-*/
-	
+	// ret
 }
 
 /*
