@@ -159,20 +159,11 @@ ivm_list_object_traverser(ivm_object_t *obj,
 {
 	ivm_list_object_t *list = IVM_AS(obj, ivm_list_object_t);
 	ivm_object_t **i, **end;
-	ivm_object_t *(*trav_obj)(ivm_object_t *, ivm_traverser_arg_t *);
-
-	/*
-	list->lst = ivm_heap_addCopy(
-		arg->heap, list->lst,
-		sizeof(*list->lst) * list->alloc
-	);
-	*/
 
 	for (i = list->lst,
-		 end = i + list->size,
-		 trav_obj = arg->trav_obj;
+		 end = i + list->size;
 		 i != end; i++) {
-		if (*i) *i = trav_obj(*i, arg);
+		ivm_collector_copyObject_p(*i, arg, i);
 	}
 
 	return;

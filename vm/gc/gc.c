@@ -105,11 +105,6 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 }
 
 IVM_PRIVATE
-ivm_object_t *
-ivm_collector_copyObject(ivm_object_t *obj,
-						 ivm_traverser_arg_t *arg);
-
-IVM_PRIVATE
 ivm_slot_table_t *
 ivm_collector_copySlotTable(ivm_slot_table_t *table,
 							ivm_traverser_arg_t *arg)
@@ -140,21 +135,13 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 	return ret;
 }
 
-IVM_PRIVATE
 ivm_object_t *
-ivm_collector_copyObject(ivm_object_t *obj,
-						 ivm_traverser_arg_t *arg)
+ivm_collector_copyObject_c(ivm_object_t *obj,
+						   ivm_traverser_arg_t *arg)
 {
 	ivm_object_t *ret = IVM_NULL;
 	ivm_traverser_t trav;
 	ivm_slot_table_t *tmp;
-
-	if (!obj) return IVM_NULL;
-
-	ret = IVM_OBJECT_GET(obj, COPY);
-	if (ret) return ret;
-	else if (ivm_heap_isIn(arg->heap, obj))
-		return obj;
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
@@ -353,7 +340,6 @@ ivm_collector_collect(ivm_collector_t *collector,
 	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 	arg.collector = collector;
 	arg.trav_ctchain = ivm_collector_travContextChain;
-	arg.trav_obj = ivm_collector_copyObject;
 
 	ivm_heap_reset(arg.heap);
 
