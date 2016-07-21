@@ -85,13 +85,17 @@ i = 0
 
 list = [1, 2, 3, 4, 5] + [2, 4, 5]
 a = 0
-while i < 100000: {
+while i < 10000000: {
 
-	list[i] = 10
+	list[i] = 0
 
 	//print(list[2])
 	i = i + 1
 }
+
+print("hi")
+
+list = []
 
 ret
 

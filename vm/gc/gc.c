@@ -23,6 +23,9 @@ ivm_collector_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 
+	ret->live_ratio = 0;
+	ret->skip_time = 0;
+	ret->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
 	ivm_destruct_list_init(&ret->des_log[0]);
 	ivm_destruct_list_init(&ret->des_log[1]);
 
@@ -337,6 +340,15 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	ivm_traverser_arg_t arg;
 
+	if (collector->live_ratio > IVM_DEFAULT_GC_MAX_LIVE_RATIO &&
+		collector->skip_time < IVM_DEFAULT_GC_MAX_SKIP) {
+		collector->live_ratio -= collector->bc_weight;
+		collector->skip_time++;
+		return;
+	}
+
+	collector->skip_time = 0;
+
 	arg.state = state;
 	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 	arg.collector = collector;
@@ -348,9 +360,22 @@ ivm_collector_collect(ivm_collector_t *collector,
 	// IVM_TRACE("***collecting***\n");
 
 	ivm_collector_travState(&arg);
+
+	collector->live_ratio
+	= IVM_HEAP_GET(arg.heap, BLOCK_USED) * 100 / IVM_HEAP_GET(heap, BLOCK_USED);
+
+	if (collector->live_ratio > IVM_DEFAULT_GC_BC_RESTORE_RATIO) {
+		// if (collector->bc_weight > IVM_DEFAULT_GC_MIN_BC_WEIGHT)
+		collector->bc_weight /= collector->live_ratio;
+	} else collector->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+
+	// IVM_TRACE("%.20f\n", collector->bc_weight);
+
+	// IVM_TRACE("live ratio: %ld %ld %d\n", IVM_HEAP_GET(arg.heap, BLOCK_USED), IVM_HEAP_GET(heap, BLOCK_USED), collector->live_ratio);
+
 	ivm_collector_triggerDestructor(collector, state);
 	ivm_vmstate_swapHeap(state);
-	// ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
+	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
 
 	ivm_vmstate_closeGCFlag(state);
 

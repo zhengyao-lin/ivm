@@ -98,6 +98,9 @@ ivm_heap_compact(ivm_heap_t *heap)
 {
 	ivm_byte_t **i, **end;
 
+	if (heap->bcount <= IVM_DEFAULT_HEAP_MAX_COMPACT_BC)
+		return;
+
 	for (i = heap->blocks + heap->btop + 1,
 		 end = heap->blocks + heap->bcount;
 		 i != end; i++) {
