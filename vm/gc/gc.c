@@ -329,7 +329,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	if (collector->live_ratio > IVM_DEFAULT_GC_MAX_LIVE_RATIO &&
 		collector->skip_time < IVM_DEFAULT_GC_MAX_SKIP) {
-		collector->live_ratio -= collector->bc_weight;
+		collector->live_ratio -= IVM_HEAP_GET(heap, BLOCK_COUNT) * collector->bc_weight;
 		collector->skip_time++;
 		return;
 	}

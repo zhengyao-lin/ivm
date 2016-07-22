@@ -95,8 +95,6 @@ while i < 10000000: {
 
 print("hi")
 
-list = []
-
 ret
 
 if 0: {

@@ -20,10 +20,6 @@
 
 #define IVM_CONTEXT_POOL_MAX_CACHE_LEN 7
 
-/* size of a single heap in GC */
-#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 19)
-#define IVM_DEFAULT_HEAP_MAX_COMPACT_BC 2
-
 #define IVM_DEFAULT_PARSER_INIT_HEAP_SIZE (2 << 15)
 
 /* list buffer sizes */
@@ -49,10 +45,14 @@
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */
 #define IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD 8
 
+/* GC config */
+#define IVM_DEFAULT_MAX_MEM_LIMIT (2 << 30)
+#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 23)
+#define IVM_DEFAULT_HEAP_MAX_COMPACT_BC 2
 #define IVM_DEFAULT_GC_MAX_LIVE_RATIO 3 // only when live ratio is under 3%
 #define IVM_DEFAULT_GC_BC_RESTORE_RATIO 2
 #define IVM_DEFAULT_GC_BC_WEIGHT 5
-#define IVM_DEFAULT_GC_MAX_SKIP 800
+#define IVM_DEFAULT_GC_MAX_SKIP 20
 
 /* only one of the following definition can be 1 */
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1

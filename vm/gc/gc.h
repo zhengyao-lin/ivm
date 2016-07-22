@@ -32,7 +32,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_object_t *) ivm_destruct_list_iterator_t;
 #define IVM_DESTRUCT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_object_t *)
 
 typedef struct ivm_collector_t_tag {
-	ivm_int_t live_ratio; // 0 - 100
+	ivm_double_t live_ratio; // 0 - 100
 	ivm_long_t skip_time;
 	ivm_double_t bc_weight;
 	ivm_destruct_list_t des_log[2];
@@ -90,16 +90,18 @@ ivm_collector_quickCheck(ivm_object_t *obj,
 {
 	ivm_object_t *copy;
 
-	if (!obj) {
-		*addr = IVM_NULL;
+	if (obj) {
+		copy = IVM_OBJECT_GET(obj, COPY);
+		if (copy) {
+			*addr = copy;
+			return IVM_TRUE;
+		}
+	} else {
+		// *addr = IVM_NULL;
 		return IVM_TRUE;
 	}
 
-	copy = IVM_OBJECT_GET(obj, COPY);
-	if (copy) {
-		*addr = copy;
-		return IVM_TRUE;
-	}
+	
 
 	/*if (ivm_heap_isIn(arg->heap, obj)) {
 		*addr = obj;
@@ -114,7 +116,7 @@ ivm_object_t *
 ivm_collector_copyObject(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg)
 {
-	ivm_object_t *ret;
+	ivm_object_t *ret = IVM_NULL;
 	if (ivm_collector_quickCheck(obj, arg, &ret))
 		return ret;
 	return ivm_collector_copyObject_c(obj, arg);
