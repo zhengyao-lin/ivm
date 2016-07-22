@@ -38,7 +38,7 @@ typedef struct ivm_collector_t_tag {
 	ivm_destruct_list_t des_log[2];
 } ivm_collector_t;
 
-#define IVM_MARK_WHITE 0
+// #define IVM_MARK_WHITE 0
 
 // #define IVM_COLLECTOR_GET_PERIOD(collector) ((collector)->period)
 #define IVM_COLLECTOR_GET_CUR_DES_LOG(collector) ((collector)->des_log)

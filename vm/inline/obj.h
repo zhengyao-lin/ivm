@@ -18,8 +18,7 @@ ivm_object_init(ivm_object_t *obj,
 				ivm_vmstate_t *state,
 				ivm_type_tag_t type)
 {
-	obj->slots = IVM_NULL;
-	obj->mark = IVM_MARK_INIT;
+	MEM_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
 	obj->proto = ivm_type_getProto(
 		obj->type = ivm_vmstate_getType(state, type)
 	);

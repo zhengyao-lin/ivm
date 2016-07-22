@@ -31,4 +31,6 @@
 	#define IVM_OS_WIN32
 #endif
 
+#define IVM_PTR_SIZE sizeof(void *)
+
 #endif

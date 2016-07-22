@@ -622,6 +622,13 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
+	ivm_object_t test_obj = { 0 };
+
+	// test_obj.mark.copy = 0x1;
+	test_obj.mark.sub.gen = 0x1;
+
+	IVM_TRACE("%p %d\n", test_obj.mark.copy, sizeof(test_obj.mark.sub));
+
 #if 1
 
 	test_call();

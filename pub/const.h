@@ -52,7 +52,7 @@
 #define IVM_DEFAULT_GC_MAX_LIVE_RATIO 15 // only when live ratio is under 15%
 #define IVM_DEFAULT_GC_BC_RESTORE_RATIO 10
 #define IVM_DEFAULT_GC_BC_WEIGHT 5
-#define IVM_DEFAULT_GC_MAX_SKIP 20
+#define IVM_DEFAULT_GC_MAX_SKIP 30
 
 /* only one of the following definition can be 1 */
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1
