@@ -87,7 +87,7 @@ list = [1, 2, 3, 4, 5] + [2, 4, 5]
 a = 0
 while i < 10000000: {
 
-	list[i] = a
+	list[i] = 1
 
 	//print(list[2])
 	i = i + 1
@@ -95,7 +95,7 @@ while i < 10000000: {
 
 print("hi")
 
-ret
+list = []
 
 if 0: {
 	i = 1
@@ -154,7 +154,7 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(30))
+print(fib(40))
 
 ret
 

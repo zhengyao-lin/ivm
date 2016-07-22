@@ -49,8 +49,8 @@
 #define IVM_DEFAULT_MAX_MEM_LIMIT (2 << 30)
 #define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 23)
 #define IVM_DEFAULT_HEAP_MAX_COMPACT_BC 2
-#define IVM_DEFAULT_GC_MAX_LIVE_RATIO 3 // only when live ratio is under 3%
-#define IVM_DEFAULT_GC_BC_RESTORE_RATIO 2
+#define IVM_DEFAULT_GC_MAX_LIVE_RATIO 15 // only when live ratio is under 15%
+#define IVM_DEFAULT_GC_BC_RESTORE_RATIO 10
 #define IVM_DEFAULT_GC_BC_WEIGHT 5
 #define IVM_DEFAULT_GC_MAX_SKIP 20
 
