@@ -25,8 +25,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_function_pool_t *func_pool;				// 8
 
-	ivm_heap_t cur_heap;						// 40
-	ivm_heap_t empty_heap;						// 40
+	ivm_heap_t heaps[3];						// 120
 
 	ivm_context_pool_t *ct_pool;				// 8
 
@@ -55,8 +54,8 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_GET_CORO_LIST(state) (&(state)->coro_list)
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
-#define IVM_VMSTATE_GET_CUR_HEAP(state) (&(state)->cur_heap)
-#define IVM_VMSTATE_GET_EMPTY_HEAP(state) (&(state)->empty_heap)
+#define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps)
+#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->heaps + 1)
 
 #define IVM_VMSTATE_SET_CUR_CORO(state, val) ((state)->cur_coro = (val))
 
@@ -113,7 +112,7 @@ void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
 	ivm_bool_t add_block = IVM_FALSE;
-	void *ret = ivm_heap_alloc_c(&(state)->cur_heap, size, &add_block);
+	void *ret = ivm_heap_alloc_c((state)->heaps, size, &add_block);
 
 	if (add_block) {
 		ivm_vmstate_openGCFlag(state);
@@ -126,9 +125,9 @@ IVM_INLINE
 void
 ivm_vmstate_swapHeap(ivm_vmstate_t *state)
 {
-	ivm_heap_t tmp = state->cur_heap;
-	state->cur_heap = state->empty_heap;
-	state->empty_heap = tmp;
+	ivm_heap_t tmp = state->heaps[0];
+	state->heaps[0] = state->heaps[1];
+	state->heaps[1] = tmp;
 
 	return;
 }
@@ -203,7 +202,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 	ivm_vmstate_isGCFlagOpen(state)
 
 #define ivm_vmstate_doGC(state) \
-	ivm_collector_collect((state)->gc, (state), &(state)->cur_heap); \
+	ivm_collector_collect((state)->gc, (state), (state)->heaps); \
 	ivm_vmstate_closeGCFlag(state);
 
 #endif

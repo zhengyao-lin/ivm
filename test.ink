@@ -96,8 +96,7 @@ while i < 10000000: {
 print("hi")
 
 // list = []
-
-// ret
+ret
 
 if 0: {
 	i = 1

@@ -112,12 +112,29 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_CONST_BOOL(obj) ((obj)->type->const_bool)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
-#define IVM_OBJECT_GET_COPY(obj) ((obj)->mark.copy)
+#define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << 2) >> 2))
+#define IVM_OBJECT_GET_GEN(obj) ((obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark.sub.travp)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
-#define IVM_OBJECT_SET_COPY(obj, val) ((obj)->mark.copy = (val))
+// #define IVM_OBJECT_SET_COPY(obj, val) ((obj)->mark.copy = (val))
+
+IVM_INLINE
+void
+IVM_OBJECT_SET_COPY(ivm_object_t *obj,
+					ivm_object_t *copy)
+{
+	obj->mark.copy = (ivm_object_t *)
+					 ((((ivm_uptr_t)obj->mark.copy
+					 	>> (sizeof(ivm_ptr_t) * 8 - 2))
+					 	<< (sizeof(ivm_ptr_t) * 8 - 2))
+					 	| (ivm_uptr_t)copy);
+
+	return;
+}
+
+#define IVM_OBJECT_SET_GEN(obj, val) ((obj)->mark.sub.gen = (val))
 #define IVM_OBJECT_SET_PROTO(obj, val) ((obj)->proto = (val))
 #define IVM_OBJECT_SET_TRAV_PROTECT(obj, val) ((obj)->mark.sub.travp)
 
@@ -146,6 +163,19 @@ typedef struct ivm_object_t_tag {
 
 #define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
+
+IVM_INLINE
+void
+ivm_object_adopt(ivm_object_t *parent,
+				 ivm_object_t *child)
+{
+	if (child->mark.sub.gen <
+		parent->mark.sub.gen) {
+		// child younger than parent -> parent become the same
+		parent->mark.sub.gen = child->mark.sub.gen;
+	}
+	return;
+}
 
 IVM_INLINE
 void

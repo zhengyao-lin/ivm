@@ -22,14 +22,14 @@ ivm_slot_table_new(ivm_vmstate_t *state)
 {
 	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	SET_BIT_FALSE(ret->is_hash);
-	SET_BIT_FALSE(ret->is_shared);
+	MEM_INIT(&ret->mark, sizeof(ret->mark));
+	SET_BIT_FALSE(ret->mark.sub.is_hash);
+	SET_BIT_FALSE(ret->mark.sub.is_shared);
 
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
-	ret->is_hash |= (IVM_DEFAULT_SLOT_TABLE_SIZE >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+	ret->mark.sub.is_hash |= (IVM_DEFAULT_SLOT_TABLE_SIZE >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 #endif
 
-	ret->mark = IVM_MARK_INIT;
 	ret->size = IVM_DEFAULT_SLOT_TABLE_SIZE;
 	ret->uid = ivm_vmstate_genUID(state);
 	ret->tabl = ivm_vmstate_alloc(state,
@@ -48,8 +48,9 @@ ivm_slot_table_new_c(ivm_vmstate_t *state,
 {
 	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	SET_BIT_FALSE(ret->is_hash);
-	SET_BIT_FALSE(ret->is_shared);
+	MEM_INIT(&ret->mark, sizeof(ret->mark));
+	SET_BIT_FALSE(ret->mark.sub.is_hash);
+	SET_BIT_FALSE(ret->mark.sub.is_shared);
 
 	if (prealloc < IVM_DEFAULT_SLOT_TABLE_SIZE) {
 		prealloc = IVM_DEFAULT_SLOT_TABLE_SIZE;
@@ -58,11 +59,10 @@ ivm_slot_table_new_c(ivm_vmstate_t *state,
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	if (prealloc >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
 		prealloc <<= 1; // lower load ratio
-		SET_BIT_TRUE(ret->is_hash);
+		SET_BIT_TRUE(ret->mark.sub.is_hash);
 	}
 #endif
 
-	ret->mark = IVM_MARK_INIT;
 	ret->size = prealloc;
 	ret->uid = ivm_vmstate_genUID(state);
 	ret->tabl = ivm_vmstate_alloc(state,
@@ -85,9 +85,9 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 
 	if (table) {
 		ret = ivm_heap_alloc(heap, sizeof(*ret));
-		ret->is_hash = table->is_hash;
-		SET_BIT_FALSE(ret->is_shared);
-		ret->mark = IVM_MARK_INIT;
+		MEM_INIT(&ret->mark, sizeof(ret->mark));
+		ret->mark.sub.is_hash = table->mark.sub.is_hash;
+		SET_BIT_FALSE(ret->mark.sub.is_shared);
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_heap_alloc(heap,
@@ -119,9 +119,9 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 
 	if (table) {
 		ret = ivm_vmstate_alloc(state, sizeof(*ret));
-		ret->is_hash = table->is_hash;
-		SET_BIT_FALSE(ret->is_shared);
-		ret->mark = IVM_MARK_INIT;
+		MEM_INIT(&ret->mark, sizeof(ret->mark));
+		ret->mark.sub.is_hash = table->mark.sub.is_hash;
+		SET_BIT_FALSE(ret->mark.sub.is_shared);
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_vmstate_alloc(state,
@@ -167,15 +167,15 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	table->size = dsize;
 
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
-	if (!table->is_hash &&
+	if (!table->mark.sub.is_hash &&
 		dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
-		SET_BIT_TRUE(table->is_hash);
+		SET_BIT_TRUE(table->mark.sub.is_hash);
 		// dsize <<= 1;
 		ret = IVM_TRUE;
 	}
 #endif
 
-	if (table->is_hash) {
+	if (table->mark.sub.is_hash) {
 		for (i = otable, end = i + osize;
 			 i != end; i++) {
 			if (i->k != IVM_NULL) {

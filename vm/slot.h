@@ -45,16 +45,35 @@ ivm_slot_getValue(ivm_slot_t *slot,
 }
 
 typedef struct ivm_slot_table_t_tag {
-	ivm_mark_t mark;
 	ivm_size_t size;
 	ivm_slot_t *tabl;
+	union {
+		struct {
+			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;
+			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - 4;
+			ivm_int_t is_hash: 1;
+			ivm_int_t is_shared: 1; // shared by multiple objects
+			ivm_int_t gen: 2;
+		} sub;
+		struct ivm_slot_table_t_tag *copy;
+	} mark;
 	ivm_uid_t uid;
-	ivm_int_t is_hash: 1;
-	ivm_int_t is_shared: 1; // shared by multiple objects
 } ivm_slot_table_t;
 
-#define ivm_slot_table_getCopy(table) ((ivm_slot_table_t *)(table)->mark)
-#define ivm_slot_table_setCopy(table, copy) ((table)->mark = (ivm_mark_t)(copy))
+#define ivm_slot_table_getCopy(table) ((ivm_slot_table_t *)((((ivm_uptr_t)(table)->mark.copy) << 4) >> 4))
+
+IVM_INLINE
+void
+ivm_slot_table_setCopy(ivm_slot_table_t *table,
+					   ivm_slot_table_t *copy)
+{
+	table->mark.copy = (ivm_slot_table_t *)
+					   ((((ivm_uptr_t)table->mark.copy
+					   	>> (sizeof(ivm_ptr_t) * 8 - 4))
+						<< (sizeof(ivm_ptr_t) * 8 - 4))
+						| (ivm_uptr_t)copy);
+	return;
+}
 
 ivm_slot_table_t *
 ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
@@ -74,11 +93,11 @@ IVM_INLINE
 ivm_slot_table_t *
 ivm_slot_table_copyShared(ivm_slot_table_t *table)
 {
-	IVM_BIT_SET_TRUE(table->is_shared);
+	IVM_BIT_SET_TRUE(table->mark.sub.is_shared);
 	return table;
 }
 
-#define ivm_slot_table_isShared(table) ((table)->is_shared)
+#define ivm_slot_table_isShared(table) ((table)->mark.sub.is_shared)
 
 ivm_slot_table_t *
 _ivm_slot_table_copy_state(ivm_slot_table_t *table,
@@ -135,7 +154,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
                                                                                  \
 		register ivm_slot_t *i, *tmp, *end;                                      \
                                                                                  \
-		if (table->is_hash) {                                                    \
+		if (table->mark.sub.is_hash) {                                           \
 		TO_HASH_TABLE:                                                           \
 			hash = ivm_hash_fromString(ivm_string_trimHead(key));                \
 			while (1) {                                                          \
@@ -235,7 +254,7 @@ SET_SLOT(
 		ivm_hash_val_t hash;                                                            \
 		register ivm_slot_t *i, *tmp, *end;                                             \
                                                                                         \
-		if (table->is_hash) {                                                           \
+		if (table->mark.sub.is_hash) {                                                  \
 			hash = ivm_hash_fromString(ivm_string_trimHead(key)) % table->size;         \
                                                                                         \
 			tmp = table->tabl + hash;                                                   \

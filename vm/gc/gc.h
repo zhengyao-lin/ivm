@@ -97,11 +97,9 @@ ivm_collector_quickCheck(ivm_object_t *obj,
 			return IVM_TRUE;
 		}
 	} else {
-		// *addr = IVM_NULL;
+		*addr = IVM_NULL;
 		return IVM_TRUE;
 	}
-
-	
 
 	/*if (ivm_heap_isIn(arg->heap, obj)) {
 		*addr = obj;

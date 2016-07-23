@@ -95,6 +95,7 @@ ivm_object_setSlot(ivm_object_t *obj,
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
+	ivm_object_adopt(obj, value);
 	slots = obj->slots;
 
 	if (slots) {
@@ -124,6 +125,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 	key = (const ivm_string_t *)
 		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
 
+	ivm_object_adopt(obj, value);
 	slots = obj->slots;
 
 	if (slots) {
@@ -150,6 +152,7 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 
 	IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
 
+	ivm_object_adopt(obj, value);
 	slots = obj->slots;
 
 	if (slots) {
@@ -259,7 +262,7 @@ ivm_object_printSlots(ivm_object_t *obj)
 	ivm_size_t ecount = 0; /* empty count */
 
 	IVM_TRACE("IVM_DEBUG slots in object %p(slot table using %s)\n",
-			  (void *)obj, obj->slots && obj->slots->is_hash ? "hash table" : "list");
+			  (void *)obj, obj->slots && obj->slots->mark.sub.is_hash ? "hash table" : "list");
 
 	if (obj->slots) {
 		IVM_SLOT_TABLE_EACHPTR(obj->slots, iter) {
@@ -272,7 +275,7 @@ ivm_object_printSlots(ivm_object_t *obj)
 			}
 		}
 
-		if (obj->slots->is_hash) {
+		if (obj->slots->mark.sub.is_hash) {
 			IVM_TRACE("\thash table load factor: %f\n",
 					  (double)ecount / obj->slots->size);
 		}

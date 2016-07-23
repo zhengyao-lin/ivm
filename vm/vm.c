@@ -16,9 +16,6 @@
 #include "proto.h"
 
 #define GC(state) ((state)->gc)
-#define HEAP1(state) (&(state)->cur_heap)
-#define HEAP2(state) (&(state)->empty_heap)
-#define HEAP_CUR HEAP1
 
 #include "type.req.h"
 
@@ -49,9 +46,10 @@ ivm_vmstate_new()
 	ivm_int_t i;
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
-	
-	ivm_heap_init(&ret->cur_heap, IVM_DEFAULT_INIT_HEAP_SIZE);
-	ivm_heap_init(&ret->empty_heap, IVM_DEFAULT_INIT_HEAP_SIZE);
+
+	for (i = 0; i < IVM_ARRLEN(ret->heaps); i++) {
+		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);
+	}
 
 	ret->cur_coro = 0;
 	ivm_coro_list_init(&ret->coro_list);
@@ -101,12 +99,14 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	ivm_coro_list_iterator_t citer;
 	ivm_type_t *i, *end;
+	ivm_int_t j;
 
 	if (state) {
 		ivm_collector_free(GC(state), state);
 
-		ivm_heap_dump(HEAP1(state));
-		ivm_heap_dump(HEAP2(state));
+		for (j = 0; j < IVM_ARRLEN(state->heaps); j++) {
+			ivm_heap_dump(state->heaps + j);
+		}
 
 		IVM_CORO_LIST_EACHPTR(&state->coro_list, citer) {
 			ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
@@ -136,9 +136,11 @@ void
 ivm_vmstate_reinit(ivm_vmstate_t *state)
 {
 	ivm_coro_list_iterator_t citer;
+	ivm_int_t i;
 
-	ivm_heap_reset(&state->cur_heap);
-	ivm_heap_reset(&state->empty_heap);
+	for (i = 0; i < IVM_ARRLEN(state->heaps); i++) {
+		ivm_heap_reset(state->heaps + i);
+	}
 
 	state->cur_coro = 0;
 	IVM_CORO_LIST_EACHPTR(&state->coro_list, citer) {
