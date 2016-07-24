@@ -83,26 +83,26 @@ ret
 
 i = 0
 
-list = [1, 2, 3, 4, 5] + [2, 4, 5]
-a = 0
+list = [2, 2, 3, 4, 5] + [2, 4, 5]
+a = 10
 while i < 10000000: {
 
-	list[i] = 10
+	list[i] = a
 
 	//print(list[2])
 	i = i + 1
 }
 
-print("hi")
+print("hey")
 
+//ret
 // list = []
-ret
 
 if 0: {
 	i = 1
 
 /*	while i < 1000000 && i > 0:
-		if i == 2 && 0: i = 0
+		if i == 2 && 0: i = 
 		elif 1:
 			if 0 && 1: 0
 			else: i = i + 1
@@ -151,7 +151,10 @@ ret
 */
 
 fib = fn n: {
+	//print("new")
 	if n < 2: ret 1
+	//print("hi")
+	// print(fib)
 	ret fib(n - 1) + fib(n - 2)
 }
 

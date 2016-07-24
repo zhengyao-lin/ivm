@@ -198,7 +198,7 @@ OPCODE_GEN(SET_SLOT_B, "set_slot_b", S, -1, {
 OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ1 = IVM_OBJECT_GET(STACK_POP(), PROTO);
+	_TMP_OBJ1 = ivm_object_getProto(STACK_POP());
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
 
 	NEXT_INSTR();
@@ -208,7 +208,7 @@ OPCODE_GEN(SET_PROTO, "set_proto", N, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
-	IVM_OBJECT_SET(_TMP_OBJ1, PROTO, STACK_POP());
+	ivm_object_setProto(_TMP_OBJ1, _STATE, STACK_POP());
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR();
@@ -220,6 +220,8 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, 1, {
 		SARG(), _INSTR
 	);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+
+	// IVM_TRACE("gcs: %p %s -> %p\n", _CONTEXT, ivm_string_trimHead(SARG()), _TMP_OBJ1);
 
 	NEXT_INSTR();
 })
@@ -449,6 +451,14 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 
 	CHECK_STACK(_TMP_ARGC + 1);
 	_TMP_OBJ1 = STACK_POP();
+
+	// IVM_TRACE("invoke! %p\n", _TMP_OBJ1);
+	// 
+	
+	// if (!IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T)) {
+	// 	STACK_PUSH(ivm_numeric_new(_STATE, 10016));
+	//	NEXT_INSTR();
+	//}
 
 	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));

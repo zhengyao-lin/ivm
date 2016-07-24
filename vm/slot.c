@@ -5,6 +5,7 @@
 #include "pub/const.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "std/hash.h"
 #include "std/string.h"
@@ -88,6 +89,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 		MEM_INIT(&ret->mark, sizeof(ret->mark));
 		ret->mark.sub.is_hash = table->mark.sub.is_hash;
 		SET_BIT_FALSE(ret->mark.sub.is_shared);
+		ret->mark.sub.gen = table->mark.sub.gen;
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_heap_alloc(heap,
@@ -122,6 +124,7 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 		MEM_INIT(&ret->mark, sizeof(ret->mark));
 		ret->mark.sub.is_hash = table->mark.sub.is_hash;
 		SET_BIT_FALSE(ret->mark.sub.is_shared);
+		// ret->mark.sub.gen = table->mark.sub.gen;
 		ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
 		ret->tabl = ivm_vmstate_alloc(state,
@@ -158,9 +161,13 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	ivm_bool_t ret = IVM_FALSE;
 
 	table->uid = ivm_vmstate_genUID(state);
-	table->tabl = ivm_vmstate_alloc(state,
-									sizeof(*table->tabl)
-									* dsize);
+	table->tabl = ivm_vmstate_allocAt(
+		state, sizeof(*table->tabl) * dsize,
+		ivm_slot_table_getGen(table)
+	);
+
+	// IVM_TRACE("slot table expanding!\n");
+
 	MEM_INIT(table->tabl,
 			 sizeof(*table->tabl)
 			 * dsize);

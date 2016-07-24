@@ -22,6 +22,8 @@ typedef struct ivm_heap_t_tag {
 #define IVM_HEAP_GET_BLOCK_SIZE(heap) ((heap)->bsize)
 #define IVM_HEAP_SET_BLOCK_SIZE(heap, val) ((heap)->bsize = (val))
 #define IVM_HEAP_GET_BLOCK_COUNT(heap) ((heap)->bcount)
+#define IVM_HEAP_GET_BLOCK_TOP(heap) ((heap)->btop)
+#define IVM_HEAP_GET_CUR_PTR(heap) ((heap)->bcurp)
 
 #define IVM_HEAP_GET_BLOCK_USED(heap) \
 	((heap)->bsize * (heap)->btop \

@@ -22,7 +22,8 @@ IVM_COM_HEADER
 	union {                                                    \
 		struct {                                               \
 			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;       \
-			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - 2;   \
+			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - 4;   \
+			ivm_int_t wb: 2;                                   \
 			ivm_int_t gen: 2;                                  \
 		} sub;                                                 \
 		struct ivm_object_t_tag *copy;                         \
@@ -112,9 +113,10 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_CONST_BOOL(obj) ((obj)->type->const_bool)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
-#define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << 2) >> 2))
+#define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << 4) >> 4))
+#define IVM_OBJECT_GET_WB(obj) ((obj)->mark.sub.wb)
 #define IVM_OBJECT_GET_GEN(obj) ((obj)->mark.sub.gen)
-#define IVM_OBJECT_GET_PROTO(obj) ((obj)->proto)
+#define IVM_OBJECT_GET_INC_GEN(obj) (++(obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark.sub.travp)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
@@ -127,15 +129,15 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 {
 	obj->mark.copy = (ivm_object_t *)
 					 ((((ivm_uptr_t)obj->mark.copy
-					 	>> (sizeof(ivm_ptr_t) * 8 - 2))
-					 	<< (sizeof(ivm_ptr_t) * 8 - 2))
+					 	>> (sizeof(ivm_ptr_t) * 8 - 4))
+					 	<< (sizeof(ivm_ptr_t) * 8 - 4))
 					 	| (ivm_uptr_t)copy);
 
 	return;
 }
 
+#define IVM_OBJECT_SET_WB(obj, val) ((obj)->mark.sub.wb = (val))
 #define IVM_OBJECT_SET_GEN(obj, val) ((obj)->mark.sub.gen = (val))
-#define IVM_OBJECT_SET_PROTO(obj, val) ((obj)->proto = (val))
 #define IVM_OBJECT_SET_TRAV_PROTECT(obj, val) ((obj)->mark.sub.travp)
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
@@ -163,19 +165,6 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
-
-IVM_INLINE
-void
-ivm_object_adopt(ivm_object_t *parent,
-				 ivm_object_t *child)
-{
-	if (child->mark.sub.gen <
-		parent->mark.sub.gen) {
-		// child younger than parent -> parent become the same
-		parent->mark.sub.gen = child->mark.sub.gen;
-	}
-	return;
-}
 
 IVM_INLINE
 void
@@ -230,19 +219,6 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_instr_t *instr);
-
-IVM_INLINE
-ivm_bool_t
-ivm_object_checkCacheValid(ivm_object_t *obj,
-						   ivm_instr_t *instr)
-{
-	return ivm_slot_table_checkCacheValid(obj->slots, instr);
-}
-
-/* use checkCacheValid to check validity before using it */
-#define ivm_object_getCacheSlot ivm_slot_table_getCacheSlot
-
-#define ivm_object_setCacheSlot ivm_slot_table_setCacheSlot
 
 #if 0
 /* no prototype */

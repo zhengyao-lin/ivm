@@ -104,6 +104,26 @@ ivm_object_newUndefined(ivm_vmstate_t *state)
 	return ret;
 }
 
+IVM_INLINE
+void
+ivm_object_setProto(ivm_object_t *obj,
+					ivm_vmstate_t *state,
+					ivm_object_t *proto)
+{
+	if (proto) {
+		IVM_WBOBJ(state, obj, proto);
+	}
+	obj->proto = proto;
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_getProto(ivm_object_t *obj)
+{
+	return obj->proto;
+}
+
 #define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
 #define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
 

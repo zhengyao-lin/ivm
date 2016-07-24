@@ -11,8 +11,6 @@
 
 IVM_COM_HEADER
 
-#define IVM_DEFAULT_DESTRUCT_LIST_BUFFER_SIZE 128
-
 struct ivm_vmstate_t_tag;
 struct ivm_ctchain_t_tag;
 
@@ -31,11 +29,42 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_object_t *) ivm_destruct_list_iterator_t;
 #define IVM_DESTRUCT_LIST_ITER_GET(iter) ((ivm_object_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_DESTRUCT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_object_t *)
 
+typedef ivm_ptlist_t ivm_wbobj_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_object_t *) ivm_wbobj_list_iterator_t;
+
+#define ivm_wbobj_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_WBOBJ_LIST_BUFFER_SIZE))
+#define ivm_wbobj_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_WBOBJ_LIST_BUFFER_SIZE))
+#define ivm_wbobj_list_dump ivm_ptlist_dump
+#define ivm_wbobj_list_free ivm_ptlist_free
+#define ivm_wbobj_list_push ivm_ptlist_push
+#define ivm_wbobj_list_empty ivm_ptlist_empty
+
+#define IVM_WBOBJ_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_WBOBJ_LIST_ITER_GET(iter) ((ivm_object_t *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_WBOBJ_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_object_t *)
+
+typedef ivm_ptlist_t ivm_wbslot_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_slot_table_t *) ivm_wbslot_list_iterator_t;
+
+#define ivm_wbslot_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_WBSLOT_LIST_BUFFER_SIZE))
+#define ivm_wbslot_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_WBSLOT_LIST_BUFFER_SIZE))
+#define ivm_wbslot_list_dump ivm_ptlist_dump
+#define ivm_wbslot_list_free ivm_ptlist_free
+#define ivm_wbslot_list_push ivm_ptlist_push
+#define ivm_wbslot_list_empty ivm_ptlist_empty
+
+#define IVM_WBSLOT_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_WBSLOT_LIST_ITER_GET(iter) ((ivm_slot_table_t *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_WBSLOT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_slot_table_t *)
+
 typedef struct ivm_collector_t_tag {
-	ivm_double_t live_ratio; // 0 - 100
+	ivm_destruct_list_t des_log[2];
+	ivm_wbobj_list_t wb_obj;
+	ivm_wbslot_list_t wb_slot;
 	ivm_long_t skip_time;
 	ivm_double_t bc_weight;
-	ivm_destruct_list_t des_log[2];
+	ivm_int_t live_ratio; // 0 - 100
+	ivm_int_t gen;
 } ivm_collector_t;
 
 // #define IVM_MARK_WHITE 0
@@ -47,12 +76,22 @@ typedef struct ivm_collector_t_tag {
 #define IVM_COLLECTOR_GET(obj, member) IVM_GET((obj), IVM_COLLECTOR, member)
 #define IVM_COLLECTOR_SET(obj, member, val) IVM_SET((obj), IVM_COLLECTOR, member, (val))
 
+#define ivm_collector_addWBObj(collector, obj) \
+	(ivm_wbobj_list_push(&(collector)->wb_obj, (obj)))
+
+#define ivm_collector_addWBSlotTable(collector, table) \
+	(ivm_wbslot_list_push(&(collector)->wb_slot, (table)))
+
+#define ivm_collector_getGen(collector) \
+	((collector)->gen)
+
 typedef struct ivm_traverser_arg_t_tag {
 	struct ivm_vmstate_t_tag *state;
 	ivm_heap_t *heap;
 	ivm_collector_t *collector;
 	void (*trav_ctchain)(struct ivm_ctchain_t_tag *chain,
 						 struct ivm_traverser_arg_t_tag *arg);
+	ivm_int_t gen;
 } ivm_traverser_arg_t;
 
 ivm_collector_t *
@@ -90,7 +129,14 @@ ivm_collector_quickCheck(ivm_object_t *obj,
 {
 	ivm_object_t *copy;
 
+
 	if (obj) {
+		// older generation -> skip
+		if (IVM_OBJECT_GET(obj, GEN) > arg->gen) {
+			*addr = obj;
+			return IVM_TRUE;
+		}
+
 		copy = IVM_OBJECT_GET(obj, COPY);
 		if (copy) {
 			*addr = copy;

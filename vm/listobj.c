@@ -34,6 +34,7 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 					  ivm_size_t count)
 {
 	ivm_list_object_t *ret;
+	ivm_object_t **i, **end;
 	
 	if (!count) return ivm_list_object_new(state, 0);
 
@@ -48,6 +49,12 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 	MEM_COPY(ret->lst, init, sizeof(*ret->lst) * count);
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+
+	for (i = ret->lst, end = i + count;
+		 i != end || IVM_OBJECT_GET(ret, WB); i++) {
+		if (*i)
+			IVM_WBOBJ(state, IVM_AS_OBJ(ret), *i);
+	}
 
 	return IVM_AS_OBJ(ret);
 }
@@ -127,6 +134,8 @@ ivm_list_object_set(ivm_list_object_t *list,
 		_ivm_list_object_expandTo(list, state, i + 1);
 	}
 
+	IVM_WBOBJ(state, IVM_AS_OBJ(list), obj);
+
 	return list->lst[i] = obj;
 }
 
@@ -138,11 +147,17 @@ ivm_list_object_link(ivm_list_object_t *list1,
 	ivm_size_t size = list1->size + list2->size;
 	ivm_object_t **nlist = MEM_ALLOC(sizeof(*nlist) * size,
 									 ivm_object_t **);
+	ivm_object_t *ret;
 
 	MEM_COPY(nlist, list1->lst, sizeof(*nlist) * list1->size);
 	MEM_COPY(nlist + list1->size, list2->lst, sizeof(*nlist) * list2->size);
 
-	return _ivm_list_object_new_nc(state, nlist, size);
+	ret = _ivm_list_object_new_nc(state, nlist, size);
+
+	IVM_WBOBJ(state, ret, IVM_AS_OBJ(list1)) ||
+	IVM_WBOBJ(state, ret, IVM_AS_OBJ(list2));
+
+	return ret;
 }
 
 void

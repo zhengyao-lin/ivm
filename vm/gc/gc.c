@@ -3,6 +3,7 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "util/perf.h"
 
@@ -28,6 +29,9 @@ ivm_collector_new()
 	ret->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
 	ivm_destruct_list_init(&ret->des_log[0]);
 	ivm_destruct_list_init(&ret->des_log[1]);
+	ivm_wbobj_list_init(&ret->wb_obj);
+	ivm_wbslot_list_init(&ret->wb_slot);
+	ret->gen = 0;
 
 	return ret;
 }
@@ -40,10 +44,16 @@ IVM_INLINE
 void
 ivm_collector_checkIfDestruct(ivm_collector_t *collector,
 							  ivm_object_t *obj,
-							  ivm_vmstate_t *state)
+							  ivm_vmstate_t *state,
+							  ivm_traverser_arg_t *arg)
 {
+	// IVM_TRACE("gen: %d\n", IVM_OBJECT_GET(obj, GEN));
 	if (!IVM_OBJECT_GET(obj, COPY)) {
-		ivm_object_destruct(obj, state);
+		if (IVM_OBJECT_GET(obj, GEN) <= arg->gen) {
+			ivm_object_destruct(obj, state);
+		} else {
+			ADD_EMPTY_LIST(collector, obj);
+		}
 	} else {
 		/* copy to another log */
 		ADD_EMPTY_LIST(collector, IVM_OBJECT_GET(obj, COPY));
@@ -56,7 +66,8 @@ IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_triggerDestructor(ivm_collector_t *collector,
-								ivm_vmstate_t *state)
+								ivm_vmstate_t *state,
+								ivm_traverser_arg_t *arg)
 {
 	ivm_destruct_list_t tmp;
 	ivm_destruct_list_iterator_t iter;
@@ -66,7 +77,7 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector,
 	IVM_DESTRUCT_LIST_EACHPTR(&collector->des_log[0], iter) {
 		ivm_collector_checkIfDestruct(collector,
 									  IVM_DESTRUCT_LIST_ITER_GET(iter),
-									  state);
+									  state, arg);
 	}
 
 	tmp = collector->des_log[0];
@@ -98,6 +109,8 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 		ivm_collector_triggerAllDestructor(collector, state);
 		ivm_destruct_list_dump(&collector->des_log[0]);
 		ivm_destruct_list_dump(&collector->des_log[1]);
+		ivm_wbobj_list_dump(&collector->wb_obj);
+		ivm_wbslot_list_dump(&collector->wb_slot);
 		MEM_FREE(collector);
 	}
 
@@ -111,49 +124,106 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 {
 	ivm_slot_table_t *ret = IVM_NULL;
 	ivm_slot_table_iterator_t siter;
+	ivm_int_t gen;
 
-	if (!table) return IVM_NULL;
+	if (table) {
+		gen = ivm_slot_table_getGen(table);
 
-	ret = ivm_slot_table_getCopy(table);
-	if (ret) return ret;
-	else if (ivm_heap_isIn(arg->heap, table))
-		return table;
+		if (gen > arg->gen) {
+			return table;
+		}
+
+		gen++;
+
+		// IVM_TRACE("gen %d\n", arg->gen);
+
+		ret = ivm_slot_table_getCopy(table);
+		if (ret) return ret;
+		else if (ivm_heap_isIn(arg->heap, table)) {
+			return table;
+		}
+	} else {
+		return IVM_NULL;
+	}
 
 	ret = ivm_slot_table_copy(table, arg->state, arg->heap);
 
+	if (gen < 2)
+		ivm_slot_table_setGen(ret, gen);
+	ivm_slot_table_setWB(table, 0);
 	ivm_slot_table_setCopy(table, ret);
+	// ivm_slot_table_updateUID(table, arg->state);
+
+	//IVM_TRACE("pa %p -> %p\n", table, ret);
 
 	IVM_SLOT_TABLE_EACHPTR(ret, siter) {
 		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
-			// IVM_TRACE("copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
+			//IVM_TRACE("  copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
 			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
 										ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
 																 arg));
 		}
 	}
 
+	// IVM_TRACE("end %p -> %p\n", table, ret);
+
 	return ret;
+}
+
+IVM_PRIVATE
+ivm_slot_table_t *
+ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
+							   ivm_traverser_arg_t *arg)
+{
+	ivm_object_t *tmp;
+	ivm_slot_table_iterator_t siter;
+	// ivm_int_t gen;
+
+	// IVM_TRACE("hey there? %p\n", table);
+
+	ivm_slot_table_setWB(table, 0);
+	// ivm_slot_table_updateUID(table, arg->state);
+
+	IVM_SLOT_TABLE_EACHPTR(table, siter) {
+		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
+			//IVM_TRACE("  copied slot: %s: %p -> ",
+			//		  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
+			//		  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
+			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+										(tmp = ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg)));
+			//IVM_TRACE("%p\n", tmp);
+		}
+	}
+
+	return table;
 }
 
 ivm_object_t *
 ivm_collector_copyObject_c(ivm_object_t *obj,
 						   ivm_traverser_arg_t *arg)
 {
-	ivm_object_t *ret = IVM_NULL;
+	ivm_object_t *ret;
 	ivm_traverser_t trav;
-	ivm_slot_table_t *tmp;
+	ivm_int_t gen = IVM_OBJECT_GET(obj, GEN) + 1;
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
 	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
+	if (gen < 2)
+		IVM_OBJECT_SET(ret, GEN, gen);
+	IVM_OBJECT_SET(ret, WB, 0);
 	IVM_OBJECT_SET(obj, COPY, ret);
 
 	IVM_OBJECT_SET(
 		ret, SLOTS,
-		tmp = ivm_collector_copySlotTable(IVM_OBJECT_GET(ret, SLOTS), arg)
+		ivm_collector_copySlotTable(IVM_OBJECT_GET(ret, SLOTS), arg)
 	);
 
-	IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
+	// IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
+	ivm_object_setProto(
+		ret, arg->state,
+		ivm_collector_copyObject(ivm_object_getProto(ret), arg)
+	);
 
 	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
 	if (trav) {
@@ -161,6 +231,36 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 	}
 
 	return ret;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+ivm_object_t *
+ivm_collector_copyObject_ng(ivm_object_t *obj,
+							ivm_traverser_arg_t *arg)
+{
+	ivm_traverser_t trav;
+	// ivm_slot_table_t *tmp;
+	// ivm_int_t gen = IVM_OBJECT_GET(obj, GEN);
+
+	IVM_OBJECT_SET(obj, WB, 0);
+
+	IVM_OBJECT_SET(
+		obj, SLOTS,
+		ivm_collector_copySlotTable(IVM_OBJECT_GET(obj, SLOTS), arg)
+	);
+
+	ivm_object_setProto(
+		obj, arg->state,
+		ivm_collector_copyObject(ivm_object_getProto(obj), arg)
+	);
+
+	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
+	if (trav) {
+		trav(obj, arg);
+	}
+
+	return obj;
 }
 
 IVM_PRIVATE
@@ -308,6 +408,34 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	return;
 }
 
+IVM_PRIVATE
+IVM_INLINE
+void
+ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
+								ivm_traverser_arg_t *arg)
+{
+	ivm_wbobj_list_iterator_t oiter;
+	ivm_wbslot_list_iterator_t siter;
+
+	if (!arg->gen) {
+		IVM_WBOBJ_LIST_EACHPTR(&collector->wb_obj, oiter) {
+			ivm_collector_copyObject_ng(IVM_WBOBJ_LIST_ITER_GET(oiter), arg);
+		}
+	}
+
+	ivm_wbobj_list_empty(&collector->wb_obj);
+
+	if (!arg->gen) {
+		IVM_WBSLOT_LIST_EACHPTR(&collector->wb_slot, siter) {
+			ivm_collector_copySlotTable_ng(IVM_WBSLOT_LIST_ITER_GET(siter), arg);
+		}
+	}
+
+	ivm_wbobj_list_empty(&collector->wb_slot);
+
+	return;
+}
+
 #if IVM_USE_PERF_PROFILE
 
 clock_t ivm_perf_gc_time = 0;
@@ -326,42 +454,75 @@ ivm_collector_collect(ivm_collector_t *collector,
 #endif
 
 	ivm_traverser_arg_t arg;
+	ivm_int_t orig = 0;
+	ivm_heap_t *heap1 = ivm_vmstate_getHeapAt(state, 0);
+	ivm_heap_t *heap2 = ivm_vmstate_getHeapAt(state, 1);
+	ivm_heap_t *swap = ivm_vmstate_getHeapAt(state, 2);
+	ivm_int_t tmp_ratio;
+	// ivm_size_t heap2_orig = IVM_HEAP_GET(heap2, BLOCK_USED);
+
+	arg.state = state;
+	arg.collector = collector;
+	arg.trav_ctchain = ivm_collector_travContextChain;
+	arg.gen = collector->gen;
+
+	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);
 
 	if (collector->live_ratio > IVM_DEFAULT_GC_MAX_LIVE_RATIO &&
 		collector->skip_time < IVM_DEFAULT_GC_MAX_SKIP) {
-		collector->live_ratio -= IVM_HEAP_GET(heap, BLOCK_COUNT) * collector->bc_weight;
+		// IVM_TRACE("skip! %d\n", collector->live_ratio);
+		collector->live_ratio -= IVM_HEAP_GET(heap2, BLOCK_TOP) * collector->bc_weight;
 		collector->skip_time++;
 		return;
 	}
 
 	collector->skip_time = 0;
 
-	arg.state = state;
-	arg.heap = IVM_VMSTATE_GET(state, EMPTY_HEAP);
-	arg.collector = collector;
-	arg.trav_ctchain = ivm_collector_travContextChain;
+	if (arg.gen) {
+		// full gc
+		// second gen need gc too -> all copy to swap heap
+		arg.heap = swap;
+		ivm_heap_reset(swap);
+	} else {
+		// partial gc
+		arg.heap = heap2;
+		orig = IVM_HEAP_GET(heap2, BLOCK_TOP);
+	}
 
-	ivm_heap_reset(arg.heap);
+	// IVM_TRACE("***collecting*** %d\n", arg.gen);
 
-	// IVM_TRACE("***collecting***\n");
-
+	ivm_collector_checkWriteBarrier(collector, &arg);
 	ivm_collector_travState(&arg);
 
-	collector->live_ratio
-	= IVM_HEAP_GET(arg.heap, BLOCK_USED) * 100 / IVM_HEAP_GET(heap, BLOCK_USED);
+	if (arg.gen) {
+		tmp_ratio = IVM_HEAP_GET(swap, BLOCK_USED) * 100 /
+					(IVM_HEAP_GET(heap1, BLOCK_USED) + IVM_HEAP_GET(heap2, BLOCK_USED));
+		//collector->live_ratio = tmp_ratio;
+		// IVM_TRACE("1, live ratio: %d\n", tmp_ratio);
+		collector->live_ratio = tmp_ratio;
 
-	if (collector->live_ratio > IVM_DEFAULT_GC_BC_RESTORE_RATIO) {
-		// if (collector->bc_weight > IVM_DEFAULT_GC_MIN_BC_WEIGHT)
-		collector->bc_weight /= collector->live_ratio;
-	} else collector->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+		if (tmp_ratio > IVM_DEFAULT_GC_MAX_LIVE_RATIO) {
+			collector->bc_weight /= tmp_ratio;
+		} else collector->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+	}
 
-	// IVM_TRACE("%.20f\n", collector->bc_weight);
-
+	//
 	// IVM_TRACE("live ratio: %ld %ld %d\n", IVM_HEAP_GET(arg.heap, BLOCK_USED), IVM_HEAP_GET(heap, BLOCK_USED), collector->live_ratio);
 
-	ivm_collector_triggerDestructor(collector, state);
-	ivm_vmstate_swapHeap(state);
-	ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
+	ivm_collector_triggerDestructor(collector, state, &arg);
+
+	// ivm_heap_compact(IVM_VMSTATE_GET(state, CUR_HEAP));
+	ivm_heap_reset(ivm_vmstate_getHeapAt(state, 0));
+
+	if (arg.gen) {
+		ivm_heap_reset(ivm_vmstate_getHeapAt(state, 1));
+		ivm_vmstate_swapHeap(state, 1, 2);
+		collector->gen = 0;
+	} else if (IVM_HEAP_GET(heap2, BLOCK_TOP) > orig) {
+		// IVM_TRACE("hi\n");
+		IVM_TRACE("heap2 is full\n");
+		collector->gen = 1;
+	}
 
 	ivm_vmstate_closeGCFlag(state);
 

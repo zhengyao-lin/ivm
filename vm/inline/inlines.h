@@ -3,6 +3,7 @@
 
 #include "vm/inline/vm.h"
 
+#include "vm/inline/slot.h"
 #include "vm/inline/obj.h"
 #include "vm/inline/call.h"
 #include "vm/inline/context.h"

@@ -301,7 +301,6 @@ slot_test1 {
 	new_num_i 0
 	set_context_slot "i"
 
-
 loop:/************************************/
 	get_context_slot "i"
 	new_num_i 10000000
@@ -317,6 +316,8 @@ loop:/************************************/
 	new_num_i 10000
 	mod
 	jump_true no_set
+
+	// out_num
 
 	dup_n 2
 	set_slot "wowowowg"

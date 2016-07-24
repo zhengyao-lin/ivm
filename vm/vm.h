@@ -107,6 +107,47 @@ ivm_vmstate_findHeap(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
 
+#define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
+#define ivm_vmstate_getHeaps(state) ((state)->heaps)
+
+IVM_INLINE
+ivm_bool_t
+IVM_WBOBJ(ivm_vmstate_t *state,
+		  ivm_object_t *parent,
+		  ivm_object_t *child)
+{
+	if (IVM_OBJECT_GET(parent, GEN) >
+		IVM_OBJECT_GET(child, GEN)) {
+		if (!IVM_OBJECT_GET(parent, WB)) {
+			ivm_collector_addWBObj(state->gc, parent);
+			IVM_OBJECT_SET(parent, WB, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
+ivm_bool_t
+IVM_WBSLOT(ivm_vmstate_t *state,
+		   ivm_slot_table_t *table,
+		   ivm_object_t *value)
+{
+	// IVM_TRACE("wow %d %d\n", ivm_slot_table_getGen(table), IVM_OBJECT_GET(value, GEN));
+	if (ivm_slot_table_getGen(table) >
+		IVM_OBJECT_GET(value, GEN)) {
+		if (!ivm_slot_table_getWB(table)) {
+			// IVM_TRACE("pop! %p %p(%s)\n", table, value, IVM_OBJECT_GET(value, TYPE_NAME));
+			ivm_collector_addWBSlotTable(state->gc, table);
+			ivm_slot_table_setWB(table, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
 IVM_INLINE
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
@@ -122,12 +163,27 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 }
 
 IVM_INLINE
-void
-ivm_vmstate_swapHeap(ivm_vmstate_t *state)
+void *
+ivm_vmstate_allocAt(ivm_vmstate_t *state, ivm_size_t size, ivm_int_t heap)
 {
-	ivm_heap_t tmp = state->heaps[0];
-	state->heaps[0] = state->heaps[1];
-	state->heaps[1] = tmp;
+	ivm_bool_t add_block = IVM_FALSE;
+	void *ret = ivm_heap_alloc_c((state)->heaps + heap, size, &add_block);
+
+	if (add_block) {
+		ivm_vmstate_openGCFlag(state);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_swapHeap(ivm_vmstate_t *state,
+					 ivm_int_t i, ivm_int_t j)
+{
+	ivm_heap_t tmp = state->heaps[i];
+	state->heaps[i] = state->heaps[j];
+	state->heaps[j] = tmp;
 
 	return;
 }
