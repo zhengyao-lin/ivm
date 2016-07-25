@@ -3,6 +3,8 @@
 
 #include "pub/inlines.h"
 
+#include "native/native.h"
+
 #include "obj.h"
 #include "num.h"
 #include "strobj.h"

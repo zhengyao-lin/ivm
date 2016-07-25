@@ -29,6 +29,13 @@ ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 					  ivm_size_t size);
 
 IVM_INLINE
+ivm_size_t
+ivm_list_getSize(ivm_list_object_t *list)
+{
+	return list->size;
+}
+
+IVM_INLINE
 ivm_object_t *
 ivm_list_object_get(ivm_list_object_t *list,
 					ivm_long_t i)

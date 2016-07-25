@@ -69,7 +69,7 @@ int main(int argc, const char **argv)
 
 		OPTION("p", "-profile", "[enable|disable]", "enable(as default)/disable performance profile", {
 			if (!(tmp_str = ARG()->value)) {
-				cfg_prof = IVM_TRUE;
+				cfg_prof = !cfg_prof;
 			} else {
 				if (!IVM_STRCMP(tmp_str, "enable")) {
 					cfg_prof = IVM_TRUE;

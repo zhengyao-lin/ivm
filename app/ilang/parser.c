@@ -179,7 +179,8 @@ enum state_t {
 };
 
 ivm_list_t *
-_ilang_parser_getTokens(const ivm_char_t *src)
+_ilang_parser_getTokens(const ivm_char_t *src,
+						ivm_bool_t debug)
 {
 	ivm_list_t *ret = TOKENIZE(src,
 		/* INIT */
@@ -387,7 +388,8 @@ _ilang_parser_getTokens(const ivm_char_t *src)
 		}
 	}
 
-	_ivm_parser_dumpToken(ret);
+	if (debug)
+		_ivm_parser_dumpToken(ret);
 
 	return ret;
 }
@@ -404,14 +406,16 @@ struct rule_val_t {
 		ilang_gen_trans_unit_t *unit;
 	} u;
 };
+
 struct env_t {
 	ilang_gen_trans_unit_t *unit;
+	ivm_bool_t debug;
 };
 
 #define R EXPECT_RULE
 #define T EXPECT_TOKEN
 
-#define DBB(...) { __VA_ARGS__; } // debug block
+#define DBB(...) { if (_ENV->debug) { __VA_ARGS__; } } // debug block
 
 /*
 	sep : newl
@@ -2013,9 +2017,32 @@ _ivm_parser_parseToken(ivm_list_t *tokens,
 {
 	struct rule_val_t rule_ret;
 	ilang_gen_trans_unit_t *ret = ilang_gen_trans_unit_new();
-	struct env_t env = { ret };
+	struct env_t env = { ret, IVM_TRUE };
 
 	RULE_START(trans_unit, &env, &rule_ret, tokens, *suc);
+
+	return ret;
+}
+
+// null for parse error
+ilang_gen_trans_unit_t *
+ilang_parser_parseSource(ivm_char_t *src,
+						 ivm_bool_t debug)
+{
+	ivm_list_t *tokens = _ilang_parser_getTokens(src, debug);
+	struct rule_val_t rule_ret;
+	ilang_gen_trans_unit_t *ret = ilang_gen_trans_unit_new();
+	struct env_t env = { ret, debug };
+	ivm_bool_t suc;
+
+	RULE_START(trans_unit, &env, &rule_ret, tokens, suc);
+
+	if (!suc) {
+		ilang_gen_trans_unit_free(ret);
+		ret = IVM_NULL;
+	}
+
+	ivm_list_free(tokens);
 
 	return ret;
 }

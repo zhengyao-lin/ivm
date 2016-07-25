@@ -94,6 +94,7 @@ while i < 10000000: {
 }
 
 print("hey")
+print(list.size())
 
 //ret
 // list = []

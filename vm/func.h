@@ -25,9 +25,8 @@ typedef struct {
 } ivm_function_arg_t;
 
 typedef ivm_uint16_t ivm_signal_mask_t;
-typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *state,
-											   ivm_ctchain_t *context,
-											   ivm_function_arg_t arg);
+typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
+											   ivm_ctchain_t *, ivm_function_arg_t);
 
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 
@@ -122,6 +121,14 @@ ivm_object_t *
 ivm_function_object_new(struct ivm_vmstate_t_tag *state,
 						ivm_ctchain_t *context,
 						const ivm_function_t *func);
+
+IVM_INLINE
+ivm_object_t *
+ivm_function_object_newNative(struct ivm_vmstate_t_tag *state,
+							  ivm_native_function_t func)
+{
+	return ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, func));
+}
 
 void
 ivm_function_object_traverser(ivm_object_t *obj,

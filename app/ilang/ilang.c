@@ -7,6 +7,8 @@
 #include "std/io.h"
 
 #include "util/perf.h"
+#include "util/console.h"
+#include "util/serial.h"
 
 #include "vm/dbg.h"
 #include "vm/env.h"
@@ -45,95 +47,169 @@ _ivm_parser_parseToken(ivm_list_t *tokens, ivm_bool_t *suc);
 
 int main(int argc, const char **argv)
 {
+	ivm_env_init();
+
 	ivm_char_t *src = IVM_NULL;
-	ivm_file_t *fp = IVM_NULL;
-	ivm_list_t *tokens = IVM_NULL;
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
 	ivm_exec_unit_t *exec_unit;
 	ivm_vmstate_t *state;
 	ivm_context_t *ctx;
-	ivm_bool_t suc;
-
-	if (argc == 2) {
-		fp = ivm_file_new(argv[1], "rb");
-		IVM_ASSERT(fp, "cannot open %s", argv[1]);
-		src = ivm_file_readAll(fp);
-	} else {
-		src = "a(fn a, b: a + b).a.b(a + b * v);";
-	}
-
-	ivm_env_init();
-
-/***********************************************/
-
-	ivm_perf_reset();
-	ivm_perf_startProfile();
-
-	tokens = _ilang_parser_getTokens(src);
-
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
-
-/***********************************************/
-
-	ivm_perf_reset();
-	ivm_perf_startProfile();
-
-	unit = _ivm_parser_parseToken(tokens, &suc);
-	IVM_TRACE("is legal: %d\n", suc);
 	
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
+	ivm_serial_exec_unit_t *s_unit;
 
-	ivm_list_free(tokens);
+	const ivm_char_t *tmp_str;
+	ivm_bool_t is_failed = IVM_FALSE;
 
-/***********************************************/
+	/* config */
+	ivm_bool_t cfg_prof = IVM_TRUE;
+	ivm_bool_t cfg_debug = IVM_FALSE;
+	ivm_file_t *output_cache = IVM_NULL;
+	ivm_file_t *src_file = IVM_NULL;
 
-	ivm_perf_reset();
-	ivm_perf_startProfile();
+#define OPTION IVM_CONSOLE_ARG_DIRECT_MATCH_OPTION
+#define NORMAL IVM_CONSOLE_ARG_DIRECT_MATCH_STRING
+#define DEFAULT IVM_CONSOLE_ARG_DIRECT_DEFAULT
+#define ARG IVM_CONSOLE_ARG_DIRECT_CUR
+#define HELP IVM_CONSOLE_ARG_DIRECT_PRINT_HELP
+#define FAILED IVM_CONSOLE_ARG_DIRECT_FAILED
+#define ERROR IVM_CONSOLE_ARG_DIRECT_ERROR
+#define ILLEGAL_ARG IVM_CONSOLE_ARG_DIRECT_ILLEGAL_ARG
 
-	exec_unit = ilang_gen_generateExecUnit(unit);
-	ivm_dbg_printExecUnit(exec_unit, stderr);
+	IVM_CONSOLE_ARG_DIRECT("ilang", "1.0", argc, argv,
+		OPTION("p", "-profile", "[enable|disable]", "enable(as default)/disable performance profile", {
+			if (!(tmp_str = ARG()->value)) {
+				cfg_prof = !cfg_prof;
+			} else {
+				if (!IVM_STRCMP(tmp_str, "enable")) {
+					cfg_prof = IVM_TRUE;
+				} else if (!IVM_STRCMP(tmp_str, "disable")) {
+					cfg_prof = IVM_FALSE;
+				} else {
+					ILLEGAL_ARG();
+				}
+			}
+		})
 
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
+		OPTION("d", "-debug", "[disable|enable]", "disable(as default)/enable debug mode", {
+			if (!(tmp_str = ARG()->value)) {
+				cfg_debug = !cfg_debug;
+			} else {
+				if (!IVM_STRCMP(tmp_str, "enable")) {
+					cfg_debug = IVM_TRUE;
+				} else if (!IVM_STRCMP(tmp_str, "disable")) {
+					cfg_debug = IVM_FALSE;
+				} else {
+					ILLEGAL_ARG();
+				}
+			}
+		})
 
-/***********************************************/
+		OPTION("c", "-cache", "<file path>", "compile and save cache file to the specified path", {
+			tmp_str = ARG()->value;
+			if (!tmp_str) {
+				ILLEGAL_ARG();
+			} else {
+				if (output_cache) {
+					ERROR("too many cache file outputs given");
+				} else if (!(output_cache = ivm_file_new(tmp_str, IVM_FMODE_WRITE_BINARY))) {
+					ERROR("cannot open cache file %s", tmp_str);
+				}
+			}
+		})
 
-	ilang_gen_trans_unit_free(unit);
-	if (fp) {
-		ivm_file_free(fp);
-		MEM_FREE(src);
-	}
+		NORMAL({
+			tmp_str = ARG()->value;
+			if (src_file) {
+				ERROR("too many source files given");
+			} else {
+				src_file = ivm_file_new(tmp_str, IVM_FMODE_READ_BINARY);
+				if (!src_file) {
+					ERROR("cannot open source file %s", tmp_str);
+				}
+			}
+		}),
 
-	state = ivm_exec_unit_generateVM(exec_unit);
-	ivm_exec_unit_free(exec_unit);
+		if (!src_file) {
+			FAILED(IVM_FALSE, "no available source file given");
+		},
 
-	ivm_vmstate_lockGCFlag(state);
-
-	ctx = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
-
-	ivm_context_setSlot_r(
-		ctx, state, "print",
-		ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
+		is_failed
 	);
 
-	ivm_vmstate_unlockGCFlag(state);
+#undef OPTION
+#undef NORMAL
+#undef DEFAULT
+#undef ARG
+#undef HELP
+#undef FAILED
+#undef ERROR
+#undef ILLEGAL_ARG
 
-/***********************************************/
+	if (is_failed) return 1;
 
-	ivm_perf_reset();
-	ivm_perf_startProfile();
+	src = ivm_file_readAll(src_file);
 
-	ivm_vmstate_schedule(state);
+#define PROF_START() \
+	if (cfg_prof) {                \
+		ivm_perf_reset();          \
+		ivm_perf_startProfile();   \
+	}
 
-	ivm_perf_stopProfile();
-	ivm_perf_printElapsed();
+#define PROF_END() \
+	if (cfg_prof) {                \
+		ivm_perf_stopProfile();    \
+		ivm_perf_printElapsed();   \
+	}
 
-/***********************************************/
+	PROF_START();
+	unit = ilang_parser_parseSource(src, cfg_debug);
+	PROF_END();
 
-	ivm_vmstate_free(state);
+	if (!unit) return 1;
 
+	PROF_START();
+	exec_unit = ilang_gen_generateExecUnit(unit);
+	if (cfg_debug)
+		ivm_dbg_printExecUnit(exec_unit, stderr);
+	PROF_END();
+
+	ilang_gen_trans_unit_free(unit);
+	MEM_FREE(src);
+
+	if (output_cache) {
+		s_unit = ivm_serial_serializeExecUnit(exec_unit, IVM_NULL);
+		ivm_serial_execUnitToFile(s_unit, output_cache);
+
+		ivm_serial_exec_unit_free(s_unit);
+		ivm_exec_unit_free(exec_unit);
+	} else {
+		state = ivm_exec_unit_generateVM(exec_unit);
+		ivm_exec_unit_free(exec_unit);
+
+		// set native
+		ivm_vmstate_lockGCFlag(state);
+
+		ctx = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
+
+		ivm_context_setSlot_r(
+			ctx, state, "print",
+			ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
+		);
+
+		ivm_vmstate_unlockGCFlag(state);
+
+		// execute
+		PROF_START();
+		ivm_vmstate_schedule(state);
+		PROF_END();
+
+		ivm_vmstate_free(state);
+	}
+
+	ivm_file_free(src_file);
+	ivm_file_free(output_cache);
+
+#if 0
 #define PSIZE(type) IVM_TRACE(#type ": %d\n", sizeof(type))
 	// IVM_TRACE("vmstate: %d\n", sizeof(ivm_vmstate_t));
 	// IVM_TRACE("arg: %d\n", sizeof(ivm_opcode_arg_t));
@@ -151,5 +227,7 @@ int main(int argc, const char **argv)
 	PSIZE(ivm_ptlist_t);
 	IVM_TRACE("op count: %d\n", IVM_BINOP_COUNT);
 */
+#endif
+
 	return 0;
 }

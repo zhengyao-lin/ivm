@@ -11,6 +11,10 @@
 
 IVM_COM_HEADER
 
+ilang_gen_trans_unit_t *
+ilang_parser_parseSource(ivm_char_t *str,
+						 ivm_bool_t debug);
+
 IVM_COM_END
 
 #endif
