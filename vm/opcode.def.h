@@ -476,6 +476,8 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
+		INVOKE_STACK();
+
 		_TMP_OBJ1 = ivm_function_callNative(
 			_TMP_FUNC, _STATE, _CONTEXT,
 			IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
@@ -515,6 +517,8 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 			), _RUNTIME, _FRAME_STACK, _TMP_ARGV[_TMP_ARGC]
 		)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
+
+		INVOKE_STACK();
 
 		_TMP_OBJ1 = ivm_function_callNative(
 			_TMP_FUNC, _STATE, _CONTEXT,

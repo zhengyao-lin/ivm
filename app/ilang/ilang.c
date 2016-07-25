@@ -26,7 +26,7 @@ IVM_NATIVE_FUNC(print)
 
 	switch (IVM_TYPE_TAG_OF(obj)) {
 		case IVM_NUMERIC_T:
-			IVM_TRACE("num: %f\n", ivm_numeric_getValue(obj));
+			IVM_TRACE("num: %.3f\n", ivm_numeric_getValue(obj));
 			break;
 		case IVM_STRING_OBJECT_T:
 			IVM_TRACE("str: %s\n", ivm_string_trimHead(ivm_string_object_getValue(obj)));

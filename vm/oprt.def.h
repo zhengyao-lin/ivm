@@ -31,7 +31,10 @@ BINOP_GEN(NUMERIC, MOD, NUMERIC, {
 })
 
 BINOP_GEN(NUMERIC, CMP, NUMERIC, {
-	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) - ivm_numeric_getValue(_OP2));
+	ivm_double_t a = ivm_numeric_getValue(_OP1);
+	ivm_double_t b = ivm_numeric_getValue(_OP2);
+
+	return (ivm_object_t *)(ivm_ptr_t)(a > b ? 1 : (a < b ? -1: 0));
 })
 
 BINOP_GEN(NUMERIC, AND, NUMERIC, {

@@ -87,7 +87,7 @@ list = [2, 2, 3, 4, 5] + [2, 4, 5]
 a = 10
 while i < 10000000: {
 
-	list[i] = a
+	list[i] = 1
 
 	//print(list[2])
 	i = i + 1
