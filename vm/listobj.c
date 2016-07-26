@@ -16,11 +16,13 @@ ivm_list_object_new(ivm_vmstate_t *state,
 
 	ret->alloc = IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE;
 	ret->size = size;
-	ret->lst = MEM_ALLOC(sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE,
-						 ivm_object_t **);
 
 	if (size) {
+		ret->lst = MEM_ALLOC(sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE,
+							 ivm_object_t **);
 		MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
+	} else {
+		ret->lst = IVM_NULL;
 	}
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
@@ -105,30 +107,13 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 	return;
 }
 
-IVM_PRIVATE
-IVM_INLINE
-ivm_long_t
-_ivm_list_object_realIndex(ivm_list_object_t *list,
-						   ivm_long_t i)
-{
-	if (i < 0) {
-		i = -i % list->size;
-
-		if (i) {
-			i = list->size - i;
-		}
-	}
-
-	return i;
-}
-
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,
 					ivm_vmstate_t *state,
 					ivm_long_t i,
 					ivm_object_t *obj)
 {
-	i = _ivm_list_object_realIndex(list, i);
+	i = ivm_list_object_realIndex(list, i);
 
 	if (i >= list->size) {
 		_ivm_list_object_expandTo(list, state, i + 1);

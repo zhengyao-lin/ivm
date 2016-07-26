@@ -31,6 +31,7 @@ TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t), {
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _list_size));
+	ivm_object_setSlot_r(tmp, _STATE, "slice", IVM_NATIVE_WRAP(_STATE, _list_slice));
 
 }, .des = ivm_list_object_destructor,
    .trav = ivm_list_object_traverser,

@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_list_size);
+IVM_NATIVE_FUNC(_list_slice);
 
 IVM_COM_END
 

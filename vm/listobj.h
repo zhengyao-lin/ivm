@@ -28,11 +28,33 @@ ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 					  ivm_object_t **init,
 					  ivm_size_t size);
 
+#define ivm_list_object_core(list) ((list)->lst)
+
 IVM_INLINE
 ivm_size_t
-ivm_list_getSize(ivm_list_object_t *list)
+ivm_list_object_getSize(ivm_list_object_t *list)
 {
 	return list->size;
+}
+
+IVM_INLINE
+ivm_long_t
+ivm_list_object_realIndex(ivm_list_object_t *list,
+						  ivm_long_t i)
+{
+	if (!list->size) {
+		return i < 0 ? 0 : i;
+	}
+
+	if (i < 0) {
+		i = -i % list->size;
+
+		if (i) {
+			i = list->size - i;
+		}
+	}
+
+	return i;
 }
 
 IVM_INLINE
@@ -44,7 +66,7 @@ ivm_list_object_get(ivm_list_object_t *list,
 		if (i < list->size) {
 			return list->lst[i];
 		}
-	} else {
+	} else if (list->size) {
 		i = -i % list->size;
 
 		if (i) {
