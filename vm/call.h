@@ -15,7 +15,8 @@ IVM_COM_HEADER
 #define IVM_FRAME_HEADER \
 	struct ivm_ctchain_t_tag *ctx; \
 	ivm_instr_t *ip; \
-	struct ivm_object_t_tag **bp;
+	struct ivm_object_t_tag **bp; \
+	ivm_instr_t *cat; // catch
 
 #define IVM_FRAME_HEADER_SIZE \
 	(sizeof(struct { IVM_FRAME_HEADER }))

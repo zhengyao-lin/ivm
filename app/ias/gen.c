@@ -302,6 +302,7 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 		case 'D':
 			switch (param) {
 				case 'I':
+				case 'A':
 					return
 						ivm_opcode_arg_fromInt(
 							_ias_gen_env_refJumpAddr(

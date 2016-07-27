@@ -158,13 +158,12 @@ ivm_exec_preproc(ivm_exec_t *exec,
 						)
 					);
 					break;
-			}
-
-			if (ivm_opcode_table_isJump(ivm_instr_opcode(i)) &&
-				ivm_opcode_arg_toInt(ivm_instr_arg(i)) + addr >= end) {
-				// jump exceed
-				ivm_exec_addInstr(exec, RETURN);
-				end = exec->next; // update end
+				case 'A':
+					if (ivm_opcode_arg_toInt(ivm_instr_arg(i)) + addr >= end) {
+						ivm_exec_addInstr(exec, RETURN);
+						end = exec->next; // update end
+					}
+					break;
 			}
 		}
 
@@ -178,7 +177,9 @@ ivm_exec_preproc(ivm_exec_t *exec,
 		for (i = exec->instrs, j = i + exec->next;
 			 i != j; i++) {
 			// cache final jump addr of jump instr
-			if (ivm_opcode_table_isJump(ivm_instr_opcode(i))) {
+			
+			if (ivm_opcode_table_getParam(ivm_instr_opcode(i))[0]
+				== 'A') {
 				ivm_instr_setArg(i,
 					ivm_opcode_arg_fromPointer(
 						i + ivm_opcode_arg_toInt(

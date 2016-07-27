@@ -554,6 +554,27 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 	NEXT_INSTR();
 })
 
+/*
+OPCODE_GEN(RPROTECT, "rprotect", A, -1, {
+	if (AVAIL_STACK) {
+		_TMP_OBJ1 = STACK_POP();
+	} else {
+		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+	}
+
+	YIELD();
+})
+
+OPCODE_GEN(RAISE, "raise", N, -1, {
+	if (AVAIL_STACK) {
+		_TMP_OBJ1 = STACK_POP();
+	} else {
+		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+	}
+
+	YIELD();
+})
+*/
 OPCODE_GEN(YIELD, "yield", N, -1, {
 	if (AVAIL_STACK) {
 		_TMP_OBJ1 = STACK_POP();
@@ -574,11 +595,11 @@ OPCODE_GEN(RETURN, "return", N, -1, {
 	RETURN();
 })
 
-OPCODE_GEN(JUMP, "jump", I, 0, {
+OPCODE_GEN(JUMP, "jump", A, 0, {
 	GOTO_SET_INSTR(ADDR_ARG());
 })
 
-OPCODE_GEN(JUMP_TRUE, "jump_true", I, -1, {
+OPCODE_GEN(JUMP_TRUE, "jump_true", A, -1, {
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -586,7 +607,7 @@ OPCODE_GEN(JUMP_TRUE, "jump_true", I, -1, {
 	}
 })
 
-OPCODE_GEN(JUMP_FALSE, "jump_false", I, -1, {
+OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -594,7 +615,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", I, -1, {
 	}
 })
 
-OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, 0, {
+OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
 	if (_TMP_CMP_REG) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -602,7 +623,7 @@ OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", I, 0, {
 	}
 })
 
-OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", I, 0, {
+OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", A, 0, {
 	if (!_TMP_CMP_REG) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -611,7 +632,7 @@ OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", I, 0, {
 })
 
 /* no pop */
-OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", I, -1, {
+OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", A, -1, {
 	if (ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -619,7 +640,7 @@ OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", I, -1, {
 	}
 })
 
-OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", I, -1, {
+OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 	if (!ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -627,7 +648,7 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", I, -1, {
 	}
 })
 
-OPCODE_GEN(JUMP_LT, "jump_lt", I, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_LT, "jump_lt", A, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 < 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -635,7 +656,7 @@ OPCODE_GEN(JUMP_LT, "jump_lt", I, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_LE, "jump_le", I, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_LE, "jump_le", A, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 <= 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -643,7 +664,7 @@ OPCODE_GEN(JUMP_LE, "jump_le", I, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_GT, "jump_gt", I, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_GT, "jump_gt", A, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 > 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -651,7 +672,7 @@ OPCODE_GEN(JUMP_GT, "jump_gt", I, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_GE, "jump_ge", I, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_GE, "jump_ge", A, -2, CMP_BINOP_HANDLER(
 	if ((ivm_ptr_t)_TMP_OBJ1 >= 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {

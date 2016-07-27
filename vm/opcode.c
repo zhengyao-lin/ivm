@@ -96,13 +96,8 @@ ivm_opcode_table_getStackInc(ivm_opcode_t opc)
 ivm_bool_t
 ivm_opcode_table_isJump(ivm_opcode_t opc)
 {
-	ivm_opcode_entry_t entry;
 	checkLegal(opc);
-
-	entry = opcode_table[opc];
-
-	return entry.is_jump ||
-		   (opcode_table[opc].is_jump = IS_JUMP(entry.name));
+	return opcode_table[opc].param[0] == 'A';
 }
 
 ivm_opcode_t

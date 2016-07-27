@@ -78,6 +78,7 @@ typedef struct ivm_instr_t_tag {
 
 #define IVM_INSTR_TYPE_N_ARG 						/* none */
 #define IVM_INSTR_TYPE_I_ARG ivm_long_t arg,		/* int */
+#define IVM_INSTR_TYPE_A_ARG ivm_long_t arg,		/* address */
 #define IVM_INSTR_TYPE_X_ARG ivm_long_t arg,		/* exec */
 #define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,		/* float */
 #define IVM_INSTR_TYPE_S_ARG const char *str,		/* string */

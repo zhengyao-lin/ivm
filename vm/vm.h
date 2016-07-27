@@ -29,6 +29,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_context_pool_t *ct_pool;				// 8
 
+	// ivm_object_t *except;
 	ivm_coro_list_t coro_list;					// 24
 
 	// ivm_type_list_t type_list;

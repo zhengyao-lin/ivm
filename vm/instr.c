@@ -14,6 +14,9 @@
 #define INSTR_TYPE_I_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromInt(arg)
 
+#define INSTR_TYPE_A_ARG_INIT(instr, exec) \
+	ivm_opcode_arg_fromInt(arg)
+
 #define INSTR_TYPE_X_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromInt(arg)
 
