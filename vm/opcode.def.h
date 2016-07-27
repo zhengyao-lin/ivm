@@ -555,26 +555,32 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 })
 
 /*
-OPCODE_GEN(RPROTECT, "rprotect", A, -1, {
-	if (AVAIL_STACK) {
-		_TMP_OBJ1 = STACK_POP();
-	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
-	}
+	raise protection set/cancel
+ */
+OPCODE_GEN(RPROT_SET, "rprot_set", A, 0, {
+	IVM_RUNTIME_SET(_RUNTIME, CATCH, ADDR_ARG());
+	NEXT_INSTR();
+})
 
-	YIELD();
+OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
+	IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);
+	NEXT_INSTR();
 })
 
 OPCODE_GEN(RAISE, "raise", N, -1, {
-	if (AVAIL_STACK) {
-		_TMP_OBJ1 = STACK_POP();
+	CHECK_STACK(1);
+	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);
+	if (_TMP_CATCH) {
+		// cancel raise protection
+		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);
+		GOTO_SET_INSTR(_TMP_CATCH);
 	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+		// no raise protection -> fall back
+		_TMP_OBJ1 = STACK_POP();
+		RAISE();
 	}
-
-	YIELD();
 })
-*/
+
 OPCODE_GEN(YIELD, "yield", N, -1, {
 	if (AVAIL_STACK) {
 		_TMP_OBJ1 = STACK_POP();

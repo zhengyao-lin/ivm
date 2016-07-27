@@ -33,8 +33,10 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
+#define IVM_FRAME_GET_CATCH(frame) ((frame)->cat)
 
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
+#define IVM_FRAME_SET_CATCH(frame, val) ((frame)->cat = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))

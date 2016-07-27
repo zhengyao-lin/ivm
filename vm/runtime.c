@@ -28,6 +28,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 	runtime->ctx = ivm_ctchain_addRef(context);
 	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->bp = runtime->sp;
+	runtime->cat = IVM_NULL;
 
 	return;
 }

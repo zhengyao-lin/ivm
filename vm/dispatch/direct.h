@@ -64,6 +64,7 @@
 #define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
+#define RAISE() goto ACTION_RAISE
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
 #define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))
@@ -259,5 +260,6 @@
 #define _TMP_FUNC (tmp_func)
 #define _TMP_ARGC (tmp_argc)
 #define _TMP_ARGV (tmp_argv)
+#define _TMP_CATCH (tmp_catch)
 
 #endif

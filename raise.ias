@@ -1,0 +1,35 @@
+err_func2 {
+	new_str "this is an serious error"
+	raise
+}
+
+err_func1 {
+	new_func err_func2
+	invoke 0
+}
+
+protected {
+	rprot_set CATCH // try {
+
+	new_func err_func1
+	invoke 0
+
+	rprot_cac		// }
+	jump FINAL
+CATCH:				// catch (err) {
+	set_arg "err"
+
+	get_context_slot "err"
+	out_str
+	pop
+
+	jump FINAL		// }
+
+FINAL:				// final {
+}
+
+root {
+	new_func protected
+	invoke 0
+	out "everything is ok"
+}

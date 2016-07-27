@@ -103,6 +103,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	register ivm_sint32_t tmp_argc;
 	register ivm_object_t **tmp_argv;
 
+	register ivm_instr_t *tmp_catch;
+
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
 	* 
@@ -176,6 +178,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		while (1) {
 ACTION_INVOKE:
 			tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
+ACTION_RAISE_NEXT:
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
 			if (tmp_ip) {
@@ -210,6 +213,29 @@ END_EXEC:
 			}
 #endif
 
+ACTION_RAISE:
+			do {
+				ivm_runtime_dump(tmp_runtime, state);
+				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
+				if (tmp_frame) {
+					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE))
+						goto END;
+				} else {
+					ivm_coro_kill(coro, state);
+					goto END;
+				}
+			} while (!IVM_FRAME_GET(tmp_frame, CATCH));
+			// find a frame with raise protection
+
+			tmp_ip = IVM_FRAME_GET(tmp_frame, CATCH);
+			IVM_FRAME_SET(tmp_frame, CATCH, IVM_NULL);
+
+			UPDATE_STACK();
+			// push raised object
+			STACK_PUSH(_TMP_OBJ1);
+			
+			goto ACTION_RAISE_NEXT;
+
 ACTION_RETURN:
 
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
@@ -233,6 +259,8 @@ ACTION_RETURN:
 
 goto END;
 ACTION_YIELD:
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, _TMP_OBJ1));
-END: return _TMP_OBJ1;
+	IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(YIELD, _TMP_OBJ1));
+
+END:
+	return _TMP_OBJ1;
 }
