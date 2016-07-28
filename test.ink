@@ -81,6 +81,14 @@ ret
 
 // a = i[1]
 
+
+print(try: (fn:fn:fn:fn:raise "wonrg!!")()()()())
+
+try: (fn:fn:fn:fn:raise "right!")()()()()
+catch err: print(err)
+
+print(a)
+
 i = 0
 
 list = [2, 2, 3, 4, 5] + [2, 4, 5]

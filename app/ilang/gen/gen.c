@@ -11,6 +11,7 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_t *list = block->list;
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_expr;
+	ivm_bool_t has_ret = IVM_FALSE;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "expression block", flag);
 
@@ -29,6 +30,7 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 				tmp_expr,
 				FLAG(0), env
 			);
+			has_ret = IVM_TRUE;
 		} else if (!flag.is_top_level ||
 				   tmp_expr->check(tmp_expr, CHECK_SE())) {
 			// is top level or has side effect => generate
@@ -39,6 +41,10 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 				env
 			);
 		}
+	}
+
+	if (!has_ret && !flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
 	}
 
 	return NORET();
@@ -62,23 +68,4 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	ivm_opt_optExec(top_level);
 
 	return ret;
-}
-
-ivm_bool_t
-ilang_gen_expr_block_check(ilang_gen_expr_t *expr,
-						   ilang_gen_check_flag_t flag)
-{
-	ilang_gen_expr_block_t *block = IVM_AS(expr, ilang_gen_expr_block_t);
-	ilang_gen_expr_list_t *list = block->list;
-	ilang_gen_expr_list_iterator_t eiter;
-	ilang_gen_expr_t *tmp_expr;
-
-	ILANG_GEN_EXPR_LIST_EACHPTR_R(list, eiter) {
-		tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-		if (tmp_expr->check(tmp_expr, flag)) {
-			return IVM_TRUE;
-		}
-	}
-
-	return IVM_FALSE;
 }

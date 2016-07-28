@@ -93,6 +93,11 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
 			break;
+		case ILANG_GEN_INTR_RAISE:
+			IVM_ASSERT(intr->val, "impossible");
+			intr->val->eval(intr->val, FLAG(0), env);
+			ivm_exec_addInstr(env->cur_exec, RAISE);
+			break;
 		default:
 			IVM_FATAL("unsupported interrupt signal");
 	}

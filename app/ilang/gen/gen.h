@@ -24,6 +24,7 @@ typedef struct {
 	ivm_size_t len;
 } ilang_gen_token_value_t;
 
+#define ilang_gen_token_value_isEmpty(t) (!(t).val)
 #define ilang_gen_token_value_build(val, len) ((ilang_gen_token_value_t) { (val), (len) })
 
 typedef struct {
@@ -202,6 +203,11 @@ ilang_gen_value_t
 ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 						  ilang_gen_flag_t flag,
 						  ilang_gen_env_t *env);
+
+ilang_gen_value_t
+ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
+						ilang_gen_flag_t flag,
+						ilang_gen_env_t *env);
 
 ilang_gen_value_t
 ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
@@ -510,6 +516,7 @@ COMMON_EXPR(if_expr, "if expression", {
    ilang_gen_branch_list_t *elifs,
    ilang_gen_branch_t last);
 
+/* while expr */
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ilang_gen_expr_t *cond;
@@ -525,8 +532,32 @@ COMMON_EXPR(while_expr, "while expression", {
 enum {
 	ILANG_GEN_INTR_RET = 1,
 	ILANG_GEN_INTR_CONT,
-	ILANG_GEN_INTR_BREAK
+	ILANG_GEN_INTR_BREAK,
+	ILANG_GEN_INTR_RAISE
 };
+
+/* try expr */
+typedef struct {
+	ilang_gen_token_value_t arg;
+	ilang_gen_expr_t *body;
+} ilang_gen_catch_branch_t;
+
+#define ilang_gen_catch_branch_build(arg, body) ((ilang_gen_catch_branch_t) { (arg), (body) })
+
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *try_body;
+	ilang_gen_catch_branch_t catch_body;
+	ilang_gen_expr_t *final_body;
+} ilang_gen_try_expr_t;
+
+COMMON_EXPR(try_expr, "try expression", {
+	ret->try_body = try_body;
+	ret->catch_body = catch_body;
+	ret->final_body = final_body;
+}, ilang_gen_expr_t *try_body,
+   ilang_gen_catch_branch_t catch_body,
+   ilang_gen_expr_t *final_body);
 
 /* intr expr */
 typedef struct {

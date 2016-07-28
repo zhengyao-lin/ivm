@@ -165,7 +165,7 @@ int main(int argc, const char **argv)
 	unit = ilang_parser_parseSource(src, cfg_debug);
 	PROF_END();
 
-	if (!unit) return 1;
+	if (!unit) goto CLEAN;
 
 	PROF_START();
 	exec_unit = ilang_gen_generateExecUnit(unit);
@@ -174,7 +174,6 @@ int main(int argc, const char **argv)
 	PROF_END();
 
 	ilang_gen_trans_unit_free(unit);
-	MEM_FREE(src);
 
 	if (output_cache) {
 		s_unit = ivm_serial_serializeExecUnit(exec_unit, IVM_NULL);
@@ -206,6 +205,8 @@ int main(int argc, const char **argv)
 		ivm_vmstate_free(state);
 	}
 
+CLEAN:
+	MEM_FREE(src);
 	ivm_file_free(src_file);
 	ivm_file_free(output_cache);
 

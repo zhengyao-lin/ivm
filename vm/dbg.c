@@ -44,6 +44,13 @@ _ivm_dbg_printInstr(ivm_exec_t *exec,
 					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
 					ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
 			break;
+		case 'A':
+			fprintf(fp, "%s%-20s %ld",
+					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
+					!exec || ivm_exec_cached(exec)
+					? IVM_PTR_DIFF(ivm_opcode_arg_toPointer(ivm_instr_arg(ip)), ip, ivm_instr_t)
+					: ivm_opcode_arg_toInt(ivm_instr_arg(ip)));
+			break;
 		case 'F':
 			fprintf(fp, "%s%-20s %f",
 					buffer, ivm_opcode_table_getName(ivm_instr_opcode(ip)),
@@ -206,8 +213,9 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_vmstack_t *stack = runtime.stack;
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);;
 
-	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d, cmp_reg: %d):\n",
-			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg);
+	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d, cmp_reg: %d, catch: %p):\n",
+			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg,
+			  (void *)IVM_RUNTIME_GET(IVM_CORO_GET(runtime.coro, RUNTIME), CATCH));
 
 #if 0
 #if IVM_STACK_CACHE_N_TOS == 1

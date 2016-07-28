@@ -237,6 +237,8 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 			   *begin_ref_back,
 			   *end_ref_back;
 
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "while expression", flag);
+
 	if (flag.is_top_level &&
 		!expr->check(expr, CHECK_SE())) {
 		return NORET();
@@ -336,6 +338,67 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	ivm_list_free(end_ref);
 	env->begin_ref = begin_ref_back;
 	env->end_ref = end_ref_back;
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
+						ilang_gen_flag_t flag,
+						ilang_gen_env_t *env)
+{
+	ilang_gen_try_expr_t *try_expr = IVM_AS(expr, ilang_gen_try_expr_t);
+	ivm_size_t addr1, addr2;
+	ivm_char_t *tmp_str;
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "try expression", flag);
+
+	if (flag.is_top_level &&
+		!expr->check(expr, CHECK_SE())) {
+		return NORET();
+	}
+
+	/*
+		try:
+			rprot_set catch
+			[try body]
+			rprot_cac
+			jump final
+		catch:
+			[catch body]
+			jump final
+		final:
+			[final body]
+	 */
+	
+	/* try body */
+	addr1 = ivm_exec_addInstr(env->cur_exec, RPROT_SET, 0);
+	try_expr->try_body->eval(try_expr->try_body, FLAG(.is_top_level = IVM_TRUE), env);
+	ivm_exec_addInstr(env->cur_exec, RPROT_CAC);
+	addr2 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+
+	/* catch body */
+	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
+	if (!ilang_gen_token_value_isEmpty(try_expr->catch_body.arg)) {
+		tmp_str = ivm_parser_parseStr(try_expr->catch_body.arg.val, try_expr->catch_body.arg.len);
+		ivm_exec_addInstr(env->cur_exec, SET_ARG, tmp_str);
+		MEM_FREE(tmp_str);
+	} else {
+		ivm_exec_addInstr(env->cur_exec, POP);
+	}
+	if (try_expr->catch_body.body) {
+		try_expr->catch_body.body->eval(try_expr->catch_body.body, FLAG(.is_top_level = IVM_TRUE), env);
+	}
+	// addr1 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+	/* fallthrough */
+
+	/* final body */
+	ivm_exec_setArgAt(env->cur_exec, addr2, ivm_exec_cur(env->cur_exec) - addr2);
+	if (try_expr->final_body) {
+		try_expr->final_body->eval(try_expr->final_body, FLAG(.is_top_level = flag.is_top_level), env);
+	} else if (!flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+	}
 
 	return NORET();
 }

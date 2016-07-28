@@ -1,6 +1,25 @@
 #include "priv.h"
 
 ivm_bool_t
+ilang_gen_expr_block_check(ilang_gen_expr_t *expr,
+						   ilang_gen_check_flag_t flag)
+{
+	ilang_gen_expr_block_t *block = IVM_AS(expr, ilang_gen_expr_block_t);
+	ilang_gen_expr_list_t *list = block->list;
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_expr;
+
+	ILANG_GEN_EXPR_LIST_EACHPTR_R(list, eiter) {
+		tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+		if (tmp_expr->check(tmp_expr, flag)) {
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
+}
+
+ivm_bool_t
 ilang_gen_int_expr_check(ilang_gen_expr_t *expr,
 						 ilang_gen_check_flag_t flag)
 {
@@ -195,6 +214,12 @@ ilang_gen_while_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
 	}
 
 	return IVM_FALSE;
+}
+
+ivm_bool_t
+ilang_gen_try_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	return IVM_TRUE;
 }
 
 ivm_bool_t
