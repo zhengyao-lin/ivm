@@ -45,6 +45,10 @@ BINOP_GEN(IVM_NULL_T, CMP, IVM_NULL_T, {
 	return (ivm_object_t *)(ivm_ptr_t)0;
 })
 
+BINOP_GEN(IVM_OBJECT_T, CMP, IVM_OBJECT_T, {
+	return (ivm_object_t *)(ivm_ptr_t)(_OP1 == _OP2);
+})
+
 BINOP_GEN(IVM_STRING_OBJECT_T, CMP, IVM_STRING_OBJECT_T, {
 	return (ivm_object_t *)(ivm_ptr_t)ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2));
 })

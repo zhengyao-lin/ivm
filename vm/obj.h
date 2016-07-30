@@ -156,6 +156,10 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
 
+#define IVM_OBJECT_DO_BINOP_PROC(op1, op, op2) \
+	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
+						 IVM_OBJECT_GET((op2), TYPE_TAG)))
+
 #define IVM_OBJECT_GET_BINOP_PROC_R(op1, i, op2) \
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
@@ -165,6 +169,23 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
+					 ivm_object_t *op1,
+					 ivm_int_t op,
+					 ivm_object_t *op2)
+{
+	ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC_R(op1, op, op2);
+	if (proc) {
+		return proc(state, op1, op2, IVM_NULL);
+	}
+	return IVM_NULL;
+}
+
+#define ivm_object_doBinOp(state, op1, op, op2) \
+	(ivm_object_doBinOp_c((state), (op1), IVM_BINOP_ID(op), (op2)))
 
 IVM_INLINE
 void
