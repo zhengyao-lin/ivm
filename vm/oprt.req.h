@@ -1,6 +1,7 @@
 #ifndef _IVM_VM_OPRT_REQ_H_
 #define _IVM_VM_OPRT_REQ_H_
 
+#include "pub/type.h"
 #include "pub/vm.h"
 #include "pub/err.h"
 #include "pub/inlines.h"

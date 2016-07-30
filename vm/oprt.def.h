@@ -1,55 +1,67 @@
-UNIOP_GEN(NOT, NUMERIC, {
+UNIOP_GEN(NOT, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
 })
 
-UNIOP_GEN(NEG, NUMERIC, {
+UNIOP_GEN(NEG, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, -ivm_numeric_getValue(_OP1));
 })
 
-UNIOP_GEN(POS, NUMERIC, {
+UNIOP_GEN(POS, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1));
 })
 
-BINOP_GEN(NUMERIC, ADD, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, ADD, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) + ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, SUB, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, SUB, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) - ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, MUL, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, MUL, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) * ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, DIV, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, DIV, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) / ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, MOD, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, MOD, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, fmod(ivm_numeric_getValue(_OP1), ivm_numeric_getValue(_OP2)));
 })
 
-BINOP_GEN(NUMERIC, CMP, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, CMP, IVM_NUMERIC_T, {
 	ivm_double_t a = ivm_numeric_getValue(_OP1);
 	ivm_double_t b = ivm_numeric_getValue(_OP2);
 
 	return (ivm_object_t *)(ivm_ptr_t)(a > b ? 1 : (a < b ? -1: 0));
 })
 
-BINOP_GEN(NUMERIC, AND, NUMERIC, {
+BINOP_GEN(IVM_UNDEFINED_T, CMP, IVM_UNDEFINED_T, {
+	return (ivm_object_t *)(ivm_ptr_t)0;
+})
+
+BINOP_GEN(IVM_NULL_T, CMP, IVM_NULL_T, {
+	return (ivm_object_t *)(ivm_ptr_t)0;
+})
+
+BINOP_GEN(IVM_STRING_OBJECT_T, CMP, IVM_STRING_OBJECT_T, {
+	return (ivm_object_t *)(ivm_ptr_t)ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2));
+})
+
+BINOP_GEN(IVM_NUMERIC_T, AND, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) & (ivm_long_t)ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, EOR, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, EOR, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) ^ (ivm_long_t)ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(NUMERIC, IOR, NUMERIC, {
+BINOP_GEN(IVM_NUMERIC_T, IOR, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) | (ivm_long_t)ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(STRING_OBJECT, ADD, STRING_OBJECT, {
+BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 	const ivm_string_t *str1 = ivm_string_object_getValue(_OP1);
 	const ivm_string_t *str2 = ivm_string_object_getValue(_OP2);
 	ivm_size_t len1 = ivm_string_length(str1);
@@ -68,13 +80,13 @@ BINOP_GEN(STRING_OBJECT, ADD, STRING_OBJECT, {
 	return ivm_string_object_new(_STATE, ret);
 })
 
-BINOP_GEN(OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
-BINOP_GEN(NUMERIC, IDX, STRING_OBJECT, GET_STRING_INDEX())
-BINOP_GEN(STRING_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
-BINOP_GEN(FUNCTION_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
-BINOP_GEN(LIST_OBJECT, IDX, STRING_OBJECT, GET_STRING_INDEX())
+BINOP_GEN(IVM_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
+BINOP_GEN(IVM_NUMERIC_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
+BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
+BINOP_GEN(IVM_FUNCTION_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
+BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
 
-BINOP_GEN(LIST_OBJECT, IDX, NUMERIC, {
+BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	ivm_object_t *tmp;
 
 	if (_ASSIGN) {
@@ -90,7 +102,7 @@ BINOP_GEN(LIST_OBJECT, IDX, NUMERIC, {
 	return tmp ? tmp : IVM_UNDEFINED(_STATE);
 })
 
-BINOP_GEN(LIST_OBJECT, ADD, LIST_OBJECT, {
+BINOP_GEN(IVM_LIST_OBJECT_T, ADD, IVM_LIST_OBJECT_T, {
 	return ivm_list_object_link(IVM_AS(_OP1, ivm_list_object_t),
 								IVM_AS(_OP2, ivm_list_object_t),
 								_STATE);

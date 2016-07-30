@@ -33,7 +33,7 @@ typedef double					ivm_double_t;
 typedef wchar_t					ivm_wchar_t;
 typedef char					ivm_char_t;
 
-#define IVM_NULL				(NULL)
+#define IVM_NULL				((void *)0)
 #define IVM_FALSE				0
 #define IVM_TRUE				!0
 

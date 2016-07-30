@@ -104,6 +104,15 @@ ivm_string_compare(const ivm_string_t *a,
 								 ivm_string_length(a))));
 }
 
+IVM_INLINE
+ivm_int_t
+ivm_string_compare_c(const ivm_string_t *a,
+					 const ivm_string_t *b)
+{
+	if (a == b) return 0;
+	return IVM_STRCMP(ivm_string_trimHead(a), ivm_string_trimHead(b));
+}
+
 ivm_int_t /* same as strcmp */
 ivm_string_compareToRaw(const ivm_string_t *a,
 						const ivm_char_t *b);

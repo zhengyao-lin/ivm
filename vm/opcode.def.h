@@ -80,62 +80,86 @@ OPCODE_GEN(IOR, "ior", N, -1, DEFAULT_BINOP_HANDLER(IOR, "|", IVM_NULL))
 OPCODE_GEN(IDX, "idx", N, -1, DEFAULT_BINOP_HANDLER(IDX, "[]", IVM_NULL))
 OPCODE_GEN(IDX_ASSIGN, "idx_assign", N, -2, DEFAULT_BINOP_HANDLER(IDX, "[]", STACK_POP()))
 
-OPCODE_GEN(LT, "lt", N, -1, CMP_BINOP_HANDLER(
+OPCODE_GEN(LT, "lt", N, -1, CMP_BINOP_HANDLER(0,
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 < 0));
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(LE, "le", N, -1, CMP_BINOP_HANDLER(
+OPCODE_GEN(LE, "le", N, -1, CMP_BINOP_HANDLER(0,
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 <= 0));
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(GT, "gt", N, -1, CMP_BINOP_HANDLER(
+OPCODE_GEN(GT, "gt", N, -1, CMP_BINOP_HANDLER(0,
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 > 0));
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(GE, "ge", N, -1, CMP_BINOP_HANDLER(
+OPCODE_GEN(GE, "ge", N, -1, CMP_BINOP_HANDLER(0,
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 >= 0));
 	NEXT_INSTR();
 ))
 
 OPCODE_GEN(EQ, "eq", N, -1, CMP_BINOP_HANDLER(
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			STACK_PUSH(ivm_numeric_new(_STATE, IVM_FALSE));
+			NEXT_INSTR();
+		}
+	},
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 == 0));
 	NEXT_INSTR();
 ))
 
 OPCODE_GEN(NE, "ne", N, -1, CMP_BINOP_HANDLER(
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			STACK_PUSH(ivm_numeric_new(_STATE, IVM_TRUE));
+			NEXT_INSTR();
+		}
+	},
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 != 0));
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_BINOP_HANDLER(0,
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 < 0;
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(LE_R, "le_r", N, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(LE_R, "le_r", N, -2, CMP_BINOP_HANDLER(0,
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 <= 0;
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_BINOP_HANDLER(0,
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 > 0;
 	NEXT_INSTR();
 ))
 
-OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_BINOP_HANDLER(0,
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 >= 0;
 	NEXT_INSTR();
 ))
 
 OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_BINOP_HANDLER(
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			_TMP_CMP_REG = IVM_FALSE;
+			NEXT_INSTR();
+		}
+	},
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 == 0;
 	NEXT_INSTR();
 ))
 
 OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_BINOP_HANDLER(
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			_TMP_CMP_REG = IVM_TRUE;
+			NEXT_INSTR();
+		}
+	},
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 != 0;
 	NEXT_INSTR();
 ))
@@ -654,7 +678,7 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 	}
 })
 
-OPCODE_GEN(JUMP_LT, "jump_lt", A, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_LT, "jump_lt", A, -2, CMP_BINOP_HANDLER(0,
 	if ((ivm_ptr_t)_TMP_OBJ1 < 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -662,7 +686,7 @@ OPCODE_GEN(JUMP_LT, "jump_lt", A, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_LE, "jump_le", A, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_LE, "jump_le", A, -2, CMP_BINOP_HANDLER(0,
 	if ((ivm_ptr_t)_TMP_OBJ1 <= 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -670,7 +694,7 @@ OPCODE_GEN(JUMP_LE, "jump_le", A, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_GT, "jump_gt", A, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_GT, "jump_gt", A, -2, CMP_BINOP_HANDLER(0,
 	if ((ivm_ptr_t)_TMP_OBJ1 > 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -678,7 +702,7 @@ OPCODE_GEN(JUMP_GT, "jump_gt", A, -2, CMP_BINOP_HANDLER(
 	}
 ))
 
-OPCODE_GEN(JUMP_GE, "jump_ge", A, -2, CMP_BINOP_HANDLER(
+OPCODE_GEN(JUMP_GE, "jump_ge", A, -2, CMP_BINOP_HANDLER(0,
 	if ((ivm_ptr_t)_TMP_OBJ1 >= 0) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {

@@ -82,12 +82,10 @@ ret
 // a = i[1]
 
 
-print(try: (fn:fn:fn:fn:raise "wonrg!!")()()()())
+print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == undefined)
 
 try: (fn:fn:fn:fn:raise "right!")()()()()
 catch err: print(err)
-
-print(a)
 
 i = 0
 

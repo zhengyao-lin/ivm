@@ -212,7 +212,8 @@ END_EXEC:
 				_TMP_OBJ1 = IVM_NULL_OBJ(state);
 			}
 #endif
-
+			IVM_FATAL("impossible");
+			// unreachable
 ACTION_RAISE:
 			do {
 				ivm_runtime_dump(tmp_runtime, state);

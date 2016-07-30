@@ -194,6 +194,8 @@ int main(int argc, const char **argv)
 			ctx, state, "print",
 			ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
 		);
+		ivm_context_setSlot_r(ctx, state, "null", IVM_NULL_OBJ(state));
+		ivm_context_setSlot_r(ctx, state, "undefined", IVM_UNDEFINED(state));
 
 		ivm_vmstate_unlockGCFlag(state);
 

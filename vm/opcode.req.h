@@ -53,13 +53,15 @@
 		NEXT_INSTR();                                                                          \
 	}
 
-#define CMP_BINOP_HANDLER(todo) \
+#define CMP_BINOP_HANDLER(e1, todo) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);                  \
+                                                                                               \
+		e1;                                                                                    \
                                                                                                \
 		IVM_ASSERT(_TMP_BIN_PROC,                                                              \
 				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
