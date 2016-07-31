@@ -21,6 +21,7 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
 	ret->alive = IVM_FALSE;
+	ret->has_native = IVM_FALSE;
 
 	return ret;
 }
@@ -104,6 +105,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	register ivm_object_t **tmp_argv;
 
 	register ivm_instr_t *tmp_catch;
+	register ivm_bool_t tmp_bool;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
@@ -213,7 +215,7 @@ END_EXEC:
 			}
 #endif
 			IVM_FATAL("impossible");
-			// unreachable
+
 ACTION_RAISE:
 			do {
 				ivm_runtime_dump(tmp_runtime, state);

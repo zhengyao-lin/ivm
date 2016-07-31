@@ -216,3 +216,23 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 
 	return;
 }
+
+/* schedule one round */
+ivm_object_t *
+ivm_vmstate_schedule_r(ivm_vmstate_t *state,
+					   ivm_object_t *ret)
+{
+	ivm_coro_list_t *coros = &state->coro_list;
+	ivm_size_t skip = state->cur_coro;
+
+	while (ivm_coro_list_size(coros)) {
+		if (!_ivm_vmstate_switchCoro(state)) {
+			IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
+		}
+		if (state->cur_coro == skip) break;
+		ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
+							  state, ret);
+	}
+
+	return ret;
+}

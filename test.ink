@@ -86,6 +86,8 @@ print("hello" == "hello")
 try: (fn:fn:fn:fn:raise "right!")()()()()
 catch err: print(err)
 
+print(call(fn:"ok!"))
+
 i = 0
 
 list = [2, 2, 3, 4, 5] + [2, 4, 5]

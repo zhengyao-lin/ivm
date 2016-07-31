@@ -10,6 +10,7 @@
 #include "util/console.h"
 #include "util/serial.h"
 
+#include "vm/native/native.h"
 #include "vm/dbg.h"
 #include "vm/env.h"
 
@@ -37,6 +38,21 @@ IVM_NATIVE_FUNC(print)
 	}
 
 	return IVM_NULL;
+}
+
+IVM_NATIVE_FUNC(call)
+{
+	ivm_function_object_t *func;
+	ivm_coro_t *coro;
+
+	IVM_ASSERT(arg.argc, "call need at least 1 argument");
+
+	func = IVM_AS(arg.argv[0], ivm_function_object_t);
+	coro = IVM_VMSTATE_GET(state, CUR_CORO);
+
+	ivm_function_object_invoke(func, state, coro);
+
+	return ivm_coro_resume(coro, state, IVM_NULL);
 }
 
 ivm_list_t *
@@ -190,10 +206,8 @@ int main(int argc, const char **argv)
 
 		ctx = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
 
-		ivm_context_setSlot_r(
-			ctx, state, "print",
-			ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(print)))
-		);
+		ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
+		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));
 		ivm_context_setSlot_r(ctx, state, "null", IVM_NULL_OBJ(state));
 		ivm_context_setSlot_r(ctx, state, "undefined", IVM_UNDEFINED(state));
 

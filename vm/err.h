@@ -57,6 +57,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE		("decache function id without vm state")
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT					("root function of coroutine cannot be native")
 #define IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO				("no code generated for target address")
+#define IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE			("one-round scheduler require at least one alive coroutine")
 
 IVM_COM_END
 

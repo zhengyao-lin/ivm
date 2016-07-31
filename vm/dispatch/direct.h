@@ -61,7 +61,7 @@
 #define GOTO_SET_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip = (n)));
 
-#define YIELD() tmp_ip++; SAVE_RUNTIME(tmp_ip); goto ACTION_YIELD
+#define YIELD() goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 #define RAISE() goto ACTION_RAISE
@@ -261,5 +261,6 @@
 #define _TMP_ARGC (tmp_argc)
 #define _TMP_ARGV (tmp_argv)
 #define _TMP_CATCH (tmp_catch)
+#define _TMP_BOOL (tmp_bool)
 
 #endif

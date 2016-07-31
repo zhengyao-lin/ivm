@@ -273,6 +273,10 @@ ivm_vmstate_addCoro(ivm_vmstate_t *state,
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state);
 
+ivm_object_t *
+ivm_vmstate_schedule_r(ivm_vmstate_t *state,
+					   ivm_object_t *ret);
+
 #define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
 
 /*
