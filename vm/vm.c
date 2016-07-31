@@ -90,6 +90,7 @@ ivm_vmstate_new()
 	ivm_vmstate_unlockGCFlag(ret);
 
 	ivm_uid_gen_init(&ret->uid_gen);
+	ret->coro_list_uid = ivm_uid_gen_nextPtr(ret->uid_gen);
 
 	return ret;
 }
@@ -223,15 +224,33 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 					   ivm_object_t *ret)
 {
 	ivm_coro_list_t *coros = &state->coro_list;
-	ivm_size_t skip = state->cur_coro;
 
-	while (ivm_coro_list_size(coros)) {
+	ivm_uid_t uid = state->coro_list_uid;
+	ivm_size_t ocoro = state->cur_coro;
+	ivm_coro_t *coro, *skip = ivm_coro_list_at(coros, ocoro);
+
+	while (1) {
 		if (!_ivm_vmstate_switchCoro(state)) {
 			IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
 		}
-		if (state->cur_coro == skip) break;
-		ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
-							  state, ret);
+		
+		coro = ivm_coro_list_at(coros, state->cur_coro);
+
+		if (coro == skip) break;
+		if (IVM_CORO_GET(coro, HAS_NATIVE)) {
+			IVM_TRACE("*** coro schedule out of order ***\n");
+			if (state->coro_list_uid == uid) {
+				/* coro list not changed */
+				state->cur_coro = ocoro;
+			} else {
+				do {
+					_ivm_vmstate_switchCoro(state);
+				} while (ivm_coro_list_at(coros, state->cur_coro) != coro);
+			}
+			break;
+		}
+
+		ret = ivm_coro_resume(coro, state, ret);
 	}
 
 	return ret;

@@ -4,28 +4,29 @@
 #include "pub/err.h"
 
 #define CHECK_BASE(expect) \
-	IVM_ASSERT(IVM_IS_TYPE(arg.base, (expect)), IVM_NATIVE_ERROR_MSG_WRONG_BASE)
+	IVM_ASSERT(IVM_IS_TYPE(NAT_BASE(), (expect)), \
+			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME)))
 
 #define CHECK_ARG_1(type) \
-	IVM_ASSERT(arg.argc && IVM_IS_TYPE(arg.argv[0], (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
+	IVM_ASSERT(NAT_ARGC() && IVM_IS_TYPE(NAT_ARG_AT(1), (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define CHECK_ARG_2(t1, t2) \
-	IVM_ASSERT(arg.argc >= 2 &&                       \
-			   IVM_IS_TYPE(arg.argv[0], (t1)) &&      \
-			   IVM_IS_TYPE(arg.argv[1], (t2)),        \
+	IVM_ASSERT(NAT_ARGC() >= 2 &&                       \
+			   IVM_IS_TYPE(NAT_ARG_AT(1), (t1)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(2), (t2)),        \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define CHECK_ARG_3(t1, t2, t3) \
-	IVM_ASSERT(arg.argc >= 3 &&                       \
-			   IVM_IS_TYPE(arg.argv[0], (t1)) &&      \
-			   IVM_IS_TYPE(arg.argv[1], (t2)) &&      \
-			   IVM_IS_TYPE(arg.argv[2], (t3),         \
+	IVM_ASSERT(NAT_ARGC() >= 3 &&                       \
+			   IVM_IS_TYPE(NAT_ARG_AT(1), (t1)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(2), (t2)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(3), (t3),         \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define WRONG_ARG() \
 	IVM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
-#define IVM_NATIVE_ERROR_MSG_WRONG_BASE				"wrong base type"
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG				"wrong argument"
+#define IVM_NATIVE_ERROR_MSG_WRONG_BASE(tn)			"wrong base type <%s>", (tn)
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG				("wrong argument")
 
 #endif

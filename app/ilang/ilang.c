@@ -21,9 +21,9 @@ IVM_NATIVE_FUNC(print)
 {
 	ivm_object_t *obj;
 
-	IVM_ASSERT(arg.argc, "print need at least 1 argument");
+	IVM_ASSERT(NAT_ARGC(), "print need at least 1 argument");
 
-	obj = arg.argv[0];
+	obj = NAT_ARG_AT(1);
 
 	switch (IVM_TYPE_TAG_OF(obj)) {
 		case IVM_NUMERIC_T:
@@ -45,14 +45,18 @@ IVM_NATIVE_FUNC(call)
 	ivm_function_object_t *func;
 	ivm_coro_t *coro;
 
-	IVM_ASSERT(arg.argc, "call need at least 1 argument");
+	IVM_ASSERT(NAT_ARGC(), "call need at least 1 argument");
 
-	func = IVM_AS(arg.argv[0], ivm_function_object_t);
-	coro = IVM_VMSTATE_GET(state, CUR_CORO);
+	func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
 
-	ivm_function_object_invoke(func, state, coro);
+	IVM_ASSERT(IVM_IS_TYPE(func, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(func, TYPE_NAME)));
 
-	return ivm_coro_resume(coro, state, IVM_NULL);
+	coro = IVM_VMSTATE_GET(NAT_STATE(), CUR_CORO);
+
+	ivm_function_object_invoke(func, NAT_STATE(), coro);
+
+	return ivm_coro_resume(coro, NAT_STATE(), IVM_NULL);
 }
 
 ivm_list_t *

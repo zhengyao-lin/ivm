@@ -372,6 +372,7 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 	ivm_type_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST), *end;
 	ivm_coro_t *tmp_coro, *cur_coro;
 	ivm_coro_list_iterator_t citer, cbegin;
+	ivm_bool_t compacted = IVM_FALSE;
 
 	cur_coro = IVM_VMSTATE_GET(arg->state, CUR_CORO);
 
@@ -394,10 +395,14 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 		} else {
 			// assert tmp_coro != cur_coro
 			ivm_coro_free(tmp_coro, arg->state);
+			compacted = IVM_TRUE;
 		}
 	}
 	ivm_coro_list_setSize(coros, IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
 	// IVM_TRACE("remain coro: %ld\n", IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
+	if (compacted) {
+		ivm_vmstate_coroCompacted(arg->state);
+	}
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {

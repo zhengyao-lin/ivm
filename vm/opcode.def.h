@@ -482,13 +482,14 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	// if (!IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T)) {
 	// 	STACK_PUSH(ivm_numeric_new(_STATE, 10016));
 	//	NEXT_INSTR();
-	//}
+	// }
 
 	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 	
 	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-	_TMP_ARGV = STACK_CUT(_TMP_ARGC);
+	_TMP_ARGV = STACK_CUR();
+	STACK_CUT(_TMP_ARGC);
 
 	SAVE_RUNTIME(_INSTR + 1);
 
@@ -503,6 +504,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		INVOKE_STACK();
 
 		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
+		IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
 
 		_TMP_OBJ1 = ivm_function_callNative(
 			_TMP_FUNC, _STATE, _CONTEXT,
@@ -534,7 +536,9 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 	
 	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-	_TMP_ARGV = STACK_CUT(_TMP_ARGC + 1);
+	_TMP_OBJ2 = STACK_POP();
+	_TMP_ARGV = STACK_CUR();
+	STACK_CUT(_TMP_ARGC);
 
 	SAVE_RUNTIME(_INSTR + 1);
 
@@ -542,13 +546,14 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 			_TMP_FUNC, _STATE,
 			ivm_function_object_getScope(
 				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _RUNTIME, _FRAME_STACK, _TMP_ARGV[_TMP_ARGC]
+			), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
 		)) {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
 		INVOKE_STACK();
 
 		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
+		IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
 
 		_TMP_OBJ1 = ivm_function_callNative(
 			_TMP_FUNC, _STATE, _CONTEXT,
@@ -620,11 +625,14 @@ OPCODE_GEN(YIELD, "yield", N, -1, {
 		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
 	}
 
+	INC_INSTR();
+	SAVE_RUNTIME(_INSTR);
 	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
-		STACK_PUSH(ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1));
-		NEXT_INSTR();
+		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
+		UPDATE_RUNTIME();
+		STACK_PUSH(_TMP_OBJ1);
+		GOTO_CUR_INSTR();
 	} else {
-		SAVE_RUNTIME(_INSTR + 1);
 		YIELD();
 	}
 })

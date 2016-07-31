@@ -29,11 +29,13 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 				2. last argument, bottom of the stack
 		 */
 		params = func->params;
-		ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
-			tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
-			tmp_str = ivm_parser_parseStr(tmp_param->val, tmp_param->len);
-			ivm_exec_addInstr(exec, SET_ARG, tmp_str);
-			MEM_FREE(tmp_str);
+		if (params) {
+			ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
+				tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
+				tmp_str = ivm_parser_parseStr(tmp_param->val, tmp_param->len);
+				ivm_exec_addInstr(exec, SET_ARG, tmp_str);
+				MEM_FREE(tmp_str);
+			}
 		}
 
 		func->body->eval(
@@ -98,6 +100,12 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			intr->val->eval(intr->val, FLAG(0), env);
 			ivm_exec_addInstr(env->cur_exec, RAISE);
 			break;
+		case ILANG_GEN_INTR_YIELD:
+			if (intr->val) {
+				intr->val->eval(intr->val, FLAG(0), env);
+			}
+			ivm_exec_addInstr(env->cur_exec, YIELD);
+			break;
 		default:
 			IVM_FATAL("unsupported interrupt signal");
 	}
@@ -126,6 +134,24 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 		),
 		env
 	);
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_fork_expr_eval(ilang_gen_expr_t *expr,
+						 ilang_gen_flag_t flag,
+						 ilang_gen_env_t *env)
+{
+	ilang_gen_fork_expr_t *fork_expr = IVM_AS(expr, ilang_gen_fork_expr_t);
+	
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
+
+	fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
+	ivm_exec_addInstr(env->cur_exec, FORK);
+	if (!flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+	}
 
 	return NORET();
 }

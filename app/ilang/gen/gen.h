@@ -124,105 +124,15 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
 #define ILANG_GEN_EXPR_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ilang_gen_expr_t *)
 #define ILANG_GEN_EXPR_LIST_EACHPTR_R(list, iter) IVM_PTLIST_EACHPTR_R((list), iter, ilang_gen_expr_t *)
 
-ilang_gen_value_t
-ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
-						ilang_gen_flag_t flag,
-						ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_float_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
-						   ilang_gen_flag_t flag,
-						   ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
-					   ilang_gen_flag_t flag,
-					   ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
-						 ilang_gen_flag_t flag,
-						 ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
-						 ilang_gen_flag_t flag,
-						 ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
-						 ilang_gen_flag_t flag,
-						 ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
-						   ilang_gen_flag_t flag,
-						   ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
-						ilang_gen_flag_t flag,
-						ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_logic_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
-					   ilang_gen_flag_t flag,
-					   ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
-					   ilang_gen_flag_t flag,
-					   ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
-						ilang_gen_flag_t flag,
-						ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
-						 ilang_gen_flag_t flag,
-						 ilang_gen_env_t *env);
-
-ilang_gen_value_t
-ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
-						   ilang_gen_flag_t flag,
-						   ilang_gen_env_t *env);
-
 #define COMMON_EXPR(name, fname, init, ...) \
 	ivm_bool_t                                                                       \
 	ilang_gen_##name##_check(struct ilang_gen_expr_t_tag *expr,                      \
 							 ilang_gen_check_flag_t flag);                           \
+	ilang_gen_value_t                                                                \
+	ilang_gen_##name##_eval(ilang_gen_expr_t *expr,                                  \
+							ilang_gen_flag_t flag,                                   \
+							ilang_gen_env_t *env);                                   \
+                                                                                     \
 	IVM_INLINE                                                                       \
 	ilang_gen_expr_t *                                                               \
 	ilang_gen_##name##_new(ilang_gen_trans_unit_t *trans_unit,                       \
@@ -533,7 +443,8 @@ enum {
 	ILANG_GEN_INTR_RET = 1,
 	ILANG_GEN_INTR_CONT,
 	ILANG_GEN_INTR_BREAK,
-	ILANG_GEN_INTR_RAISE
+	ILANG_GEN_INTR_RAISE,
+	ILANG_GEN_INTR_YIELD
 };
 
 /* try expr */
@@ -558,6 +469,16 @@ COMMON_EXPR(try_expr, "try expression", {
 }, ilang_gen_expr_t *try_body,
    ilang_gen_catch_branch_t catch_body,
    ilang_gen_expr_t *final_body);
+
+/* fork expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *forkee;
+} ilang_gen_fork_expr_t;
+
+COMMON_EXPR(fork_expr, "fork expression", {
+	ret->forkee = forkee;
+}, ilang_gen_expr_t *forkee);
 
 /* intr expr */
 typedef struct {

@@ -49,6 +49,7 @@ typedef struct ivm_vmstate_t_tag {
 						  < 0: locked */
 
 	ivm_uid_gen_t uid_gen;						// 4
+	ivm_uid_t coro_list_uid;
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at(&(state)->coro_list, (state)->cur_coro))
@@ -265,6 +266,7 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #endif
 
 #define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add(&(state)->coro_list, (coro)))
+#define ivm_vmstate_coroCompacted(state) ((state)->coro_list_uid = ivm_uid_gen_nextPtr((state)->uid_gen))
 
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,

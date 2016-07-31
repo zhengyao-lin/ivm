@@ -250,7 +250,7 @@ ACTION_RETURN:
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
-				RETURN_STACK();
+				UPDATE_STACK();
 				STACK_PUSH(_TMP_OBJ1);
 			} else {
 				/* no more callee to restore, end coro */

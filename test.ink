@@ -86,9 +86,51 @@ print("hello" == "hello")
 try: (fn:fn:fn:fn:raise "right!")()()()()
 catch err: print(err)
 
-print(call(fn:"ok!"))
+print(call(fn:(yield "ok!")))
 
 i = 0
+
+fork fn a: {
+	print("init " + a)
+	while a = yield null:
+		if a == "skip":
+			print("skip")
+		else:
+			print("received " + a)
+}
+
+yield "1"
+yield "2"
+yield "3"
+yield "4"
+yield "skip"
+yield "5"
+
+call(fn: {
+	call(fn: {
+		yield "6"
+		yield "7"
+	})
+	print("after 7: yes!")
+	yield "8"
+})
+
+yield null
+
+print("stop fork")
+
+send1 = fn: {
+	while (yield 1) != null: null
+	yield null
+}
+
+fork: {
+	call((fn: (yield 1, print("2?"))), "hi")
+}
+
+//yield null
+
+call(fn: (yield 2, print("1?")))
 
 list = [2, 2, 3, 4, 5] + [2, 4, 5]
 a = 10

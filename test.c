@@ -34,15 +34,15 @@ IVM_NATIVE_FUNC(test)
 
 IVM_NATIVE_FUNC(call_func)
 {
-	ivm_function_object_t *func = IVM_AS(arg.argv[0], ivm_function_object_t);
-	ivm_coro_t *coro = IVM_VMSTATE_GET(state, CUR_CORO);
+	ivm_function_object_t *func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
+	ivm_coro_t *coro = IVM_VMSTATE_GET(NAT_STATE(), CUR_CORO);
 
 	IVM_OUT("call function!!\n");
 
-	ivm_function_object_invoke(func, state, coro);
-	ivm_coro_resume(coro, state, IVM_NULL);
+	ivm_function_object_invoke(func, NAT_STATE(), coro);
+	ivm_coro_resume(coro, NAT_STATE(), IVM_NULL);
 
-	return ivm_numeric_new(state, 10016);
+	return ivm_numeric_new(NAT_STATE(), 10016);
 }
 
 #define print_type(type) (IVM_TRACE(#type ": %zd\n", sizeof(type)))

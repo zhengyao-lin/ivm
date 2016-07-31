@@ -12,7 +12,7 @@
 IVM_NATIVE_FUNC(_list_size)
 {
 	CHECK_BASE(IVM_LIST_OBJECT_T);
-	return ivm_numeric_new(state, ivm_list_object_getSize(IVM_AS(arg.base, ivm_list_object_t)));
+	return ivm_numeric_new(NAT_STATE(), ivm_list_object_getSize(IVM_AS(NAT_BASE(), ivm_list_object_t)));
 }
 
 IVM_NATIVE_FUNC(_list_slice)
@@ -24,9 +24,9 @@ IVM_NATIVE_FUNC(_list_slice)
 	CHECK_BASE(IVM_LIST_OBJECT_T);
 	CHECK_ARG_2(IVM_NUMERIC_T, IVM_NUMERIC_T);
 	
-	list = IVM_AS(arg.base, ivm_list_object_t);
-	start = ivm_list_object_realIndex(list, ivm_numeric_getValue(arg.argv[1]));
-	end = ivm_list_object_realIndex(list, ivm_numeric_getValue(arg.argv[0]));
+	list = IVM_AS(NAT_BASE(), ivm_list_object_t);
+	start = ivm_list_object_realIndex(list, ivm_numeric_getValue(NAT_ARG_AT(2)));
+	end = ivm_list_object_realIndex(list, ivm_numeric_getValue(NAT_ARG_AT(1)));
 	size = ivm_list_object_getSize(list);
 	lst = ivm_list_object_core(list);
 
@@ -34,8 +34,8 @@ IVM_NATIVE_FUNC(_list_slice)
 	if (end > size) end = size;
 
 	if (start < end) {
-		return ivm_list_object_new_c(state, lst + start, end - start);
+		return ivm_list_object_new_c(NAT_STATE(), lst + start, end - start);
 	}
 
-	return ivm_list_object_new(state, 0);
+	return ivm_list_object_new(NAT_STATE(), 0);
 }

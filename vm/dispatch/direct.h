@@ -47,6 +47,13 @@
 		_DBG_RUNTIME_DEFAULT                      \
 	})
 
+#define INC_INSTR() (++tmp_ip)
+#define GOTO_CUR_INSTR() \
+	if (ivm_vmstate_checkGC(state)) {         \
+		SAVE_STACK();                         \
+		ivm_vmstate_doGC(state);              \
+	}                                         \
+	goto *(ivm_instr_entry(tmp_ip));
 
 #define NEXT_INSTR() \
 	if (ivm_vmstate_checkGC(state)) {         \
@@ -101,6 +108,7 @@
 
 #endif
 
+#define STACK_CUR() (tmp_sp)
 #define STACK_INC(i) (tmp_sp += (i))
 
 #if IVM_STACK_CACHE_N_TOS == 0
@@ -235,6 +243,9 @@
 
 #define SAVE_RUNTIME(ip) \
 	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())
+
+#define UPDATE_RUNTIME() \
+	(tmp_ip = IVM_RUNTIME_GET(_RUNTIME, IP), UPDATE_STACK())
 
 #define SAVE_STACK() \
 	(STC_PUSHBACK(), IVM_RUNTIME_SET(_RUNTIME, SP, tmp_sp))

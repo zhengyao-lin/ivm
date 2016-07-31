@@ -36,10 +36,16 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
 	(ivm_function_arg_t){ (base), (argc), (argv) }
 
 #define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)( \
-											struct ivm_vmstate_t_tag *state, \
-											ivm_ctchain_t *context, \
-											ivm_function_arg_t arg)
+											struct ivm_vmstate_t_tag *__state__, \
+											ivm_ctchain_t *__context__, \
+											ivm_function_arg_t __arg__)
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+
+#define NAT_STATE() (__state__)
+#define NAT_CONTEXT() (__context__)
+#define NAT_BASE() (__arg__.base)
+#define NAT_ARGC() (__arg__.argc)
+#define NAT_ARG_AT(i) (__arg__.argv[-(i)])
 
 typedef const ivm_string_t *ivm_parameter_t;
 
