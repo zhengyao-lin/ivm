@@ -81,6 +81,12 @@ ret
 
 // a = i[1]
 
+try: null()
+catch err: print(err.msg)
+
+try: {(1 + "s")}
+catch err: print(err.msg)
+
 print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == null)
 print("hello" == "hello")
 try: (fn:fn:fn:fn:raise "right!")()()()()
@@ -210,7 +216,7 @@ fib = fn n: {
 
 print(fib(30))
 
-ret
+// ret
 
 {
 	b: 10,
@@ -251,8 +257,7 @@ builder = fn n: {
 print(builder().sum())
 
 i = 0
-
-while i < 1000000: {
+while i < 100000: {
 	// print(i)
 	(fn:0)()
 	i = i + 1
@@ -266,7 +271,6 @@ while i < 10000: {
 	if !(i % 100):
 		print(i)
 	i = i + 1
-	while 1: 1
 	cont 1
 }
 

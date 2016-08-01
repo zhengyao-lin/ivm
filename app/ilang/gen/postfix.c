@@ -82,51 +82,46 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			ivm_exec_addInstr(env->cur_exec, POP);
 		}
 	} else {
-		if (flag.is_top_level &&
-			!expr->check(expr, CHECK_SE())) {
-			goto END;
-		}
-
 		tmp_ret = slot_expr->obj->eval(
 			slot_expr->obj,
-			FLAG(.is_top_level = flag.is_top_level,
-				 .is_slot_expr = IVM_TRUE),
+			FLAG(.is_slot_expr = IVM_TRUE),
 			// is_top_level == true => has side effect => no need to get slot
 			env
 		);
 
-		if (!flag.is_top_level) {
-			if (flag.is_callee) {
-				// leave base object on the stack
-				if (tmp_ret.is_id_loc) {
-					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT);
-					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
-				} else if (tmp_ret.is_id_top) {
-					ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT);
-					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
-				} else if (is_proto) {
-					ivm_exec_addInstr(env->cur_exec, DUP);
-					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
-				} else {
-					ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
-				}
-
-				ret = RETVAL(.has_base = IVM_TRUE);
+		if (flag.is_callee) {
+			// leave base object on the stack
+			if (tmp_ret.is_id_loc) {
+				ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT);
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+			} else if (tmp_ret.is_id_top) {
+				ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT);
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+			} else if (is_proto) {
+				ivm_exec_addInstr(env->cur_exec, DUP);
+				ivm_exec_addInstr(env->cur_exec, GET_PROTO);
 			} else {
-				if (tmp_ret.is_id_loc) {
-					ivm_exec_addInstr(env->cur_exec, GET_LOCAL_SLOT, tmp_str);
-				} else if (tmp_ret.is_id_top) {
-					ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_SLOT, tmp_str);
-				} else if (is_proto) {
-					ivm_exec_addInstr(env->cur_exec, GET_PROTO);
-				} else {
-					ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
-				}
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
 			}
+
+			ret = RETVAL(.has_base = IVM_TRUE);
+		} else {
+			if (tmp_ret.is_id_loc) {
+				ivm_exec_addInstr(env->cur_exec, GET_LOCAL_SLOT, tmp_str);
+			} else if (tmp_ret.is_id_top) {
+				ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_SLOT, tmp_str);
+			} else if (is_proto) {
+				ivm_exec_addInstr(env->cur_exec, GET_PROTO);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+			}
+		}
+
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
 		}
 	} // else neither left value nor top level: don't generate
 
-END:
 	MEM_FREE(tmp_str);
 
 	return ret;

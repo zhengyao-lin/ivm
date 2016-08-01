@@ -84,14 +84,16 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "string expression", flag);
 
-	tmp_str = ivm_parser_parseStr(
-		str_expr->val.val,
-		str_expr->val.len
-	);
+	if (!flag.is_top_level) {
+		tmp_str = ivm_parser_parseStr(
+			str_expr->val.val,
+			str_expr->val.len
+		);
 
-	ivm_exec_addInstr(env->cur_exec, NEW_STR, tmp_str);
+		ivm_exec_addInstr(env->cur_exec, NEW_STR, tmp_str);
 
-	MEM_FREE(tmp_str);
+		MEM_FREE(tmp_str);
+	}
 
 	return NORET();
 }
@@ -158,21 +160,14 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
-
 	list = table_expr->list;
 	size = ilang_gen_table_entry_list_size(list);
 
 	/* not top level => no new object */
-	if (!flag.is_top_level) {
-		if (size) {
-			ivm_exec_addInstr(env->cur_exec, NEW_OBJ_T, size);
-		} else {
-			ivm_exec_addInstr(env->cur_exec, NEW_OBJ);
-		}
+	if (size) {
+		ivm_exec_addInstr(env->cur_exec, NEW_OBJ_T, size);
+	} else {
+		ivm_exec_addInstr(env->cur_exec, NEW_OBJ);
 	}
 
 	ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
@@ -183,7 +178,7 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 			// not top level and no side effect => skip
 			tmp_entry.expr->eval(
 				tmp_entry.expr,
-				FLAG(.is_top_level = flag.is_top_level),
+				FLAG(0),
 				env
 			);
 
@@ -205,6 +200,10 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 		}
 	}
 
+	if (flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, POP);
+	}
+
 	return NORET();
 }
 
@@ -218,18 +217,15 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_elem;
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
-
 	ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
 		tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-		tmp_elem->eval(tmp_elem, FLAG(.is_top_level = flag.is_top_level), env);
+		tmp_elem->eval(tmp_elem, FLAG(0), env);
 	}
 
-	if (!flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, NEW_LIST, ilang_gen_expr_list_size(elems));
+	ivm_exec_addInstr(env->cur_exec, NEW_LIST, ilang_gen_expr_list_size(elems));
+	
+	if (flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, POP);
 	}
 
 	return NORET();

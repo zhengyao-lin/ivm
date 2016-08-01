@@ -38,6 +38,8 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_string_pool_t *const_pool;				// 8
 	ivm_collector_t *gc;						// 8
 
+	ivm_object_t *except;
+
 #define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
@@ -57,7 +59,6 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps)
-#define IVM_VMSTATE_GET_EMPTY_HEAP(state) ((state)->heaps + 1)
 
 #define IVM_VMSTATE_SET_CUR_CORO(state, val) ((state)->cur_coro = (val))
 
@@ -65,6 +66,8 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
 
 #define IVM_VMSTATE_CONST(state, name) ((state)->const_str_##name)
+
+#define IVM_CSTR(state, str) ((const ivm_string_t *)ivm_string_pool_registerRaw((state)->const_pool, (str)))
 
 ivm_vmstate_t *
 ivm_vmstate_new();
@@ -267,6 +270,9 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add(&(state)->coro_list, (coro)))
 #define ivm_vmstate_coroCompacted(state) ((state)->coro_list_uid = ivm_uid_gen_nextPtr((state)->uid_gen))
+
+#define ivm_vmstate_setException(state, obj) ((state)->except = (obj))
+#define ivm_vmstate_getException(state) ((state)->except)
 
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,

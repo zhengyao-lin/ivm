@@ -68,10 +68,34 @@
 #define GOTO_SET_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip = (n)));
 
+#define RTM_ASSERT(cond, ...) \
+	if (!(cond)) {                                \
+		char __rtm_assert_buf__[256];             \
+		IVM_SNPRINTF(                             \
+			__rtm_assert_buf__,                   \
+			IVM_ARRLEN(__rtm_assert_buf__),       \
+			__VA_ARGS__                           \
+		);                                        \
+		RAISE(ivm_coro_newException_s(            \
+			_CORO, _STATE, __rtm_assert_buf__     \
+		));                                       \
+	}
+
 #define YIELD() goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
-#define RAISE() goto ACTION_RAISE
+#define RAISE(obj) \
+	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
+	_TMP_OBJ1 = (obj);                                   \
+	if (_TMP_CATCH) {                                    \
+		/* cancel raise protection */                    \
+		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);      \
+		STACK_PUSH(_TMP_OBJ1);                           \
+		GOTO_SET_INSTR(_TMP_CATCH);                      \
+	} else {                                             \
+		/* no raise protection -> fall back */           \
+		goto ACTION_RAISE;                               \
+	}
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
 #define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))

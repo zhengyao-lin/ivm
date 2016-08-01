@@ -46,6 +46,21 @@ ivm_coro_free(ivm_coro_t *coro,
 	return;
 }
 
+ivm_object_t *
+ivm_coro_newException_s(ivm_coro_t *coro,
+						ivm_vmstate_t *state,
+						const ivm_char_t *msg)
+{
+	ivm_object_t *ret = ivm_object_new(state);
+
+	ivm_object_setSlot(ret, state,
+		IVM_VMSTATE_CONST(state, C_MSG),
+		ivm_string_object_new(state, IVM_CSTR(state, msg))
+	);
+
+	return ret;
+}
+
 void
 ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_vmstate_t *state,
@@ -214,7 +229,7 @@ END_EXEC:
 				_TMP_OBJ1 = IVM_NULL_OBJ(state);
 			}
 #endif
-			IVM_FATAL("impossible");
+			IVM_ASSERT(!tmp_ip, "impossible");
 
 ACTION_RAISE:
 			do {
@@ -230,6 +245,7 @@ ACTION_RAISE:
 			} while (!IVM_FRAME_GET(tmp_frame, CATCH));
 			// find a frame with raise protection
 
+			// tmp_frame != NULL
 			tmp_ip = IVM_FRAME_GET(tmp_frame, CATCH);
 			IVM_FRAME_SET(tmp_frame, CATCH, IVM_NULL);
 

@@ -182,7 +182,7 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 	ivm_string_t *ret;
 
 	if (str && !str->is_const) {
-		if (ivm_string_length(str) <= IVM_DEFAULT_CONST_THRESHOLD) {
+		if (ivm_string_length(str) < IVM_DEFAULT_CONST_THRESHOLD) {
 			return
 			(const ivm_string_t *)
 			ivm_string_pool_register(IVM_VMSTATE_GET(state, CONST_POOL), str);

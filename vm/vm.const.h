@@ -2,3 +2,4 @@
 
 CONST_GEN(C_BASE, "base")
 CONST_GEN(C_SIZE, "size")
+CONST_GEN(C_MSG, "msg")

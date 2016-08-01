@@ -239,3 +239,9 @@ ilang_gen_assign_expr_check(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
 {
 	return IVM_TRUE;
 }
+
+ivm_bool_t
+ilang_gen_check_true(ilang_gen_expr_t *expr, ilang_gen_check_flag_t flag)
+{
+	return IVM_TRUE;
+}

@@ -15,11 +15,6 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "expression block", flag);
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
-
 	ILANG_GEN_EXPR_LIST_EACHPTR_R(list, eiter) {
 		tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
 		if (ILANG_GEN_EXPR_LIST_ITER_IS_FIRST(list, eiter)

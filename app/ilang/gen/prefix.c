@@ -105,6 +105,9 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				intr->val->eval(intr->val, FLAG(0), env);
 			}
 			ivm_exec_addInstr(env->cur_exec, YIELD);
+			if (flag.is_top_level) {
+				ivm_exec_addInstr(env->cur_exec, POP);
+			}
 			break;
 		default:
 			IVM_FATAL("unsupported interrupt signal");

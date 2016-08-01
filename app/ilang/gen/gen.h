@@ -124,9 +124,13 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
 #define ILANG_GEN_EXPR_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ilang_gen_expr_t *)
 #define ILANG_GEN_EXPR_LIST_EACHPTR_R(list, iter) IVM_PTLIST_EACHPTR_R((list), iter, ilang_gen_expr_t *)
 
+ivm_bool_t
+ilang_gen_check_true(ilang_gen_expr_t *expr,
+					 ilang_gen_check_flag_t flag);
+
 #define COMMON_EXPR(name, fname, init, ...) \
 	ivm_bool_t                                                                       \
-	ilang_gen_##name##_check(struct ilang_gen_expr_t_tag *expr,                      \
+	ilang_gen_##name##_check(ilang_gen_expr_t *expr,                                 \
 							 ilang_gen_check_flag_t flag);                           \
 	ilang_gen_value_t                                                                \
 	ilang_gen_##name##_eval(ilang_gen_expr_t *expr,                                  \
@@ -146,7 +150,7 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
                                                                                      \
 		ilang_gen_expr_init(IVM_AS(ret, ilang_gen_expr_t),                           \
 							pos, ilang_gen_##name##_eval,                            \
-							ilang_gen_##name##_check);                               \
+							ilang_gen_check_true);                                   \
 		init;                                                                        \
                                                                                      \
 		return IVM_AS(ret, ilang_gen_expr_t);                                        \

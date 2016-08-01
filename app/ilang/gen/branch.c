@@ -239,11 +239,6 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "while expression", flag);
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
-
 	/*
 		start:
 			[cond]
@@ -352,11 +347,6 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "try expression", flag);
-
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
 
 	/*
 		try:

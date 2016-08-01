@@ -141,13 +141,9 @@ void
 ivm_dbg_heapState(ivm_vmstate_t *state, FILE *fp)
 {
 	ivm_heap_t *cur = IVM_VMSTATE_GET(state, CUR_HEAP);
-	ivm_heap_t *empty = IVM_VMSTATE_GET(state, EMPTY_HEAP);
 
 	fprintf(fp, "current heap:\n");
 	_ivm_dbg_printHeap(cur, IVM_DBG_TAB, fp);
-
-	fprintf(fp, "\nempty heap\n");
-	_ivm_dbg_printHeap(empty, IVM_DBG_TAB, fp);
 
 	return;
 }

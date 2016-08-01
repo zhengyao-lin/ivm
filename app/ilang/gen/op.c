@@ -9,20 +9,11 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "unary expression", flag);
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		return NORET();
-	}
-
 	unary_expr->opr->eval(
 		unary_expr->opr,
-		FLAG(.is_top_level = flag.is_top_level),
+		FLAG(0),
 		env
 	);
-
-	if (flag.is_top_level) {
-		return NORET();
-	}
 
 	switch (unary_expr->type) {
 		case IVM_UNIOP_ID(NOT):
@@ -39,6 +30,10 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 			break;
 		default:
 			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
+	}
+
+	if (flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, POP);
 	}
 
 	return NORET();
@@ -59,18 +54,8 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 	op1 = binary_expr->op1;
 	op2 = binary_expr->op2;
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		/* is top level and has no side effect */
-		return NORET();
-	}
-
-	op1->eval(op1, FLAG(.is_top_level = flag.is_top_level), env);
-	op2->eval(op2, FLAG(.is_top_level = flag.is_top_level), env);
-
-	if (flag.is_top_level) {
-		return NORET();
-	}
+	op1->eval(op1, FLAG(0), env);
+	op2->eval(op2, FLAG(0), env);
 
 #define BR(op) \
 	case IVM_BINOP_ID(op):                      \
@@ -100,6 +85,10 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 
 #undef BR
 
+	if (flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, POP);
+	}
+
 	return NORET();
 }
 
@@ -116,14 +105,8 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	op1 = cmp_expr->op1;
 	op2 = cmp_expr->op2;
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		/* is top level and has no side effect */
-		return NORET();
-	}
-
-	op1->eval(op1, FLAG(.is_top_level = flag.is_top_level), env);
-	op2->eval(op2, FLAG(.is_top_level = flag.is_top_level), env);
+	op1->eval(op1, FLAG(0), env);
+	op2->eval(op2, FLAG(0), env);
 
 	if (flag.is_top_level) {
 		return NORET();
@@ -151,6 +134,10 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 #undef BR
+
+	if (flag.is_top_level) {
+		ivm_exec_addInstr(env->cur_exec, POP);
+	}
 
 	return NORET();
 }

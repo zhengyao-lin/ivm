@@ -484,12 +484,13 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	//	NEXT_INSTR();
 	// }
 
-	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-	
-	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 	_TMP_ARGV = STACK_CUR();
 	STACK_CUT(_TMP_ARGC);
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+	
+	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 
 	SAVE_RUNTIME(_INSTR + 1);
 
@@ -532,13 +533,14 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 	CHECK_STACK(_TMP_ARGC + 2);
 	_TMP_OBJ1 = STACK_POP();
 
-	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-	
-	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 	_TMP_OBJ2 = STACK_POP();
 	_TMP_ARGV = STACK_CUR();
 	STACK_CUT(_TMP_ARGC);
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+	
+	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 
 	SAVE_RUNTIME(_INSTR + 1);
 
@@ -580,7 +582,7 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 
 	_TMP_OBJ1 = STACK_POP();
 
-	IVM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 
 	ivm_vmstate_addCoro(
@@ -606,16 +608,7 @@ OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
 
 OPCODE_GEN(RAISE, "raise", N, -1, {
 	CHECK_STACK(1);
-	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);
-	if (_TMP_CATCH) {
-		// cancel raise protection
-		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);
-		GOTO_SET_INSTR(_TMP_CATCH);
-	} else {
-		// no raise protection -> fall back
-		_TMP_OBJ1 = STACK_POP();
-		RAISE();
-	}
+	RAISE(STACK_POP());
 })
 
 OPCODE_GEN(YIELD, "yield", N, -1, {

@@ -240,18 +240,12 @@ ilang_gen_logic_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "logic expression", flag);
 
-	if (flag.is_top_level &&
-		!expr->check(expr, CHECK_SE())) {
-		/* is top level and has no side effect */
-		return NORET();
-	}
-
 	if (logic_expr->type == ILANG_GEN_LOGIC_AND) {
 		return _ilang_gen_logic_and_expr_eval(logic_expr, flag, env);
 	} else {
 		return _ilang_gen_logic_or_expr_eval(logic_expr, flag, env);
 	}
-
+	
 	IVM_FATAL("unsupported logic expr type");
 
 	return NORET();

@@ -73,6 +73,8 @@ ivm_vmstate_new()
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 
+	ret->except = IVM_NULL;
+
 	ivm_vmstate_lockGCFlag(ret);
 
 	for (i = 0, tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
