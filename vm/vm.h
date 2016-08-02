@@ -274,6 +274,15 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #define ivm_vmstate_setException(state, obj) ((state)->except = (obj))
 #define ivm_vmstate_getException(state) ((state)->except)
 
+IVM_INLINE
+ivm_object_t *
+ivm_vmstate_popException(ivm_vmstate_t *state)
+{
+	ivm_object_t *tmp = state->except;
+	state->except = IVM_NULL;
+	return tmp;
+}
+
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,
 					ivm_function_object_t *func);

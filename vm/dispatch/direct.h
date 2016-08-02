@@ -262,7 +262,7 @@
 #endif
 
 #define CHECK_STACK(req) \
-	IVM_ASSERT(AVAIL_STACK >= (req), \
+	RTM_ASSERT(AVAIL_STACK >= (req), \
 			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
 
 #define SAVE_RUNTIME(ip) \

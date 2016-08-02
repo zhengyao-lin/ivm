@@ -87,6 +87,14 @@ catch err: print(err.msg)
 try: {(1 + "s")}
 catch err: print(err.msg)
 
+try: {
+	a = {}
+	a.b = [].size
+	a.b(1, 2)
+} catch err: {
+	print(err.msg)
+}
+
 print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == null)
 print("hello" == "hello")
 try: (fn:fn:fn:fn:raise "right!")()()()()
@@ -216,7 +224,7 @@ fib = fn n: {
 
 print(fib(30))
 
-// ret
+ret
 
 {
 	b: 10,

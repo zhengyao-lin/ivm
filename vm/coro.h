@@ -49,6 +49,27 @@ ivm_coro_free(ivm_coro_t *coro,
 #define ivm_coro_stackTop(coro) (ivm_vmstack_size(&coro->stack))
 
 ivm_object_t *
+ivm_coro_newException_s(ivm_coro_t *coro,
+						struct ivm_vmstate_t_tag *state,
+						const ivm_char_t *msg);
+
+#define IVM_CORO_NATIVE_ASSERT(coro, state, cond, ...) \
+	if (!(cond)) {                                \
+		char __rtm_assert_buf__[128];             \
+		ivm_object_t *exc;                        \
+		IVM_SNPRINTF(                             \
+			__rtm_assert_buf__,                   \
+			IVM_ARRLEN(__rtm_assert_buf__),       \
+			__VA_ARGS__                           \
+		);                                        \
+		exc = ivm_coro_newException_s(            \
+			(coro), (state), __rtm_assert_buf__   \
+		);                                        \
+		ivm_vmstate_setException((state), exc);   \
+		return exc;                               \
+	}
+
+ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro,
 				 struct ivm_vmstate_t_tag *state,
 				 ivm_function_object_t *root,
