@@ -622,8 +622,6 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
-	ivm_object_t test_obj = { 0 };
-
 	// test_obj.mark.copy = 0x1;
 	//test_obj.mark.sub.gen = 0x1;
 
