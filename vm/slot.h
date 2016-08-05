@@ -44,24 +44,31 @@ ivm_slot_getValue(ivm_slot_t *slot,
 	return slot ? slot->v : IVM_NULL;
 }
 
+#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 9
+
 typedef struct ivm_slot_table_t_tag {
 	ivm_size_t size;
 	ivm_slot_t *tabl;
+	struct ivm_object_t_tag **oops;
 	union {
 		struct {
 			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;
-			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - 6;
+			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
+			ivm_uint_t oop_count: 5; // max 32
 			ivm_int_t is_hash: 1;
 			ivm_int_t is_shared: 1; // shared by multiple objects
-			ivm_int_t wb: 2;
-			ivm_int_t gen: 2;
+			ivm_uint_t wb: 1;
+			ivm_uint_t gen: 1;
 		} sub;
 		struct ivm_slot_table_t_tag *copy;
 	} mark;
 	ivm_uid_t uid;
 } ivm_slot_table_t;
 
-#define ivm_slot_table_getCopy(table) ((ivm_slot_table_t *)((((ivm_uptr_t)(table)->mark.copy) << 6) >> 6))
+#define ivm_slot_table_getCopy(table) \
+	((ivm_slot_table_t *)((((ivm_uptr_t)(table)->mark.copy)        \
+							<< _IVM_SLOT_TABLE_MARK_HEADER_BITS)   \
+							>> _IVM_SLOT_TABLE_MARK_HEADER_BITS))
 
 IVM_INLINE
 void
@@ -70,11 +77,13 @@ ivm_slot_table_setCopy(ivm_slot_table_t *table,
 {
 	table->mark.copy = (ivm_slot_table_t *)
 					   ((((ivm_uptr_t)table->mark.copy
-					   	>> (sizeof(ivm_ptr_t) * 8 - 6))
-						<< (sizeof(ivm_ptr_t) * 8 - 6))
+					   	>> (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
+						<< (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
 						| (ivm_uptr_t)copy);
 	return;
 }
+
+// #undef _IVM_SLOT_TABLE_MARK_HEADER_BITS
 
 #define ivm_slot_table_getWB(table) ((table)->mark.sub.wb)
 #define ivm_slot_table_setWB(table, val) ((table)->mark.sub.wb = (val))
@@ -89,8 +98,16 @@ ivm_slot_table_t *
 ivm_slot_table_new(struct ivm_vmstate_t_tag *state);
 
 ivm_slot_table_t *
+ivm_slot_table_newAt(struct ivm_vmstate_t_tag *state, ivm_int_t gen);
+
+ivm_slot_table_t *
 ivm_slot_table_new_c(struct ivm_vmstate_t_tag *state,
 					 ivm_size_t prealloc);
+
+ivm_slot_table_t *
+ivm_slot_table_newAt_c(struct ivm_vmstate_t_tag *state,
+					   ivm_size_t prealloc,
+					   ivm_int_t gen);
 
 ivm_slot_table_t *
 ivm_slot_table_copy(ivm_slot_table_t *table,
@@ -148,6 +165,9 @@ ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 
 #define ivm_slot_table_setCacheSlot(state, instr, value) \
 	(_ivm_slot_setValue((ivm_slot_t *)ivm_instr_cacheData(instr), (state), (value)))
+
+#define ivm_slot_table_getOops(table) ((table)->oops)
+#define ivm_slot_table_getOopCount(table) ((table)->mark.sub.oop_count)
 
 IVM_COM_END
 

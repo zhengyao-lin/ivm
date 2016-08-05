@@ -127,6 +127,36 @@ ivm_object_getProto(ivm_object_t *obj)
 #define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
 #define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
 
+
+IVM_INLINE
+void
+ivm_object_setOop(ivm_object_t *obj,
+				  ivm_vmstate_t *state,
+				  ivm_int_t op,
+				  ivm_object_t *func)
+{
+	if (!obj->slots) {
+		obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
+	}
+
+	obj->mark.sub.oop |= 1 << op;
+	ivm_slot_table_setOop(obj->slots, state, op, func);
+
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_getOop(ivm_object_t *obj,
+				  ivm_int_t op)
+{
+	if (!obj->slots) {
+		return IVM_NULL;
+	}
+
+	return ivm_slot_table_getOop(obj->slots, op);
+}
+
 IVM_COM_END
 
 #endif

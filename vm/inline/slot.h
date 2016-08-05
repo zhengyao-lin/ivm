@@ -94,23 +94,23 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 IVM_INLINE
 void
 ivm_slot_table_setSlot(ivm_slot_table_t *table,
-					   struct ivm_vmstate_t_tag *state,
+					   ivm_vmstate_t *state,
 					   const ivm_string_t *key,
-					   struct ivm_object_t_tag *obj)
+					   ivm_object_t *obj)
 SET_SLOT(0, 0, 0);
 
 void
 ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
-						 struct ivm_vmstate_t_tag *state,
+						 ivm_vmstate_t *state,
 						 const ivm_char_t *rkey,
-						 struct ivm_object_t_tag *obj);
+						 ivm_object_t *obj);
 
 IVM_INLINE
 void
 ivm_slot_table_setSlot_cc(ivm_slot_table_t *table,
-						  struct ivm_vmstate_t_tag *state,
+						  ivm_vmstate_t *state,
 						  const ivm_string_t *key,
-						  struct ivm_object_t_tag *obj,
+						  ivm_object_t *obj,
 						  ivm_instr_t *instr)
 SET_SLOT(
 	if (ivm_slot_table_checkCacheValid(table, instr)) {
@@ -174,8 +174,8 @@ SET_SLOT(
 IVM_INLINE
 ivm_slot_t *
 ivm_slot_table_getSlot(ivm_slot_table_t *table,
-						struct ivm_vmstate_t_tag *state,
-						const ivm_string_t *key)
+					   ivm_vmstate_t *state,
+					   const ivm_string_t *key)
 GET_SLOT(0, 0, 0);
 
 #if 0
@@ -217,7 +217,7 @@ __print(ivm_vmstate_t *state, ivm_slot_table_t *table, ivm_bool_t yes)
 IVM_INLINE
 ivm_slot_t *
 ivm_slot_table_getSlot_cc(ivm_slot_table_t *table,
-						  struct ivm_vmstate_t_tag *state,
+						  ivm_vmstate_t *state,
 						  const ivm_string_t *key,
 						  ivm_instr_t *instr)
 GET_SLOT(
@@ -245,9 +245,9 @@ GET_SLOT(
 IVM_INLINE
 ivm_bool_t
 ivm_slot_table_setExistSlot(ivm_slot_table_t *table,
-							struct ivm_vmstate_t_tag *state,
+							ivm_vmstate_t *state,
 							const ivm_string_t *key,
-							struct ivm_object_t_tag *obj)
+							ivm_object_t *obj)
 {
 	ivm_slot_t *slot = ivm_slot_table_getSlot(table, state, key);
 
@@ -263,9 +263,9 @@ ivm_slot_table_setExistSlot(ivm_slot_table_t *table,
 IVM_INLINE
 ivm_bool_t
 ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
-							   struct ivm_vmstate_t_tag *state,
+							   ivm_vmstate_t *state,
 							   const ivm_string_t *key,
-							   struct ivm_object_t_tag *obj,
+							   ivm_object_t *obj,
 							   ivm_instr_t *instr)
 {
 	ivm_slot_t *slot = ivm_slot_table_getSlot_cc(table, state, key, instr);
@@ -277,6 +277,38 @@ ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
 	}
 
 	return IVM_FALSE;
+}
+
+IVM_INLINE
+void
+ivm_slot_table_setOop(ivm_slot_table_t *table,
+					 ivm_vmstate_t *state,
+					 ivm_int_t op,
+					 ivm_object_t *func)
+{
+	if (op >= table->mark.sub.oop_count) {
+		table->mark.sub.oop_count = op + 1;
+		table->oops = ivm_vmstate_allocAt(
+			state, sizeof(*table->oops) * (op + 1),
+			ivm_slot_table_getGen(table)
+		);
+	}
+
+	IVM_WBSLOT(state, table, func);
+	table->oops[op] = func;
+
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_slot_table_getOop(ivm_slot_table_t *table,
+					 ivm_int_t op)
+{
+	if (op >= table->mark.sub.oop_count) {
+		return IVM_NULL;
+	}
+	return table->oops[op];
 }
 
 #endif

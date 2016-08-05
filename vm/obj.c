@@ -102,7 +102,7 @@ ivm_object_setSlot(ivm_object_t *obj,
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
 		}
 	} else {
-		slots = obj->slots = ivm_slot_table_new(state);
+		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
 	ivm_slot_table_setSlot(slots, state, key, value);
@@ -131,7 +131,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
 		}
 	} else {
-		slots = obj->slots = ivm_slot_table_new(state);
+		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
 	ivm_slot_table_setSlot(slots, state, key, value);
@@ -160,7 +160,7 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 			return;
 		} */
 	} else {
-		slots = obj->slots = ivm_slot_table_new(state);
+		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
 	ivm_slot_table_setSlot_cc(slots, state, key, value, instr);

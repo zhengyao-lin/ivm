@@ -15,6 +15,8 @@
 
 IVM_COM_HEADER
 
+#define _IVM_MARK_HEADER_BITS (2 + IVM_OOP_COUNT)
+
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type;                                          \
 	struct ivm_object_t_tag *proto;                            \
@@ -22,9 +24,12 @@ IVM_COM_HEADER
 	union {                                                    \
 		struct {                                               \
 			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;       \
-			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - 4;   \
-			ivm_int_t wb: 2;                                   \
-			ivm_int_t gen: 2;                                  \
+			ivm_int_t dummy2:                                  \
+				sizeof(ivm_ptr_t) / 2 * 8 -                    \
+				_IVM_MARK_HEADER_BITS;                         \
+			ivm_uint_t oop: IVM_OOP_COUNT;                     \
+			ivm_uint_t wb: 1;                                  \
+			ivm_uint_t gen: 1;                                 \
 		} sub;                                                 \
 		struct ivm_object_t_tag *copy;                         \
 	} mark;
@@ -113,7 +118,8 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_CONST_BOOL(obj) ((obj)->type->const_bool)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
-#define IVM_OBJECT_GET_COPY(obj) ((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << 4) >> 4))
+#define IVM_OBJECT_GET_COPY(obj) \
+	((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << _IVM_MARK_HEADER_BITS) >> _IVM_MARK_HEADER_BITS))
 #define IVM_OBJECT_GET_WB(obj) ((obj)->mark.sub.wb)
 #define IVM_OBJECT_GET_GEN(obj) ((obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_INC_GEN(obj) (++(obj)->mark.sub.gen)
@@ -129,12 +135,14 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 {
 	obj->mark.copy = (ivm_object_t *)
 					 ((((ivm_uptr_t)obj->mark.copy
-					 	>> (sizeof(ivm_ptr_t) * 8 - 4))
-					 	<< (sizeof(ivm_ptr_t) * 8 - 4))
+					 	>> (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
+					 	<< (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
 					 	| (ivm_uptr_t)copy);
 
 	return;
 }
+
+// #undef _IVM_MARK_HEADER_BITS
 
 #define IVM_OBJECT_SET_WB(obj, val) ((obj)->mark.sub.wb = (val))
 #define IVM_OBJECT_SET_GEN(obj, val) ((obj)->mark.sub.gen = (val))
@@ -186,6 +194,17 @@ ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
 
 #define ivm_object_doBinOp(state, op1, op, op2) \
 	(ivm_object_doBinOp_c((state), (op1), IVM_BINOP_ID(op), (op2)))
+
+IVM_INLINE
+ivm_bool_t
+ivm_object_isOopDefined_c(ivm_object_t *obj,
+						  ivm_int_t op)
+{
+	return obj->mark.sub.oop & (1 << op);
+}
+
+#define ivm_object_isOopDefined(obj, op) \
+	(ivm_object_isOopDefined_c((obj), IVM_OOP_ID(op)))
 
 IVM_INLINE
 void

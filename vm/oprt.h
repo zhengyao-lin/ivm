@@ -25,6 +25,9 @@ typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *s
 #define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
 
+// overload op
+#define IVM_OOP_ID(op) IVM_OOP_##op
+
 enum {
 	IVM_UNIOP_ID(NOT) = 0,
 	IVM_UNIOP_ID(NEG),
@@ -46,6 +49,31 @@ enum {
 	IVM_BINOP_ID(IDX),
 	IVM_BINOP_COUNT
 };
+
+enum {
+	IVM_OOP_ID(NOT) = 0,
+	IVM_OOP_ID(ADD),
+	IVM_OOP_ID(SUB),
+	IVM_OOP_ID(MUL),
+	IVM_OOP_ID(DIV),
+	IVM_OOP_ID(MOD),
+	IVM_OOP_ID(CMP),
+	IVM_OOP_ID(AND),
+	IVM_OOP_ID(IOR),
+	IVM_OOP_ID(EOR),
+	IVM_OOP_ID(IDX),
+	IVM_OOP_COUNT
+};
+
+/*
+	support overload op(max 14):
+		unary: not
+
+		binary:
+			add, sub, mul, div,
+			mod, cmp, and, ior,
+			eor, idx
+ */
 
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 

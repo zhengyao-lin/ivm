@@ -68,6 +68,9 @@
 #define GOTO_SET_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip = (n)));
 
+#define GOTO_INSTR(opc) \
+	goto OPCODE_##opc;
+
 #define RTM_ASSERT(cond, ...) \
 	if (!(cond)) {                                \
 		char __rtm_assert_buf__[256];             \
@@ -104,6 +107,7 @@
 #define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR))) // (PARG(ivm_function_t *))
 #define SARG() (PARG(const ivm_string_t *))
 #define ADDR_ARG() (PARG(ivm_instr_t *))
+#define SET_IARG(i) (ivm_instr_setArg(_INSTR, ivm_opcode_arg_fromInt(i)))
 
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
 
@@ -288,6 +292,7 @@
 
 #define _TMP_OBJ1 (tmp_obj1)
 #define _TMP_OBJ2 (tmp_obj2)
+#define _TMP_OBJ3 (tmp_obj3)
 #define _TMP_UNI_PROC (tmp_uni_proc)
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)
@@ -297,5 +302,14 @@
 #define _TMP_ARGV (tmp_argv)
 #define _TMP_CATCH (tmp_catch)
 #define _TMP_BOOL (tmp_bool)
+
+#define SET_JUMP_BACK(i) \
+	(tmp_jump_back = (i), tmp_has_jump = IVM_TRUE)
+
+#define CHECK_JUMP_BACK() \
+	if (tmp_has_jump) {               \
+		tmp_has_jump = IVM_FALSE;     \
+		goto *tmp_jump_back;          \
+	}
 
 #endif

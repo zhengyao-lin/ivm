@@ -137,6 +137,20 @@ ivm_heap_addCopy(ivm_heap_t *heap, void *ptr, ivm_size_t size)
 	return new_ptr;
 }
 
+IVM_INLINE
+void *
+ivm_heap_addCopy_c(ivm_heap_t *heap,
+				   void *ptr,
+				   ivm_size_t size,
+				   ivm_bool_t *add_block)
+{
+	void *new_ptr = ivm_heap_alloc_c(heap, size, add_block);
+
+	MEM_COPY(new_ptr, ptr, size);
+
+	return new_ptr;
+}
+
 void
 ivm_heap_reset(ivm_heap_t *heap);
 

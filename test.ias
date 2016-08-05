@@ -238,6 +238,41 @@ root {
 	pop
 	get_slot "a"
 	out_num
+
+	out "hey there"
+
+	new_obj
+	set_context_slot "o"
+
+	new_func overload_not
+	get_context_slot "o"
+	set_op 0
+	pop
+
+	new_num_i 10
+	set_context_slot "i"
+
+	new_func overload_add
+	get_context_slot "i"
+	set_op 1
+	pop
+
+	get_context_slot "i"
+	new_num_i 5
+	add
+	out_num
+}
+
+overload_not {
+	out "this is overloaded not"
+}
+
+overload_add {
+	set_arg "b"
+	out "this is overloaded add"
+	get_context_slot "base"
+	get_context_slot "b"
+	sub
 }
 
 context_test1 {

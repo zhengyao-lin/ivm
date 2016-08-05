@@ -109,6 +109,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	register ivm_object_t *tmp_obj1 = IVM_NULL;
 	register ivm_object_t *tmp_obj2 = IVM_NULL;
+	register ivm_object_t *tmp_obj3 = IVM_NULL;
 	register ivm_uniop_proc_t tmp_uni_proc;
 	register ivm_binop_proc_t tmp_bin_proc;
 	register ivm_ptr_t tmp_cmp_reg = 0;
@@ -120,6 +121,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	register ivm_object_t **tmp_argv;
 
 	register ivm_instr_t *tmp_catch;
+	// register void *tmp_jump_back = IVM_NULL;
+	// register ivm_bool_t tmp_has_jump = IVM_FALSE;
 	register ivm_bool_t tmp_bool;
 
 	/*****************************

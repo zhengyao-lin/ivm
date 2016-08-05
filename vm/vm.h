@@ -169,6 +169,21 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 
 IVM_INLINE
 void *
+ivm_vmstate_addCopy(ivm_vmstate_t *state,
+					void *ptr, ivm_size_t size)
+{
+	ivm_bool_t add_block = IVM_FALSE;
+	void *ret = ivm_heap_addCopy_c((state)->heaps, ptr, size, &add_block);
+
+	if (add_block) {
+		ivm_vmstate_openGCFlag(state);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+void *
 ivm_vmstate_allocAt(ivm_vmstate_t *state, ivm_size_t size, ivm_int_t heap)
 {
 	ivm_bool_t add_block = IVM_FALSE;
