@@ -126,3 +126,29 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 
 	return ret;
 }
+
+ilang_gen_value_t
+ilang_gen_oop_expr_eval(ilang_gen_expr_t *expr,
+						ilang_gen_flag_t flag,
+						ilang_gen_env_t *env)
+{
+	ilang_gen_oop_expr_t *oop_expr = IVM_AS(expr, ilang_gen_oop_expr_t);
+
+	oop_expr->obj->eval(
+		oop_expr->obj,
+		FLAG(0),
+		env
+	);
+
+	if (flag.is_left_val) {
+		ivm_exec_addInstr(env->cur_exec, SET_OOP, oop_expr->oop);
+		ivm_exec_addInstr(env->cur_exec, POP);
+	} else {
+		ivm_exec_addInstr(env->cur_exec, GET_OOP, oop_expr->oop);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
+		}
+	}
+
+	return NORET();
+}

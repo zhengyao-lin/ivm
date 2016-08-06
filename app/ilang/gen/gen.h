@@ -280,7 +280,21 @@ typedef struct {
 COMMON_EXPR(slot_expr, "slot expression", {
 	ret->obj = obj;
 	ret->slot = slot;
-}, ilang_gen_expr_t *obj, ilang_gen_token_value_t slot);
+}, ilang_gen_expr_t *obj,
+   ilang_gen_token_value_t slot);
+
+/* oop expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *obj;
+	ivm_int_t oop;
+} ilang_gen_oop_expr_t;
+
+COMMON_EXPR(oop_expr, "oop expression", {
+	ret->obj = obj;
+	ret->oop = oop;
+}, ilang_gen_expr_t *obj,
+   ivm_int_t oop);
 
 /* unary expr */
 typedef struct {

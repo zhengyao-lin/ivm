@@ -79,7 +79,10 @@ ret
  */
 
 // a = i[1]
+a = 10
+a@+ = fn b: base - b
 
+print(a + 5)
 
 try: null()
 catch err: print(err.msg)

@@ -246,7 +246,7 @@ root {
 
 	new_func overload_not
 	get_context_slot "o"
-	set_op 0
+	set_oop 0
 	pop
 
 	new_num_i 10
@@ -254,7 +254,7 @@ root {
 
 	new_func overload_add
 	get_context_slot "i"
-	set_op 1
+	set_oop 1
 	pop
 
 	get_context_slot "i"

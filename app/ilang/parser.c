@@ -46,6 +46,7 @@ enum token_id_t {
 	T_COMMA,	// ,
 	T_COLON,	// :
 	T_DOT,		// .
+	T_AT,		// @
 
 	T_LBRAC,	// {
 	T_RBRAC,	// }
@@ -115,6 +116,7 @@ token_name_table[] = {
 	"comma",
 	"colon",
 	"dot",
+	"at",
 
 	"left brace",
 	"right brace",
@@ -225,6 +227,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=%", ST_INIT, T_MOD },
 
 			{ "=^", ST_INIT, T_BEOR },
+
+			{ "=@", ST_INIT, T_AT },
 
 			{ "=!", ST_TRY_NOT },
 
@@ -426,6 +430,7 @@ struct rule_val_t {
 		ilang_gen_branch_list_t *branch_list;
 		ilang_gen_catch_branch_t catch_branch;
 		ilang_gen_trans_unit_t *unit;
+		ivm_int_t oop;
 	} u;
 };
 
@@ -784,6 +789,62 @@ RULE(arg_list_opt)
 #define SET_OPERAND(expr, i, val) (GET_OPERAND((expr), (i)) = (val))
 
 /*
+	oop
+		: '!'
+		| '+'
+		| '-'
+		| '*'
+		| '\'
+		| '%'
+		| '&'
+		| '|'
+		| '^'
+		| '[' nllo ']'
+ */
+RULE(oop)
+{
+
+#define DEF_OOP(op) \
+	SUB_RULE(T(T_##op)                 \
+	{                                  \
+		_RETVAL.oop = IVM_OOP_ID(op);  \
+	})
+
+	SUB_RULE_SET(
+		DEF_OOP(NOT)
+		DEF_OOP(ADD)
+		DEF_OOP(SUB)
+		DEF_OOP(MUL)
+		DEF_OOP(DIV)
+		DEF_OOP(MOD)
+		
+		SUB_RULE(T(T_BAND)
+		{
+			_RETVAL.oop = IVM_OOP_ID(AND);
+		})
+		
+		SUB_RULE(T(T_BIOR)
+		{
+			_RETVAL.oop = IVM_OOP_ID(IOR);
+		})
+		
+		SUB_RULE(T(T_BEOR)
+		{
+			_RETVAL.oop = IVM_OOP_ID(EOR);
+		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo) T(T_RBRAKT)
+		{
+			_RETVAL.oop = IVM_OOP_ID(IDX);
+		})
+	)
+#undef DEF_OOP
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	postfix_expr_sub
 		: '(' arg_list_opt ')' postfix_expr_sub
 		| '.' id postfix_expr_sub
@@ -794,6 +855,7 @@ RULE(postfix_expr_sub)
 	struct token_t *tmp_token, *id;
 	ilang_gen_expr_t *tmp_expr = IVM_NULL, *tmp_idx;
 	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
+	ivm_int_t oop;
 
 	SUB_RULE_SET(
 		SUB_RULE(T(T_LPAREN) R(nllo)
@@ -842,6 +904,30 @@ RULE(postfix_expr_sub)
 				_RETVAL.expr = ilang_gen_slot_expr_new(
 					_ENV->unit,
 					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				);
+			}
+		})
+
+		SUB_RULE(T(T_AT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			oop = RULE_RET_AT(1).u.oop;
+			tmp_expr = RULE_RET_AT(2).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_oop_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, oop
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_oop_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, oop
 				);
 			}
 		})

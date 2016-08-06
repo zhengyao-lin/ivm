@@ -384,7 +384,7 @@ OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	| obj | op_f |
 	--------------
  */
-OPCODE_GEN(SET_OP, "set_op", I, -1, {
+OPCODE_GEN(SET_OOP, "set_oop", I, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
@@ -397,7 +397,7 @@ OPCODE_GEN(SET_OP, "set_op", I, -1, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(GET_OP, "get_op", I, -1, {
+OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
