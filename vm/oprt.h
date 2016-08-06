@@ -47,6 +47,8 @@ enum {
 	IVM_BINOP_ID(IOR), // inclusive or
 	IVM_BINOP_ID(EOR), // exclusive or
 	IVM_BINOP_ID(IDX),
+	IVM_BINOP_ID(SHL),
+	IVM_BINOP_ID(SHR),
 	IVM_BINOP_COUNT
 };
 
@@ -62,6 +64,8 @@ enum {
 	IVM_OOP_ID(IOR),
 	IVM_OOP_ID(EOR),
 	IVM_OOP_ID(IDX),
+	IVM_OOP_ID(SHL),
+	IVM_OOP_ID(SHR),
 	IVM_OOP_COUNT
 };
 

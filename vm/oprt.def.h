@@ -111,3 +111,11 @@ BINOP_GEN(IVM_LIST_OBJECT_T, ADD, IVM_LIST_OBJECT_T, {
 								IVM_AS(_OP2, ivm_list_object_t),
 								_STATE);
 })
+
+BINOP_GEN(IVM_NUMERIC_T, SHL, IVM_NUMERIC_T, {
+	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) << (ivm_long_t)ivm_numeric_getValue(_OP2));
+})
+
+BINOP_GEN(IVM_NUMERIC_T, SHR, IVM_NUMERIC_T, {
+	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+})

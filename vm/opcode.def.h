@@ -80,6 +80,9 @@ OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 2, IVM_NULL))
 OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 2, IVM_NULL))
 OPCODE_GEN(IDX_ASSIGN, "idx_assign", N, -2, BINOP_HANDLER(IDX, "[]", 3, STACK_POP()))
 
+OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 2, IVM_NULL))
+OPCODE_GEN(SHR, "shr", N, -1, BINOP_HANDLER(SHR, ">>", 2, IVM_NULL))
+
 OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(0,
 	STACK_PUSH(ivm_numeric_new(_STATE, (ivm_ptr_t)_TMP_OBJ1 < 0));
 ))
