@@ -43,7 +43,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_BYTE_NOT_EQUAL_TO_CHAR			("size of byte is not equal to char")
 #define IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size)			"illegal alloc size %ld", (size)
 #define IVM_ERROR_MSG_NOT_TYPE(t1, t2)					"expecting type <" t1 "> instead of <%s>", (t2)
-#define IVM_ERROR_MSG_UNABLE_TO_INVOKE(t)				"unable to invoke type <%s>", (t)
+#define IVM_ERROR_MSG_UNABLE_TO_INVOKE(t)				"unable to invoke object of type <%s>", (t)
 #define IVM_ERROR_MSG_NULL_PTR(name)					("null pointer given to " name)
 #define IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR(name, val)	"'%ld' is too small for " name, (val)
 #define IVM_ERROR_MSG_NO_UNIOP_FOR(op, t)				"the unary operation %s of <%s> is not defined", (op), (t)

@@ -286,12 +286,22 @@ ivm_slot_table_setOop(ivm_slot_table_t *table,
 					 ivm_int_t op,
 					 ivm_object_t *func)
 {
+	ivm_int_t osize, size;
+	ivm_object_t **oops;
+
 	if (op >= table->mark.sub.oop_count) {
-		table->mark.sub.oop_count = op + 1;
+		osize = table->mark.sub.oop_count;
+		size = op + 1;
+		table->mark.sub.oop_count = size;
+
+		oops = table->oops;
 		table->oops = ivm_vmstate_allocAt(
-			state, sizeof(*table->oops) * (op + 1),
+			state, sizeof(*table->oops) * size,
 			ivm_slot_table_getGen(table)
 		);
+
+		MEM_COPY(table->oops, oops, sizeof(*table->oops) * osize);
+		MEM_INIT(table->oops + osize, sizeof(*table->oops) * (size - osize));
 	}
 
 	IVM_WBSLOT(state, table, func);
@@ -308,6 +318,7 @@ ivm_slot_table_getOop(ivm_slot_table_t *table,
 	if (op >= table->mark.sub.oop_count) {
 		return IVM_NULL;
 	}
+
 	return table->oops[op];
 }
 

@@ -81,8 +81,11 @@ ret
 // a = i[1]
 a = 10
 a@+ = fn b: base - b
+a@* = "hi"
 
 print(a + 5)
+try: a * 5
+catch err: print(err.msg)
 
 try: null()
 catch err: print(err.msg)
