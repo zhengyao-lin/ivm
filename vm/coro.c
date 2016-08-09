@@ -62,6 +62,26 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 }
 
 void
+ivm_coro_popException(ivm_coro_t *coro,
+					  ivm_vmstate_t *state,
+					  ivm_object_t *except)
+{
+	ivm_object_t *msg_obj = ivm_object_getSlot(
+		except, state,
+		IVM_VMSTATE_CONST(state, C_MSG)
+	);
+	const ivm_char_t *msg = "custom exception";
+
+	if (msg_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
+		msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
+	}
+
+	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, msg));
+
+	return;
+}
+
+void
 ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_vmstate_t *state,
 				 ivm_function_object_t *root)
@@ -242,6 +262,8 @@ ACTION_RAISE:
 					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE))
 						goto END;
 				} else {
+					// killed by an exception
+					ivm_coro_popException(coro, state, _TMP_OBJ1);
 					ivm_coro_kill(coro, state);
 					goto END;
 				}

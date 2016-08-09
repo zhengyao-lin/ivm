@@ -83,6 +83,8 @@ a = 10
 a@+ = fn b: base - b
 a@* = "hi"
 
+try: 10 + ""
+
 print(a + 5)
 try: a * 5
 catch err: print(err.msg)
