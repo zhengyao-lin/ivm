@@ -29,10 +29,16 @@
 			   IVM_IS_TYPE(NAT_ARG_AT(3), (t3),         \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
+#define CHECK_ARG_COUNT(name, count) \
+	RTM_ASSERT(NAT_ARGC() >= (count),                                       \
+			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((name), (count), NAT_ARGC()))
+
 #define WRONG_ARG() \
 	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
-#define IVM_NATIVE_ERROR_MSG_WRONG_BASE(tn)			"wrong base type <%s>", (tn)
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG				("wrong argument")
+#define IVM_NATIVE_ERROR_MSG_WRONG_BASE(tn)								"wrong base type <%s>", (tn)
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG									("wrong argument")
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(name, expect, given) \
+	"wrong argument count for %s(expect %d, %d given)", (name), (expect), (given)
 
 #endif

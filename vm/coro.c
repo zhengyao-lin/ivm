@@ -62,9 +62,9 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 }
 
 void
-ivm_coro_popException(ivm_coro_t *coro,
-					  ivm_vmstate_t *state,
-					  ivm_object_t *except)
+ivm_coro_printException(ivm_coro_t *coro,
+						ivm_vmstate_t *state,
+						ivm_object_t *except)
 {
 	ivm_object_t *msg_obj = ivm_object_getSlot(
 		except, state,
@@ -77,6 +77,7 @@ ivm_coro_popException(ivm_coro_t *coro,
 	}
 
 	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, msg));
+	IVM_TRACE("\n");
 
 	return;
 }
@@ -263,7 +264,7 @@ ACTION_RAISE:
 						goto END;
 				} else {
 					// killed by an exception
-					ivm_coro_popException(coro, state, _TMP_OBJ1);
+					ivm_coro_printException(coro, state, _TMP_OBJ1);
 					ivm_coro_kill(coro, state);
 					goto END;
 				}
@@ -272,7 +273,8 @@ ACTION_RAISE:
 
 			// tmp_frame != NULL
 			tmp_ip = IVM_FRAME_GET(tmp_frame, CATCH);
-			IVM_FRAME_SET(tmp_frame, CATCH, IVM_NULL);
+			// IVM_FRAME_SET(tmp_frame, CATCH, IVM_NULL);
+			IVM_RUNTIME_SET(tmp_runtime, CATCH, IVM_NULL);
 
 			UPDATE_STACK();
 			// push raised object

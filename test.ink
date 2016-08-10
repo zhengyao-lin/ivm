@@ -78,6 +78,9 @@ while i < 1000000: {
 ret
  */
 
+try: print()
+catch err: try: print()
+
 // a = i[1]
 a = 10
 a@+ = fn b: base - b

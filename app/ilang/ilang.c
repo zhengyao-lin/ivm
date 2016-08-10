@@ -11,6 +11,7 @@
 #include "util/serial.h"
 
 #include "vm/native/native.h"
+#include "vm/native/priv.h"
 #include "vm/dbg.h"
 #include "vm/env.h"
 
@@ -21,7 +22,7 @@ IVM_NATIVE_FUNC(print)
 {
 	ivm_object_t *obj;
 
-	IVM_ASSERT(NAT_ARGC(), "print need at least 1 argument");
+	CHECK_ARG_COUNT("print", 1);
 
 	obj = NAT_ARG_AT(1);
 
@@ -45,7 +46,7 @@ IVM_NATIVE_FUNC(call)
 	ivm_function_object_t *func;
 	ivm_coro_t *coro;
 
-	IVM_ASSERT(NAT_ARGC(), "call need at least 1 argument");
+	CHECK_ARG_COUNT("call", 1);
 
 	func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
 
