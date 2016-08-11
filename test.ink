@@ -244,7 +244,7 @@ fib = fn n: {
 	//print("new")
 	if n < 2: ret 1
 	//print("hi")
-	// print(fib)
+	//print(fib)
 	ret fib(n - 1) + fib(n - 2)
 }
 

@@ -104,6 +104,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 		// MEM_INIT(&ret->mark, sizeof(ret->mark));
 		// ret->mark.sub.is_hash = table->mark.sub.is_hash;
 		SET_BIT_FALSE(ret->mark.sub.is_shared);
+		ivm_slot_table_setWB(ret, 0);
 		// ret->mark.sub.gen = table->mark.sub.gen;
 		// ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);
@@ -146,6 +147,7 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 		// MEM_INIT(&ret->mark, sizeof(ret->mark));
 		// ret->mark.sub.is_hash = table->mark.sub.is_hash;
 		SET_BIT_FALSE(ret->mark.sub.is_shared);
+		ivm_slot_table_setWB(ret, 0);
 		// ret->mark.sub.gen = table->mark.sub.gen;
 		// ret->size = table->size;
 		ret->uid = ivm_vmstate_genUID(state);

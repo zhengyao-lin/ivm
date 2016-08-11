@@ -120,6 +120,7 @@ OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(
 ))
 
 #if 1
+
 OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(0, LT,
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 < 0;
 ))
@@ -160,6 +161,7 @@ OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(
 	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 != 0;
 	NEXT_INSTR();
 ))
+
 #endif
 
 OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
@@ -243,6 +245,11 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, 1, {
 	);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
 
+/*
+	if (_TMP_OBJ1) {
+		IVM_TRACE("%d\n", IVM_TYPE_TAG_OF(_TMP_OBJ1));
+	}
+*/
 	// IVM_TRACE("gcs: %p %s -> %p\n", _CONTEXT, ivm_string_trimHead(SARG()), _TMP_OBJ1);
 
 	NEXT_INSTR();
@@ -489,7 +496,7 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
 /*
  * invoke:
  * ----------------------
- * | func | arg1 | arg2 | ...
+ * | func | arg1 | arg2 | ...f
  * ----------------------
  *
  * invoke_base:
@@ -503,6 +510,9 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 
 	CHECK_STACK(_TMP_ARGC + 1);
 	_TMP_OBJ1 = STACK_POP();
+
+	// IVM_TRACE("hi\n");
+	// IVM_TRACE("%p\n", _TMP_OBJ1);
 
 	// IVM_TRACE("invoke! %p\n", _TMP_OBJ1);
 	// 

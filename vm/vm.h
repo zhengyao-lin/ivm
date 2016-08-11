@@ -120,8 +120,8 @@ IVM_WBOBJ(ivm_vmstate_t *state,
 		  ivm_object_t *parent,
 		  ivm_object_t *child)
 {
-	if (IVM_OBJECT_GET(parent, GEN) >
-		IVM_OBJECT_GET(child, GEN)) {
+	if (IVM_OBJECT_GET(parent, GEN) &&
+		!IVM_OBJECT_GET(child, GEN)) {
 		if (!IVM_OBJECT_GET(parent, WB)) {
 			ivm_collector_addWBObj(state->gc, parent);
 			IVM_OBJECT_SET(parent, WB, 1);
@@ -139,8 +139,8 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 		   ivm_object_t *value)
 {
 	// IVM_TRACE("wow %d %d\n", ivm_slot_table_getGen(table), IVM_OBJECT_GET(value, GEN));
-	if (ivm_slot_table_getGen(table) >
-		IVM_OBJECT_GET(value, GEN)) {
+	if (ivm_slot_table_getGen(table) &&
+		!IVM_OBJECT_GET(value, GEN)) {
 		if (!ivm_slot_table_getWB(table)) {
 			// IVM_TRACE("pop! %p %p(%s)\n", table, value, IVM_OBJECT_GET(value, TYPE_NAME));
 			ivm_collector_addWBSlotTable(state->gc, table);

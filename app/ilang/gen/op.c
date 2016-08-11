@@ -113,13 +113,13 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 #define BR(op) \
-	case ILANG_GEN_CMP_##op:                             \
-		if (flag.if_use_cond_reg) {                      \
-			ivm_exec_addInstr(env->cur_exec, op##_R);    \
-			return RETVAL(.use_cond_reg = IVM_TRUE);     \
-		} else {                                         \
-			ivm_exec_addInstr(env->cur_exec, op);        \
-		}                                                \
+	case ILANG_GEN_CMP_##op:                                \
+		if (flag.if_use_cond_reg && 0) {                    \
+			/* ivm_exec_addInstr(env->cur_exec, op##_R); */ \
+			return RETVAL(.use_cond_reg = IVM_TRUE);        \
+		} else {                                            \
+			ivm_exec_addInstr(env->cur_exec, op);           \
+		}                                                   \
 		break;
 
 	switch (cmp_expr->cmp_type) {
