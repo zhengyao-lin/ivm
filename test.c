@@ -389,7 +389,8 @@ int test_vm()
 
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1023);
 	ivm_exec_addInstr(exec1, NEW_NUM_I, 1022);
-	addr1 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
+	ivm_exec_addInstr(exec1, LT);
+	addr1 = ivm_exec_addInstr(exec1, JUMP_TRUE, 0);
 	ivm_exec_addInstr(exec1, OUT, "op1 is greater than or equal op2");
 	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);
@@ -415,7 +416,8 @@ int test_vm()
 	/* while i < n */
 	addr1 = ivm_exec_addInstr(exec1, NEW_NUM_I, 1000000);
 	ivm_exec_addInstr(exec1, GET_CONTEXT_SLOT, "i");
-	addr2 = ivm_exec_addInstr(exec1, JUMP_LT, 0);
+	ivm_exec_addInstr(exec1, LT);
+	addr2 = ivm_exec_addInstr(exec1, JUMP_TRUE, 0);
 		ivm_exec_addInstr(exec1, NEW_STR, "hello, ");
 		ivm_exec_addInstr(exec1, NEW_STR, "world");
 		ivm_exec_addInstr(exec1, ADD);

@@ -20,7 +20,7 @@ struct ivm_object_t_tag;
 typedef struct ivm_runtime_t_tag {
 	IVM_FRAME_HEADER
 	struct ivm_object_t_tag **sp;
-} IVM_NOALIGN ivm_runtime_t;
+} ivm_runtime_t;
 
 #define IVM_RUNTIME_GET_IS_NATIVE(runtime) (!(runtime)->ip)
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->ctx)
@@ -28,6 +28,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
 #define IVM_RUNTIME_GET_CATCH(runtime) ((runtime)->cat)
+#define IVM_RUNTIME_GET_NO_REG(runtime) ((runtime)->no_reg)
 
 #define IVM_RUNTIME_GET_SP_INC(runtime) ((runtime)->sp++)
 #define IVM_RUNTIME_GET_DEC_SP(runtime) (--(runtime)->sp)
@@ -36,6 +37,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_SET_BP(runtime, val) ((runtime)->bp = (val))
 #define IVM_RUNTIME_SET_SP(runtime, val) ((runtime)->sp = (val))
 #define IVM_RUNTIME_SET_CATCH(runtime, val) ((runtime)->cat = (val))
+#define IVM_RUNTIME_SET_NO_REG(runtime, val) ((runtime)->no_reg = (val))
 
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))

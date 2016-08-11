@@ -13,10 +13,11 @@
 IVM_COM_HEADER
 
 #define IVM_FRAME_HEADER \
-	struct ivm_ctchain_t_tag *ctx; \
-	ivm_instr_t *ip; \
-	struct ivm_object_t_tag **bp; \
-	ivm_instr_t *cat; // catch
+	struct ivm_ctchain_t_tag *ctx;   \
+	ivm_instr_t *ip;                 \
+	struct ivm_object_t_tag **bp;    \
+	ivm_instr_t *cat; /* catch */    \
+	ivm_bool_t no_reg;
 
 #define IVM_FRAME_HEADER_SIZE \
 	(sizeof(struct { IVM_FRAME_HEADER }))
@@ -28,15 +29,17 @@ struct ivm_object_t_tag;
 
 typedef struct ivm_frame_t_tag {
 	IVM_FRAME_HEADER
-} IVM_NOALIGN ivm_frame_t;
+} ivm_frame_t;
 
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
 #define IVM_FRAME_GET_CATCH(frame) ((frame)->cat)
+#define IVM_FRAME_GET_NO_REG(frame) ((frame)->no_reg)
 
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
 #define IVM_FRAME_SET_CATCH(frame, val) ((frame)->cat = (val))
+#define IVM_FRAME_SET_NO_REG(frame, val) ((frame)->no_reg = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))

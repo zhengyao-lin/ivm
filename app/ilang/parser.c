@@ -800,12 +800,30 @@ RULE(arg_list_opt)
 		| '|'
 		| '^'
 		| '[' nllo ']'
+		| '!='
+		| '=='
+		| '>'
+		| '>='
+		| '<'
+		| '<='
  */
 RULE(oop)
 {
 
 #define DEF_OOP(op) \
 	SUB_RULE(T(T_##op)                 \
+	{                                  \
+		_RETVAL.oop = IVM_OOP_ID(op);  \
+	})
+
+#define DEF_OOP_B(op) \
+	SUB_RULE(T(T_B##op)                 \
+	{                                  \
+		_RETVAL.oop = IVM_OOP_ID(op);  \
+	})
+
+#define DEF_OOP_C(op) \
+	SUB_RULE(T(T_C##op)                 \
 	{                                  \
 		_RETVAL.oop = IVM_OOP_ID(op);  \
 	})
@@ -817,28 +835,27 @@ RULE(oop)
 		DEF_OOP(MUL)
 		DEF_OOP(DIV)
 		DEF_OOP(MOD)
-		
-		SUB_RULE(T(T_BAND)
-		{
-			_RETVAL.oop = IVM_OOP_ID(AND);
-		})
-		
-		SUB_RULE(T(T_BIOR)
-		{
-			_RETVAL.oop = IVM_OOP_ID(IOR);
-		})
-		
-		SUB_RULE(T(T_BEOR)
-		{
-			_RETVAL.oop = IVM_OOP_ID(EOR);
-		})
+
+		DEF_OOP_B(AND)
+		DEF_OOP_B(IOR)
+		DEF_OOP_B(EOR)
 
 		SUB_RULE(T(T_LBRAKT) R(nllo) T(T_RBRAKT)
 		{
 			_RETVAL.oop = IVM_OOP_ID(IDX);
 		})
+
+		DEF_OOP_C(NE)
+		DEF_OOP_C(EQ)
+		DEF_OOP_C(LT)
+		DEF_OOP_C(LE)
+		DEF_OOP_C(GT)
+		DEF_OOP_C(GE)
 	)
+
 #undef DEF_OOP
+#undef DEF_OOP_B
+#undef DEF_OOP_C
 
 	FAILED({})
 	MATCHED({})

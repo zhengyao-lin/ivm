@@ -10,6 +10,7 @@
 #include "std/bit.h"
 
 #include "instr.h"
+#include "oprt.h"
 
 IVM_COM_HEADER
 
@@ -52,8 +53,8 @@ typedef struct ivm_slot_table_t_tag {
 	struct ivm_object_t_tag **oops;
 	union {
 		struct {
-			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;
-			ivm_int_t dummy2: sizeof(ivm_ptr_t) / 2 * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
+			ivm_int_t dummy1: sizeof(ivm_sint64_t) / 2 * 8;
+			ivm_int_t dummy2: sizeof(ivm_sint64_t) / 2 * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
 			ivm_uint_t oop_count: 5; // max 32
 			ivm_int_t is_hash: 1;
 			ivm_int_t is_shared: 1; // shared by multiple objects

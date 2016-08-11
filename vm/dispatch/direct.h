@@ -293,6 +293,7 @@
 #define _TMP_OBJ1 (tmp_obj1)
 #define _TMP_OBJ2 (tmp_obj2)
 #define _TMP_OBJ3 (tmp_obj3)
+#define _TMP_OBJ4 (tmp_obj4)
 #define _TMP_UNI_PROC (tmp_uni_proc)
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)

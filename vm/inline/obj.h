@@ -139,7 +139,12 @@ ivm_object_setOop(ivm_object_t *obj,
 		obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
-	obj->mark.sub.oop |= 1 << op;
+	if (op < IVM_OOP_COUNT) {
+		obj->mark.sub.oop |= 1 << op;
+	} else {
+		obj->mark.sub.oop |= 1 << IVM_OOP_ID(EXT);
+	}
+
 	ivm_slot_table_setOop(obj->slots, state, op, func);
 
 	return;
@@ -151,6 +156,14 @@ ivm_object_getOop(ivm_object_t *obj,
 				  ivm_int_t op)
 {
 	if (!obj->slots) {
+		return IVM_NULL;
+	}
+
+	if (op < IVM_OOP_COUNT) {
+		if (!(obj->mark.sub.oop & (1 << op))) {
+			return IVM_NULL;
+		}
+	} else if (!(obj->mark.sub.oop & (1 << IVM_OOP_ID(EXT)))) {
 		return IVM_NULL;
 	}
 

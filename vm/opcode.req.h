@@ -40,9 +40,10 @@
 		CHECK_STACK(1);                                                                        \
                                                                                                \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		if (ivm_object_isOopDefined(_TMP_OBJ1, op)) {                                          \
+		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
+		if (_TMP_OBJ2) {                                                                       \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op)));                          \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
 			SET_IARG(0);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		} else {                                                                               \
@@ -84,16 +85,17 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = (assign);                                                                  \
-		if (ivm_object_isOopDefined(_TMP_OBJ1, op)) {                                          \
+		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
+		if (_TMP_OBJ4) {                                                                       \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
 			if (_TMP_OBJ3) {                                                                   \
 				STACK_PUSH(_TMP_OBJ3);                                                         \
 				STACK_PUSH(_TMP_OBJ1);                                                         \
-				STACK_PUSH(ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op)));                      \
+				STACK_PUSH(_TMP_OBJ4);                                                         \
 				SET_IARG(2);                                                                   \
 			} else {                                                                           \
 				STACK_PUSH(_TMP_OBJ1);                                                         \
-				STACK_PUSH(ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op)));                      \
+				STACK_PUSH(_TMP_OBJ4);                                                         \
 				SET_IARG(1);                                                                   \
 			}                                                                                  \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
@@ -111,25 +113,111 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER(e1, todo) \
+#if 0
+
+#define CMP_HANDLER(e1, oop, todo) \
+{                                                                                          \
+	CHECK_STACK(2);                                                                        \
+                                                                                           \
+	_TMP_OBJ2 = STACK_POP();                                                               \
+	_TMP_OBJ1 = STACK_POP();                                                               \
+	_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);                  \
+                                                                                           \
+	e1;                                                                                    \
+                                                                                           \
+	RTM_ASSERT(_TMP_BIN_PROC,                                                              \
+			   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
+			   							  "<=>",                                           \
+										  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
+                                                                                           \
+	_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                     \
+	todo;                                                                                  \
+	NEXT_INSTR();                                                                          \
+}
+
+#define CMP_HANDLER_R(e1, oop, todo) \
+{                                                                                          \
+	CHECK_STACK(2);                                                                        \
+                                                                                           \
+	_TMP_OBJ2 = STACK_POP();                                                               \
+	_TMP_OBJ1 = STACK_POP();                                                               \
+	_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);                  \
+                                                                                           \
+	e1;                                                                                    \
+                                                                                           \
+	RTM_ASSERT(_TMP_BIN_PROC,                                                              \
+			   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
+			   							  "<=>",                                           \
+										  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
+                                                                                           \
+	_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                     \
+	todo;                                                                                  \
+	NEXT_INSTR();                                                                          \
+}
+
+#else
+
+#define CMP_HANDLER(e1, oop, todo) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);                  \
-                                                                                               \
-		e1;                                                                                    \
-                                                                                               \
-		RTM_ASSERT(_TMP_BIN_PROC,                                                              \
-				   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),            \
-				   							  "<=>",                                           \
-											  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));          \
-                                                                                               \
-		_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                     \
-		todo;                                                                                  \
-		NEXT_INSTR();                                                                          \
+		_TMP_OBJ3 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(oop));                             \
+		if (_TMP_OBJ3) {                                                                       \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ3);                                                             \
+			SET_IARG(1);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
+		} else {                                                                               \
+			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);              \
+	                                                                                           \
+			e1;                                                                                \
+	                                                                                           \
+			RTM_ASSERT(_TMP_BIN_PROC,                                                          \
+					   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),        \
+					   							  "<=>",                                       \
+												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
+	                                                                                           \
+			_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                 \
+			todo;                                                                              \
+			NEXT_INSTR();                                                                      \
+		}                                                                                      \
 	}
+
+#define CMP_HANDLER_R(e1, oop, todo) \
+	{                                                                                          \
+		CHECK_STACK(2);                                                                        \
+                                                                                               \
+		_TMP_OBJ2 = STACK_POP();                                                               \
+		_TMP_OBJ1 = STACK_POP();                                                               \
+		_TMP_OBJ3 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(oop));                             \
+		if (_TMP_OBJ3) {                                                                       \
+			IVM_RUNTIME_SET(_RUNTIME, NO_REG, IVM_TRUE);                                       \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ3);                                                             \
+			SET_IARG(1);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
+		} else {                                                                               \
+			IVM_RUNTIME_SET(_RUNTIME, NO_REG, IVM_FALSE);                                      \
+			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, CMP, _TMP_OBJ2);              \
+	                                                                                           \
+			e1;                                                                                \
+	                                                                                           \
+			RTM_ASSERT(_TMP_BIN_PROC,                                                          \
+					   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),        \
+					   							  "<=>",                                       \
+												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
+	                                                                                           \
+			_TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);                 \
+			todo;                                                                              \
+			NEXT_INSTR();                                                                      \
+		}                                                                                      \
+	}
+
+#endif
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#include "dispatch/direct.h"

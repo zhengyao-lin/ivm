@@ -23,9 +23,9 @@ IVM_COM_HEADER
 	ivm_slot_table_t *slots;                                   \
 	union {                                                    \
 		struct {                                               \
-			ivm_int_t dummy1: sizeof(ivm_ptr_t) / 2 * 8;       \
+			ivm_int_t dummy1: sizeof(ivm_sint64_t) / 2 * 8;    \
 			ivm_int_t dummy2:                                  \
-				sizeof(ivm_ptr_t) / 2 * 8 -                    \
+				sizeof(ivm_sint64_t) / 2 * 8 -                 \
 				_IVM_MARK_HEADER_BITS;                         \
 			ivm_uint_t oop: IVM_OOP_COUNT;                     \
 			ivm_uint_t wb: 1;                                  \
@@ -194,17 +194,6 @@ ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
 
 #define ivm_object_doBinOp(state, op1, op, op2) \
 	(ivm_object_doBinOp_c((state), (op1), IVM_BINOP_ID(op), (op2)))
-
-IVM_INLINE
-ivm_bool_t
-ivm_object_isOopDefined_c(ivm_object_t *obj,
-						  ivm_int_t op)
-{
-	return obj->mark.sub.oop & (1 << op);
-}
-
-#define ivm_object_isOopDefined(obj, op) \
-	(ivm_object_isOopDefined_c((obj), IVM_OOP_ID(op)))
 
 IVM_INLINE
 void

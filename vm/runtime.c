@@ -29,6 +29,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->bp = runtime->sp;
 	runtime->cat = IVM_NULL;
+	runtime->no_reg = IVM_FALSE;
 
 	return;
 }

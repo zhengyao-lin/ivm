@@ -86,7 +86,22 @@ a = 10
 a@+ = fn b: base - b
 a@* = "hi"
 
+res = 1
+
+a@<= = fn b: res
+a@>= = fn b: a <= b
+a@< = fn b: a >= b
+a@> = fn b: a < b
+
 try: 10 + ""
+
+if a > 11: print("yes!")
+else: print("no!")
+
+res = 0
+
+if a > 11: print("no!")
+else: print("yes!")
 
 print(a + 5)
 try: a * 5

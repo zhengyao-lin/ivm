@@ -27,6 +27,7 @@ typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *s
 
 // overload op
 #define IVM_OOP_ID(op) IVM_OOP_##op
+#define IVM_OOP_CMP_ID(op) IVM_OOP_CMP_##op
 
 enum {
 	IVM_UNIOP_ID(NOT) = 0,
@@ -59,14 +60,20 @@ enum {
 	IVM_OOP_ID(MUL),
 	IVM_OOP_ID(DIV),
 	IVM_OOP_ID(MOD),
-	IVM_OOP_ID(CMP),
 	IVM_OOP_ID(AND),
 	IVM_OOP_ID(IOR),
 	IVM_OOP_ID(EOR),
 	IVM_OOP_ID(IDX),
 	IVM_OOP_ID(SHL),
 	IVM_OOP_ID(SHR),
-	IVM_OOP_COUNT
+	IVM_OOP_ID(EXT),
+	IVM_OOP_COUNT,
+	IVM_OOP_ID(NE) = IVM_OOP_COUNT,
+	IVM_OOP_ID(EQ),
+	IVM_OOP_ID(GT),
+	IVM_OOP_ID(GE),
+	IVM_OOP_ID(LT),
+	IVM_OOP_ID(LE)
 };
 
 /*
