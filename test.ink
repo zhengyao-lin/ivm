@@ -87,6 +87,7 @@ a@+ = fn b: base - b
 a@* = "hi"
 
 res = 1
+i = 0
 
 a@<= = fn b: res
 a@>= = fn b: a <= b

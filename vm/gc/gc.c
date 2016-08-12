@@ -167,11 +167,11 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 		}
 	}
 
-	oops = ivm_slot_table_getOops(table);
+	oops = ivm_slot_table_getOops(ret);
 	if (oops) {
-		count = ivm_slot_table_getOopCount(table);
+		count = ivm_slot_table_getOopCount(ret);
 		for (end = oops + count;
-			 oops != end; oops++) {
+			 oops != end; oops++, count--) {
 			*oops = ivm_collector_copyObject(*oops, arg);
 		}
 	}
