@@ -49,7 +49,8 @@ enum {
 	IVM_BINOP_ID(EOR), // exclusive or
 	IVM_BINOP_ID(IDX),
 	IVM_BINOP_ID(SHL),
-	IVM_BINOP_ID(SHR),
+	IVM_BINOP_ID(SHAR), // arithmetic
+	IVM_BINOP_ID(SHLR), // logic
 	IVM_BINOP_COUNT
 };
 
@@ -65,7 +66,8 @@ enum {
 	IVM_OOP_ID(EOR),
 	IVM_OOP_ID(IDX),
 	IVM_OOP_ID(SHL),
-	IVM_OOP_ID(SHR),
+	IVM_OOP_ID(SHLR),
+	IVM_OOP_ID(SHAR),
 	IVM_OOP_ID(EXT),
 	IVM_OOP_COUNT,
 	IVM_OOP_ID(NE) = IVM_OOP_COUNT,
@@ -82,8 +84,8 @@ enum {
 
 		binary:
 			add, sub, mul, div,
-			mod, cmp, and, ior,
-			eor, idx
+			mod, and, ior, eor,
+			idx, shl, shar, shlr
  */
 
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];

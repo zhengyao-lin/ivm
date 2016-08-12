@@ -86,8 +86,12 @@ a = 10
 a@+ = fn b: base - b
 a@* = "hi"
 
+print(1 << 2)
+print(1024 >> 2)
+print(-1 >> 2)
+print(-1 >>> 1)
+
 res = 1
-i = 0
 
 a@<= = fn b: res
 a@>= = fn b: a <= b

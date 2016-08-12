@@ -116,6 +116,10 @@ BINOP_GEN(IVM_NUMERIC_T, SHL, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) << (ivm_long_t)ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN(IVM_NUMERIC_T, SHR, IVM_NUMERIC_T, {
+BINOP_GEN(IVM_NUMERIC_T, SHAR, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+})
+
+BINOP_GEN(IVM_NUMERIC_T, SHLR, IVM_NUMERIC_T, {
+	return ivm_numeric_new(_STATE, (ivm_ulong_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
 })

@@ -79,6 +79,9 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr(env->cur_exec, IDX);
 			}
 			break;
+		BR(SHL)
+		BR(SHAR)
+		BR(SHLR)
 		default:
 			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_BINARY_OP(binary_expr->type));
 	}

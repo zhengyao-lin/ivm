@@ -67,6 +67,9 @@ enum token_id_t {
 	T_BAND,		// &
 	T_BIOR,		// |
 	T_BEOR,		// ^
+	T_SHL,		// <<
+	T_SHAR,		// >>
+	T_SHLR,		// >>>
 
 	T_NOT,		// !
 
@@ -137,6 +140,9 @@ token_name_table[] = {
 	"bit and operator",
 	"bit inclusive or operator",
 	"bit exclusive or operator",
+	"shift left",
+	"shift arithmetic right",
+	"shift logic right",
 
 	"not operator",
 
@@ -170,6 +176,7 @@ enum state_t {
 	ST_TRY_ASSIGN,
 	ST_TRY_AND,
 	ST_TRY_OR,
+	ST_TRY_SHR,
 
 	ST_TRY_COMMENT12,
 
@@ -260,12 +267,14 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* TRY_GT */
 		{
 			{ "==", ST_INIT, T_CGE, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "=>", ST_TRY_SHR },
 			{ ".", ST_INIT, T_CGT },
 		},
 
 		/* TRY_LT */
 		{
 			{ "==", ST_INIT, T_CLE, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "=<", ST_INIT, T_SHL, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_CLT }
 		},
 
@@ -291,6 +300,12 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		{
 			{ "=|", ST_INIT, T_COR, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_BIOR }
+		},
+
+		/* TRY_SHR */
+		{
+			{ "=>", ST_INIT, T_SHLR, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_SHAR },
 		},
 
 		/* TRY_COMMENT12 */
@@ -1274,20 +1289,58 @@ RULE(add_sub_expr)
 }
 
 /*
+	shift_expr_sub
+		: '<<' add_sub_expr shift_expr_sub
+		| '>>' add_sub_expr shift_expr_sub
+		| '>>>' add_sub_expr shift_expr_sub
+		| %empty
+ */
+RULE(shift_expr_sub)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_SHL) R(nllo) R(add_sub_expr) R(shift_expr_sub) SUB1_OP(SHL))
+		SUB_RULE(T(T_SHAR) R(nllo) R(add_sub_expr) R(shift_expr_sub) SUB1_OP(SHAR))
+		SUB_RULE(T(T_SHLR) R(nllo) R(add_sub_expr) R(shift_expr_sub) SUB1_OP(SHLR))
+		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	shift_expr
+		: add_sub_expr shift_expr_sub
+ */
+RULE(shift_expr)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(add_sub_expr) R(shift_expr_sub)
+		DBB(
+			if (RULE_RET_AT(1).u.expr)
+				PRINT_MATCH_TOKEN("shift expr");
+		) SUB2())
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	cmp_expr_sub
-		: '>' add_sub_expr cmp_expr_sub
-		| '>=' add_sub_expr cmp_expr_sub
-		| '<' add_sub_expr cmp_expr_sub
-		| '<=' add_sub_expr cmp_expr_sub
+		: '>' shift_expr cmp_expr_sub
+		| '>=' shift_expr cmp_expr_sub
+		| '<' shift_expr cmp_expr_sub
+		| '<=' shift_expr cmp_expr_sub
 		| %empty
  */
 RULE(cmp_expr_sub)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_CGT) R(nllo) R(add_sub_expr) R(cmp_expr_sub) SUB1_CMP(GT))
-		SUB_RULE(T(T_CGE) R(nllo) R(add_sub_expr) R(cmp_expr_sub) SUB1_CMP(GE))
-		SUB_RULE(T(T_CLT) R(nllo) R(add_sub_expr) R(cmp_expr_sub) SUB1_CMP(LT))
-		SUB_RULE(T(T_CLE) R(nllo) R(add_sub_expr) R(cmp_expr_sub) SUB1_CMP(LE))
+		SUB_RULE(T(T_CGT) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(GT))
+		SUB_RULE(T(T_CGE) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(GE))
+		SUB_RULE(T(T_CLT) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(LT))
+		SUB_RULE(T(T_CLE) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(LE))
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -1297,12 +1350,12 @@ RULE(cmp_expr_sub)
 
 /*
 	cmp_expr
-		: add_sub_expr cmp_expr_sub
+		: shift_expr cmp_expr_sub
  */
 RULE(cmp_expr)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(add_sub_expr) R(cmp_expr_sub)
+		SUB_RULE(R(shift_expr) R(cmp_expr_sub)
 		DBB(
 			if (RULE_RET_AT(1).u.expr)
 				PRINT_MATCH_TOKEN("cmp expr");
