@@ -105,6 +105,19 @@ ivm_object_newUndefined(ivm_vmstate_t *state)
 }
 
 IVM_INLINE
+ivm_bool_t
+ivm_object_hasProto(ivm_object_t *obj,
+					ivm_object_t *proto)
+{
+	while (obj) {
+		if (obj == proto) return IVM_TRUE;
+		obj = obj->proto;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
 void
 ivm_object_setProto(ivm_object_t *obj,
 					ivm_vmstate_t *state,
@@ -113,7 +126,9 @@ ivm_object_setProto(ivm_object_t *obj,
 	if (proto) {
 		IVM_WBOBJ(state, obj, proto);
 	}
+	
 	obj->proto = proto;
+
 	return;
 }
 

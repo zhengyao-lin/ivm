@@ -78,6 +78,14 @@ while i < 1000000: {
 ret
  */
 
+a = 0
+b = 0
+c = 0
+a.proto = b
+c.proto = a
+try: b.proto = c
+catch err: print(err.msg)
+
 try: print()
 catch err: try: print()
 

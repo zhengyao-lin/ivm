@@ -232,8 +232,16 @@ OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
 OPCODE_GEN(SET_PROTO, "set_proto", N, -1, {
 	CHECK_STACK(2);
 
-	_TMP_OBJ1 = STACK_POP();
-	ivm_object_setProto(_TMP_OBJ1, _STATE, STACK_POP());
+	_TMP_OBJ1 = STACK_POP(); // obj
+	_TMP_OBJ2 = STACK_POP(); // proto
+
+	// no circular prototype ref
+	RTM_ASSERT(
+		!ivm_object_hasProto(_TMP_OBJ2, _TMP_OBJ1),
+		IVM_ERROR_MSG_CIRCULAR_PROTO_REF
+	);
+
+	ivm_object_setProto(_TMP_OBJ1, _STATE, _TMP_OBJ2);
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR();
