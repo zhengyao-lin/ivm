@@ -821,6 +821,9 @@ RULE(arg_list_opt)
 		| '>='
 		| '<'
 		| '<='
+		| '<<'
+		| '>>'
+		| '>>>'
  */
 RULE(oop)
 {
@@ -866,6 +869,10 @@ RULE(oop)
 		DEF_OOP_C(LE)
 		DEF_OOP_C(GT)
 		DEF_OOP_C(GE)
+
+		DEF_OOP(SHL)
+		DEF_OOP(SHAR)
+		DEF_OOP(SHLR)
 	)
 
 #undef DEF_OOP

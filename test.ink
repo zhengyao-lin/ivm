@@ -83,13 +83,21 @@ catch err: try: print()
 
 // a = i[1]
 a = 10
+b = {}
+
 a@+ = fn b: base - b
 a@* = "hi"
+
+a@>> = fn b: b.value = a
 
 print(1 << 2)
 print(1024 >> 2)
 print(-1 >> 2)
 print(-1 >>> 1)
+
+a >> b
+print(b.value >> a)
+print(a.value)
 
 res = 1
 
