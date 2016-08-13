@@ -261,6 +261,43 @@ root {
 	new_num_i 5
 	add
 	out_num
+
+	new_func end
+	fork
+
+	out "\n*** cgroup test ***\n"
+
+	new_num_i 1
+
+	new_func g1_c1
+	group
+	new_func g1_c2
+	group_to
+
+	yield_to
+}
+
+end {
+	out "end!"
+}
+
+g1_c1 {
+	out_num; pop
+	new_num_i 2
+	yield
+	out_num; pop
+	new_num_i 4
+	yield
+	out_num; pop
+}
+
+g1_c2 {
+	out_num; pop
+	new_num_i 3
+	yield
+	out_num; pop
+	new_num_i 5
+	yield
 }
 
 overload_not {

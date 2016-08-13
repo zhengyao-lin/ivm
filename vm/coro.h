@@ -19,6 +19,9 @@ typedef struct ivm_coro_t_tag {
 	ivm_vmstack_t stack;
 	ivm_frame_stack_t frame_st;
 	ivm_runtime_t runtime;
+	ivm_cgid_t group;
+	/* whether it's the current coro in the group */
+	ivm_bool_t is_cur;
 	ivm_bool_t alive;
 	ivm_bool_t has_native;
 } ivm_coro_t;
@@ -90,6 +93,13 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #define ivm_coro_isAlive(coro) ((coro)->alive)
 
+#define ivm_coro_setGroup(coro, gid) ((coro)->group = (gid))
+#define ivm_coro_isGroup(coro, gid) ((coro)->group == (gid))
+
+#define ivm_coro_setCur(coro) ((coro)->is_cur = IVM_TRUE)
+#define ivm_coro_resetCur(coro) ((coro)->is_cur = IVM_FALSE)
+#define ivm_coro_isCur(coro) ((coro)->is_cur)
+
 IVM_INLINE
 ivm_object_t *
 ivm_coro_resume(ivm_coro_t *coro,
@@ -143,6 +153,20 @@ typedef ivm_ptpool_t ivm_coro_pool_t;
 #define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
 #define ivm_coro_pool_dump ivm_ptpool_dump
 #define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll
+
+typedef ivm_list_t ivm_cgroup_stack_t;
+typedef IVM_LIST_ITER_TYPE(ivm_cgid_t) ivm_cgroup_stack_iterator_t;
+
+#define ivm_cgroup_stack_init(stack) (ivm_list_init_c((stack), sizeof(ivm_cgid_t), IVM_DEFAULT_CGROUP_STACK_BUFFER_SIZE))
+#define ivm_cgroup_stack_dump(stack) (ivm_list_dump(stack))
+#define ivm_cgroup_stack_isEmpty ivm_list_isEmpty
+#define ivm_cgroup_stack_empty ivm_list_empty
+#define ivm_cgroup_stack_push(stack, gid) {   \
+	ivm_cgid_t tmp = (gid);                   \
+	ivm_list_push((stack), &tmp);             \
+}
+
+#define ivm_cgroup_stack_pop(stack) (*(ivm_cgid_t *)ivm_list_pop(stack))
 
 IVM_COM_END
 

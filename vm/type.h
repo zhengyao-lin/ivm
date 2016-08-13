@@ -75,6 +75,8 @@ typedef union {
 typedef ivm_uint32_t	ivm_argc_t;
 typedef ivm_ptr_t		ivm_mark_t;
 
+typedef ivm_int_t		ivm_cgid_t;
+
 #define IVM_MARK_INIT 0
 
 #define IVM_GET(obj, type, member) (IVM_NULL, type##_GET_##member(obj))

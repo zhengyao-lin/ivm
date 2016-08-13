@@ -190,7 +190,23 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size);
 #define ivm_list_new(size) (ivm_list_new_c((size), IVM_DEFAULT_LIST_BUFFER_SIZE))
 
 void
+ivm_list_init_c(ivm_list_t *list,
+				ivm_size_t esize,
+				ivm_size_t buf_size);
+
+void
 ivm_list_free(ivm_list_t *list);
+
+IVM_INLINE
+void
+ivm_list_dump(ivm_list_t *list)
+{
+	if (list) {
+		MEM_FREE(list->lst);
+	}
+
+	return;
+}
 
 IVM_INLINE
 void
@@ -227,6 +243,15 @@ ivm_list_at(ivm_list_t *list, ivm_size_t i)
 #define ivm_list_size(list) ((list)->cur)
 #define ivm_list_empty(list) ((list)->cur = 0)
 #define ivm_list_core(list) ((list)->lst)
+
+IVM_INLINE
+void *
+ivm_list_pop(ivm_list_t *list)
+{
+	return list->lst + --list->cur;
+}
+
+#define ivm_list_isEmpty(list) ((list)->cur == 0)
 #define ivm_list_isLast(list) (((ivm_ptr_t)(iter) - (ivm_ptr_t)(list)->lst) / (list)->esize == (list)->cur - 1)
 
 #define IVM_LIST_ITER_TYPE(elem_type) elem_type *

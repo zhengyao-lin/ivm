@@ -20,6 +20,8 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_vmstack_init(&ret->stack);
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
+	ret->group = 0;
+	ret->is_cur = IVM_FALSE;
 	ret->alive = IVM_FALSE;
 	ret->has_native = IVM_FALSE;
 

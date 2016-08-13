@@ -52,7 +52,10 @@ ivm_vmstate_new()
 	}
 
 	ret->cur_coro = 0;
+	ret->max_cgroup = 0;
+	ret->cur_cgroup = 0;
 	ivm_coro_list_init(&ret->coro_list);
+	ivm_cgroup_stack_init(&ret->cgroup_stack);
 	
 	// ivm_type_list_init(&ret->type_list);
 	ivm_func_list_init(&ret->func_list);
@@ -115,6 +118,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 			ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
 		}
 		ivm_coro_list_dump(&state->coro_list);
+		ivm_cgroup_stack_dump(&state->cgroup_stack);
 
 		ivm_func_list_dump(&state->func_list, state);
 
@@ -135,33 +139,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
-void
-ivm_vmstate_reinit(ivm_vmstate_t *state)
-{
-	ivm_coro_list_iterator_t citer;
-	ivm_int_t i;
-
-	for (i = 0; i < IVM_ARRLEN(state->heaps); i++) {
-		ivm_heap_reset(state->heaps + i);
-	}
-
-	state->cur_coro = 0;
-	IVM_CORO_LIST_EACHPTR(&state->coro_list, citer) {
-		ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
-	}
-	ivm_coro_list_empty(&state->coro_list);
-
-	ivm_func_list_empty(&state->func_list, state);
-
-	ivm_function_pool_dumpAll(state->func_pool);
-	ivm_context_pool_dumpAll(state->ct_pool);
-	ivm_coro_pool_dumpAll(&state->cr_pool);
-
-	ivm_collector_reinit(state->gc);
-
-	return;
-}
-
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,
 					ivm_function_object_t *func)
@@ -171,6 +148,78 @@ ivm_vmstate_addCoro(ivm_vmstate_t *state,
 	return ivm_coro_list_add(&state->coro_list, coro);
 }
 
+ivm_cgid_t
+ivm_vmstate_addGroup(ivm_vmstate_t *state,
+					 ivm_function_object_t *func)
+{
+	ivm_coro_t *coro = ivm_coro_new(state);
+
+	ivm_coro_setRoot(coro, state, func);
+	ivm_coro_list_add(&state->coro_list, coro);
+
+	return ivm_coro_setGroup(coro, ++state->max_cgroup);
+}
+
+ivm_cgid_t
+ivm_vmstate_addToGroup(ivm_vmstate_t *state,
+					   ivm_function_object_t *func,
+					   ivm_cgid_t gid)
+{
+	ivm_coro_t *coro = ivm_coro_new(state);
+
+	ivm_coro_setRoot(coro, state, func);
+	ivm_coro_list_add(&state->coro_list, coro);
+
+	return ivm_coro_setGroup(coro, gid);
+}
+
+void
+ivm_vmstate_yieldTo(ivm_vmstate_t *state,
+					ivm_cgid_t gid)
+{
+	ivm_coro_setCur(ivm_coro_list_at(&state->coro_list, state->cur_coro));
+	// IVM_TRACE("yield to %d(cur %d in %d)\n", gid, state->cur_coro, state->cur_cgroup);
+	ivm_cgroup_stack_push(&state->cgroup_stack, state->cur_cgroup);
+	state->cur_cgroup = gid;
+
+	return;
+}
+
+/* switch to the current coroutine in the previous group */
+IVM_PRIVATE
+IVM_INLINE
+ivm_bool_t
+_ivm_vmstate_popCGroup(ivm_vmstate_t *state)
+{
+	ivm_coro_list_t *list = &state->coro_list;
+	ivm_coro_list_iterator_t iter;
+	ivm_cgid_t tmp_gid;
+
+	while (1) {
+		if (ivm_cgroup_stack_isEmpty(&state->cgroup_stack))
+			return IVM_FALSE;
+
+		tmp_gid = state->cur_cgroup = ivm_cgroup_stack_pop(&state->cgroup_stack);
+
+		// IVM_TRACE("pop %d!\n", tmp_gid);
+		/* restore the current coroutine in the previous group */
+		IVM_CORO_LIST_EACHPTR(list, iter) {
+			if (ivm_coro_isGroup(IVM_CORO_LIST_ITER_GET(iter), tmp_gid) &&
+				ivm_coro_isCur(IVM_CORO_LIST_ITER_GET(iter))) {
+				// IVM_TRACE("haaa\n");
+				ivm_coro_resetCur(IVM_CORO_LIST_ITER_GET(iter));
+				state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, iter);
+				return IVM_TRUE;
+			}
+		}
+
+		/* no current coroutine in the  previous group */
+		/* pop again */
+	}
+
+	IVM_FATAL("impossible");
+}
+
 IVM_PRIVATE
 IVM_INLINE
 ivm_bool_t
@@ -178,13 +227,15 @@ _ivm_vmstate_switchCoro(ivm_vmstate_t *state)
 {
 	ivm_coro_list_t *list = &state->coro_list;
 	ivm_coro_list_iterator_t i, end;
+	ivm_int_t cur_group = state->cur_cgroup;
 
 	// if (!ivm_coro_list_size(list)) return IVM_FALSE;
 
 	for (i = IVM_CORO_LIST_ITER_AT(list, state->cur_coro + 1),
 		 end = IVM_CORO_LIST_ITER_END(list);
 		 i != end; i++) {
-		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
+		if (ivm_coro_isGroup(IVM_CORO_LIST_ITER_GET(i), cur_group) &&
+			ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
 			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
 			return IVM_TRUE;
 		}
@@ -193,7 +244,8 @@ _ivm_vmstate_switchCoro(ivm_vmstate_t *state)
 	for (end = i,
 		 i = IVM_CORO_LIST_ITER_BEGIN(list);
 		 i != end; i++) {
-		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
+		if (ivm_coro_isGroup(IVM_CORO_LIST_ITER_GET(i), cur_group) &&
+			ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
 			state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, i);
 			return IVM_TRUE;
 		}
@@ -208,19 +260,21 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 	ivm_object_t *ret = IVM_NULL;
 	ivm_coro_list_t *coros = &state->coro_list;
 
-	while (ivm_coro_list_size(coros)) {
-		ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
-							  state, ret);
-		if (!_ivm_vmstate_switchCoro(state))
-			break;
-	}
+	do {
+		while (ivm_coro_list_size(coros)) {
+			ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
+								  state, ret);
+			if (!_ivm_vmstate_switchCoro(state))
+				break;
+		}
+	} while (_ivm_vmstate_popCGroup(state));
 
 	state->cur_coro = 0;
 
 	return;
 }
 
-/* schedule one round */
+/* schedule one round(yield in nested native call) */
 ivm_object_t *
 ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 					   ivm_object_t *ret)
@@ -231,29 +285,47 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 	ivm_size_t ocoro = state->cur_coro;
 	ivm_coro_t *coro, *skip = ivm_coro_list_at(coros, ocoro);
 
-	while (1) {
-		if (!_ivm_vmstate_switchCoro(state)) {
-			IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
-		}
-		
-		coro = ivm_coro_list_at(coros, state->cur_coro);
+	ivm_cgid_t gid = state->cur_cgroup;
 
-		if (coro == skip) break;
-		if (IVM_CORO_GET(coro, HAS_NATIVE)) {
-			IVM_TRACE("*** coro schedule out of order ***\n");
-			if (state->coro_list_uid == uid) {
-				/* coro list not changed */
-				state->cur_coro = ocoro;
-			} else {
-				do {
-					_ivm_vmstate_switchCoro(state);
-				} while (ivm_coro_list_at(coros, state->cur_coro) != coro);
+	do {
+		while (1) {
+			if (!_ivm_vmstate_switchCoro(state)) {
+				break;
+				IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
 			}
-			break;
+			
+			coro = ivm_coro_list_at(coros, state->cur_coro);
+
+			/* back to the original coroutine */
+			if (coro == skip) goto RET;
+			/*
+				because the current coroutine mechanism is not involving
+				C context saving for portability, so only one coroutine can
+				have nested native call, or the yield order will be broken.
+
+				That is, if that happens, the control will fall back to the last
+				yield in the coroutine that has nested native call
+				(return to the caller of this function)
+			 */
+			if (IVM_CORO_GET(coro, HAS_NATIVE)) {
+				IVM_TRACE("*** coro schedule out of order ***\n");
+
+				state->cur_cgroup = gid;
+				if (state->coro_list_uid == uid) {
+					/* coro list not changed */
+					state->cur_coro = ocoro;
+				} else {
+					do {
+						_ivm_vmstate_switchCoro(state);
+					} while (ivm_coro_list_at(coros, state->cur_coro) != coro);
+				}
+				goto RET;
+			}
+
+			ret = ivm_coro_resume(coro, state, ret);
 		}
+	} while (_ivm_vmstate_popCGroup(state));
 
-		ret = ivm_coro_resume(coro, state, ret);
-	}
-
+RET:
 	return ret;
 }

@@ -106,6 +106,24 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 }
 
 void
+ivm_list_init_c(ivm_list_t *list,
+				ivm_size_t esize,
+				ivm_size_t buf_size)
+{
+	if (!buf_size) buf_size = 1;
+
+	list->esize = esize;
+	list->alloc = buf_size;
+	list->cur = 0;
+	list->lst = MEM_ALLOC(esize * buf_size,
+						  ivm_byte_t *);
+
+	IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
+
+	return;
+}
+
+void
 ivm_list_free(ivm_list_t *list)
 {
 	if (list) {

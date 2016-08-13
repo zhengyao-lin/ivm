@@ -30,6 +30,7 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_context_pool_t *ct_pool;				// 8
 
 	ivm_coro_list_t coro_list;					// 24
+	ivm_cgroup_stack_t cgroup_stack;
 
 	// ivm_type_list_t type_list;
 	ivm_func_list_t func_list;					// 24
@@ -44,6 +45,8 @@ typedef struct ivm_vmstate_t_tag {
 #undef CONST_GEN
 
 	ivm_size_t cur_coro;						// 8
+	ivm_cgid_t max_cgroup;
+	ivm_cgid_t cur_cgroup;
 	ivm_int_t gc_flag; /* gc flag:				// 4
 						  > 0: open
 						  = 0: closed
@@ -73,10 +76,6 @@ ivm_vmstate_new();
 
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
-
-/* clean current state(coros, functions and all allocated objects) */
-void
-ivm_vmstate_reinit(ivm_vmstate_t *state);
 
 #define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag == 1)
 
@@ -300,6 +299,19 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,
 					ivm_function_object_t *func);
+
+ivm_cgid_t
+ivm_vmstate_addGroup(ivm_vmstate_t *state,
+					 ivm_function_object_t *func);
+
+ivm_cgid_t
+ivm_vmstate_addToGroup(ivm_vmstate_t *state,
+					   ivm_function_object_t *func,
+					   ivm_cgid_t gid);
+
+void
+ivm_vmstate_yieldTo(ivm_vmstate_t *state,
+					ivm_cgid_t gid);
 
 void
 ivm_vmstate_schedule(ivm_vmstate_t *state);

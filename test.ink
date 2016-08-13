@@ -77,6 +77,21 @@ while i < 1000000: {
 
 ret
  */
+/*
+gid = group: {
+	fork fn b: {
+
+	}
+
+	fork fn a: {
+
+	}
+
+	while yield: 0
+}
+
+yield a to gid
+*/
 
 a = 0
 b = 0

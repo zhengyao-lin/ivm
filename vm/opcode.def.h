@@ -429,7 +429,6 @@ OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 OPCODE_GEN(POP, "pop", N, -1, {
 	CHECK_STACK(1);
 	STACK_POP();
-
 	NEXT_INSTR();
 })
 
@@ -650,6 +649,106 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(GROUP, "group", N, 0, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+
+	STACK_PUSH(
+		ivm_numeric_new(_STATE,
+			ivm_vmstate_addGroup(
+				_STATE,
+				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
+			)
+		)
+	);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(GROUP_TO, "group_to", N, -1, {
+	CHECK_STACK(2);
+
+	_TMP_OBJ1 = STACK_POP();
+	_TMP_OBJ2 = STACK_POP();
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ2, IVM_NUMERIC_T),
+			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
+
+	STACK_PUSH(
+		ivm_numeric_new(_STATE,
+			ivm_vmstate_addToGroup(
+				_STATE,
+				IVM_AS(_TMP_OBJ1, ivm_function_object_t),
+				ivm_numeric_getValue(_TMP_OBJ2)
+			)
+		)
+	);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(YIELD, "yield", N, 0, {
+	if (AVAIL_STACK) {
+		_TMP_OBJ1 = STACK_POP();
+	} else {
+		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+	}
+
+	INC_INSTR();
+	SAVE_RUNTIME(_INSTR);
+
+	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
+		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
+		UPDATE_RUNTIME();
+		STACK_PUSH(_TMP_OBJ1);
+		GOTO_CUR_INSTR();
+	} else {
+		YIELD();
+	}
+})
+
+/*
+	yield_to
+	-------------------------
+	|  gid  | obj(optional) |
+	-------------------------
+ */
+OPCODE_GEN(YIELD_TO, "yield_to", N, -1, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ2 = STACK_POP();
+
+	if (AVAIL_STACK) {
+		_TMP_OBJ1 = STACK_POP();
+	} else {
+		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+	}
+
+	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ2, IVM_NUMERIC_T),
+			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
+
+	INC_INSTR();
+	SAVE_RUNTIME(_INSTR);
+
+	ivm_vmstate_yieldTo(_STATE, ivm_numeric_getValue(_TMP_OBJ2));
+
+	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
+		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
+		UPDATE_RUNTIME();
+		STACK_PUSH(_TMP_OBJ1);
+		GOTO_CUR_INSTR();
+	} else {
+		YIELD();
+	}
+})
+
 /*
 	raise protection set/cancel
  */
@@ -666,25 +765,6 @@ OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
 OPCODE_GEN(RAISE, "raise", N, -1, {
 	CHECK_STACK(1);
 	RAISE(STACK_POP());
-})
-
-OPCODE_GEN(YIELD, "yield", N, -1, {
-	if (AVAIL_STACK) {
-		_TMP_OBJ1 = STACK_POP();
-	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
-	}
-
-	INC_INSTR();
-	SAVE_RUNTIME(_INSTR);
-	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
-		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
-		UPDATE_RUNTIME();
-		STACK_PUSH(_TMP_OBJ1);
-		GOTO_CUR_INSTR();
-	} else {
-		YIELD();
-	}
 })
 
 OPCODE_GEN(RETURN, "return", N, -1, {
