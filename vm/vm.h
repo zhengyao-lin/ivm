@@ -158,7 +158,7 @@ IVM_WBCTX(ivm_vmstate_t *state,
 		  ivm_slot_table_t *value)
 {
 	// IVM_TRACE("hey!\n");
-	if (ivm_ctchain_getGen(chain) &&
+	if (ivm_ctchain_getGen(chain) && value &&
 		!ivm_slot_table_getGen(value)) {
 		if (!ivm_ctchain_getWB(chain)) {
 			ivm_collector_addWBContext(state->gc, chain);

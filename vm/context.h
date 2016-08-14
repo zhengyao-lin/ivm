@@ -124,7 +124,6 @@ ivm_ctchain_clone(ivm_ctchain_t *chain,
 #define ivm_ctchain_getLocal ivm_ctchain_contextStart
 #define ivm_ctchain_getGlobal ivm_ctchain_contextLast
 
-
 /*
 	cache versions of search and setExistSlot are in inline/context.h
  */

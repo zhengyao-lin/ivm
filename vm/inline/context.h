@@ -218,6 +218,8 @@ ivm_ctchain_setObjAt(ivm_ctchain_t *chain,
 			chain->chain[i].slots
 			= IVM_OBJECT_GET(obj, SLOTS)
 		);
+	} else {
+		chain->chain[i].slots = IVM_NULL;
 	}
 
 	return;
@@ -235,6 +237,8 @@ ivm_ctchain_setLocal(ivm_ctchain_t *chain,
 			chain->chain[0].slots
 			= IVM_OBJECT_GET(obj, SLOTS)
 		);
+	} else {
+		chain->chain[0].slots = IVM_NULL;
 	}
 
 	return;
@@ -252,6 +256,8 @@ ivm_ctchain_setGlobal(ivm_ctchain_t *chain,
 			chain->chain[chain->len - 1].slots
 			= IVM_OBJECT_GET(obj, SLOTS)
 		);
+	} else {
+		chain->chain[chain->len - 1].slots = IVM_NULL;
 	}
 
 	return;

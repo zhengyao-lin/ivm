@@ -86,7 +86,7 @@ int test_fib()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setObjAt(chain, state, 0, ivm_object_new(state));
+	ivm_ctchain_setLocal(chain, state, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
@@ -223,7 +223,7 @@ int test_call()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setObjAt(chain, state, 0, ivm_object_new(state));
+	ivm_ctchain_setLocal(chain, state, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
