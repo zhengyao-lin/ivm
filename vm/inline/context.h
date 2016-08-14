@@ -168,6 +168,8 @@ ivm_context_pool_alloc(ivm_context_pool_t *pool, ivm_int_t len)
 
 	ivm_ref_init(ret);
 	ret->len = len;
+	ivm_ctchain_setGen(ret, 0);
+	ivm_ctchain_setWB(ret, 0);
 
 	return ret;
 }
@@ -202,6 +204,75 @@ ivm_context_pool_dumpAll(ivm_context_pool_t *pool)
 
 	return;
 }
+
+IVM_INLINE
+void
+ivm_ctchain_setObjAt(ivm_ctchain_t *chain,
+					 ivm_vmstate_t *state,
+					 ivm_int_t i,
+					 ivm_object_t *obj)
+{
+	if (obj) {
+		IVM_WBCTX(
+			state, chain,
+			chain->chain[i].slots
+			= IVM_OBJECT_GET(obj, SLOTS)
+		);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_ctchain_setLocal(ivm_ctchain_t *chain,
+					 ivm_vmstate_t *state,
+					 ivm_object_t *obj)
+{
+	if (obj) {
+		IVM_WBCTX(
+			state, chain,
+			chain->chain[0].slots
+			= IVM_OBJECT_GET(obj, SLOTS)
+		);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_ctchain_setGlobal(ivm_ctchain_t *chain,
+					  ivm_vmstate_t *state,
+					  ivm_object_t *obj)
+{
+	if (obj) {
+		IVM_WBCTX(
+			state, chain,
+			chain->chain[chain->len - 1].slots
+			= IVM_OBJECT_GET(obj, SLOTS)
+		);
+	}
+
+	return;
+}
+
+/*
+IVM_INLINE
+void
+ivm_ctchain_setSlotsAt(ivm_ctchain_t *chain,
+					   ivm_vmstate_t *state,
+					   ivm_int_t i,
+					   ivm_slot_table_t *table)
+{
+	if (obj) {
+		IVM_WBCTX(state, chain, table);
+		chain->chain[i].slots = table;
+	}
+
+	return;
+}
+*/
 
 IVM_INLINE
 ivm_object_t *

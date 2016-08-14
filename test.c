@@ -86,7 +86,7 @@ int test_fib()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setObjAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_setObjAt(chain, state, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
@@ -223,7 +223,7 @@ int test_call()
 	
 	coro = ivm_coro_new(state);
 	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setObjAt(chain, 0, ivm_object_new(state));
+	ivm_ctchain_setObjAt(chain, state, 0, ivm_object_new(state));
 	ivm_ctchain_addRef(chain);
 
 	ivm_vmstate_addCoro_c(state, coro);
@@ -359,8 +359,8 @@ int test_vm()
 	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
-	ivm_ctchain_setObjAt(chain, 0, obj1);
-	ivm_ctchain_setObjAt(chain, 1, obj2);
+	ivm_ctchain_setObjAt(chain, state, 0, obj1);
+	ivm_ctchain_setObjAt(chain, state, 1, obj2);
 	ivm_ctchain_addRef(chain);
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);

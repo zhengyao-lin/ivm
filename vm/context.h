@@ -34,8 +34,10 @@ typedef struct ivm_context_t_tag {
 #define ivm_context_getSlotTable(ctx) \
 	((ctx)->slots)
 
+/*
 #define ivm_context_setSlotTable(ctx, table) \
 	((ctx)->slots = (table))
+*/
 
 /*
  * context chain:
@@ -47,8 +49,18 @@ typedef struct ivm_context_t_tag {
 typedef struct ivm_ctchain_t_tag {
 	IVM_REF_HEADER
 	ivm_uint_t len;
+	struct {
+		ivm_uint_t gen: 1;
+		ivm_uint_t wb: 1;
+	} mark;
 	ivm_context_t chain[];
 } ivm_ctchain_t;
+
+#define ivm_ctchain_getGen(chain) ((chain)->mark.gen)
+#define ivm_ctchain_setGen(chain, val) ((chain)->mark.gen = (val))
+
+#define ivm_ctchain_getWB(chain) ((chain)->mark.wb)
+#define ivm_ctchain_setWB(chain, val) ((chain)->mark.wb = (val))
 
 #define ivm_ctchain_getSize(len) \
 	(sizeof(ivm_ctchain_t) + (sizeof(ivm_context_t) * (len)))
@@ -83,20 +95,6 @@ ivm_ctchain_contextAt(ivm_ctchain_t *chain,
 					  ivm_int_t i)
 {
 	return chain->chain + i;
-}
-
-IVM_INLINE
-void
-ivm_ctchain_setObjAt(ivm_ctchain_t *chain,
-					 ivm_int_t i,
-					 ivm_object_t *obj)
-{
-	if (obj) {
-		chain->chain[i].slots
-		= IVM_OBJECT_GET(obj, SLOTS);
-	}
-
-	return;
 }
 
 IVM_INLINE

@@ -301,12 +301,7 @@ OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 	CHECK_STACK(1);
-
-	ivm_context_setSlotTable(
-		ivm_ctchain_getLocal(_CONTEXT),
-		IVM_OBJECT_GET(STACK_POP(), SLOTS)
-	);
-
+	ivm_ctchain_setLocal(_CONTEXT, _STATE, STACK_POP());
 	NEXT_INSTR();
 })
 
@@ -325,12 +320,7 @@ OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, -1, {
 	CHECK_STACK(1);
-	
-	ivm_context_setSlotTable(
-		ivm_ctchain_getGlobal(_CONTEXT),
-		IVM_OBJECT_GET(STACK_POP(), SLOTS)
-	);
-
+	ivm_ctchain_setGlobal(_CONTEXT, _STATE, STACK_POP());
 	NEXT_INSTR();
 })
 

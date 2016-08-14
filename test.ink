@@ -93,6 +93,23 @@ gid = group: {
 yield a to gid
 */
 
+i = 0
+f = null
+
+(fn: {
+	f = fn: print(val)
+
+	while i < 10000:
+		i = i + 1
+
+	loc = { val: "wow" }
+})()
+
+while i < 100000:
+	i = i + 1
+
+f()
+
 a = 0
 b = 0
 c = 0
@@ -277,10 +294,7 @@ ret
 */
 
 fib = fn n: {
-	//print("new")
 	if n < 2: ret 1
-	//print("hi")
-	//print(fib)
 	ret fib(n - 1) + fib(n - 2)
 }
 

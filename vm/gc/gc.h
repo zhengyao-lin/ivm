@@ -8,6 +8,7 @@
 #include "std/heap.h"
 
 #include "vm/obj.h"
+#include "vm/context.h"
 
 IVM_COM_HEADER
 
@@ -57,13 +58,31 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_slot_table_t *) ivm_wbslot_list_iterator_t;
 #define IVM_WBSLOT_LIST_ITER_GET(iter) ((ivm_slot_table_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_WBSLOT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_slot_table_t *)
 
+typedef ivm_ptlist_t ivm_wbctx_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_ctchain_t *) ivm_wbctx_list_iterator_t;
+
+#define ivm_wbctx_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_WBCTX_LIST_BUFFER_SIZE))
+#define ivm_wbctx_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_WBCTX_LIST_BUFFER_SIZE))
+#define ivm_wbctx_list_dump ivm_ptlist_dump
+#define ivm_wbctx_list_free ivm_ptlist_free
+#define ivm_wbctx_list_push ivm_ptlist_push
+#define ivm_wbctx_list_empty ivm_ptlist_empty
+
+#define IVM_WBCTX_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_WBCTX_LIST_ITER_GET(iter) ((ivm_ctchain_t *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_WBCTX_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_ctchain_t *)
+
 typedef struct ivm_collector_t_tag {
 	ivm_destruct_list_t des_log[2];
+	
 	ivm_wbobj_list_t wb_obj;
 	ivm_wbslot_list_t wb_slot;
+	ivm_wbctx_list_t wb_ctx;
+
 	ivm_long_t skip_time;
 	ivm_double_t bc_weight;
 	ivm_int_t live_ratio; // 0 - 100
+	
 	ivm_int_t gen;
 } ivm_collector_t;
 
@@ -81,6 +100,9 @@ typedef struct ivm_collector_t_tag {
 
 #define ivm_collector_addWBSlotTable(collector, table) \
 	(ivm_wbslot_list_push(&(collector)->wb_slot, (table)))
+
+#define ivm_collector_addWBContext(collector, table) \
+	(ivm_wbctx_list_push(&(collector)->wb_ctx, (table)))
 
 #define ivm_collector_getGen(collector) \
 	((collector)->gen)

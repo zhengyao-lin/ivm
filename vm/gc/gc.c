@@ -27,10 +27,14 @@ ivm_collector_new()
 	ret->live_ratio = 0;
 	ret->skip_time = 0;
 	ret->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+	
 	ivm_destruct_list_init(&ret->des_log[0]);
 	ivm_destruct_list_init(&ret->des_log[1]);
+	
 	ivm_wbobj_list_init(&ret->wb_obj);
 	ivm_wbslot_list_init(&ret->wb_slot);
+	ivm_wbctx_list_init(&ret->wb_ctx);
+	
 	ret->gen = 0;
 
 	return ret;
@@ -107,10 +111,14 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 {
 	if (collector) {
 		ivm_collector_triggerAllDestructor(collector, state);
+		
 		ivm_destruct_list_dump(&collector->des_log[0]);
 		ivm_destruct_list_dump(&collector->des_log[1]);
+
 		ivm_wbobj_list_dump(&collector->wb_obj);
 		ivm_wbslot_list_dump(&collector->wb_slot);
+		ivm_wbctx_list_dump(&collector->wb_ctx);
+		
 		MEM_FREE(collector);
 	}
 
@@ -304,6 +312,14 @@ ivm_collector_travContextChain(ivm_ctchain_t *chain,
 	ivm_ctchain_iterator_t iter;
 
 	if (chain) {
+		if (ivm_ctchain_getGen(chain) > arg->gen &&
+			!ivm_ctchain_getWB(chain))
+			return;
+
+		if (!ivm_ctchain_getGen(chain))
+			ivm_ctchain_setGen(chain, 1);
+			
+		ivm_ctchain_setWB(chain, 0);
 		IVM_CTCHAIN_EACHPTR(chain, iter) {
 			IVM_CTCHAIN_ITER_SET(
 				iter,
@@ -443,6 +459,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 {
 	ivm_wbobj_list_iterator_t oiter;
 	ivm_wbslot_list_iterator_t siter;
+	ivm_wbctx_list_iterator_t citer;
 
 	if (!arg->gen) {
 		IVM_WBOBJ_LIST_EACHPTR(&collector->wb_obj, oiter) {
@@ -458,7 +475,16 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 		}
 	}
 
-	ivm_wbobj_list_empty(&collector->wb_slot);
+	ivm_wbslot_list_empty(&collector->wb_slot);
+
+	if (!arg->gen) {
+		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
+			// IVM_TRACE("catch! %p\n", IVM_WBCTX_LIST_ITER_GET(citer));
+			ivm_collector_travContextChain(IVM_WBCTX_LIST_ITER_GET(citer), arg);
+		}
+	}
+
+	ivm_wbctx_list_empty(&collector->wb_ctx);
 
 	return;
 }

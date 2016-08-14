@@ -152,6 +152,25 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 }
 
 IVM_INLINE
+ivm_bool_t
+IVM_WBCTX(ivm_vmstate_t *state,
+		  ivm_ctchain_t *chain,
+		  ivm_slot_table_t *value)
+{
+	// IVM_TRACE("hey!\n");
+	if (ivm_ctchain_getGen(chain) &&
+		!ivm_slot_table_getGen(value)) {
+		if (!ivm_ctchain_getWB(chain)) {
+			ivm_collector_addWBContext(state->gc, chain);
+			ivm_ctchain_setWB(chain, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
