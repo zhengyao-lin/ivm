@@ -223,6 +223,7 @@ _ivm_vmstate_popCGroup(ivm_vmstate_t *state)
 		// IVM_TRACE("pop %d!\n", tmp_gid);
 		/* restore the current coroutine in the previous group */
 		IVM_CORO_LIST_EACHPTR(list, iter) {
+			/*
 			if (ivm_coro_isGroup(IVM_CORO_LIST_ITER_GET(iter), tmp_gid) &&
 				ivm_coro_isCur(IVM_CORO_LIST_ITER_GET(iter))) {
 				// IVM_TRACE("haaa\n");
@@ -231,8 +232,15 @@ _ivm_vmstate_popCGroup(ivm_vmstate_t *state)
 				// IVM_TRACE("*** coro %d\n", state->cur_coro);
 				return IVM_TRUE;
 			}
+			*/
+
+			if (ivm_coro_isGroup(IVM_CORO_LIST_ITER_GET(iter), tmp_gid) &&
+				ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(iter))) {
+				state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, iter);
+				return IVM_TRUE;
+			}
 		}
-		
+
 		/* no current coroutine in the  previous group */
 		/* pop again */
 	}

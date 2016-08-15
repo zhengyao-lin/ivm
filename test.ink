@@ -258,6 +258,20 @@ call(fn: (yield 2, print("1?")))
 
 yield to gid
 
+///////////////////////////////////////
+
+fork: {
+	yield to gid = group: {
+		print("another group")
+		yield to 0
+		print("never printed")
+	}
+	print("not next?")
+}
+
+yield
+yield to gid
+
 list = [2, 2, 3, 4, 5] + [2, 4, 5]
 a = 10
 while i < 10000000: {
