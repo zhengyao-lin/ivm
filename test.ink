@@ -179,6 +179,12 @@ catch err: print(err.msg)
 try: {(1 + "s")}
 catch err: print(err.msg)
 
+b = {}
+b@+ = fn a: print(base)
+
+b + 10
+b@+()
+
 try: {
 	a = {}
 	a.b = [].size
@@ -271,6 +277,8 @@ fork: {
 
 yield
 yield to gid
+
+print(!"hi")
 
 list = [2, 2, 3, 4, 5] + [2, 4, 5]
 a = 10

@@ -35,7 +35,7 @@
 		NEXT_INSTR();                                                                          \
 	}
 
-#define UNIOP_HANDLER_O(op, op_name) \
+#define UNIOP_HANDLER_O(op, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
@@ -47,6 +47,8 @@
 			SET_IARG(0);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		} else {                                                                               \
+			e;                                                                                 \
+	                                                                                           \
 			_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ1, op);                          \
 	                                                                                           \
 			RTM_ASSERT(_TMP_UNI_PROC,                                                          \

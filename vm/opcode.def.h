@@ -62,7 +62,10 @@ OPCODE_GEN(CLONE, "clone", N, 1, {
 })
 
 /* unary operations */
-OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER_O(NOT, "!"))
+OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER_O(NOT, "!", {
+	STACK_PUSH(ivm_numeric_new(_STATE, !ivm_object_toBool(_TMP_OBJ1, _STATE)));
+	NEXT_INSTR();
+}))
 OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-"))
 OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+"))
 
@@ -406,7 +409,7 @@ OPCODE_GEN(SET_OOP, "set_oop", I, -1, {
 })
 
 OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
-	CHECK_STACK(2);
+	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_POP();
 	_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IARG());

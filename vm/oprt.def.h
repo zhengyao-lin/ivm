@@ -1,6 +1,8 @@
+/*
 UNIOP_GEN(NOT, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
 })
+*/
 
 UNIOP_GEN(NEG, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, -ivm_numeric_getValue(_OP1));
