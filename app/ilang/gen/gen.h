@@ -457,14 +457,6 @@ COMMON_EXPR(while_expr, "while expression", {
 }, ilang_gen_expr_t *cond,
    ilang_gen_expr_t *body);
 
-enum {
-	ILANG_GEN_INTR_RET = 1,
-	ILANG_GEN_INTR_CONT,
-	ILANG_GEN_INTR_BREAK,
-	ILANG_GEN_INTR_RAISE,
-	ILANG_GEN_INTR_YIELD
-};
-
 /* try expr */
 typedef struct {
 	ilang_gen_token_value_t arg;
@@ -492,23 +484,38 @@ COMMON_EXPR(try_expr, "try expression", {
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ilang_gen_expr_t *forkee;
+	ivm_bool_t is_group;
 } ilang_gen_fork_expr_t;
 
 COMMON_EXPR(fork_expr, "fork expression", {
 	ret->forkee = forkee;
-}, ilang_gen_expr_t *forkee);
+	ret->is_group = is_group;
+}, ilang_gen_expr_t *forkee,
+   ivm_bool_t is_group);
 
 /* intr expr */
+enum {
+	ILANG_GEN_INTR_RET = 1,
+	ILANG_GEN_INTR_CONT,
+	ILANG_GEN_INTR_BREAK,
+	ILANG_GEN_INTR_RAISE,
+	ILANG_GEN_INTR_YIELD
+};
+
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ivm_int_t sig;
 	ilang_gen_expr_t *val;
+	ilang_gen_expr_t *to;
 } ilang_gen_intr_expr_t;
 
 COMMON_EXPR(intr_expr, "intr expression", {
 	ret->sig = sig;
 	ret->val = val;
-}, ivm_int_t sig, ilang_gen_expr_t *val);
+	ret->to = to;
+}, ivm_int_t sig,
+   ilang_gen_expr_t *val,
+   ilang_gen_expr_t *to);
 
 /* assign expr */
 typedef struct {

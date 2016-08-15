@@ -328,6 +328,10 @@ ivm_vmstate_addToGroup(ivm_vmstate_t *state,
 					   ivm_function_object_t *func,
 					   ivm_cgid_t gid);
 
+ivm_cgid_t
+ivm_vmstate_addToCurrentGroup(ivm_vmstate_t *state,
+							  ivm_function_object_t *func);
+
 void
 ivm_vmstate_yieldTo(ivm_vmstate_t *state,
 					ivm_cgid_t gid);

@@ -93,6 +93,19 @@ gid = group: {
 yield a to gid
 */
 
+gid = group fn a: {
+	print("group")
+	print(a)
+	"from group"
+}
+
+fork fn a: {
+	print("fork")
+	print(a)
+}
+
+yield yield 10 to gid
+
 i = 0
 f = null
 
@@ -188,8 +201,10 @@ fork fn a: {
 	while a = yield null:
 		if a == "skip":
 			print("skip")
-		else:
+		else: {
 			print("received " + a)
+		}
+	print("printer end")
 }
 
 yield "1"
@@ -202,20 +217,32 @@ yield "5"
 call(fn: {
 	call(fn: {
 		yield "6"
+		yield to group: {
+			fork: {
+				print("from group: 1")
+				yield 1
+				print("from group: 3")
+				//print("hi")
+			}
+
+			fork: {
+				print("from group: 2")
+				yield 1
+				print("from group: 4")
+			}
+
+			while (yield null): 0
+			print("end of group")
+		}
 		yield "7"
 	})
-	print("after 7: yes!")
-	yield "8"
+	print("#this is 8")
+	yield "9"
 })
 
 yield null
 
 print("stop fork")
-
-send1 = fn: {
-	while (yield 1) != null: null
-	yield null
-}
 
 fork: {
 	call((fn: (yield 1, print("2?"))), "hi")

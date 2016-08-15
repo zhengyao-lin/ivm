@@ -173,11 +173,24 @@ ivm_vmstate_addToGroup(ivm_vmstate_t *state,
 	return ivm_coro_setGroup(coro, gid);
 }
 
+ivm_cgid_t
+ivm_vmstate_addToCurrentGroup(ivm_vmstate_t *state,
+							  ivm_function_object_t *func)
+{
+	ivm_coro_t *coro = ivm_coro_new(state);
+
+	ivm_coro_setRoot(coro, state, func);
+	ivm_coro_list_add(&state->coro_list, coro);
+
+	return ivm_coro_setGroup(coro, state->cur_cgroup);
+}
+
 void
 ivm_vmstate_yieldTo(ivm_vmstate_t *state,
 					ivm_cgid_t gid)
 {
 	ivm_coro_setCur(ivm_coro_list_at(&state->coro_list, state->cur_coro));
+	// IVM_TRACE("*** from coro %d\n", state->cur_coro);
 	// IVM_TRACE("yield to %d(cur %d in %d)\n", gid, state->cur_coro, state->cur_cgroup);
 	ivm_cgroup_stack_push(&state->cgroup_stack, state->cur_cgroup);
 	state->cur_cgroup = gid;
@@ -201,6 +214,8 @@ _ivm_vmstate_popCGroup(ivm_vmstate_t *state)
 
 		tmp_gid = state->cur_cgroup = ivm_cgroup_stack_pop(&state->cgroup_stack);
 
+		// IVM_TRACE("*** back to group %d\n", tmp_gid);
+
 		// IVM_TRACE("pop %d!\n", tmp_gid);
 		/* restore the current coroutine in the previous group */
 		IVM_CORO_LIST_EACHPTR(list, iter) {
@@ -209,10 +224,10 @@ _ivm_vmstate_popCGroup(ivm_vmstate_t *state)
 				// IVM_TRACE("haaa\n");
 				ivm_coro_resetCur(IVM_CORO_LIST_ITER_GET(iter));
 				state->cur_coro = IVM_CORO_LIST_ITER_INDEX(list, iter);
+				// IVM_TRACE("*** coro %d\n", state->cur_coro);
 				return IVM_TRUE;
 			}
 		}
-
 		/* no current coroutine in the  previous group */
 		/* pop again */
 	}
@@ -264,6 +279,11 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 		while (ivm_coro_list_size(coros)) {
 			ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
 								  state, ret);
+
+			if (ivm_vmstate_getException(state)) {
+				ivm_vmstate_setException(state, IVM_NULL);
+			}
+			
 			if (!_ivm_vmstate_switchCoro(state))
 				break;
 		}
@@ -287,17 +307,19 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 
 	ivm_cgid_t gid = state->cur_cgroup;
 
+	if (!_ivm_vmstate_switchCoro(state)) {
+		goto RET;
+	}
+
 	do {
-		while (1) {
-			if (!_ivm_vmstate_switchCoro(state)) {
-				break;
-				IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
-			}
-			
+		while (1) {			
 			coro = ivm_coro_list_at(coros, state->cur_coro);
 
 			/* back to the original coroutine */
-			if (coro == skip) goto RET;
+			if (coro == skip) {
+				// IVM_TRACE("*** wow return\n");
+				goto RET;
+			}
 			/*
 				because the current coroutine mechanism is not involving
 				C context saving for portability, so only one coroutine can
@@ -308,7 +330,7 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 				(return to the caller of this function)
 			 */
 			if (IVM_CORO_GET(coro, HAS_NATIVE)) {
-				IVM_TRACE("*** coro schedule out of order ***\n");
+				// IVM_TRACE("*** coro schedule out of order ***\n");
 
 				state->cur_cgroup = gid;
 				if (state->coro_list_uid == uid) {
@@ -319,10 +341,21 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 						_ivm_vmstate_switchCoro(state);
 					} while (ivm_coro_list_at(coros, state->cur_coro) != coro);
 				}
+
 				goto RET;
 			}
 
+			// IVM_TRACE("*** start coro %d\n", state->cur_coro);
 			ret = ivm_coro_resume(coro, state, ret);
+
+			if (ivm_vmstate_getException(state)) {
+				ivm_vmstate_setException(state, IVM_NULL);
+			}
+
+			if (!_ivm_vmstate_switchCoro(state)) {
+				break;
+				// IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
+			}
 		}
 	} while (_ivm_vmstate_popCGroup(state));
 

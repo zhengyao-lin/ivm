@@ -234,10 +234,11 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 		}
 
 		/*
-			addr1: jump_false addr2 => jump_true addr3 (vice versa)
-			addr2: jump addr3
+			addr1: jump_false addr3 => jump_true addrx (vice versa)
+			addr2: jump addrx
+			addr3:
 		 */
-
+/*
 		if (cur->opc == IVM_OPCODE(JUMP_FALSE) &&
 			cur->jmpto == cur + 2 &&
 			(cur + 1)->opc == IVM_OPCODE(JUMP)) {
@@ -249,7 +250,8 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 			cur->jmpto = (cur + 1)->jmpto;
 			cur->opc = IVM_OPCODE(JUMP_FALSE);
 		}
-
+*/
+		
 		/*
 			jump addr3 => jump addr3
 			jump addr2 => nop

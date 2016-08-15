@@ -631,7 +631,7 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 
-	ivm_vmstate_addCoro(
+	ivm_vmstate_addToCurrentGroup(
 		_STATE,
 		IVM_AS(_TMP_OBJ1, ivm_function_object_t)
 	);

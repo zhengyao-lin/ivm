@@ -104,7 +104,14 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			if (intr->val) {
 				intr->val->eval(intr->val, FLAG(0), env);
 			}
-			ivm_exec_addInstr(env->cur_exec, YIELD);
+			
+			if (intr->to) {
+				intr->to->eval(intr->to, FLAG(0), env);
+				ivm_exec_addInstr(env->cur_exec, YIELD_TO);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, YIELD);
+			}
+			
 			if (flag.is_top_level) {
 				ivm_exec_addInstr(env->cur_exec, POP);
 			}
@@ -150,10 +157,18 @@ ilang_gen_fork_expr_eval(ilang_gen_expr_t *expr,
 	
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
 
-	fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
-	ivm_exec_addInstr(env->cur_exec, FORK);
-	if (!flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+	if (fork_expr->is_group) {
+		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
+		ivm_exec_addInstr(env->cur_exec, GROUP);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
+		}
+	} else {
+		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
+		ivm_exec_addInstr(env->cur_exec, FORK);
+		if (!flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+		}
 	}
 
 	return NORET();
