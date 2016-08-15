@@ -157,7 +157,11 @@ ivm_vmstate_addGroup(ivm_vmstate_t *state,
 	ivm_coro_setRoot(coro, state, func);
 	ivm_coro_list_add(&state->coro_list, coro);
 
-	return ivm_coro_setGroup(coro, ++state->max_cgroup);
+	if (++state->max_cgroup < 0) {
+		IVM_FATAL(IVM_ERROR_MSG_GROUP_ID_OVERFLOW);
+	}
+
+	return ivm_coro_setGroup(coro, state->max_cgroup);
 }
 
 ivm_cgid_t
@@ -228,6 +232,7 @@ _ivm_vmstate_popCGroup(ivm_vmstate_t *state)
 				return IVM_TRUE;
 			}
 		}
+		
 		/* no current coroutine in the  previous group */
 		/* pop again */
 	}
@@ -276,17 +281,15 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 	ivm_coro_list_t *coros = &state->coro_list;
 
 	do {
-		while (ivm_coro_list_size(coros)) {
+		// while (ivm_coro_list_size(coros)) {
+		do {
 			ret = ivm_coro_resume(ivm_coro_list_at(coros, state->cur_coro),
 								  state, ret);
 
 			if (ivm_vmstate_getException(state)) {
 				ivm_vmstate_setException(state, IVM_NULL);
 			}
-			
-			if (!_ivm_vmstate_switchCoro(state))
-				break;
-		}
+		} while (_ivm_vmstate_switchCoro(state));
 	} while (_ivm_vmstate_popCGroup(state));
 
 	state->cur_coro = 0;
@@ -312,7 +315,7 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 	}
 
 	do {
-		while (1) {			
+		do {			
 			coro = ivm_coro_list_at(coros, state->cur_coro);
 
 			/* back to the original coroutine */
@@ -330,8 +333,10 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 				(return to the caller of this function)
 			 */
 			if (IVM_CORO_GET(coro, HAS_NATIVE)) {
-				// IVM_TRACE("*** coro schedule out of order ***\n");
+				IVM_TRACE("*** coro schedule out of order ***\n");
 
+				// goto NEXT;
+#if 1
 				state->cur_cgroup = gid;
 				if (state->coro_list_uid == uid) {
 					/* coro list not changed */
@@ -343,6 +348,7 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 				}
 
 				goto RET;
+#endif
 			}
 
 			// IVM_TRACE("*** start coro %d\n", state->cur_coro);
@@ -351,12 +357,8 @@ ivm_vmstate_schedule_r(ivm_vmstate_t *state,
 			if (ivm_vmstate_getException(state)) {
 				ivm_vmstate_setException(state, IVM_NULL);
 			}
-
-			if (!_ivm_vmstate_switchCoro(state)) {
-				break;
-				// IVM_FATAL(IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE);
-			}
-		}
+// NEXT:
+		} while (_ivm_vmstate_switchCoro(state));
 	} while (_ivm_vmstate_popCGroup(state));
 
 RET:

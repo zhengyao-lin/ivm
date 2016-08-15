@@ -214,10 +214,12 @@ yield "4"
 yield "skip"
 yield "5"
 
+gid = 0
+
 call(fn: {
 	call(fn: {
 		yield "6"
-		yield to group: {
+		yield to gid = group: {
 			fork: {
 				print("from group: 1")
 				yield 1
@@ -231,8 +233,10 @@ call(fn: {
 				print("from group: 4")
 			}
 
-			while (yield null): 0
-			print("end of group")
+			while yield null: 0
+			print("end of the group")
+			yield to 0
+			print("very end")
 		}
 		yield "7"
 	})
@@ -251,6 +255,8 @@ fork: {
 //yield null
 
 call(fn: (yield 2, print("1?")))
+
+yield to gid
 
 list = [2, 2, 3, 4, 5] + [2, 4, 5]
 a = 10

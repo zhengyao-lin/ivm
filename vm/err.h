@@ -62,6 +62,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_CORO_EXCEPTION(coro, msg)			"coro %p killed by an exception: %s", (void *)(coro), (msg)
 #define IVM_ERROR_MSG_CIRCULAR_PROTO_REF				("circular prototype reference detected")
 #define IVM_ERROR_MSG_ILLEGAL_GID_TYPE(type)			"illegal group id with type <%s>", (type)
+#define IVM_ERROR_MSG_GROUP_ID_OVERFLOW					("group id overflow")
 
 IVM_COM_END
 
