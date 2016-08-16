@@ -103,6 +103,15 @@ b = { proto: a }
 b + 1
 b - 1
 
+b = fn: (
+	n = clone 10,
+	n.speak = fn a: print(a),
+	n
+)
+
+a = b()
+a.speak()
+
 gid = group fn a: {
 	print("group")
 	print(a)

@@ -121,7 +121,8 @@ IVM_INLINE
 ivm_slot_table_t *
 ivm_slot_table_copyShared(ivm_slot_table_t *table)
 {
-	IVM_BIT_SET_TRUE(table->mark.sub.is_shared);
+	if (table)
+		IVM_BIT_SET_TRUE(table->mark.sub.is_shared);
 	return table;
 }
 

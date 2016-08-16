@@ -384,6 +384,12 @@ OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 			_STATE, SARG(), STACK_POP(),
 			_INSTR
 		);
+	} else {
+		ivm_context_setSlot_cc(
+			ivm_ctchain_getLocal(_CONTEXT),
+			_STATE, SARG(), IVM_UNDEFINED(_STATE),
+			_INSTR
+		);
 	}
 
 	NEXT_INSTR();
