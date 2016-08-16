@@ -229,12 +229,12 @@ int test_call()
 	ivm_vmstate_addCoro_c(state, coro);
 
 	/********************** code ***********************/
-/*
+
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
 		ivm_exec_addInstr(exec1, NEW_NUM_I, 0);
 		ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, chartab[i]);
 	}
-*/
+
 	ivm_exec_addInstr(exec1, NEW_FUNC, ivm_vmstate_registerFunc(state, empty));
 	ivm_exec_addInstr(exec1, SET_CONTEXT_SLOT, "do_nothing");
 

@@ -315,7 +315,7 @@ ivm_object_t *
 ivm_slot_table_getOop(ivm_slot_table_t *table,
 					 ivm_int_t op)
 {
-	if (op >= table->mark.sub.oop_count) {
+	if (!table || op >= table->mark.sub.oop_count) {
 		return IVM_NULL;
 	}
 

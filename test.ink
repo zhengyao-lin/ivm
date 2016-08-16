@@ -93,6 +93,16 @@ gid = group: {
 yield a to gid
 */
 
+c = {}
+c@+ = fn: print("c.+ called")
+
+a = { proto: c }
+a@- = fn b: print("a.- called")
+
+b = { proto: a }
+b + 1
+b - 1
+
 gid = group fn a: {
 	print("group")
 	print(a)

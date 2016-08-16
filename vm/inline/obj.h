@@ -125,6 +125,7 @@ ivm_object_setProto(ivm_object_t *obj,
 {
 	if (proto) {
 		IVM_WBOBJ(state, obj, proto);
+		obj->mark.sub.oop |= proto->mark.sub.oop;
 	}
 	
 	obj->proto = proto;
@@ -170,19 +171,38 @@ ivm_object_t *
 ivm_object_getOop(ivm_object_t *obj,
 				  ivm_int_t op)
 {
-	if (!obj->slots) {
-		return IVM_NULL;
-	}
+	ivm_object_t *tmp;
 
 	if (op < IVM_OOP_COUNT) {
-		if (!(obj->mark.sub.oop & (1 << op))) {
-			return IVM_NULL;
-		}
-	} else if (!(obj->mark.sub.oop & (1 << IVM_OOP_ID(EXT)))) {
-		return IVM_NULL;
+		do {
+			if (!(obj->mark.sub.oop & (1 << op))) {
+				return IVM_NULL;
+			}
+
+			tmp = ivm_slot_table_getOop(obj->slots, op);
+			if (tmp) break;
+		} while ((obj = obj->proto) != IVM_NULL);
+	} else {
+		do {
+			if (!(obj->mark.sub.oop & (1 << IVM_OOP_ID(EXT)))) {
+				return IVM_NULL;
+			}
+
+			tmp = ivm_slot_table_getOop(obj->slots, op);
+			if (tmp) break;
+		} while ((obj = obj->proto) != IVM_NULL);
 	}
 
-	return ivm_slot_table_getOop(obj->slots, op);
+/*
+	ivm_object_t *tmp;
+
+	do {
+		tmp = ivm_slot_table_getOop(obj->slots, op);
+		if (tmp) break;
+	} while ((obj = obj->proto) != IVM_NULL);
+*/
+
+	return tmp;
 }
 
 IVM_COM_END
