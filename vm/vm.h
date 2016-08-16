@@ -133,6 +133,24 @@ IVM_WBOBJ(ivm_vmstate_t *state,
 
 IVM_INLINE
 ivm_bool_t
+IVM_WBOBJ_SLOT(ivm_vmstate_t *state,
+			   ivm_object_t *obj,
+			   ivm_slot_table_t *table)
+{
+	if (IVM_OBJECT_GET(obj, GEN) &&
+		!ivm_slot_table_getGen(table)) {
+		if (!IVM_OBJECT_GET(obj, WB)) {
+			ivm_collector_addWBObj(state->gc, obj);
+			IVM_OBJECT_SET(obj, WB, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
+ivm_bool_t
 IVM_WBSLOT(ivm_vmstate_t *state,
 		   ivm_slot_table_t *table,
 		   ivm_object_t *value)

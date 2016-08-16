@@ -151,11 +151,18 @@ ivm_object_setOop(ivm_object_t *obj,
 				  ivm_int_t op,
 				  ivm_object_t *func)
 {
-	if (!obj->slots) {
-		obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
+	ivm_slot_table_t *slots = obj->slots;
+
+	if (slots) {
+		if (ivm_slot_table_isShared(slots)) {
+			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+			IVM_WBOBJ_SLOT(state, obj, slots);
+		}
+	} else {
+		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
-	ivm_slot_table_setOop(obj->slots, state, op, func);
+	ivm_slot_table_setOop(slots, state, op, func);
 
 	return;
 }

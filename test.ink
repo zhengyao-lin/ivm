@@ -132,6 +132,8 @@ b = {
 	a: a
 }
 
+del a
+
 b.a()
 
 gid = group fn a: {

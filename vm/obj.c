@@ -100,6 +100,7 @@ ivm_object_setSlot(ivm_object_t *obj,
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+			IVM_WBOBJ_SLOT(state, obj, slots);
 		}
 	} else {
 		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
@@ -129,6 +130,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+			IVM_WBOBJ_SLOT(state, obj, slots);
 		}
 	} else {
 		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
@@ -155,6 +157,7 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {
 			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+			IVM_WBOBJ_SLOT(state, obj, slots);
 		} /* else if (ivm_slot_table_checkCacheValid(slots, instr)) {
 			ivm_slot_table_setCacheSlot(state, instr, value);
 			return;
