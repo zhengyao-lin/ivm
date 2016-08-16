@@ -155,12 +155,6 @@ ivm_object_setOop(ivm_object_t *obj,
 		obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
-	if (op < IVM_OOP_COUNT) {
-		obj->mark.sub.oop |= 1 << op;
-	} else {
-		obj->mark.sub.oop |= 1 << IVM_OOP_ID(EXT);
-	}
-
 	ivm_slot_table_setOop(obj->slots, state, op, func);
 
 	return;
@@ -172,30 +166,13 @@ ivm_object_getOop(ivm_object_t *obj,
 				  ivm_int_t op)
 {
 	register ivm_object_t *tmp;
-	//register ivm_uint_t mask;
-/*
-	if (op < IVM_OOP_COUNT) {
-		mask = 1 << op;
-	} else {
-		mask = 1 << IVM_OOP_ID(EXT);
-	}
-*/
+
+	/* HACK: costs too much time */
 	do {
-		// if (!(obj->mark.sub.oop & mask)) {
 		tmp = ivm_slot_table_getOop(obj->slots, op);
 		if (tmp) return tmp;
-		//} // else break;
 		obj = obj->proto;
 	} while (obj);
-
-/*
-	ivm_object_t *tmp;
-
-	do {
-		tmp = ivm_slot_table_getOop(obj->slots, op);
-		if (tmp) break;
-	} while ((obj = obj->proto) != IVM_NULL);
-*/
 
 	return IVM_NULL;
 }

@@ -45,7 +45,7 @@ ivm_slot_getValue(ivm_slot_t *slot,
 	return slot ? slot->v : IVM_NULL;
 }
 
-#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 9
+#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 10
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_size_t size;
@@ -55,7 +55,7 @@ typedef struct ivm_slot_table_t_tag {
 		struct {
 			ivm_int_t dummy1: sizeof(ivm_sint64_t) / 2 * 8;
 			ivm_int_t dummy2: sizeof(ivm_sint64_t) / 2 * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
-			ivm_uint_t oop_count: 5; // max 32
+			ivm_uint_t oop_count: 6; // max 64
 			ivm_int_t is_hash: 1;
 			ivm_int_t is_shared: 1; // shared by multiple objects
 			ivm_uint_t wb: 1;

@@ -15,7 +15,7 @@
 
 IVM_COM_HEADER
 
-#define _IVM_MARK_HEADER_BITS (2 + IVM_OOP_COUNT)
+#define _IVM_MARK_HEADER_BITS 2 // (2 + IVM_OOP_COUNT)
 
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type;                                          \
@@ -27,7 +27,7 @@ IVM_COM_HEADER
 			ivm_int_t dummy2:                                  \
 				sizeof(ivm_sint64_t) / 2 * 8 -                 \
 				_IVM_MARK_HEADER_BITS;                         \
-			ivm_uint_t oop: IVM_OOP_COUNT;                     \
+			/* ivm_uint_t oop: IVM_OOP_COUNT; */               \
 			ivm_uint_t wb: 1;                                  \
 			ivm_uint_t gen: 1;                                 \
 		} sub;                                                 \
