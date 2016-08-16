@@ -210,11 +210,15 @@ COMMON_EXPR(id_expr, "id expression", {
 typedef struct {
 	ilang_gen_pos_t pos;
 	ilang_gen_token_value_t name;
+	ivm_int_t oop; // -1 for not oop
 	ilang_gen_expr_t *expr;
 } ilang_gen_table_entry_t;
 
 #define ilang_gen_table_entry_build(pos, name, expr) \
-	((ilang_gen_table_entry_t) { (pos), (name), (expr) })
+	((ilang_gen_table_entry_t) { (pos), (name), -1, (expr) })
+
+#define ilang_gen_table_entry_build_oop(pos, oop, expr) \
+	((ilang_gen_table_entry_t) { (pos), ilang_gen_token_value_build(IVM_NULL, 0), (oop), (expr) })
 
 typedef ivm_list_t ilang_gen_table_entry_list_t;
 typedef IVM_LIST_ITER_TYPE(ilang_gen_table_entry_t) ilang_gen_table_entry_list_iterator_t;

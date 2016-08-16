@@ -75,7 +75,9 @@ enum {
 	IVM_OOP_ID(GT),
 	IVM_OOP_ID(GE),
 	IVM_OOP_ID(LT),
-	IVM_OOP_ID(LE)
+	IVM_OOP_ID(LE),
+	IVM_OOP_ID(NEG),
+	IVM_OOP_ID(POS)
 };
 
 /*

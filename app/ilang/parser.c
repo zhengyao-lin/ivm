@@ -564,23 +564,57 @@ RULE(nllo)
 
 /*
 	slot
-		: id ':' prefix_expr
+		: id nllo ':' nllo prefix_expr
+		| oop nllo ':' nllo prefix_expr
+		| '.' nllo id nllo ':' nllo prefix_expr
+		| '.' nllo oop nllo ':' nllo prefix_expr
  */
 
 RULE(prefix_expr);
+RULE(oop);
 RULE(slot)
 {
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_ID) T(T_COLON) R(prefix_expr) R(nllo)
+		SUB_RULE(T(T_ID) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
 
 			_RETVAL.slot = ilang_gen_table_entry_build(
 				TOKEN_POS(tmp_token),
 				TOKEN_VAL(tmp_token),
-				RULE_RET_AT(0).u.expr
+				RULE_RET_AT(2).u.expr
+			);
+		})
+		SUB_RULE(R(oop) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.slot = ilang_gen_table_entry_build_oop(
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(0).u.oop,
+				RULE_RET_AT(3).u.expr
+			);
+		})
+		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(1);
+
+			_RETVAL.slot = ilang_gen_table_entry_build(
+				TOKEN_POS(tmp_token),
+				TOKEN_VAL(tmp_token),
+				RULE_RET_AT(3).u.expr
+			);
+		})
+		SUB_RULE(T(T_DOT) R(nllo) R(oop) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.slot = ilang_gen_table_entry_build_oop(
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.oop,
+				RULE_RET_AT(4).u.expr
 			);
 		})
 	);
@@ -600,11 +634,11 @@ RULE(slot_list_sub)
 	ilang_gen_table_entry_list_t *tmp_list;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(nllo) R(slot) R(slot_list_sub)
+		SUB_RULE(T(T_COMMA) R(nllo) R(slot) R(nllo) R(slot_list_sub)
 		{
 			tmp_list
 			= _RETVAL.slot_list
-			= RULE_RET_AT(2).u.slot_list;
+			= RULE_RET_AT(3).u.slot_list;
 			tmp_entry = RULE_RET_AT(1).u.slot;
 
 			ilang_gen_table_entry_list_push(tmp_list, &tmp_entry);
@@ -812,6 +846,8 @@ RULE(arg_list_opt)
 /*
 	oop
 		: '!'
+		| '+' '@'
+		| '-' '@'
 		| '+'
 		| '-'
 		| '*'
@@ -854,6 +890,17 @@ RULE(oop)
 
 	SUB_RULE_SET(
 		DEF_OOP(NOT)
+
+		SUB_RULE(T(T_ADD) T(T_AT)
+		{
+			_RETVAL.oop = IVM_OOP_ID(POS);
+		})
+
+		SUB_RULE(T(T_SUB) T(T_AT)
+		{
+			_RETVAL.oop = IVM_OOP_ID(NEG);
+		})
+
 		DEF_OOP(ADD)
 		DEF_OOP(SUB)
 		DEF_OOP(MUL)
@@ -893,6 +940,7 @@ RULE(oop)
 	postfix_expr_sub
 		: '(' arg_list_opt ')' postfix_expr_sub
 		| '.' id postfix_expr_sub
+		| '.' oop postfix_expr_sub
 		| %empty
  */
 RULE(postfix_expr_sub)
@@ -953,7 +1001,7 @@ RULE(postfix_expr_sub)
 			}
 		})
 
-		SUB_RULE(T(T_AT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
+		SUB_RULE(T(T_DOT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			oop = RULE_RET_AT(1).u.oop;

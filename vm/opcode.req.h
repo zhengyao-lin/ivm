@@ -20,6 +20,8 @@
 #include "oprt.h"
 #include "dbg.h"
 
+#if 0
+
 #define UNIOP_HANDLER(op, op_name) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
@@ -35,7 +37,9 @@
 		NEXT_INSTR();                                                                          \
 	}
 
-#define UNIOP_HANDLER_O(op, op_name, e) \
+#endif
+
+#define UNIOP_HANDLER(op, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \

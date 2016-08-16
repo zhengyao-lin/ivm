@@ -93,15 +93,20 @@ gid = group: {
 yield a to gid
 */
 
-c = {}
-c@+ = fn: print("c.+ called")
+c = {
+	+: fn: print("c.+ called")
+}
 
-a = { proto: c }
-a@- = fn b: print("a.- called")
+a = {
+	proto: c, 
+	-: fn b: print("a.- called"),
+	-@: fn: print("a.-@ called")
+}
 
 b = { proto: a }
 b + 1
 b - 1
+-b
 
 b = fn: (
 	n = clone 10,
@@ -157,10 +162,10 @@ catch err: try: print()
 a = 10
 b = {}
 
-a@+ = fn b: base - b
-a@* = "hi"
+a.+ = fn b: base - b
+a.* = "hi"
 
-a@>> = fn b: b.value = a
+a.>> = fn b: b.value = a
 
 print(1 << 2)
 print(1024 >> 2)
@@ -173,10 +178,10 @@ print(a.value)
 
 res = 1
 
-a@<= = fn b: res
-a@>= = fn b: a <= b
-a@< = fn b: a >= b
-a@> = fn b: a < b
+a.<= = fn b: res
+a.>= = fn b: a <= b
+a.< = fn b: a >= b
+a.> = fn b: a < b
 
 try: 10 + ""
 
@@ -199,10 +204,10 @@ try: {(1 + "s")}
 catch err: print(err.msg)
 
 b = {}
-b@+ = fn a: print(base)
+b.+ = fn a: print(base)
 
 b + 10
-b@+()
+b.+()
 
 try: {
 	a = {}

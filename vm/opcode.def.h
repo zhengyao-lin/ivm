@@ -62,12 +62,12 @@ OPCODE_GEN(CLONE, "clone", N, 1, {
 })
 
 /* unary operations */
-OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER_O(NOT, "!", {
+OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", {
 	STACK_PUSH(ivm_numeric_new(_STATE, !ivm_object_toBool(_TMP_OBJ1, _STATE)));
 	NEXT_INSTR();
 }))
-OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-"))
-OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+"))
+OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", 0))
+OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", 0))
 
 /* binary operations */
 OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 2, IVM_NULL))
@@ -410,6 +410,18 @@ OPCODE_GEN(SET_OOP, "set_oop", I, -1, {
 	ivm_object_setOop(_TMP_OBJ1, _STATE, IARG(), _TMP_OBJ2);
 
 	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR();
+})
+
+/* backward */
+OPCODE_GEN(SET_OOP_B, "set_oop_b", I, -1, {
+	CHECK_STACK(2);
+
+	_TMP_OBJ2 = STACK_POP();
+	_TMP_OBJ1 = STACK_TOP();
+
+	ivm_object_setOop(_TMP_OBJ1, _STATE, IARG(), _TMP_OBJ2);
 
 	NEXT_INSTR();
 })

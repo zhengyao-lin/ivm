@@ -718,6 +718,8 @@ ivm_perf_printElapsed();
 		MEM_FREE(src);
 	}
 
+	IVM_TRACE("%d opcodes\n", IVM_OPCODE(LAST));
+
 	/*
 
 	ivm_string_pool_free(exec->pool);

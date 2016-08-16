@@ -173,30 +173,29 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 	ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
 		tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
 
-		if (!flag.is_top_level ||
-			tmp_entry.expr->check(tmp_entry.expr, CHECK_SE())) {
-			// not top level and no side effect => skip
-			tmp_entry.expr->eval(
-				tmp_entry.expr,
-				FLAG(0),
-				env
+		tmp_entry.expr->eval(
+			tmp_entry.expr,
+			FLAG(0),
+			env
+		);
+
+		if (tmp_entry.oop != -1) {
+			ivm_exec_addInstr(env->cur_exec, SET_OOP_B, tmp_entry.oop);
+		} else {
+			tmp_str = ivm_parser_parseStr(
+				tmp_entry.name.val,
+				tmp_entry.name.len
 			);
 
-			if (!flag.is_top_level) {
-				tmp_str = ivm_parser_parseStr(
-					tmp_entry.name.val,
-					tmp_entry.name.len
-				);
-
-				if (!IVM_STRCMP(tmp_str, "proto")) {
-					ivm_exec_addInstr(env->cur_exec, DUP_N, 1);
-					ivm_exec_addInstr(env->cur_exec, SET_PROTO);
-				} else {
-					ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
-				}
-
-				MEM_FREE(tmp_str);
+			if (!IVM_STRCMP(tmp_str, "proto")) {
+				ivm_exec_addInstr(env->cur_exec, DUP_N, 1);
+				ivm_exec_addInstr(env->cur_exec, SET_PROTO);
+				ivm_exec_addInstr(env->cur_exec, POP);
+			} else {
+				ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
 			}
+
+			MEM_FREE(tmp_str);
 		}
 	}
 
