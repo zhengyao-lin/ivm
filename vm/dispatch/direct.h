@@ -71,17 +71,20 @@
 #define GOTO_INSTR(opc) \
 	goto OPCODE_##opc;
 
+#define RTM_FATAL(...) \
+	char __rtm_assert_buf__[256];             \
+	IVM_SNPRINTF(                             \
+		__rtm_assert_buf__,                   \
+		IVM_ARRLEN(__rtm_assert_buf__),       \
+		__VA_ARGS__                           \
+	);                                        \
+	RAISE(ivm_coro_newException_s(            \
+		_CORO, _STATE, __rtm_assert_buf__     \
+	))
+
 #define RTM_ASSERT(cond, ...) \
-	if (!(cond)) {                                \
-		char __rtm_assert_buf__[256];             \
-		IVM_SNPRINTF(                             \
-			__rtm_assert_buf__,                   \
-			IVM_ARRLEN(__rtm_assert_buf__),       \
-			__VA_ARGS__                           \
-		);                                        \
-		RAISE(ivm_coro_newException_s(            \
-			_CORO, _STATE, __rtm_assert_buf__     \
-		));                                       \
+	if (!(cond)) {                \
+		RTM_FATAL(__VA_ARGS__);   \
 	}
 
 #define YIELD() goto ACTION_YIELD

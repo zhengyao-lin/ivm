@@ -857,6 +857,7 @@ RULE(arg_list_opt)
 		| '|'
 		| '^'
 		| '[' nllo ']'
+		| '(' nllo ')'
 		| '!='
 		| '=='
 		| '>'
@@ -914,6 +915,11 @@ RULE(oop)
 		SUB_RULE(T(T_LBRAKT) R(nllo) T(T_RBRAKT)
 		{
 			_RETVAL.oop = IVM_OOP_ID(IDX);
+		})
+
+		SUB_RULE(T(T_LPAREN) R(nllo) T(T_RPAREN)
+		{
+			_RETVAL.oop = IVM_OOP_ID(CALL);
 		})
 
 		DEF_OOP_C(NE)

@@ -115,7 +115,24 @@ b = fn: (
 )
 
 a = b()
-a.speak()
+a.speak("yes")
+
+a = {
+	val: "yes",
+	(): fn: {
+		print("i was called")
+		print(base.val)
+	}
+}
+
+a()
+
+b = {
+	val: "no",
+	a: a
+}
+
+b.a()
 
 gid = group fn a: {
 	print("group")

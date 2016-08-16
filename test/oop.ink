@@ -1,6 +1,6 @@
 a = 10
-a@+ = fn b: base - b
-a@* = "hi"
+a.+ = fn b: base - b
+a.* = "hi"
 
 print(a + 5)
 try: a * 5
@@ -8,10 +8,10 @@ catch err: print(err.msg)
 
 res = 1
 
-a@<= = fn b: res
-a@>= = fn b: a <= b
-a@< = fn b: a >= b
-a@> = fn b: a < b
+a.<= = fn b: res
+a.>= = fn b: a <= b
+a.< = fn b: a >= b
+a.> = fn b: a < b
 
 try: 10 + ""
 
