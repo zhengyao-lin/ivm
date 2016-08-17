@@ -9,31 +9,45 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "unary expression", flag);
 
-	unary_expr->opr->eval(
-		unary_expr->opr,
-		FLAG(0),
-		env
-	);
+	if (unary_expr->type == IVM_UNIOP_ID(DEL)) {
+		ivm_exec_addInstr(env->cur_exec, NEW_NIL);
+		
+		unary_expr->opr->eval(
+			unary_expr->opr,
+			FLAG(.is_left_val = IVM_TRUE),
+			env
+		);
 
-	switch (unary_expr->type) {
-		case IVM_UNIOP_ID(NOT):
-			ivm_exec_addInstr(env->cur_exec, NOT);
-			break;
-		case IVM_UNIOP_ID(NEG):
-			ivm_exec_addInstr(env->cur_exec, NEG);
-			break;
-		case IVM_UNIOP_ID(POS):
-			ivm_exec_addInstr(env->cur_exec, POS);
-			break;
-		case IVM_UNIOP_ID(CLONE):
-			ivm_exec_addInstr(env->cur_exec, CLONE);
-			break;
-		default:
-			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
-	}
+		if (!flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+		}
+	} else {
+		unary_expr->opr->eval(
+			unary_expr->opr,
+			FLAG(0),
+			env
+		);
 
-	if (flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, POP);
+		switch (unary_expr->type) {
+			case IVM_UNIOP_ID(NOT):
+				ivm_exec_addInstr(env->cur_exec, NOT);
+				break;
+			case IVM_UNIOP_ID(NEG):
+				ivm_exec_addInstr(env->cur_exec, NEG);
+				break;
+			case IVM_UNIOP_ID(POS):
+				ivm_exec_addInstr(env->cur_exec, POS);
+				break;
+			case IVM_UNIOP_ID(CLONE):
+				ivm_exec_addInstr(env->cur_exec, CLONE);
+				break;
+			default:
+				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
+		}
+
+		if (flag.is_top_level) {
+			ivm_exec_addInstr(env->cur_exec, POP);
+		}
 	}
 
 	return NORET();

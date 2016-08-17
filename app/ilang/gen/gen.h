@@ -145,9 +145,7 @@ ilang_gen_check_true(ilang_gen_expr_t *expr,
 	{                                                                                \
 		ilang_gen_##name##_t *ret = ivm_heap_alloc(trans_unit->heap, sizeof(*ret));  \
                                                                                      \
-		IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW(fname));                      \
 		ilang_gen_expr_list_push(trans_unit->expr_log, ret);                         \
-                                                                                     \
 		ilang_gen_expr_init(IVM_AS(ret, ilang_gen_expr_t),                           \
 							pos, ilang_gen_##name##_eval,                            \
 							ilang_gen_check_true);                                   \

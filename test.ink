@@ -93,6 +93,25 @@ gid = group: {
 yield a to gid
 */
 
+pb = print
+print = { (): print }
+
+del print.()
+del print
+
+print = pb
+
+a = { val: 10, msg: "yes" }
+b = clone a
+i = 0
+
+while i < 10000:
+	i = i + 1
+
+a.msg = "no"
+
+print(b.msg)
+
 c = {
 	+: fn: print("c.+ called")
 }
@@ -131,8 +150,6 @@ b = {
 	val: "no",
 	a: a
 }
-
-del a
 
 b.a()
 

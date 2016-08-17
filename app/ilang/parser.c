@@ -43,6 +43,7 @@ enum token_id_t {
 	T_GROUP,
 
 	T_CLONE,
+	T_DEL,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
@@ -118,6 +119,7 @@ token_name_table[] = {
 	"keyword `group`",
 
 	"operator `clone`",
+	"operator `del`",
 
 	"semicolon",
 	"comma",
@@ -418,6 +420,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("group", T_GROUP)
 
 		KEYWORD("clone", T_CLONE)
+		KEYWORD("del", T_DEL)
 #undef KEYWORD
 	};
 
@@ -1134,56 +1137,32 @@ RULE(unary_expr)
 {
 	struct token_t *tmp_token;
 
+#define UNARY_EXPR(tok, name, op)	\
+	SUB_RULE(T(tok) R(nllo) R(unary_expr)             \
+	DBB(PRINT_MATCH_TOKEN(name))                      \
+	{                                                 \
+		tmp_token = TOKEN_AT(0);                      \
+		_RETVAL.expr = ilang_gen_unary_expr_new(      \
+			_ENV->unit,                               \
+			TOKEN_POS(tmp_token),                     \
+			RULE_RET_AT(1).u.expr,                    \
+			IVM_UNIOP_ID(op)                          \
+		);                                            \
+	})
+
 	SUB_RULE_SET(
-		SUB_RULE(T(T_NOT) R(nllo) R(unary_expr)
-		DBB(PRINT_MATCH_TOKEN("not expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_unary_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.expr,
-				IVM_UNIOP_ID(NOT)
-			);
-		})
-		SUB_RULE(T(T_SUB) R(nllo) R(unary_expr)
-		DBB(PRINT_MATCH_TOKEN("neg expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_unary_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.expr,
-				IVM_UNIOP_ID(NEG)
-			);
-		})
-		SUB_RULE(T(T_ADD) R(nllo) R(unary_expr)
-		DBB(PRINT_MATCH_TOKEN("pos expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_unary_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.expr,
-				IVM_UNIOP_ID(POS)
-			);
-		})
-		SUB_RULE(T(T_CLONE) R(nllo) R(unary_expr)
-		DBB(PRINT_MATCH_TOKEN("clone expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_unary_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.expr,
-				IVM_UNIOP_ID(CLONE)
-			);
-		})
+		UNARY_EXPR(T_NOT, "not expr", NOT)
+		UNARY_EXPR(T_SUB, "neg expr", NEG)
+		UNARY_EXPR(T_ADD, "pos expr", POS)
+		UNARY_EXPR(T_CLONE, "clone expr", CLONE)
+		UNARY_EXPR(T_DEL, "del expr", DEL)
 		SUB_RULE(R(postfix_expr)
 		{
 			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 		})
 	);
+
+#undef UNARY_EXPR
 
 	FAILED({})
 	MATCHED({})

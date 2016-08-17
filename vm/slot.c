@@ -103,7 +103,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 
 		// MEM_INIT(&ret->mark, sizeof(ret->mark));
 		// ret->mark.sub.is_hash = table->mark.sub.is_hash;
-		SET_BIT_FALSE(ret->mark.sub.is_shared);
+		// SET_BIT_FALSE(ret->mark.sub.is_shared);
 		ivm_slot_table_setWB(ret, 0);
 		ivm_slot_table_setCopy(ret, IVM_NULL);
 		// ret->mark.sub.gen = table->mark.sub.gen;
