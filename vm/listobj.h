@@ -11,6 +11,7 @@ IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
 struct ivm_heap_t_tag;
+struct ivm_traverser_arg_t_tag;
 
 typedef struct {
 	IVM_OBJECT_HEADER
@@ -91,12 +92,19 @@ ivm_list_object_link(ivm_list_object_t *list1,
 					 struct ivm_vmstate_t_tag *state);
 
 void
+ivm_list_object_reverse(ivm_list_object_t *list);
+
+void
+ivm_list_object_step(ivm_list_object_t *list,
+					 ivm_long_t step);
+
+void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   struct ivm_vmstate_t_tag *state);
 
 void
 ivm_list_object_traverser(ivm_object_t *obj,
-						  ivm_traverser_arg_t *arg);
+						  struct ivm_traverser_arg_t_tag *arg);
 
 IVM_COM_END
 

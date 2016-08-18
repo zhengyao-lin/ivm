@@ -7,6 +7,11 @@
 
 #include "list.h"
 
+/* 0 for success, other return stand for the position of the wrong argument */
+ivm_int_t
+ivm_native_matchArgument(ivm_function_arg_t arg,
+						 const ivm_char_t *rule, ...);
+
 #define IVM_NATIVE_WRAP(state, name) \
 	ivm_function_object_newNative((state), IVM_GET_NATIVE_FUNC(name))
 

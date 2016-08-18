@@ -48,7 +48,6 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR(name, val)	"'%ld' is too small for " name, (val)
 #define IVM_ERROR_MSG_NO_UNIOP_FOR(op, t)				"the unary operation %s of <%s> is not defined", (op), (t)
 #define IVM_ERROR_MSG_NO_BINOP_FOR(t1, op, t2)			"the binary operation of <%s> %s <%s> is not defined", (t1), (op), (t2)
-#define IVM_ERROR_MSG_NO_BINOP_FOR_R(t1, op, t2)		"the binary operation of <%s> [%d] <%s> is not defined", (t1), (op), (t2)
 #define IVM_ERROR_MSG_UNEXPECTED_ARG_TYPE(t)			"unexpected param type %c", (t)
 #define IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK				"cannot push object to dead coro"
 #define IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC				"cannot serialize cached executable"
@@ -63,6 +62,9 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_CIRCULAR_PROTO_REF				("circular prototype reference detected")
 #define IVM_ERROR_MSG_ILLEGAL_GID_TYPE(type)			"illegal group id with type <%s>", (type)
 #define IVM_ERROR_MSG_GROUP_ID_OVERFLOW					("group id overflow")
+#define IVM_ERROR_MSG_WRONG_NATIVE_ARG_RULE(c)			"unrecognized argument rule %c", (c)
+#define IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK				"repeated optional mark in argument rule"
+#define IVM_ERROR_MSG_ILLEGAL_STEP						"illegal step"
 
 IVM_COM_END
 

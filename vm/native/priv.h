@@ -3,6 +3,8 @@
 
 #include "pub/err.h"
 
+#include "native.h"
+
 #define RTM_ASSERT(cond, ...) \
 	IVM_CORO_NATIVE_ASSERT(NAT_CORO(), NAT_STATE(), (cond), __VA_ARGS__)
 
@@ -29,6 +31,13 @@
 			   IVM_IS_TYPE(NAT_ARG_AT(3), (t3),         \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
+#define MATCH_ARG(rule, ...) \
+	{                                                                                   \
+		ivm_int_t __match_ret__                                                         \
+		= ivm_native_matchArgument(NAT_ARG(), (rule), __VA_ARGS__);                     \
+		RTM_ASSERT(!__match_ret__, IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(__match_ret__));   \
+	}
+
 #define CHECK_ARG_COUNT(name, count) \
 	RTM_ASSERT(NAT_ARGC() >= (count),                                       \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((name), (count), NAT_ARGC()))
@@ -40,5 +49,6 @@
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG									("wrong argument")
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(name, expect, given) \
 	"wrong argument count for %s(expect %d, %d given)", (name), (expect), (given)
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(i)							"wrong %dth argument", (i)
 
 #endif

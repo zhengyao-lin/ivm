@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <wchar.h>
+#include <float.h>
 
 #include "pub/com.h"
 
@@ -44,6 +45,8 @@ typedef ivm_int_t				ivm_type_tag_t;
 
 typedef ivm_double_t			ivm_number_t;
 
+#define IVM_NUMBER_MAX			DBL_MAX
+
 typedef ivm_size_t				ivm_function_id_t;
 
 enum {
@@ -72,7 +75,7 @@ typedef union {
 #define ivm_opcode_arg_fromFloat(f) ((ivm_opcode_arg_t) { .farg = (ivm_double_t)(f) })
 #define ivm_opcode_arg_fromPointer(p) ((ivm_opcode_arg_t) { .parg = (ivm_ptr_t)(p) })
 
-typedef ivm_uint32_t	ivm_argc_t;
+typedef ivm_int_t		ivm_argc_t;
 typedef ivm_ptr_t		ivm_mark_t;
 
 typedef ivm_int_t		ivm_cgid_t;

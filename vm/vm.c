@@ -77,6 +77,7 @@ ivm_vmstate_new()
 	ret->gc = ivm_collector_new(ret);
 
 	ret->except = IVM_NULL;
+	ivm_uid_gen_init(&ret->uid_gen);
 
 	ivm_vmstate_lockGCFlag(ret);
 
@@ -94,7 +95,6 @@ ivm_vmstate_new()
 
 	ivm_vmstate_unlockGCFlag(ret);
 
-	ivm_uid_gen_init(&ret->uid_gen);
 	ret->coro_list_uid = ivm_uid_gen_nextPtr(ret->uid_gen);
 
 	return ret;

@@ -24,6 +24,10 @@ typedef struct {
 	ivm_object_t **argv;
 } ivm_function_arg_t;
 
+/* i starts from 1 */
+#define ivm_function_arg_has(arg, i) ((i) <= (arg).argc)
+#define ivm_function_arg_at(arg, i) ((arg).argv[-(i)])
+
 typedef ivm_uint16_t ivm_signal_mask_t;
 typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
 											   struct ivm_coro_t_tag *,
@@ -47,7 +51,10 @@ typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
 #define NAT_STATE() (__state__)
 #define NAT_CORO() (__coro__)
 #define NAT_CONTEXT() (__context__)
+
+#define NAT_ARG() (__arg__)
 #define NAT_BASE() (__arg__.base)
+#define NAT_BASE_C(t) (IVM_AS(__arg__.base, t))
 #define NAT_ARGC() (__arg__.argc)
 #define NAT_ARG_AT(i) (__arg__.argv[-(i)])
 

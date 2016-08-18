@@ -146,6 +146,42 @@ ivm_list_object_link(ivm_list_object_t *list1,
 }
 
 void
+ivm_list_object_reverse(ivm_list_object_t *list)
+{
+	ivm_object_t *tmp, **lst = list->lst;
+	ivm_size_t i, j, mid = list->size / 2;
+
+	for (i = 0, j = list->size - 1;
+		 i <= mid; i++, j--) {
+		tmp = lst[i];
+		lst[i] = lst[j];
+		lst[j] = tmp;
+	}
+
+	return;
+}
+
+void
+ivm_list_object_step(ivm_list_object_t *list,
+					 ivm_long_t step)
+{
+	ivm_object_t **lst = list->lst;
+	ivm_long_t i, j, size = list->size;
+
+	IVM_ASSERT(step >= 1, IVM_ERROR_MSG_ILLEGAL_STEP);
+
+	if (step == 1) return;
+
+	for (i = 0, j = 0; j < size; i++, j += step) {
+		lst[i] = lst[j];
+	}
+
+	list->size = i;
+
+	return;
+}
+
+void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {

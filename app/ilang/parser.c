@@ -1035,12 +1035,12 @@ RULE(postfix_expr_sub)
 			}
 		})
 
-		SUB_RULE(R(nllo) T(T_LBRAKT) R(expr) T(T_RBRAKT) R(postfix_expr_sub)
+		SUB_RULE(T(T_LBRAKT) R(expr) T(T_RBRAKT) R(postfix_expr_sub)
 		DBB(PRINT_MATCH_TOKEN("index expr"))
 		{
 			tmp_token = TOKEN_AT(0);
-			tmp_idx = RULE_RET_AT(1).u.expr;
-			tmp_expr = RULE_RET_AT(2).u.expr;
+			tmp_idx = RULE_RET_AT(0).u.expr;
+			tmp_expr = RULE_RET_AT(1).u.expr;
 
 			if (tmp_expr) {
 				_RETVAL.expr = tmp_expr;
