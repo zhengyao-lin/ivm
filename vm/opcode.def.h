@@ -92,28 +92,52 @@ OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0, 2, IVM_NULL))
 OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0, 2, IVM_NULL))
 OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0, 2, IVM_NULL))
 
-OPCODE_GEN(GT, "gt", N, -1, BINOP_HANDLER(GT, ">", 0, 2, IVM_NULL))
-OPCODE_GEN(GE, "ge", N, -1, BINOP_HANDLER(GE, ">=", 0, 2, IVM_NULL))
-OPCODE_GEN(LT, "lt", N, -1, BINOP_HANDLER(LT, "<", 0, 2, IVM_NULL))
-OPCODE_GEN(LE, "le", N, -1, BINOP_HANDLER(LE, "<=", 0, 2, IVM_NULL))
-
-OPCODE_GEN(EQ, "eq", N, -1, BINOP_HANDLER(EQ, "==",
-	{
-		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
-			STACK_PUSH(ivm_numeric_new(_STATE, IVM_FALSE));
-			NEXT_INSTR();
-		}
-	}, 2, IVM_NULL
-))
-
-OPCODE_GEN(NE, "ne", N, -1, BINOP_HANDLER(NE, "!=",
+OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=",
 	{
 		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
 			STACK_PUSH(ivm_numeric_new(_STATE, IVM_TRUE));
 			NEXT_INSTR();
 		}
-	}, 2, IVM_NULL
+	}
 ))
+
+OPCODE_GEN(EQ, "eq", N, -1, CMP_HANDLER(EQ, "==",
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			STACK_PUSH(ivm_numeric_new(_STATE, IVM_FALSE));
+			NEXT_INSTR();
+		}
+	}
+))
+
+OPCODE_GEN(GT, "gt", N, -1, CMP_HANDLER(GT, ">", 0))
+OPCODE_GEN(GE, "ge", N, -1, CMP_HANDLER(GE, ">=", 0))
+OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(LT, "<", 0))
+OPCODE_GEN(LE, "le", N, -1, CMP_HANDLER(LE, "<=", 0))
+
+OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(NE, "!=",
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			_TMP_CMP_REG = IVM_TRUE;
+			NEXT_INSTR();
+		}
+	}
+))
+
+OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(EQ, "==",
+	{
+		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
+			_TMP_CMP_REG = IVM_FALSE;
+			NEXT_INSTR();
+		}
+	}
+))
+
+OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(GT, ">", 0))
+OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", 0))
+
+OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", 0))
+OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0))
 
 #if 0
 
@@ -820,7 +844,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
 	}
 })
 
-#if 0
+#if 1
 
 OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
 	if (IVM_RUNTIME_GET(_RUNTIME, NO_REG)) {

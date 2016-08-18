@@ -42,59 +42,59 @@ BINOP_GEN(IVM_NUMERIC_T, CMP, IVM_NUMERIC_T, {
 */
 
 BINOP_GEN(IVM_NUMERIC_T, NE, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) != ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) != ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, EQ, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) == ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) == ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, GT, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) > ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) > ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, GE, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) >= ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) >= ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, LT, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) < ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) < ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, LE, IVM_NUMERIC_T, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) <= ivm_numeric_getValue(_OP2));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) <= ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_UNDEFINED_T, EQ, IVM_UNDEFINED_T, {
-	return ivm_numeric_new(_STATE, IVM_TRUE);
+	return (ivm_object_t *)(ivm_ptr_t)IVM_TRUE;
 })
 
 BINOP_GEN(IVM_UNDEFINED_T, NE, IVM_UNDEFINED_T, {
-	return ivm_numeric_new(_STATE, IVM_FALSE);
+	return (ivm_object_t *)(ivm_ptr_t)IVM_FALSE;
 })
 
 BINOP_GEN(IVM_NULL_T, EQ, IVM_NULL_T, {
-	return ivm_numeric_new(_STATE, IVM_TRUE);
+	return (ivm_object_t *)(ivm_ptr_t)IVM_TRUE;
 })
 
 BINOP_GEN(IVM_NULL_T, NE, IVM_NULL_T, {
-	return ivm_numeric_new(_STATE, IVM_FALSE);
+	return (ivm_object_t *)(ivm_ptr_t)IVM_FALSE;
 })
 
 BINOP_GEN(IVM_OBJECT_T, EQ, IVM_OBJECT_T, {
-	return ivm_numeric_new(_STATE, _OP1 == _OP2);
+	return (ivm_object_t *)(ivm_ptr_t)(_OP1 == _OP2);
 })
 
 BINOP_GEN(IVM_OBJECT_T, NE, IVM_OBJECT_T, {
-	return ivm_numeric_new(_STATE, _OP1 != _OP2);
+	return (ivm_object_t *)(ivm_ptr_t)(_OP1 != _OP2);
 })
 
 BINOP_GEN(IVM_STRING_OBJECT_T, EQ, IVM_STRING_OBJECT_T, {
-	return ivm_numeric_new(_STATE, !ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2)));
+	return (ivm_object_t *)(ivm_ptr_t)(!ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2)));
 })
 
 BINOP_GEN(IVM_STRING_OBJECT_T, NE, IVM_STRING_OBJECT_T, {
-	return ivm_numeric_new(_STATE, ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2)));
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2)));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, AND, IVM_NUMERIC_T, {

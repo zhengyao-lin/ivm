@@ -273,13 +273,80 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 	return;
 }
 
+IVM_INLINE
+ivm_bool_t
+_is_raw_cmp(ivm_opcode_t opc)
+{
+	return opc == IVM_OPCODE(NE) ||
+		   opc == IVM_OPCODE(EQ) ||
+		   opc == IVM_OPCODE(GT) ||
+		   opc == IVM_OPCODE(GE) ||
+		   opc == IVM_OPCODE(LT) ||
+		   opc == IVM_OPCODE(LE);
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_raw_jump(ivm_opcode_t opc)
+{
+	return opc == IVM_OPCODE(JUMP_FALSE) ||
+		   opc == IVM_OPCODE(JUMP_TRUE);
+}
+
+IVM_INLINE
+ivm_opcode_t
+_to_reg_op(ivm_opcode_t cmp)
+{
+#define CASE(op) \
+	case IVM_OPCODE(op): \
+		return IVM_OPCODE(op##_R);
+
+	switch (cmp) {
+		CASE(NE)
+		CASE(EQ)
+		CASE(GT)
+		CASE(GE)
+		CASE(LT)
+		CASE(LE)
+		CASE(JUMP_FALSE)
+		CASE(JUMP_TRUE)
+		default: break;
+	}
+
+#undef CASE
+
+	IVM_FATAL("impossible");
+}
+
+IVM_PRIVATE
+void
+_ivm_opt_cmpOpt(ivm_opt_il_t *il)
+{
+	ivm_opt_instr_list_t *instrs = il->instrs;
+	ivm_opt_instr_list_iterator_t iter;
+	ivm_opt_instr_t *cur;
+
+	IVM_OPT_INSTR_LIST_EACHPTR(instrs, iter) {
+		cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
+		if (_is_raw_cmp(cur->opc) &&
+			_is_raw_jump((cur + 1)->opc)) {
+			cur->opc = _to_reg_op(cur->opc);
+			(cur + 1)->opc = _to_reg_op((cur + 1)->opc);
+		}
+	}
+
+	return;
+}
+
 void
 ivm_opt_optExec(ivm_exec_t *exec)
 {
 	ivm_opt_il_t *il = ivm_opt_il_convertFromExec(exec);
 
 	ivm_exec_empty(exec);
+
 	_ivm_opt_jumpReduce(il);
+	_ivm_opt_cmpOpt(il);
 
 	ivm_opt_il_generateExec(il, exec);
 	ivm_opt_il_free(il);
