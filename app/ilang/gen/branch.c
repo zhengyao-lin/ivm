@@ -73,6 +73,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		}
 		ivm_list_empty(begin_ref);
 	} else {
+#if 0
 		// use vreg to opt
 		if (cond_ret.use_cond_reg) {
 			main_jmp = ivm_exec_addInstr(
@@ -85,6 +86,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 				0 /* replaced with else addr later */
 			);
 		}
+#endif
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE,
+			0 /* replaced with else addr later */
+		);
 	}
 
 	// body
@@ -141,6 +147,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 			}
 			ivm_list_empty(begin_ref);
 		} else {
+#if 0
 			if (cond_ret.use_cond_reg) {
 				prev_elif_jmp = ivm_exec_addInstr(
 					env->cur_exec, JUMP_FALSE_R, 0
@@ -150,6 +157,10 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 					env->cur_exec, JUMP_FALSE, 0
 				);
 			}
+#endif
+			prev_elif_jmp = ivm_exec_addInstr( // jump to next elif/else if false
+				env->cur_exec, JUMP_FALSE, 0
+			);
 		}
 
 		tmp_br.body->eval(
@@ -279,6 +290,7 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 		}
 		ivm_list_empty(begin_ref);
 	} else {
+#if 0
 		if (cond_ret.use_cond_reg) {
 			main_jmp = ivm_exec_addInstr(
 				env->cur_exec, JUMP_FALSE_R,
@@ -290,6 +302,12 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 				0 /* replaced with else addr later */
 			);
 		}
+#endif
+
+		main_jmp = ivm_exec_addInstr(
+			env->cur_exec, JUMP_FALSE,
+			0 /* replaced with else addr later */
+		);
 	}
 
 	while_expr->body->eval(

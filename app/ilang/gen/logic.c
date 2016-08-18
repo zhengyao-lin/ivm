@@ -52,11 +52,12 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
+			/* if (tmp_ret.use_cond_reg) {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
 			} else {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			}
+			} */
+			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
 
 			ivm_list_push(env->end_ref, &addr1); // add end ref
 		}
@@ -78,11 +79,12 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
+			/* if (tmp_ret.use_cond_reg) {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
 			} else {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			}
+			} */
+			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
 
 			ivm_list_push(env->end_ref, &addr1); // add end ref
 		}
@@ -167,11 +169,12 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
+			/* if (tmp_ret.use_cond_reg) {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
 			} else {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			}
+			} */
+			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
 
 			ivm_list_push(env->begin_ref, &addr1); // add begin ref
 		}
@@ -194,11 +197,12 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			if (tmp_ret.use_cond_reg) {
+			/* if (tmp_ret.use_cond_reg) {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
 			} else {
 				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			}
+			} */
+			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
 
 			ivm_list_push(env->begin_ref, &addr1); // add begin ref
 		}

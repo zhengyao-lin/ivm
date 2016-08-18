@@ -84,7 +84,7 @@
 	}
 #endif
 
-#define BINOP_HANDLER(op, op_name, req, assign) \
+#define BINOP_HANDLER(op, op_name, e, req, assign) \
 	{                                                                                          \
 		CHECK_STACK(req);                                                                      \
                                                                                                \
@@ -106,6 +106,8 @@
 			}                                                                                  \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		} else {                                                                               \
+			e;                                                                                 \
+			                                                                                   \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
 			RTM_ASSERT(_TMP_BIN_PROC,                                                          \
@@ -162,6 +164,8 @@
 }
 
 #else
+
+#if 0
 
 #define CMP_HANDLER(e1, oop, todo) \
 	{                                                                                          \
@@ -222,6 +226,8 @@
 			NEXT_INSTR();                                                                      \
 		}                                                                                      \
 	}
+
+#endif
 
 #endif
 

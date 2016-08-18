@@ -129,6 +129,7 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 		return NORET();
 	}
 
+#if 0
 #define BR(op) \
 	case ILANG_GEN_CMP_##op:                                \
 		if (flag.if_use_cond_reg && 0) {                    \
@@ -137,6 +138,12 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 		} else {                                            \
 			ivm_exec_addInstr(env->cur_exec, op);           \
 		}                                                   \
+		break;
+#endif
+
+#define BR(op) \
+	case ILANG_GEN_CMP_##op:                    \
+		ivm_exec_addInstr(env->cur_exec, op);   \
 		break;
 
 	switch (cmp_expr->cmp_type) {
