@@ -345,6 +345,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "-az", ST_IN_ID },
 			{ "-AZ", ST_IN_ID },
 			{ "=_", ST_IN_ID },
+			{ "=$", ST_IN_ID },
 			{ "-09", ST_IN_ID },
 			{ ".", ST_INIT, T_ID } /* revert one char */
 		},
