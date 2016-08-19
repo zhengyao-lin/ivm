@@ -9,6 +9,26 @@
 
 IVM_COM_HEADER
 
+IVM_INLINE
+ivm_long_t
+ivm_list_realIndex(ivm_long_t size,
+				   ivm_long_t i)
+{
+	if (!size) {
+		return i < 0 ? 0 : i;
+	}
+
+	if (i < 0) {
+		i = -i % size;
+
+		if (i) {
+			i = size - i;
+		}
+	}
+
+	return i;
+}
+
 typedef struct {
 	ivm_size_t alloc;
 	ivm_size_t cur;

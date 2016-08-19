@@ -93,6 +93,11 @@ gid = group: {
 yield a to gid
 */
 
+print("hi " + 100000000000000000000000000000000001)
+print(100000000000000000000000000000000001 + " wow")
+
+print("abcdefg"[3])
+
 pb = print
 print = { (): print }
 

@@ -13,11 +13,14 @@ IVM_COM_HEADER
 struct ivm_type_t_tag;
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
+struct ivm_coro_t_tag;
 
 typedef struct ivm_object_t_tag *(*ivm_uniop_proc_t)(struct ivm_vmstate_t_tag *state,
+													 struct ivm_coro_t_tag *coro,
 													 struct ivm_object_t_tag *op1);
 
 typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *state,
+													 struct ivm_coro_t_tag *coro,
 													 struct ivm_object_t_tag *op1,
 													 struct ivm_object_t_tag *op2,
 													 struct ivm_object_t_tag *assign);

@@ -128,11 +128,35 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 	return ivm_string_object_new_c(_STATE, ret);
 })
 
+BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_NUMERIC_T, LINK_STRING_NUM(_OP1, _OP2))
+BINOP_GEN(IVM_NUMERIC_T, ADD, IVM_STRING_OBJECT_T, LINK_STRING_NUM_R(_OP2, _OP1))
+
 BINOP_GEN(IVM_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
 BINOP_GEN(IVM_NUMERIC_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
 BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
 BINOP_GEN(IVM_FUNCTION_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
 BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_STRING_OBJECT_T, GET_STRING_INDEX())
+
+BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
+	const ivm_string_t *str1;
+	ivm_long_t idx, len;
+	ivm_string_t *ret;
+	ivm_char_t *data;
+
+	str1 = ivm_string_object_getValue(_OP1);
+	len = ivm_string_length(str1);
+	idx = ivm_list_realIndex(len, ivm_numeric_getValue(_OP2));
+
+	RTM_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
+
+	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(1));
+	data = ivm_string_trimHead(ret);
+
+	MEM_COPY(data, ivm_string_trimHead(str1) + idx, sizeof(ivm_char_t));
+	data[1] = '\0';
+
+	return ivm_string_object_new_c(_STATE, ret);
+})
 
 BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	ivm_object_t *tmp;

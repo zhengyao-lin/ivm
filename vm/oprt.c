@@ -15,17 +15,20 @@
 
 #define UNIOP_GEN(op, t, ...) \
 	IVM_PRIVATE ivm_object_t * UNIOP_PROC_NAME(op, t)(ivm_vmstate_t *__state__, \
-													  ivm_object_t *__op1__) \
+													  ivm_coro_t *__coro__,     \
+													  ivm_object_t *__op1__)    \
 	__VA_ARGS__
 
 #define BINOP_GEN(t1, op, t2, ...) \
 	IVM_PRIVATE ivm_object_t * BINOP_PROC_NAME(t1, op, t2)(ivm_vmstate_t *__state__,   \
+														   ivm_coro_t *__coro__,       \
 														   ivm_object_t *__op1__,      \
 														   ivm_object_t *__op2__,      \
 														   ivm_object_t *__assign__)   \
 	__VA_ARGS__
 
 #define _STATE (__state__)
+#define _CORO (__coro__)
 #define _OP1 (__op1__)
 #define _OP2 (__op2__)
 #define _ASSIGN (__assign__)

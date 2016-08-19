@@ -63,8 +63,9 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_ILLEGAL_GID_TYPE(type)			"illegal group id with type <%s>", (type)
 #define IVM_ERROR_MSG_GROUP_ID_OVERFLOW					("group id overflow")
 #define IVM_ERROR_MSG_WRONG_NATIVE_ARG_RULE(c)			"unrecognized argument rule %c", (c)
-#define IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK				"repeated optional mark in argument rule"
-#define IVM_ERROR_MSG_ILLEGAL_STEP						"illegal step"
+#define IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK				("repeated optional mark in argument rule")
+#define IVM_ERROR_MSG_ILLEGAL_STEP						("illegal step")
+#define IVM_ERROR_MSG_STRING_IDX_EXCEED(i, size)		"string index exceeded(index %ld is too large for the string of size %ld)", (i), (size)
 
 IVM_COM_END
 

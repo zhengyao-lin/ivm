@@ -5,6 +5,8 @@
 #include "pub/const.h"
 #include "pub/type.h"
 
+#include "std/list.h"
+
 #include "obj.h"
 
 IVM_COM_HEADER
@@ -43,19 +45,7 @@ ivm_long_t
 ivm_list_object_realIndex(ivm_list_object_t *list,
 						  ivm_long_t i)
 {
-	if (!list->size) {
-		return i < 0 ? 0 : i;
-	}
-
-	if (i < 0) {
-		i = -i % list->size;
-
-		if (i) {
-			i = list->size - i;
-		}
-	}
-
-	return i;
+	return ivm_list_realIndex(list->size, i);
 }
 
 IVM_INLINE
