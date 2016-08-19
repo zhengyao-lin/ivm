@@ -1,3 +1,5 @@
+#include <setjmp.h>
+
 #include "util/opt.h"
 
 #include "priv.h"
@@ -54,6 +56,11 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	ilang_gen_env_t env = { str_pool, ret, top_level, -1, IVM_NULL, IVM_NULL, IVM_NULL };
 
 	ivm_exec_unit_registerExec(ret, top_level);
+
+	if (setjmp(env.err_handle)) {
+		ivm_exec_unit_free(ret);
+		return IVM_NULL;
+	}
 
 	unit->top_level->eval(
 		unit->top_level,

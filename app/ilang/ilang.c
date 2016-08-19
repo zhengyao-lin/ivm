@@ -190,11 +190,14 @@ int main(int argc, const char **argv)
 
 	PROF_START();
 	exec_unit = ilang_gen_generateExecUnit(unit);
-	if (cfg_debug)
-		ivm_dbg_printExecUnit(exec_unit, stderr);
 	PROF_END();
 
+	if (!exec_unit) goto CLEAN;
+	if (cfg_debug)
+		ivm_dbg_printExecUnit(exec_unit, stderr);
+
 	ilang_gen_trans_unit_free(unit);
+	unit = IVM_NULL;
 
 	if (output_cache) {
 		s_unit = ivm_serial_serializeExecUnit(exec_unit, IVM_NULL);
@@ -227,6 +230,7 @@ int main(int argc, const char **argv)
 	}
 
 CLEAN:
+	ilang_gen_trans_unit_free(unit);
 	MEM_FREE(src);
 	ivm_file_free(src_file);
 	ivm_file_free(output_cache);

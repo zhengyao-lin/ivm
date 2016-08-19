@@ -93,6 +93,29 @@ gid = group: {
 yield a to gid
 */
 
+printl = fn list: {
+	loc size = list.size()
+	loc i = 0
+
+	print("*** list ***")
+
+	while i < size: {
+		print(list[i])
+		i = i + 1
+	}
+
+	print("*** end ***")
+}
+
+varg = fn a, va..., c: {
+	print(a)
+	printl(va)
+	print(va[0])
+	print(c)
+}
+
+varg(1, 2, 3, 4)
+
 print("hi " + 100000000000000000000000000000000001)
 print(100000000000000000000000000000000001 + " wow")
 
@@ -131,6 +154,8 @@ b = { proto: a }
 b + 1
 b - 1
 -b
+
+print("hi")
 
 b = fn: (
 	n = clone 10,

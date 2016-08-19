@@ -1,6 +1,8 @@
 #ifndef _IVM_APP_ILANG_GEN_PRIV_H_
 #define _IVM_APP_ILANG_GEN_PRIV_H_
 
+#include <setjmp.h>
+
 #include "pub/type.h"
 #include "pub/com.h"
 #include "pub/vm.h"
@@ -19,7 +21,8 @@
 	IVM_TRACE("ilang generator error: at line %zd pos %zd: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n"); \
-	IVM_EXIT(1);
+	longjmp(env->err_handle, 1);
+	// IVM_EXIT(1);
 
 #define GEN_WARN(p, ...) \
 	IVM_TRACE("ilang generator warning: at line %zd pos %zd: ", (p).line, (p).pos); \
@@ -34,6 +37,7 @@
 #define GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(type)						"unsupported compare type type %d", (type)
 #define GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP						"using break/cont outside a loop"
 #define GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG						"ignore break/cont argument"
+#define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list"
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -46,9 +50,12 @@
 		GEN_ERR((expr)->pos, GEN_ERR_MSG_CANNOT_ASSIGN_TO(name)); \
 	}
 
-#define GEN_WARN_NO_NESTED_RET(expr, flag) \
+#define GEN_ASSERT_NO_NESTED_RET(expr, flag) \
 	if (!(flag).is_top_level) { \
 		GEN_WARN((expr)->pos, GEN_ERR_MSG_NESTED_RET); \
 	}
+
+#define GEN_ERR_MULTIPLE_VARG(expr) \
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_MULTIPLE_VARG);
 
 #endif

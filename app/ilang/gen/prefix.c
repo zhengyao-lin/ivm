@@ -14,6 +14,8 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_param_list_t *params;
 	ilang_gen_param_list_iterator_t piter;
 	ivm_char_t *tmp_str;
+	ivm_bool_t has_varg = IVM_FALSE;
+	ivm_int_t arg_count;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
@@ -30,11 +32,27 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 		 */
 		params = func->params;
 		if (params) {
+			arg_count = 0;
 			ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
+				arg_count++;
+
 				tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
-				tmp_str = ivm_parser_parseStr(tmp_param->val, tmp_param->len);
-				ivm_exec_addInstr(exec, SET_ARG, tmp_str);
-				MEM_FREE(tmp_str);
+				tmp_str = ivm_parser_parseStr(tmp_param->name.val, tmp_param->name.len);
+				
+				if (tmp_param->is_varg) {
+					if (has_varg) {
+						GEN_ERR_MULTIPLE_VARG(expr);
+					}
+					has_varg = IVM_TRUE;
+					ivm_exec_addInstr(exec, NEW_VARG, ilang_gen_param_list_size(params) - arg_count);
+				}
+
+				if (tmp_str) {
+					ivm_exec_addInstr(exec, SET_ARG, tmp_str);
+					MEM_FREE(tmp_str);
+				} else {
+					ivm_exec_addInstr(exec, SET_ARG, "$varg");
+				}
 			}
 		}
 
@@ -61,7 +79,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_intr_expr_t *intr = IVM_AS(expr, ilang_gen_intr_expr_t);
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "interrupt expression", flag);
-	// GEN_WARN_NO_NESTED_RET(expr, flag)
+	// GEN_ASSERT_NO_NESTED_RET(expr, flag)
 
 	ivm_size_t cur = ivm_exec_cur(env->cur_exec);
 

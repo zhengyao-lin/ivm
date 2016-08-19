@@ -1,6 +1,8 @@
 #ifndef _IVM_APP_ILANG_GEN_GEN_H_
 #define _IVM_APP_ILANG_GEN_GEN_H_
 
+#include <setjmp.h>
+
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
@@ -31,10 +33,13 @@ typedef struct {
 	ivm_string_pool_t *str_pool;
 	ivm_exec_unit_t *unit;
 	ivm_exec_t *cur_exec;
+
 	ivm_size_t continue_addr;
 	ivm_list_t *break_ref;
 	ivm_list_t *end_ref; // instrs that jump to branch end(if/while)
 	ivm_list_t *begin_ref; // instrs that jump to branch body(if/while)
+
+	jmp_buf err_handle;
 } ilang_gen_env_t;
 
 typedef struct {
@@ -367,7 +372,14 @@ COMMON_EXPR(logic_expr, "logic expression", {
 	ret->type = type;
 }, ilang_gen_expr_t *lhe, ilang_gen_expr_t *rhe, ivm_int_t type);
 
-typedef ilang_gen_token_value_t ilang_gen_param_t;
+typedef struct {
+	ilang_gen_token_value_t name;
+	ivm_bool_t is_varg;
+} ilang_gen_param_t;
+
+#define ilang_gen_param_build(varg, n) \
+	((ilang_gen_param_t) { .name = (n), .is_varg = (varg) })
+
 typedef ivm_list_t ilang_gen_param_list_t;
 typedef IVM_LIST_ITER_TYPE(ilang_gen_param_t) ilang_gen_param_list_iterator_t;
 
@@ -383,6 +395,7 @@ ilang_gen_param_list_new(ilang_gen_trans_unit_t *unit)
 }
 
 #define ilang_gen_param_list_push ivm_list_push
+#define ilang_gen_param_list_size ivm_list_size
 
 #define ILANG_GEN_PARAM_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ilang_gen_param_t)
 #define ILANG_GEN_PARAM_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_param_t)

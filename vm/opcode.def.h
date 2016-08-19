@@ -54,8 +54,22 @@ OPCODE_GEN(NEW_LIST, "new_list", I, 1, {
 	CHECK_STACK(_TMP_ARGC);
 
 	_TMP_ARGV = STACK_CUT(_TMP_ARGC);
-	_TMP_OBJ1 = ivm_list_object_new_c(_STATE, _TMP_ARGV, _TMP_ARGC);
-	STACK_PUSH(_TMP_OBJ1);
+	STACK_PUSH(ivm_list_object_new_c(_STATE, _TMP_ARGV, _TMP_ARGC));
+
+	NEXT_INSTR();
+})
+
+/* pack up all elem on the stack except x elems on the bottom */
+OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
+	_TMP_ARGC = AVAIL_STACK - IARG();
+
+	if (_TMP_ARGC > 0) {
+		_TMP_OBJ1 = ivm_list_object_new_c(_STATE, STACK_CUT(_TMP_ARGC), _TMP_ARGC);
+		ivm_list_object_reverse(_TMP_OBJ1);
+		STACK_PUSH(_TMP_OBJ1);
+	} else {
+		STACK_PUSH(ivm_list_object_new(_STATE, 0));
+	}
 
 	NEXT_INSTR();
 })
@@ -890,6 +904,17 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 		NEXT_INSTR();
 	}
 })
+
+/* stack empty => goto the addr */
+/*
+OPCODE_GEN(CHECK, "check", A, -1, {
+	if (AVAIL_STACK) {
+		GOTO_SET_INSTR(ADDR_ARG());
+	} else {
+		NEXT_INSTR();
+	}
+})
+*/
 
 #if 0
 

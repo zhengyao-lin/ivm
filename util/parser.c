@@ -119,11 +119,14 @@ ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len)
 {
-	ivm_char_t *ret = MEM_ALLOC(sizeof(*ret) * (len + 1), ivm_char_t *);
-	ivm_char_t *i = ret;
+	ivm_char_t *ret, *i;
 	const ivm_char_t *end;
 
-	for (end = str + len;
+	if (!str) return IVM_NULL;
+
+	ret = MEM_ALLOC(sizeof(*ret) * (len + 1), ivm_char_t *);
+
+	for (i = ret, end = str + len;
 		 str != end; str++) {
 		if (*str == '\\' &&
 			str + 1 != end) {

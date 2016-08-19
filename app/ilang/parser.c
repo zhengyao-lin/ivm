@@ -48,6 +48,7 @@ enum token_id_t {
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
 	T_COLON,	// :
+	T_ELLIP,	// ...
 	T_DOT,		// .
 	T_AT,		// @
 
@@ -124,6 +125,7 @@ token_name_table[] = {
 	"semicolon",
 	"comma",
 	"colon",
+	"ellipsis",
 	"dot",
 	"at",
 
@@ -184,6 +186,9 @@ enum state_t {
 	ST_TRY_OR,
 	ST_TRY_SHR,
 
+	ST_TRY_DOT,
+	ST_TRY_ELLIP,
+
 	ST_TRY_COMMENT12,
 
 	ST_IN_COMMENT1,
@@ -200,7 +205,6 @@ enum state_t {
 	ST_IN_STR_ESC,
 	
 	ST_IN_NUM_INT,
-	ST_IN_NUM_DOT,
 	ST_IN_NUM_DEC,
 
 	STATE_COUNT,
@@ -217,9 +221,10 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "-az", ST_IN_ID },
 			{ "-AZ", ST_IN_ID },
 			{ "=_", ST_IN_ID },
+			{ "=$", ST_IN_ID },
 
 			{ "-09", ST_IN_NUM_INT },
-			{ "=.", ST_IN_NUM_DOT },
+			{ "=.", ST_TRY_DOT },
 
 			{ "=,", ST_INIT, T_COMMA },
 			{ "=;", ST_INIT, T_SEMIC },
@@ -311,7 +316,19 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* TRY_SHR */
 		{
 			{ "=>", ST_INIT, T_SHLR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_SHAR },
+			{ ".", ST_INIT, T_SHAR }
+		},
+
+		/* TRY_DOT */
+		{
+			{ "-09", ST_IN_NUM_DEC },
+			{ "=.", ST_TRY_ELLIP },
+			{ ".", ST_INIT, T_DOT }
+		},
+
+		/* TRY_ELLIP */
+		{
+			{ "=.", ST_INIT, T_ELLIP, .ext = IVM_TRUE, .exc = IVM_TRUE }
 		},
 
 		/* TRY_COMMENT12 */
@@ -381,12 +398,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ ".", ST_INIT, T_INT }
 		},
 
-		/* IN_NUM_DOT */
-		{
-			{ "-09", ST_IN_NUM_DEC },
-			{ ".", ST_INIT, T_DOT }
-		},
-
 		/* IN_NUM_DEC */
 		{
 			{ "-09", ST_IN_NUM_DEC },
@@ -450,6 +461,7 @@ struct rule_val_t {
 		ilang_gen_expr_list_t *expr_list;
 		ilang_gen_table_entry_t slot;
 		ilang_gen_table_entry_list_t *slot_list;
+		ilang_gen_param_t param;
 		ilang_gen_param_list_t *param_list;
 		ilang_gen_branch_t branch;
 		ilang_gen_branch_list_t *branch_list;
@@ -1627,24 +1639,56 @@ RULE(logic_or_expr)
 RULE(prefix_expr);
 
 /*
+	param
+		: id nllo '...'
+		| id
+		| '...'
+ */
+RULE(param)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ID) R(nllo) T(T_ELLIP)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL(tmp_token));
+		})
+
+		SUB_RULE(T(T_ID)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.param = ilang_gen_param_build(IVM_FALSE, TOKEN_VAL(tmp_token));
+		})
+
+		SUB_RULE(T(T_ELLIP)
+		{
+			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL_EMPTY());
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	param_list_sub
-		: ',' id param_list_sub
+		: ',' nllo param param_list_sub
 		| %empty
  */
 RULE(param_list_sub)
 {
 	ilang_gen_param_list_t *tmp_list;
-	ilang_gen_token_value_t tmp_value;
-	struct token_t *tmp_token;
+	ilang_gen_param_t tmp_value;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(nllo) T(T_ID) R(param_list_sub)
+		SUB_RULE(T(T_COMMA) R(nllo) R(param) R(param_list_sub)
 		{
-			tmp_token = TOKEN_AT(1);
-			tmp_list = _RETVAL.param_list = RULE_RET_AT(1).u.param_list;
-			tmp_value = TOKEN_VAL(tmp_token);
+			tmp_list = _RETVAL.param_list = RULE_RET_AT(2).u.param_list;
+			tmp_value = RULE_RET_AT(1).u.param;
 			ilang_gen_param_list_push(tmp_list, &tmp_value);
 		})
+
 		SUB_RULE({
 			_RETVAL.param_list = ilang_gen_param_list_new(_ENV->unit);
 		})
@@ -1656,21 +1700,19 @@ RULE(param_list_sub)
 
 /*
 	param_list_opt
-		: id param_list_sub
+		: param param_list_sub
 		| %empty
  */
 RULE(param_list_opt)
 {
 	ilang_gen_param_list_t *tmp_list;
-	ilang_gen_token_value_t tmp_value;
-	struct token_t *tmp_token;
+	ilang_gen_param_t tmp_value;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_ID) R(param_list_sub)
+		SUB_RULE(R(param) R(param_list_sub)
 		{
-			tmp_token = TOKEN_AT(0);
-			tmp_list = _RETVAL.param_list = RULE_RET_AT(0).u.param_list;
-			tmp_value = TOKEN_VAL(tmp_token);
+			tmp_list = _RETVAL.param_list = RULE_RET_AT(1).u.param_list;
+			tmp_value = RULE_RET_AT(0).u.param;
 			ilang_gen_param_list_push(tmp_list, &tmp_value);
 		})
 		SUB_RULE({
