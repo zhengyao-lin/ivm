@@ -29,18 +29,72 @@ typedef struct {
 #define ilang_gen_token_value_isEmpty(t) (!(t).val)
 #define ilang_gen_token_value_build(val, len) ((ilang_gen_token_value_t) { (val), (len) })
 
+typedef ivm_list_t ilang_gen_addr_list_t;
+typedef IVM_LIST_ITER_TYPE(ivm_size_t) ilang_gen_addr_list_iterator_t;
+
 typedef struct {
 	ivm_string_pool_t *str_pool;
 	ivm_exec_unit_t *unit;
 	ivm_exec_t *cur_exec;
+	jmp_buf err_handle;
 
 	ivm_size_t continue_addr;
-	ivm_list_t *break_ref;
-	ivm_list_t *end_ref; // instrs that jump to branch end(if/while)
-	ivm_list_t *begin_ref; // instrs that jump to branch body(if/while)
+	ilang_gen_addr_list_t *break_ref;
+	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
+	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
 
-	jmp_buf err_handle;
+	ivm_ptlist_t *list_log;
+	ivm_heap_t *heap;
 } ilang_gen_env_t;
+
+void
+ilang_gen_env_init(ilang_gen_env_t *env,
+				   ivm_string_pool_t *str_pool,
+				   ivm_exec_unit_t *unit,
+				   ivm_exec_t *cur_exec);
+
+IVM_INLINE
+void
+ilang_gen_env_dump(ilang_gen_env_t *env)
+{
+	IVM_PTLIST_ITER_TYPE(ivm_list_t *) iter;
+
+	IVM_PTLIST_EACHPTR(env->list_log, iter, ivm_list_t *) {
+		ivm_list_free(IVM_PTLIST_ITER_GET(iter));
+	}
+
+	ivm_ptlist_free(env->list_log);
+	ivm_heap_free(env->heap);
+
+	return;
+}
+
+IVM_INLINE
+ilang_gen_addr_list_t *
+ilang_gen_addr_list_new(ilang_gen_env_t *env)
+{
+	ilang_gen_addr_list_t *ret = ivm_list_new(sizeof(ivm_size_t));
+
+	ivm_ptlist_push(env->list_log, ret);
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_size_t
+ilang_gen_addr_list_push(ilang_gen_addr_list_t *list,
+						 ivm_size_t addr)
+{
+	return ivm_list_push(list, &addr);
+}
+
+#define ilang_gen_addr_list_empty ivm_list_empty
+
+#define ILANG_GEN_ADDR_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_size_t)
+#define ILANG_GEN_ADDR_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ivm_size_t)
+#define ILANG_GEN_ADDR_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ivm_size_t)
+#define ILANG_GEN_ADDR_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_size_t)
+#define ILANG_GEN_ADDR_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ivm_size_t)
 
 typedef struct {
 	ivm_bool_t is_left_val;

@@ -6,6 +6,7 @@
 #include "pub/vm.h"
 
 #include "std/list.h"
+#include "std/heap.h"
 
 IVM_COM_HEADER
 
@@ -18,6 +19,11 @@ ivm_parser_parseNum(const ivm_char_t *src,
 ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len);
+
+ivm_char_t *
+ivm_parser_parseStr_heap(ivm_heap_t *heap,
+						 const ivm_char_t *str,
+						 ivm_size_t len);
 
 /*
  * common parser: define IVM_USE_COMMON_PARSER to use(it MUST NOT be used in header file)

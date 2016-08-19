@@ -85,14 +85,13 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "string expression", flag);
 
 	if (!flag.is_top_level) {
-		tmp_str = ivm_parser_parseStr(
+		tmp_str = ivm_parser_parseStr_heap(
+			env->heap,
 			str_expr->val.val,
 			str_expr->val.len
 		);
 
 		ivm_exec_addInstr(env->cur_exec, NEW_STR, tmp_str);
-
-		MEM_FREE(tmp_str);
 	}
 
 	return NORET();
@@ -107,7 +106,8 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	ilang_gen_value_t ret = NORET();
 
-	tmp_str = ivm_parser_parseStr(
+	tmp_str = ivm_parser_parseStr_heap(
+		env->heap,
 		id_expr->val.val,
 		id_expr->val.len
 	);
@@ -140,8 +140,6 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		ivm_exec_addInstr(env->cur_exec, GET_CONTEXT_SLOT, tmp_str))
 
 #undef ID_GEN
-
-	MEM_FREE(tmp_str);
 
 	return ret;
 }
@@ -182,7 +180,8 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 		if (tmp_entry.oop != -1) {
 			ivm_exec_addInstr(env->cur_exec, SET_OOP_B, tmp_entry.oop);
 		} else {
-			tmp_str = ivm_parser_parseStr(
+			tmp_str = ivm_parser_parseStr_heap(
+				env->heap,
 				tmp_entry.name.val,
 				tmp_entry.name.len
 			);
@@ -194,8 +193,6 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 			} else {
 				ivm_exec_addInstr(env->cur_exec, SET_SLOT_B, tmp_str);
 			}
-
-			MEM_FREE(tmp_str);
 		}
 	}
 

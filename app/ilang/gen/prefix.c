@@ -19,53 +19,52 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
-	if (!flag.is_top_level) {
-		exec = ivm_exec_new(env->str_pool);
-		exec_id = ivm_exec_unit_registerExec(env->unit, exec);
-		exec_backup = env->cur_exec;
-		env->cur_exec = exec;
+	exec = ivm_exec_new(env->str_pool);
+	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
+	exec_backup = env->cur_exec;
+	env->cur_exec = exec;
 
-		/*
-			ink calling convention:
-				1. first argument, top of the stack
-				2. last argument, bottom of the stack
-		 */
-		params = func->params;
-		if (params) {
-			arg_count = 0;
-			ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
-				arg_count++;
+	/*
+		ink calling convention:
+			1. first argument, top of the stack
+			2. last argument, bottom of the stack
+	 */
+	params = func->params;
+	if (params) {
+		arg_count = 0;
+		ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
+			arg_count++;
 
-				tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
-				tmp_str = ivm_parser_parseStr(tmp_param->name.val, tmp_param->name.len);
-				
-				if (tmp_param->is_varg) {
-					if (has_varg) {
-						GEN_ERR_MULTIPLE_VARG(expr);
-					}
-					has_varg = IVM_TRUE;
-					ivm_exec_addInstr(exec, NEW_VARG, ilang_gen_param_list_size(params) - arg_count);
+			tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
+			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param->name.val, tmp_param->name.len);
+			
+			if (tmp_param->is_varg) {
+				if (has_varg) {
+					GEN_ERR_MULTIPLE_VARG(expr);
 				}
+				has_varg = IVM_TRUE;
+				ivm_exec_addInstr(exec, NEW_VARG, ilang_gen_param_list_size(params) - arg_count);
+			}
 
-				if (tmp_str) {
-					ivm_exec_addInstr(exec, SET_ARG, tmp_str);
-					MEM_FREE(tmp_str);
-				} else {
-					ivm_exec_addInstr(exec, SET_ARG, "$varg");
-				}
+			if (tmp_str) {
+				ivm_exec_addInstr(exec, SET_ARG, tmp_str);
+			} else {
+				ivm_exec_addInstr(exec, SET_ARG, "$varg");
 			}
 		}
+	}
 
-		func->body->eval(
-			func->body,
-			FLAG(0), // function body is not top-level(need last value)
-			env
-		);
+	func->body->eval(
+		func->body,
+		FLAG(0), // function body is not top-level(need last value)
+		env
+	);
 
-		env->cur_exec = exec_backup;
+	env->cur_exec = exec_backup;
+	ivm_opt_optExec(exec);
+
+	if (!flag.is_top_level) {
 		ivm_exec_addInstr(env->cur_exec, NEW_FUNC, exec_id);
-
-		ivm_opt_optExec(exec);
 	}
 
 	return NORET();
@@ -81,8 +80,6 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "interrupt expression", flag);
 	// GEN_ASSERT_NO_NESTED_RET(expr, flag)
 
-	ivm_size_t cur = ivm_exec_cur(env->cur_exec);
-
 	switch (intr->sig) {
 		case ILANG_GEN_INTR_RET:
 			if (intr->val) {
@@ -92,32 +89,36 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			}
 			ivm_exec_addInstr(env->cur_exec, RETURN);
 			break;
+
 		case ILANG_GEN_INTR_CONT:
 			if (env->continue_addr != -1) {
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
-				ivm_exec_addInstr(env->cur_exec, JUMP, env->continue_addr - cur);
+				ivm_exec_addInstr(env->cur_exec, JUMP, env->continue_addr - ivm_exec_cur(env->cur_exec));
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
 			break;
+
 		case ILANG_GEN_INTR_BREAK:
 			if (env->break_ref) {
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
 				ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-				ivm_list_push(env->break_ref, &cur);
+				ilang_gen_addr_list_push(env->break_ref, ivm_exec_cur(env->cur_exec));
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
 			break;
+	
 		case ILANG_GEN_INTR_RAISE:
 			IVM_ASSERT(intr->val, "impossible");
 			intr->val->eval(intr->val, FLAG(0), env);
 			ivm_exec_addInstr(env->cur_exec, RAISE);
 			break;
+
 		case ILANG_GEN_INTR_YIELD:
 			if (intr->val) {
 				intr->val->eval(intr->val, FLAG(0), env);
@@ -134,6 +135,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr(env->cur_exec, POP);
 			}
 			break;
+
 		default:
 			IVM_FATAL("unsupported interrupt signal");
 	}

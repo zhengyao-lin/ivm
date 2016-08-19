@@ -115,18 +115,17 @@ ivm_parser_parseNum(const ivm_char_t *src,
 	return ret * sign;
 }
 
-ivm_char_t *
-ivm_parser_parseStr(const ivm_char_t *str,
-					ivm_size_t len)
+IVM_PRIVATE
+IVM_INLINE
+void
+ivm_parser_parseStr_c(ivm_char_t *buf,
+					  const ivm_char_t *str,
+					  ivm_size_t len)
 {
-	ivm_char_t *ret, *i;
+	ivm_char_t *i;
 	const ivm_char_t *end;
 
-	if (!str) return IVM_NULL;
-
-	ret = MEM_ALLOC(sizeof(*ret) * (len + 1), ivm_char_t *);
-
-	for (i = ret, end = str + len;
+	for (i = buf, end = str + len;
 		 str != end; str++) {
 		if (*str == '\\' &&
 			str + 1 != end) {
@@ -151,5 +150,30 @@ ivm_parser_parseStr(const ivm_char_t *str,
 
 	*i = '\0';
 
-	return ret;
+	return;
+}
+
+ivm_char_t *
+ivm_parser_parseStr(const ivm_char_t *str,
+					ivm_size_t len)
+{
+	ivm_char_t *buf = MEM_ALLOC(sizeof(*buf) * (len + 1), ivm_char_t *);
+
+	IVM_ASSERT(buf, IVM_ERROR_MSG_FAILED_ALLOC_NEW("parsed string"));
+
+	ivm_parser_parseStr_c(buf, str, len);
+
+	return buf;
+}
+
+ivm_char_t *
+ivm_parser_parseStr_heap(ivm_heap_t *heap,
+						 const ivm_char_t *str,
+						 ivm_size_t len)
+{
+	ivm_char_t *buf = ivm_heap_alloc(heap, sizeof(*buf) * (len + 1));
+
+	ivm_parser_parseStr_c(buf, str, len);
+
+	return buf;
 }

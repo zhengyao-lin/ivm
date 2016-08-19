@@ -27,11 +27,12 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	
 	ilang_gen_expr_t *lhe, *rhe;
 	ivm_size_t addr1, cur;
-	ivm_list_t *begin_ref;
-	ivm_list_t *end_ref_back, *begin_ref_back;
 	ilang_gen_value_t tmp_ret;
 	ilang_gen_value_t ret = NORET();
-	IVM_LIST_ITER_TYPE(ivm_size_t) iter;
+
+	ilang_gen_addr_list_iterator_t iter;
+	ilang_gen_addr_list_t *begin_ref;
+	ilang_gen_addr_list_t *end_ref_back, *begin_ref_back;
 
 	lhe = logic_expr->lhe;
 	rhe = logic_expr->rhe;
@@ -46,7 +47,7 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ret.use_branch = IVM_TRUE;
 		
 		// rewrite begin ref
-		env->begin_ref = begin_ref = ivm_list_new(sizeof(ivm_size_t));
+		env->begin_ref = begin_ref = ilang_gen_addr_list_new(env);
 
 		// lhe
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
@@ -59,19 +60,19 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 			} */
 			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
 
-			ivm_list_push(env->end_ref, &addr1); // add end ref
+			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
 		}
 
 		// all begin ref redirected to rhe gen
 		cur = ivm_exec_cur(env->cur_exec);
 		{
-			IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
+			ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
+				addr1 = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
 			}
 		}
 
-		ivm_list_free(begin_ref);
+		// ivm_list_free(begin_ref);
 
 		// replace the current begin ref with the original one(parent expr)
 		env->begin_ref = begin_ref_back;
@@ -86,13 +87,13 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 			} */
 			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
 
-			ivm_list_push(env->end_ref, &addr1); // add end ref
+			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
 		}
 
 		// the two expression all true
 		// jump to branch body
 		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-		ivm_list_push(env->begin_ref, &addr1); // add begin ref
+		ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 	} else {
 		// value version
 
@@ -145,10 +146,11 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	ilang_gen_expr_t *lhe, *rhe;
 	ivm_size_t addr1, cur;
 	ivm_list_t *end_ref;
-	ivm_list_t *end_ref_back, *begin_ref_back;
 	ilang_gen_value_t tmp_ret;
 	ilang_gen_value_t ret = NORET();
-	IVM_LIST_ITER_TYPE(ivm_size_t) iter;
+
+	ilang_gen_addr_list_iterator_t iter;
+	ilang_gen_addr_list_t *end_ref_back, *begin_ref_back;
 
 	lhe = logic_expr->lhe;
 	rhe = logic_expr->rhe;
@@ -176,20 +178,20 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 			} */
 			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
 
-			ivm_list_push(env->begin_ref, &addr1); // add begin ref
+			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 		}
 
 		// all end ref redirected to rhe gen
 		cur = ivm_exec_cur(env->cur_exec);
 
 		{
-			IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-				addr1 = IVM_LIST_ITER_GET(iter, ivm_size_t);
+			ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
+				addr1 = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 				ivm_exec_setArgAt(env->cur_exec, addr1, cur - addr1);
 			}
 		}
 
-		ivm_list_free(end_ref);
+		// ivm_list_free(end_ref);
 
 		// replace the current end ref with the original one(parent expr)
 		env->end_ref = end_ref_back;
@@ -204,13 +206,13 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 			} */
 			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
 
-			ivm_list_push(env->begin_ref, &addr1); // add begin ref
+			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 		}
 
 		// the two expression all false
 		// jump to branch body
 		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-		ivm_list_push(env->end_ref, &addr1); // add begin ref
+		ilang_gen_addr_list_push(env->end_ref, addr1); // add begin ref
 	} else {
 		// value version
 

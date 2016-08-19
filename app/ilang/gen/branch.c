@@ -12,9 +12,10 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_branch_list_t *elifs;
 	ilang_gen_branch_list_iterator_t biter;
 	ilang_gen_value_t cond_ret;
-	IVM_LIST_ITER_TYPE(ivm_size_t) iter;
+	ilang_gen_addr_list_iterator_t iter;
 
-	ivm_list_t *begin_ref,
+	ilang_gen_addr_list_t
+			   *begin_ref,
 			   *end_ref,
 			   *begin_ref_back,
 			   *end_ref_back;
@@ -54,8 +55,8 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	end_ref_back = env->end_ref;
 
 	/*************** main branch ***************/
-	end_ref = env->end_ref = ivm_list_new(sizeof(ivm_size_t));
-	begin_ref = env->begin_ref = ivm_list_new(sizeof(ivm_size_t));
+	end_ref = env->end_ref = ilang_gen_addr_list_new(env);
+	begin_ref = env->begin_ref = ilang_gen_addr_list_new(env);
 
 	cond_ret = main_br.cond->eval(
 		main_br.cond,
@@ -67,11 +68,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	if (cond_ret.use_branch) {
 		// redirect all begin ref to the begining of the body
 		cur = ivm_exec_cur(env->cur_exec);
-		IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-			tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+		ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
+			tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 			ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 		}
-		ivm_list_empty(begin_ref);
+		ilang_gen_addr_list_empty(begin_ref);
 	} else {
 #if 0
 		// use vreg to opt
@@ -112,11 +113,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 
 	if (cond_ret.use_branch) {
 		// redirect all end ref to next branch
-		IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-			tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+		ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
+			tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 			ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 		}
-		ivm_list_empty(end_ref);
+		ilang_gen_addr_list_empty(end_ref);
 	} else {
 		// main branch jump to next branch(elif or else)
 		ivm_exec_setArgAt(
@@ -141,11 +142,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		if (cond_ret.use_branch) {
 			// redirect all begin ref to the begining of the body
 			cur = ivm_exec_cur(env->cur_exec);
-			IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-				tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+			ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
+				tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 				ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 			}
-			ivm_list_empty(begin_ref);
+			ilang_gen_addr_list_empty(begin_ref);
 		} else {
 #if 0
 			if (cond_ret.use_cond_reg) {
@@ -178,11 +179,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		cur = ivm_exec_cur(env->cur_exec);
 
 		if (cond_ret.use_branch) {
-			IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-				tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+			ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
+				tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 				ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 			}
-			ivm_list_empty(end_ref);
+			ilang_gen_addr_list_empty(end_ref);
 		} else {
 			ivm_exec_setArgAt(
 				env->cur_exec,
@@ -223,8 +224,6 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		);
 	}
 
-	ivm_list_free(begin_ref);
-	ivm_list_free(end_ref);
 	env->begin_ref = begin_ref_back;
 	env->end_ref = end_ref_back;
 
@@ -241,9 +240,11 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	ivm_size_t cont_addr_back;
 	ivm_list_t *break_ref_back, *break_ref;
 	ilang_gen_value_t cond_ret;
-	IVM_LIST_ITER_TYPE(ivm_size_t) riter;
-	IVM_LIST_ITER_TYPE(ivm_size_t) iter;
-	ivm_list_t *begin_ref,
+
+	ilang_gen_addr_list_iterator_t riter;
+	ilang_gen_addr_list_iterator_t iter;
+	ilang_gen_addr_list_t
+			   *begin_ref,
 			   *end_ref,
 			   *begin_ref_back,
 			   *end_ref_back;
@@ -268,10 +269,10 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 
 	// reset break/continue/end/begin ref list
 	env->continue_addr = start_addr = ivm_exec_cur(env->cur_exec);
-	break_ref = env->break_ref = ivm_list_new(sizeof(ivm_size_t));
+	break_ref = env->break_ref = ilang_gen_addr_list_new(env);
 
-	end_ref = env->end_ref = ivm_list_new(sizeof(ivm_size_t));
-	begin_ref = env->begin_ref = ivm_list_new(sizeof(ivm_size_t));
+	end_ref = env->end_ref = ilang_gen_addr_list_new(env);
+	begin_ref = env->begin_ref = ilang_gen_addr_list_new(env);
 
 	// condition
 	cond_ret = while_expr->cond->eval(
@@ -284,11 +285,11 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	if (cond_ret.use_branch) {
 		// redirect all begin ref to the begining of the body
 		cur = ivm_exec_cur(env->cur_exec);
-		IVM_LIST_EACHPTR(begin_ref, iter, ivm_size_t) {
-			tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+		ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
+			tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 			ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 		}
-		ivm_list_empty(begin_ref);
+		ilang_gen_addr_list_empty(begin_ref);
 	} else {
 #if 0
 		if (cond_ret.use_cond_reg) {
@@ -322,19 +323,19 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	cur = ivm_exec_cur(env->cur_exec);
 
 	if (cond_ret.use_branch) {
-		IVM_LIST_EACHPTR(end_ref, iter, ivm_size_t) {
-			tmp_addr = IVM_LIST_ITER_GET(iter, ivm_size_t);
+		ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
+			tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
 			ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 		}
-		ivm_list_empty(end_ref);
+		ilang_gen_addr_list_empty(end_ref);
 	} else {
 		ivm_exec_setArgAt(env->cur_exec, main_jmp,
 						  cur - main_jmp);
 	}
 
 	/* reset all break jump addresses */
-	IVM_LIST_EACHPTR(break_ref, riter, ivm_size_t) {
-		tmp_addr = IVM_LIST_ITER_GET(riter, ivm_size_t);
+	ILANG_GEN_ADDR_LIST_EACHPTR(break_ref, riter) {
+		tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(riter);
 		ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 	}
 
@@ -343,12 +344,12 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
 	}
 
-	ivm_list_free(break_ref);
+	// ivm_list_free(break_ref);
 	env->continue_addr = cont_addr_back;
 	env->break_ref = break_ref_back;
 
-	ivm_list_free(begin_ref);
-	ivm_list_free(end_ref);
+	// ivm_list_free(begin_ref);
+	// ivm_list_free(end_ref);
 	env->begin_ref = begin_ref_back;
 	env->end_ref = end_ref_back;
 
@@ -388,9 +389,8 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	/* catch body */
 	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 	if (!ilang_gen_token_value_isEmpty(try_expr->catch_body.arg)) {
-		tmp_str = ivm_parser_parseStr(try_expr->catch_body.arg.val, try_expr->catch_body.arg.len);
+		tmp_str = ivm_parser_parseStr_heap(env->heap, try_expr->catch_body.arg.val, try_expr->catch_body.arg.len);
 		ivm_exec_addInstr(env->cur_exec, SET_ARG, tmp_str);
-		MEM_FREE(tmp_str);
 	} else {
 		ivm_exec_addInstr(env->cur_exec, POP);
 	}

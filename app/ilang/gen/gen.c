@@ -4,6 +4,33 @@
 
 #include "priv.h"
 
+void
+ilang_gen_env_init(ilang_gen_env_t *env,
+				   ivm_string_pool_t *str_pool,
+				   ivm_exec_unit_t *unit,
+				   ivm_exec_t *cur_exec)
+{
+	*env = (ilang_gen_env_t) {
+		.str_pool = str_pool,
+		.unit = unit,
+		.cur_exec = cur_exec,
+
+		.continue_addr = -1,
+		.break_ref = IVM_NULL,
+		.end_ref = IVM_NULL,
+		.begin_ref = IVM_NULL,
+
+		.list_log = ivm_ptlist_new(),
+		.heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE)
+	};
+
+	if (setjmp(env->err_handle)) {
+		IVM_FATAL("impossible");
+	}
+
+	return;
+}
+
 ilang_gen_value_t
 ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 						  ilang_gen_flag_t flag,
@@ -53,11 +80,15 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	ivm_string_pool_t *str_pool = ivm_string_pool_new(IVM_TRUE);
 	ivm_exec_unit_t *ret = ivm_exec_unit_new(0, ivm_exec_list_new());
 	ivm_exec_t *top_level = ivm_exec_new(str_pool);
-	ilang_gen_env_t env = { str_pool, ret, top_level, -1, IVM_NULL, IVM_NULL, IVM_NULL };
+
+	ilang_gen_env_t env;
 
 	ivm_exec_unit_registerExec(ret, top_level);
 
+	ilang_gen_env_init(&env, str_pool, ret, top_level);
+
 	if (setjmp(env.err_handle)) {
+		ilang_gen_env_dump(&env);
 		ivm_exec_unit_free(ret);
 		return IVM_NULL;
 	}
@@ -68,6 +99,8 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 	);
 
 	ivm_opt_optExec(top_level);
+
+	ilang_gen_env_dump(&env);
 
 	return ret;
 }

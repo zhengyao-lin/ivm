@@ -56,7 +56,8 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ivm_bool_t is_proto;
 	ilang_gen_value_t tmp_ret;
 
-	tmp_str = ivm_parser_parseStr(
+	tmp_str = ivm_parser_parseStr_heap(
+		env->heap,
 		slot_expr->slot.val,
 		slot_expr->slot.len
 	);
@@ -121,8 +122,6 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			ivm_exec_addInstr(env->cur_exec, POP);
 		}
 	} // else neither left value nor top level: don't generate
-
-	MEM_FREE(tmp_str);
 
 	return ret;
 }
