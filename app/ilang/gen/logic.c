@@ -165,7 +165,7 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ret.use_branch = IVM_TRUE;
 		
 		// rewrite end ref
-		env->end_ref = end_ref = ivm_list_new(sizeof(ivm_size_t));
+		env->end_ref = end_ref = ilang_gen_addr_list_new(env);
 
 		// lhe
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);

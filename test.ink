@@ -93,8 +93,6 @@ gid = group: {
 yield a to gid
 */
 
-while 0: fn a, va..., ..., c:0
-
 printl = fn list: {
 	loc size = list.size()
 	loc i = 0

@@ -80,6 +80,8 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "interrupt expression", flag);
 	// GEN_ASSERT_NO_NESTED_RET(expr, flag)
 
+	ivm_size_t cur = ivm_exec_cur(env->cur_exec);
+
 	switch (intr->sig) {
 		case ILANG_GEN_INTR_RET:
 			if (intr->val) {
@@ -95,7 +97,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
-				ivm_exec_addInstr(env->cur_exec, JUMP, env->continue_addr - ivm_exec_cur(env->cur_exec));
+				ivm_exec_addInstr(env->cur_exec, JUMP, env->continue_addr - cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
@@ -107,7 +109,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
 				ivm_exec_addInstr(env->cur_exec, JUMP, 0);
-				ilang_gen_addr_list_push(env->break_ref, ivm_exec_cur(env->cur_exec));
+				ilang_gen_addr_list_push(env->break_ref, cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}

@@ -57,6 +57,20 @@ _is_jump(ivm_opt_instr_t *instr)
 	return ivm_opcode_table_isJump(instr->opc);
 }
 
+IVM_INLINE
+ivm_bool_t
+_has_loop(ivm_opt_instr_t *instr)
+{
+	ivm_opt_instr_t *tmp = instr->jmpto;
+
+	while (tmp) {
+		if (tmp == instr) return IVM_TRUE;
+		tmp = tmp->jmpto;
+	}
+
+	return IVM_FALSE;
+}
+
 ivm_opt_il_t *
 ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 {
@@ -184,7 +198,7 @@ _is_same_cond_jump(ivm_opt_instr_t *from,
 {
 	// to is no-cond jump
 	// or
-	// from = to = (jump_false_n or jump_true_b)
+	// from = to = (jump_false_n or jump_true_n)
 	return to->opc == IVM_OPCODE(JUMP) ||
 		   (from->opc == to->opc && (from->opc == IVM_OPCODE(JUMP_TRUE_N) ||
 									 from->opc == IVM_OPCODE(JUMP_FALSE_N)));
@@ -221,7 +235,8 @@ _ivm_opt_jumpReduce(ivm_opt_il_t *il)
 			// addr1: jump addr2
 			for (tmp = cur->jmpto;
 				 tmp->jmpto && _is_same_cond_jump(cur, tmp);
-				 tmp = tmp->jmpto) ;
+				 tmp = tmp->jmpto)
+				if (tmp == cur) break; // loop
 
 			if (tmp != cur->jmpto) {
 				ivm_ptlist_findAndRemove(cur->jmpto->refs, cur);
