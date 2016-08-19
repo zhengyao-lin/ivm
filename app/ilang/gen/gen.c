@@ -75,11 +75,14 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 }
 
 ivm_exec_unit_t *
-ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
+ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
+							 ivm_size_t offset)
 {
 	ivm_string_pool_t *str_pool = ivm_string_pool_new(IVM_TRUE);
 	ivm_exec_unit_t *ret = ivm_exec_unit_new(0, ivm_exec_list_new());
 	ivm_exec_t *top_level = ivm_exec_new(str_pool);
+
+	ivm_exec_unit_setOffset(ret, offset);
 
 	ilang_gen_env_t env;
 
@@ -95,7 +98,7 @@ ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 
 	unit->top_level->eval(
 		unit->top_level,
-		FLAG(.is_top_level = IVM_TRUE), &env
+		FLAG(0), &env
 	);
 
 	ivm_opt_optExec(top_level);

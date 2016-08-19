@@ -39,7 +39,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_BAD_OPCODE_TABLE					("bad opcode table")
 #define IVM_ERROR_MSG_BAD_OPCODE						("bad opcode")
 #define IVM_ERROR_MSG_RESET_CORO_ROOT					("cannot reset root of sleeping coroutine")
-#define IVM_ERROR_MSG_INSUFFICIENT_STACK(req, left)		"insufficient stack(require at least %d element(s), %zd left in stack)", (ivm_int_t)(req), (left)
+#define IVM_ERROR_MSG_INSUFFICIENT_STACK(req, left)		"insufficient stack(require at least %d element(s), %ld left in stack)", (ivm_int_t)(req), (left)
 #define IVM_ERROR_MSG_BYTE_NOT_EQUAL_TO_CHAR			("size of byte is not equal to char")
 #define IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size)			"illegal alloc size %ld", (size)
 #define IVM_ERROR_MSG_NOT_TYPE(t1, t2)					"expecting type <" t1 "> instead of <%s>", (t2)
@@ -66,6 +66,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK				("repeated optional mark in argument rule")
 #define IVM_ERROR_MSG_ILLEGAL_STEP						("illegal step")
 #define IVM_ERROR_MSG_STRING_IDX_EXCEED(i, size)		"string index exceeded(index %ld is too large for the string of size %ld)", (i), (size)
+#define IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(ofs, exp)	"mismatched link offset(the actual offset is %ld while expecting %ld)", (ofs), (exp)
 
 IVM_COM_END
 

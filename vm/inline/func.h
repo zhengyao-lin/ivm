@@ -103,6 +103,20 @@ ivm_function_invokeBase(const ivm_function_t *func,
 
 IVM_INLINE
 ivm_bool_t // is native
+ivm_function_invoke_r(const ivm_function_t *func,
+					  ivm_vmstate_t *state,
+					  ivm_coro_t *coro,
+					  ivm_ctchain_t *context)
+{
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+
+	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
+
+	return _ivm_function_invoke_c(func, state, context, runtime);
+}
+
+IVM_INLINE
+ivm_bool_t // is native
 ivm_function_object_invoke(ivm_function_object_t *obj,
 						   ivm_vmstate_t *state,
 						   ivm_coro_t *coro)

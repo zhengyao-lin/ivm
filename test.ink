@@ -93,6 +93,12 @@ gid = group: {
 yield a to gid
 */
 
+eval("print(\"from eval\")")
+print(eval("a"))
+print(eval("fn...,...:0"))
+
+print(eval("a = fn n: n < 2 && 1 || a(n - 1) + a(n - 2)")(10))
+
 printl = fn list: {
 	loc size = list.size()
 	loc i = 0

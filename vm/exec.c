@@ -239,6 +239,7 @@ ivm_exec_unit_new(ivm_size_t root,
 
 	ret->root = root;
 	ret->execs = execs;
+	ret->offset = 0;
 
 	return ret;
 }
@@ -254,14 +255,21 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit)
 	return;
 }
 
-ivm_vmstate_t *
-ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
+ivm_function_t * /* root function */
+ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
+						ivm_vmstate_t *state)
 {
-	ivm_vmstate_t *state = ivm_vmstate_new();
 	ivm_function_t *func, *root = IVM_NULL;
 	ivm_exec_t *exec;
 	ivm_exec_list_iterator_t eiter;
 	ivm_size_t i = 0;
+
+	IVM_ASSERT(
+		unit->offset == ivm_vmstate_getLinkOffset(state),
+		IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(
+			ivm_vmstate_getLinkOffset(state), unit->offset
+		)
+	);
 
 	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
 		exec = IVM_EXEC_LIST_ITER_GET(eiter);
@@ -275,6 +283,15 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 
 		// ivm_exec_preproc(exec, state);
 	}
+
+	return root;
+}
+
+ivm_vmstate_t *
+ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
+{
+	ivm_vmstate_t *state = ivm_vmstate_new();
+	ivm_function_t *root = ivm_exec_unit_mergeToVM(unit, state);
 
 	if (root) {
 		ivm_vmstate_addCoro(

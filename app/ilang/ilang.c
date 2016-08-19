@@ -60,6 +60,41 @@ IVM_NATIVE_FUNC(call)
 	return ivm_coro_resume(coro, NAT_STATE(), IVM_NULL);
 }
 
+IVM_NATIVE_FUNC(eval)
+{
+	const ivm_string_t *str;
+	ilang_gen_trans_unit_t *unit = IVM_NULL;
+	ivm_exec_unit_t *exec_unit = IVM_NULL;
+	ivm_function_t *root;
+	ivm_object_t *ret = IVM_NULL;
+
+	MATCH_ARG("s", &str);
+
+	unit = ilang_parser_parseSource(ivm_string_trimHead(str), IVM_FALSE);
+
+	if (!unit) goto FAILED;
+
+	exec_unit = ilang_gen_generateExecUnit_c(unit, ivm_vmstate_getLinkOffset(NAT_STATE()));
+
+	if (!exec_unit) goto FAILED;
+	// ivm_dbg_printExecUnit(exec_unit, stderr);
+
+	root = ivm_exec_unit_mergeToVM(exec_unit, NAT_STATE());
+	ilang_gen_trans_unit_free(unit); unit = IVM_NULL;
+	ivm_exec_unit_free(exec_unit); exec_unit = IVM_NULL;
+
+	ivm_function_invoke_r(root, NAT_STATE(), NAT_CORO(), NAT_CONTEXT());
+	ret = ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
+
+	IVM_TRACE("return! %s\n", ret->type->name);
+
+FAILED:
+	ilang_gen_trans_unit_free(unit);
+	ivm_exec_unit_free(exec_unit);
+
+	return ret ? ret : IVM_NULL_OBJ(NAT_STATE());
+}
+
 ivm_list_t *
 _ilang_parser_getTokens(const ivm_char_t *src);
 
@@ -216,6 +251,7 @@ int main(int argc, const char **argv)
 
 		ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
 		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));
+		ivm_context_setSlot_r(ctx, state, "eval", IVM_NATIVE_WRAP(state, eval));
 		ivm_context_setSlot_r(ctx, state, "null", IVM_NULL_OBJ(state));
 		ivm_context_setSlot_r(ctx, state, "undefined", IVM_UNDEFINED(state));
 

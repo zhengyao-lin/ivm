@@ -16,6 +16,7 @@
 IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
+struct ivm_function_t_tag;
 
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
@@ -149,6 +150,7 @@ ivm_exec_list_empty(ivm_exec_list_t *list)
 
 typedef struct {
 	ivm_size_t root;
+	ivm_size_t offset;
 	ivm_exec_list_t *execs;
 } ivm_exec_unit_t;
 
@@ -161,9 +163,21 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit);
 
 #define ivm_exec_unit_execList(unit) ((unit)->execs)
 #define ivm_exec_unit_root(unit) ((unit)->root)
+#define ivm_exec_unit_offset(unit) ((unit)->offset)
 
-#define ivm_exec_unit_registerExec(unit, exec) \
-	(ivm_exec_list_push((unit)->execs, (exec)))
+#define ivm_exec_unit_setOffset(unit, ofs) ((unit)->offset = (ofs))
+
+IVM_INLINE
+ivm_size_t
+ivm_exec_unit_registerExec(ivm_exec_unit_t *unit,
+						   ivm_exec_t *exec)
+{
+	return ivm_exec_list_push(unit->execs, exec) + unit->offset;
+}
+
+struct ivm_function_t_tag * /* root function */
+ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
+						struct ivm_vmstate_t_tag *state);
 
 struct ivm_vmstate_t_tag *
 ivm_exec_unit_generateVM(ivm_exec_unit_t *unit);
