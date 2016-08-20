@@ -86,6 +86,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 	for (pos = 0, end = i + len;
 		 i != end; i++, pos++) {
 		tmp = ivm_opt_instr_build(
+			.lineno = ivm_instr_lineno(i),
 			.opc = ivm_instr_opcode(i),
 			.arg = ivm_instr_arg(i),
 			.addr = -1
@@ -100,6 +101,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 
 	if (out_ref || !len || ivm_instr_opcode(i - 1) != IVM_OPCODE(RETURN)) {
 		tmp = ivm_opt_instr_build(
+			.lineno = ivm_instr_lineno(i),
 			.opc = IVM_OPCODE(RETURN),
 			.addr = -1
 		);
@@ -160,7 +162,7 @@ ivm_opt_il_generateExec(ivm_opt_il_t *il,
 				continue;
 			}
 
-			cur->addr = ivm_exec_addInstr_c(dest, ivm_instr_build(cur->opc, cur->arg));
+			cur->addr = ivm_exec_addInstr_c(dest, ivm_instr_build_l(cur->opc, cur->arg, cur->lineno));
 		}
 	}
 

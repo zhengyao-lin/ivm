@@ -92,6 +92,7 @@
 #define INVOKE() goto ACTION_INVOKE
 #define RAISE(obj) \
 	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
+	SAVE_RUNTIME(tmp_ip);                                \
 	_TMP_OBJ1 = (obj);                                   \
 	if (_TMP_CATCH) {                                    \
 		/* cancel raise protection */                    \

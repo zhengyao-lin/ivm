@@ -27,19 +27,19 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	);
 
 	if (tmp_ret.has_base) {
-		ivm_exec_addInstr(
-			env->cur_exec, INVOKE_BASE,
+		ivm_exec_addInstr_l(
+			env->cur_exec, GET_LINE(expr), INVOKE_BASE,
 			ilang_gen_expr_list_size(args)
 		);
 	} else {
-		ivm_exec_addInstr(
-			env->cur_exec, INVOKE,
+		ivm_exec_addInstr_l(
+			env->cur_exec, GET_LINE(expr), INVOKE,
 			ilang_gen_expr_list_size(args)
 		);
 	}
 
 	if (flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, POP);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	}
 
 	return NORET();
@@ -72,15 +72,15 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		);
 		
 		if (tmp_ret.is_id_loc) {
-			ivm_exec_addInstr(env->cur_exec, SET_LOCAL_SLOT, tmp_str);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_LOCAL_SLOT, tmp_str);
 		} else if (tmp_ret.is_id_top) {
-			ivm_exec_addInstr(env->cur_exec, SET_GLOBAL_SLOT, tmp_str);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_GLOBAL_SLOT, tmp_str);
 		} else if (is_proto) {
-			ivm_exec_addInstr(env->cur_exec, SET_PROTO);
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PROTO);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		} else {
-			ivm_exec_addInstr(env->cur_exec, SET_SLOT, tmp_str);
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT, tmp_str);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
 	} else {
 		tmp_ret = slot_expr->obj->eval(
@@ -93,33 +93,33 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (flag.is_callee) {
 			// leave base object on the stack
 			if (tmp_ret.is_id_loc) {
-				ivm_exec_addInstr(env->cur_exec, GET_LOCAL_CONTEXT);
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_CONTEXT);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
 			} else if (tmp_ret.is_id_top) {
-				ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_CONTEXT);
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_CONTEXT);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
 			} else if (is_proto) {
-				ivm_exec_addInstr(env->cur_exec, DUP);
-				ivm_exec_addInstr(env->cur_exec, GET_PROTO);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 			} else {
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
 			}
 
 			ret = RETVAL(.has_base = IVM_TRUE);
 		} else {
 			if (tmp_ret.is_id_loc) {
-				ivm_exec_addInstr(env->cur_exec, GET_LOCAL_SLOT, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
 			} else if (tmp_ret.is_id_top) {
-				ivm_exec_addInstr(env->cur_exec, GET_GLOBAL_SLOT, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_SLOT, tmp_str);
 			} else if (is_proto) {
-				ivm_exec_addInstr(env->cur_exec, GET_PROTO);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 			} else {
-				ivm_exec_addInstr(env->cur_exec, GET_SLOT, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
 			}
 		}
 
 		if (flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
 	} // else neither left value nor top level: don't generate
 
@@ -141,18 +141,18 @@ ilang_gen_oop_expr_eval(ilang_gen_expr_t *expr,
 	);
 
 	if (flag.is_left_val) {
-		ivm_exec_addInstr(env->cur_exec, SET_OOP, oop_expr->oop);
-		ivm_exec_addInstr(env->cur_exec, POP);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_OOP, oop_expr->oop);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	} else {
 		if (flag.is_callee) {
-			ivm_exec_addInstr(env->cur_exec, DUP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
 			ret = RETVAL(.has_base = IVM_TRUE);
 		}
 		
-		ivm_exec_addInstr(env->cur_exec, GET_OOP, oop_expr->oop);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_OOP, oop_expr->oop);
 
 		if (flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
 	}
 

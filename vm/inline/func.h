@@ -13,6 +13,18 @@
 
 IVM_COM_HEADER
 
+#define INVOKE_HANDLER(e1, e2) \
+	if (func->is_native) {                                          \
+		ivm_runtime_invoke(runtime, state, IVM_NULL, context);      \
+		return IVM_TRUE;                                            \
+	}                                                               \
+                                                                    \
+	e1;                                                             \
+	ivm_runtime_invoke(runtime, state, &func->u.body, context);     \
+	e2;                                                             \
+                                                                    \
+	return IVM_FALSE;
+
 IVM_INLINE
 ivm_bool_t // is native
 _ivm_function_invoke_c(const ivm_function_t *func,
@@ -20,17 +32,20 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_ctchain_t *context,
 					   ivm_runtime_t *runtime)
 {
-	if (func->is_native) {
-		// context = ivm_ctchain_clone(context, state);
-		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
+	INVOKE_HANDLER(
+		{ context = ivm_ctchain_appendContext(context, state); },
+		0
+	);
+}
 
-		return IVM_TRUE;
-	}
-
-	context = ivm_ctchain_appendContext(context, state);
-	ivm_runtime_invoke(runtime, state, &func->u.body, context);
-
-	return IVM_FALSE;
+IVM_INLINE
+ivm_bool_t // is native
+_ivm_function_invoke_r(const ivm_function_t *func,
+					   ivm_vmstate_t *state,
+					   ivm_ctchain_t *context,
+					   ivm_runtime_t *runtime)
+{
+	INVOKE_HANDLER(0, 0);
 }
 
 // with base
@@ -42,24 +57,19 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_runtime_t *runtime,
 					   ivm_object_t *base)
 {
-	if (func->is_native) {
-		// context = ivm_ctchain_clone(context, state);
-		ivm_runtime_invoke(runtime, state, IVM_NULL, context);
-
-		return IVM_TRUE;
-	}
-
-	context = ivm_ctchain_appendContext(context, state);
-	ivm_runtime_invoke(runtime, state, &func->u.body, context);
-
-	/* set base slot */
-	ivm_context_setSlot(
-		ivm_ctchain_getLocal(context), state,
-		IVM_VMSTATE_CONST(state, C_BASE), base
+	INVOKE_HANDLER(
+		{ context = ivm_ctchain_appendContext(context, state); },
+		{
+			/* set base slot */
+			ivm_context_setSlot(
+				ivm_ctchain_getLocal(context), state,
+				IVM_VMSTATE_CONST(state, C_BASE), base
+			);
+		}
 	);
-
-	return IVM_FALSE;
 }
+
+#undef INVOKE_HANDLER
 
 IVM_INLINE
 ivm_bool_t
@@ -112,7 +122,7 @@ ivm_function_invoke_r(const ivm_function_t *func,
 
 	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
 
-	return _ivm_function_invoke_c(func, state, context, runtime);
+	return _ivm_function_invoke_r(func, state, context, runtime);
 }
 
 IVM_INLINE

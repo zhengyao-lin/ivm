@@ -14,6 +14,7 @@ IVM_COM_HEADER
 typedef ivm_list_t ivm_opt_instr_list_t;
 
 typedef struct ivm_opt_instr_t_tag {
+	ivm_uint_t lineno;
 	ivm_byte_t opc;
 	ivm_opcode_arg_t arg;
 	ivm_size_t addr;

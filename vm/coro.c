@@ -6,6 +6,8 @@
 #include "pub/vm.h"
 #include "pub/inlines.h"
 
+#include "std/string.h"
+
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"
@@ -54,11 +56,37 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 						const ivm_char_t *msg)
 {
 	ivm_object_t *ret = ivm_object_new(state);
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
+	ivm_frame_stack_iterator_t fiter;
+	ivm_frame_t *frame;
+	ivm_instr_t *tmp_ip;
 
 	ivm_object_setSlot(ret, state,
 		IVM_VMSTATE_CONST(state, C_MSG),
 		ivm_string_object_new(state, IVM_CSTR(state, msg))
 	);
+
+#if 0
+	IVM_TRACE("trace:\n");
+
+#define PRINT_POS() \
+	if (tmp_ip) {                                                                       \
+		IVM_TRACE(IVM_TAB "%s: line %d: %s\n",                                          \
+				  ivm_string_trimHead(ivm_source_pos_getPath(ivm_instr_pos(tmp_ip))),   \
+				  ivm_instr_lineno(tmp_ip),                                             \
+				  ivm_opcode_table_getName(ivm_instr_opcode(tmp_ip)));                  \
+	}
+
+	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
+	PRINT_POS();
+
+	IVM_FRAME_STACK_EACHPTR(frame_st, fiter) {
+		frame = IVM_FRAME_STACK_ITER_GET(fiter);
+		tmp_ip = IVM_FRAME_GET(frame, IP);
+		PRINT_POS();
+	}
+#endif
 
 	return ret;
 }

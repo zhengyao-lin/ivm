@@ -26,33 +26,19 @@
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str))
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#define OPCODE_GEN(o, name, param, st_inc, ...) \
-		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##param##_ARG \
-									  ivm_exec_t *exec) \
-		{ \
-			return (ivm_instr_t) { \
-				.opc = IVM_OPCODE(o), \
-				.arg = INSTR_TYPE_##param##_ARG_INIT((ret), (exec)), \
-				.entry = ivm_opcode_table_getEntry(IVM_OPCODE(o)) \
-			}; \
-		}
+#define OPCODE_GEN(o, name, param, st_inc, ...) \
+	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##param##_ARG    \
+								  ivm_exec_t *exec,               \
+								  ivm_uint_t line)                \
+	{                                                             \
+		return (ivm_instr_t) {                                    \
+			.entry = ivm_opcode_table_getEntry(IVM_OPCODE(o)),    \
+			.arg = INSTR_TYPE_##param##_ARG_INIT((ret), (exec)),  \
+			.lineno = line,                                       \
+			.opc = IVM_OPCODE(o)                                  \
+		};                                                        \
+	}
 
-		#include "opcode.def.h"
+	#include "opcode.def.h"
 
-	#undef OPCODE_GEN
-#else
-	#define OPCODE_GEN(o, name, param, st_inc, ...) \
-		ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##param##_ARG \
-									  ivm_exec_t *exec) \
-		{ \
-			return (ivm_instr_t) { \
-				.opc = IVM_OPCODE(o), \
-				.arg = INSTR_TYPE_##param##_ARG_INIT((ret), (exec)) \
-			}; \
-		}
-
-		#include "opcode.def.h"
-
-	#undef OPCODE_GEN
-#endif
+#undef OPCODE_GEN

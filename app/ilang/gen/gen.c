@@ -6,11 +6,14 @@
 
 void
 ilang_gen_env_init(ilang_gen_env_t *env,
+				   const ivm_char_t *file,
 				   ivm_string_pool_t *str_pool,
 				   ivm_exec_unit_t *unit,
 				   ivm_exec_t *cur_exec)
 {
 	*env = (ilang_gen_env_t) {
+		.file = file,
+
 		.str_pool = str_pool,
 		.unit = unit,
 		.cur_exec = cur_exec,
@@ -68,7 +71,7 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 	}
 
 	if (!has_ret && !flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
 	}
 
 	return NORET();
@@ -83,12 +86,13 @@ ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
 	ivm_exec_t *top_level = ivm_exec_new(str_pool);
 
 	ivm_exec_unit_setOffset(ret, offset);
+	ivm_exec_setSourcePos(top_level, unit->file);
 
 	ilang_gen_env_t env;
 
 	ivm_exec_unit_registerExec(ret, top_level);
 
-	ilang_gen_env_init(&env, str_pool, ret, top_level);
+	ilang_gen_env_init(&env, unit->file, str_pool, ret, top_level);
 
 	if (setjmp(env.err_handle)) {
 		ilang_gen_env_dump(&env);

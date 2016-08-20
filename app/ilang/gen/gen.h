@@ -33,6 +33,8 @@ typedef ivm_list_t ilang_gen_addr_list_t;
 typedef IVM_LIST_ITER_TYPE(ivm_size_t) ilang_gen_addr_list_iterator_t;
 
 typedef struct {
+	const ivm_char_t *file;
+
 	ivm_string_pool_t *str_pool;
 	ivm_exec_unit_t *unit;
 	ivm_exec_t *cur_exec;
@@ -49,6 +51,7 @@ typedef struct {
 
 void
 ilang_gen_env_init(ilang_gen_env_t *env,
+				   const ivm_char_t *file,
 				   ivm_string_pool_t *str_pool,
 				   ivm_exec_unit_t *unit,
 				   ivm_exec_t *cur_exec);
@@ -157,6 +160,8 @@ typedef IVM_PTLIST_ITER_TYPE(ilang_gen_expr_t *) ilang_gen_expr_list_iterator_t;
 
 typedef struct {
 	ivm_heap_t *heap;
+	ivm_char_t *file;
+
 	ilang_gen_expr_list_t *expr_log;
 	ivm_ptlist_t *ptlist_log;
 	ivm_ptlist_t *list_log;
@@ -602,7 +607,7 @@ COMMON_EXPR(assign_expr, "assign expression", {
 
 IVM_INLINE
 ilang_gen_trans_unit_t *
-ilang_gen_trans_unit_new()
+ilang_gen_trans_unit_new(const ivm_char_t *file)
 {
 	ilang_gen_trans_unit_t *ret = MEM_ALLOC(sizeof(*ret),
 											ilang_gen_trans_unit_t *);
@@ -610,6 +615,8 @@ ilang_gen_trans_unit_new()
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("translate unit"));
 
 	ret->heap = ivm_heap_new(IVM_DEFAULT_PARSER_INIT_HEAP_SIZE);
+	ret->file = IVM_STRDUP(file);
+
 	ret->ptlist_log = ivm_ptlist_new();
 	ret->list_log = ivm_ptlist_new();
 	ret->expr_log = ilang_gen_expr_list_new(ret);
@@ -639,6 +646,7 @@ ilang_gen_trans_unit_free(ilang_gen_trans_unit_t *unit)
 
 	if (unit) {
 		ivm_heap_free(unit->heap);
+		MEM_FREE(unit->file);
 
 		IVM_PTLIST_EACHPTR(unit->ptlist_log, piter, ivm_ptlist_t *) {
 			ivm_ptlist_free(IVM_PTLIST_ITER_GET(piter));

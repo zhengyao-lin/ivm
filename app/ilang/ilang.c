@@ -70,7 +70,7 @@ IVM_NATIVE_FUNC(eval)
 
 	MATCH_ARG("s", &str);
 
-	unit = ilang_parser_parseSource(ivm_string_trimHead(str), IVM_FALSE);
+	unit = ilang_parser_parseSource("<eval>", ivm_string_trimHead(str), IVM_FALSE);
 
 	if (!unit) goto FAILED;
 
@@ -85,8 +85,6 @@ IVM_NATIVE_FUNC(eval)
 
 	ivm_function_invoke_r(root, NAT_STATE(), NAT_CORO(), NAT_CONTEXT());
 	ret = ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
-
-	IVM_TRACE("return! %s\n", ret->type->name);
 
 FAILED:
 	ilang_gen_trans_unit_free(unit);
@@ -113,7 +111,7 @@ int main(int argc, const char **argv)
 	
 	ivm_serial_exec_unit_t *s_unit;
 
-	const ivm_char_t *tmp_str;
+	const ivm_char_t *tmp_str, *src_path = IVM_NULL;
 	ivm_bool_t is_failed = IVM_FALSE;
 
 	/* config */
@@ -178,6 +176,7 @@ int main(int argc, const char **argv)
 			if (src_file) {
 				ERROR("too many source files given");
 			} else {
+				src_path = tmp_str;
 				src_file = ivm_file_new(tmp_str, IVM_FMODE_READ_BINARY);
 				if (!src_file) {
 					ERROR("cannot open source file %s", tmp_str);
@@ -218,7 +217,7 @@ int main(int argc, const char **argv)
 	}
 
 	PROF_START();
-	unit = ilang_parser_parseSource(src, cfg_debug);
+	unit = ilang_parser_parseSource(src_path, src, cfg_debug);
 	PROF_END();
 
 	if (!unit) goto CLEAN;

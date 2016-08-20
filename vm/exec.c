@@ -21,6 +21,9 @@ _ivm_exec_init(ivm_exec_t *exec,
 	exec->cached = IVM_FALSE;
 	exec->pool = pool;
 	ivm_ref_inc(pool);
+
+	exec->pos = ivm_source_pos_build(IVM_NULL);
+
 	// exec->max_stack = 0;
 	// exec->fin_stack = 0;
 	exec->alloc = IVM_DEFAULT_EXEC_BUFFER_SIZE;
@@ -87,7 +90,7 @@ ivm_exec_copy(ivm_exec_t *exec,
 
 IVM_PRIVATE
 void
-ivm_exec_expand(ivm_exec_t *exec)
+_ivm_exec_expand(ivm_exec_t *exec)
 {
 	exec->alloc <<= 1;
 	exec->instrs = MEM_REALLOC(exec->instrs,
@@ -108,27 +111,10 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 	// ivm_int_t inc;
 
 	if (exec->next >= exec->alloc) {
-		ivm_exec_expand(exec);
+		_ivm_exec_expand(exec);
 	}
 
 	exec->instrs[exec->next] = instr;
-
-#if 0
-	inc = ivm_opcode_table_getStackInc(ivm_instr_opcode(&instr));
-
-	if (inc >= IVM_OPCODE_VARIABLE_STACK_INC) {
-		inc += -IVM_OPCODE_VARIABLE_STACK_INC + ivm_opcode_arg_toInt(ivm_instr_arg(&instr));
-	} else if (inc <= -IVM_OPCODE_VARIABLE_STACK_INC) {
-		inc -= -IVM_OPCODE_VARIABLE_STACK_INC + ivm_opcode_arg_toInt(ivm_instr_arg(&instr));
-	}
-
-	if (exec->fin_stack + inc >= 0) {
-		exec->fin_stack += inc;
-		IVM_TRACE("%p, %d, fin: %d\n", exec, exec->next, exec->fin_stack);
-		if (exec->fin_stack > exec->max_stack)
-			exec->max_stack = exec->fin_stack;
-	}
-#endif
 
 	return exec->next++;
 }
@@ -139,12 +125,15 @@ ivm_exec_preproc(ivm_exec_t *exec,
 {
 	ivm_size_t addr, end;
 	ivm_instr_t *i, *j;
+	ivm_source_pos_t *pos = ivm_exec_getSourcePos(exec);
 
 	if (!exec->cached) {
 		exec->cached = IVM_TRUE;
 		for (addr = 0, end = exec->next;
 			 addr != end; addr++) {
 			i = exec->instrs + addr;
+			ivm_instr_setPos(i, pos);
+			
 			switch (ivm_opcode_table_getParam(ivm_instr_opcode(i))[0]) {
 				case 'S':
 					/* string pool idx -> string pointer */

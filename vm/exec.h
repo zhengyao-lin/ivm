@@ -18,11 +18,19 @@ IVM_COM_HEADER
 struct ivm_vmstate_t_tag;
 struct ivm_function_t_tag;
 
+typedef struct ivm_source_pos_t_tag {
+	const ivm_string_t *file;
+} ivm_source_pos_t;
+
+#define ivm_source_pos_build(file) ((ivm_source_pos_t) { (file) })
+#define ivm_source_pos_getPath(pos) ((pos)->file)
+
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
 
 	ivm_bool_t cached;
 	ivm_string_pool_t *pool;
+	ivm_source_pos_t pos;
 
 	// ivm_int_t max_stack; // max stack size needed
 	// ivm_int_t fin_stack; // final stack size
@@ -52,6 +60,9 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_addInstr(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN(__VA_ARGS__, (exec))))
 
+#define ivm_exec_addInstr_l(exec, ...) \
+	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN_L(__VA_ARGS__, (exec))))
+
 #define ivm_exec_registerString(exec, str) (ivm_string_pool_registerRaw((exec)->pool, (str)))
 #define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
 
@@ -71,6 +82,19 @@ ivm_exec_empty(ivm_exec_t *exec)
 	exec->next = 0;
 	return;
 }
+
+IVM_INLINE
+void
+ivm_exec_setSourcePos(ivm_exec_t *exec,
+					  const ivm_char_t *path)
+{
+	exec->pos = ivm_source_pos_build(
+		ivm_exec_getString(exec, ivm_exec_registerString(exec, path))
+	);
+	return;
+}
+
+#define ivm_exec_getSourcePos(exec) (&(exec)->pos)
 
 #define ivm_exec_setArgAt(exec, i, val) ((exec)->instrs[i].arg = ivm_opcode_arg_fromInt(val))
 

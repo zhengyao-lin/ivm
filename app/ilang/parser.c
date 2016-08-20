@@ -2550,6 +2550,7 @@ RULE(trans_unit)
 	});
 }
 
+/*
 ilang_gen_trans_unit_t *
 _ivm_parser_parseToken(ivm_list_t *tokens,
 					   ivm_bool_t *suc)
@@ -2562,15 +2563,17 @@ _ivm_parser_parseToken(ivm_list_t *tokens,
 
 	return ret;
 }
+*/
 
 // null for parse error
 ilang_gen_trans_unit_t *
-ilang_parser_parseSource(ivm_char_t *src,
+ilang_parser_parseSource(const ivm_char_t *file,
+						 const ivm_char_t *src,
 						 ivm_bool_t debug)
 {
 	ivm_list_t *tokens = _ilang_parser_getTokens(src, debug);
 	struct rule_val_t rule_ret;
-	ilang_gen_trans_unit_t *ret = ilang_gen_trans_unit_new();
+	ilang_gen_trans_unit_t *ret = ilang_gen_trans_unit_new(file);
 	struct env_t env = { ret, debug };
 	ivm_bool_t suc;
 

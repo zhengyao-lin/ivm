@@ -53,12 +53,7 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			/* if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			} */
-			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
+			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_FALSE, 0);
 
 			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
 		}
@@ -80,35 +75,30 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			/* if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
-			} */
-			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE, 0);
+			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_FALSE, 0);
 
 			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
 		}
 
 		// the two expression all true
 		// jump to branch body
-		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP, 0);
 		ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 	} else {
 		// value version
 
 		/******** lhe *******/
 		lhe->eval(lhe, FLAG(0), env);
-		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_FALSE_N, 0);
+		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_FALSE_N, 0);
 
-		ivm_exec_addInstr(env->cur_exec, POP);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), POP);
 
 		/******** rhe *******/
 		rhe->eval(rhe, FLAG(0), env);
 		ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
 		if (flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), POP);
 		}
 	}
 
@@ -171,12 +161,7 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			/* if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			} */
-			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
+			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_TRUE, 0);
 
 			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 		}
@@ -199,35 +184,30 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
-			/* if (tmp_ret.use_cond_reg) {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_R, 0);
-			} else {
-				addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
-			} */
-			addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE, 0);
+			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_TRUE, 0);
 
 			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
 		}
 
 		// the two expression all false
 		// jump to branch body
-		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP, 0);
+		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP, 0);
 		ilang_gen_addr_list_push(env->end_ref, addr1); // add begin ref
 	} else {
 		// value version
 
 		/******** lhe *******/
 		lhe->eval(lhe, FLAG(0), env);
-		addr1 = ivm_exec_addInstr(env->cur_exec, JUMP_TRUE_N, 0);
+		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_TRUE_N, 0);
 
-		ivm_exec_addInstr(env->cur_exec, POP);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), POP);
 
 		/******** rhe *******/
 		rhe->eval(rhe, FLAG(0), env);
 		ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
 		if (flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, POP);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), POP);
 		}
 	}
 

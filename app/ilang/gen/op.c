@@ -10,7 +10,7 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "unary expression", flag);
 
 	if (unary_expr->type == IVM_UNIOP_ID(DEL)) {
-		ivm_exec_addInstr(env->cur_exec, NEW_NIL);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NIL);
 		
 		unary_expr->opr->eval(
 			unary_expr->opr,
@@ -19,7 +19,7 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 		);
 
 		if (!flag.is_top_level) {
-			ivm_exec_addInstr(env->cur_exec, NEW_NULL);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
 		}
 	} else {
 		unary_expr->opr->eval(
@@ -30,16 +30,16 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 
 		switch (unary_expr->type) {
 			case IVM_UNIOP_ID(NOT):
-				ivm_exec_addInstr(env->cur_exec, NOT);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NOT);
 				break;
 			case IVM_UNIOP_ID(NEG):
-				ivm_exec_addInstr(env->cur_exec, NEG);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEG);
 				break;
 			case IVM_UNIOP_ID(POS):
-				ivm_exec_addInstr(env->cur_exec, POS);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POS);
 				break;
 			case IVM_UNIOP_ID(CLONE):
-				ivm_exec_addInstr(env->cur_exec, CLONE);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), CLONE);
 				break;
 			default:
 				IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
@@ -72,8 +72,8 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 	op2->eval(op2, FLAG(0), env);
 
 #define BR(op) \
-	case IVM_BINOP_ID(op):                      \
-		ivm_exec_addInstr(env->cur_exec, op);   \
+	case IVM_BINOP_ID(op):                                        \
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), op);   \
 		break;
 
 	switch (binary_expr->type) {
@@ -87,10 +87,10 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 		BR(IOR)
 		case IVM_BINOP_ID(IDX):
 			if (flag.is_left_val) {
-				ivm_exec_addInstr(env->cur_exec, IDX_ASSIGN);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX_ASSIGN);
 				ivm_exec_addInstr(env->cur_exec, POP);
 			} else {
-				ivm_exec_addInstr(env->cur_exec, IDX);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
 			}
 			break;
 		BR(SHL)
@@ -142,8 +142,8 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 #endif
 
 #define BR(op) \
-	case ILANG_GEN_CMP_##op:                    \
-		ivm_exec_addInstr(env->cur_exec, op);   \
+	case ILANG_GEN_CMP_##op:                                      \
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), op);   \
 		break;
 
 	switch (cmp_expr->cmp_type) {
@@ -160,7 +160,7 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 #undef BR
 
 	if (flag.is_top_level) {
-		ivm_exec_addInstr(env->cur_exec, POP);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	}
 
 	return NORET();

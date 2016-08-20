@@ -17,6 +17,8 @@
 #define RETVAL ilang_gen_value_build
 #define NORET() ((ilang_gen_value_t) { 0 })
 
+#define GET_LINE(expr) ((expr)->pos.line)
+
 #define GEN_ERR(p, ...) \
 	IVM_TRACE("ilang generator error: at line %zd pos %zd: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
