@@ -451,10 +451,8 @@ fib = fn n: {
 
 print(fib(30))
 
-ret
-
 {
-	b: 10,
+	b: "find me!!!!!",
 	c: 10,
 	d: if 0: a = 10
 }

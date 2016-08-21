@@ -66,7 +66,7 @@
 /* the number of stack element(s) cached */
 #define IVM_STACK_CACHE_N_TOS 0
 
-#define IVM_PER_INSTR_DBG(runtime) // (ivm_dbg_printRuntime(runtime))
+#define IVM_PER_INSTR_DBG(runtime) // ivm_dbg_printRuntime(runtime)
 
 #define IVM_COPYRIGHT_HELP "this project is released under the MIT license"
 #define IVM_TAB "   "
