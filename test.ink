@@ -93,6 +93,8 @@ gid = group: {
 yield a to gid
 */
 
+print("123456".len())
+
 eval("print(\"from eval\")")
 print(eval("a"))
 print(eval("fn...,...:0"))

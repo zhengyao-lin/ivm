@@ -143,6 +143,8 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #include "opcode.req.h"
 
+#define IVM_REG // register
+
 ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
@@ -156,26 +158,26 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
-	register ivm_object_t **tmp_st_end;
+	IVM_REG ivm_object_t **tmp_st_end;
 
-	register ivm_object_t *tmp_obj1 = IVM_NULL;
-	register ivm_object_t *tmp_obj2 = IVM_NULL;
-	register ivm_object_t *tmp_obj3 = IVM_NULL;
-	register ivm_object_t *tmp_obj4 = IVM_NULL;
-	register ivm_uniop_proc_t tmp_uni_proc;
-	register ivm_binop_proc_t tmp_bin_proc;
-	register ivm_ptr_t tmp_cmp_reg = 0;
+	IVM_REG ivm_object_t *tmp_obj1 = IVM_NULL;
+	IVM_REG ivm_object_t *tmp_obj2 = IVM_NULL;
+	IVM_REG ivm_object_t *tmp_obj3 = IVM_NULL;
+	IVM_REG ivm_object_t *tmp_obj4 = IVM_NULL;
+	IVM_REG ivm_uniop_proc_t tmp_uni_proc;
+	IVM_REG ivm_binop_proc_t tmp_bin_proc;
+	IVM_REG ivm_ptr_t tmp_cmp_reg = 0;
 
-	register const ivm_string_t *tmp_str;
-	// register ivm_context_t *tmp_ctx;
-	register const ivm_function_t *tmp_func = IVM_NULL;
-	register ivm_sint32_t tmp_argc;
-	register ivm_object_t **tmp_argv;
+	IVM_REG const ivm_string_t *tmp_str;
+	// IVM_REG ivm_context_t *tmp_ctx;
+	IVM_REG const ivm_function_t *tmp_func = IVM_NULL;
+	IVM_REG ivm_sint32_t tmp_argc;
+	IVM_REG ivm_object_t **tmp_argv;
 
-	register ivm_instr_t *tmp_catch;
-	// register void *tmp_jump_back = IVM_NULL;
-	// register ivm_bool_t tmp_has_jump = IVM_FALSE;
-	register ivm_bool_t tmp_bool;
+	IVM_REG ivm_instr_t *tmp_catch;
+	// IVM_REG void *tmp_jump_back = IVM_NULL;
+	// IVM_REG ivm_bool_t tmp_has_jump = IVM_FALSE;
+	IVM_REG ivm_bool_t tmp_bool;
 
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
@@ -201,14 +203,14 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	*****************************/
 
 #if IVM_STACK_CACHE_N_TOS == 1
-	register ivm_object_t *stc0 = IVM_NULL;
+	IVM_REG ivm_object_t *stc0 = IVM_NULL;
 #elif IVM_STACK_CACHE_N_TOS == 2
-	register ivm_object_t *stc0 = IVM_NULL,
+	IVM_REG ivm_object_t *stc0 = IVM_NULL,
 						  *stc1 = IVM_NULL;
 #endif
 
 #if IVM_STACK_CACHE_N_TOS != 0
-	register ivm_int_t cst = 0; /* cache state */
+	IVM_REG ivm_int_t cst = 0; /* cache state */
 #endif
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD

@@ -5,7 +5,8 @@
 #include "pub/type.h"
 #include "pub/vm.h"
 
-#include "list.h"
+#include "nlistobj.h"
+#include "nstrobj.h"
 
 /* 0 for success, other return stand for the position of the wrong argument */
 ivm_int_t

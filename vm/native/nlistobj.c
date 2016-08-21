@@ -7,7 +7,7 @@
 #include "vm/num.h"
 
 #include "priv.h"
-#include "list.h"
+#include "nlistobj.h"
 
 #define ERR_MSG_ILLEGAL_STEP "the absolute value of the step must be greater or equal than 1"
 

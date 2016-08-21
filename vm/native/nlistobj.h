@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_NATIVE_LIST_H_
-#define _IVM_VM_NATIVE_LIST_H_
+#ifndef _IVM_VM_NATIVE_NLISTOBJ_H_
+#define _IVM_VM_NATIVE_NLISTOBJ_H_
 
 #include "pub/com.h"
 #include "pub/type.h"
