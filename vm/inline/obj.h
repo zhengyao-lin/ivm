@@ -162,6 +162,7 @@ ivm_object_setOop(ivm_object_t *obj,
 		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
+	ivm_object_markOop(obj);
 	ivm_slot_table_setOop(slots, state, op, func);
 
 	return;
@@ -176,8 +177,10 @@ ivm_object_getOop(ivm_object_t *obj,
 
 	/* HACK: costs too much time */
 	do {
-		tmp = ivm_slot_table_getOop(obj->slots, op);
-		if (tmp) return tmp;
+		if (ivm_object_hasOop(obj)) {
+			tmp = ivm_slot_table_getOop(obj->slots, op);
+			if (tmp) return tmp;
+		}
 		obj = obj->proto;
 	} while (obj);
 

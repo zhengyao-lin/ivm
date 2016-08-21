@@ -15,7 +15,7 @@
 
 IVM_COM_HEADER
 
-#define _IVM_MARK_HEADER_BITS 2 // (2 + IVM_OOP_COUNT)
+#define _IVM_MARK_HEADER_BITS 3 // (2 + IVM_OOP_COUNT)
 
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type;                                          \
@@ -28,6 +28,7 @@ IVM_COM_HEADER
 				sizeof(ivm_sint64_t) / 2 * 8 -                 \
 				_IVM_MARK_HEADER_BITS;                         \
 			/* ivm_uint_t oop: IVM_OOP_COUNT; */               \
+			ivm_uint_t oop: 1;                                 \
 			ivm_uint_t wb: 1;                                  \
 			ivm_uint_t gen: 1;                                 \
 		} sub;                                                 \
@@ -195,6 +196,9 @@ ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
 
 #define ivm_object_doBinOp(state, coro, op1, op, op2) \
 	(ivm_object_doBinOp_c((state), (coro), (op1), IVM_BINOP_ID(op), (op2)))
+
+#define ivm_object_markOop(obj) ((obj)->mark.sub.oop = IVM_TRUE)
+#define ivm_object_hasOop(obj) ((obj)->mark.sub.oop)
 
 IVM_INLINE
 void
