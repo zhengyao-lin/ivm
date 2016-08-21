@@ -43,8 +43,45 @@ ivm_c_hash_table_getValue(ivm_c_hash_table_t *table,
 
 /* hash functions */
 
+IVM_INLINE
 ivm_hash_val_t
-ivm_hash_fromString(const ivm_char_t *key);
+ivm_hash_fromString_c(const ivm_char_t *key,
+					  ivm_size_t len)
+{
+	register ivm_hash_val_t hash = 5381;
+ 
+	for (; len >= 8; len -= 8) {
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+		hash = ((hash << 5) + hash) + *key++;
+	}
+ 
+	switch (len) {
+		case 7: hash = ((hash << 5) + hash) + *key++;
+		case 6: hash = ((hash << 5) + hash) + *key++;
+		case 5: hash = ((hash << 5) + hash) + *key++;
+		case 4: hash = ((hash << 5) + hash) + *key++;
+		case 3: hash = ((hash << 5) + hash) + *key++;
+		case 2: hash = ((hash << 5) + hash) + *key++;
+		case 1: hash = ((hash << 5) + hash) + *key++; break;
+		case 0: break;
+		default: ;
+	}
+
+	return hash;
+}
+
+IVM_INLINE
+ivm_hash_val_t
+ivm_hash_fromString(const ivm_char_t *key)
+{
+	return ivm_hash_fromString_c(key, strlen(key));
+}
 
 IVM_COM_END
 

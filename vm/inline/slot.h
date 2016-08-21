@@ -24,7 +24,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
                                                                                  \
         if (table->mark.sub.is_hash) {                                           \
 		TO_HASH_TABLE:                                                           \
-			hash = ivm_hash_fromString(ivm_string_trimHead(key));                \
+			hash = ivm_string_hash(key);                                         \
 			while (1) {                                                          \
 				tmp = table->tabl + hash % table->size;                          \
 				end = table->tabl + table->size;                                 \
@@ -133,7 +133,7 @@ SET_SLOT(
 		e0;                                                                             \
                                                                                         \
 		if (table->mark.sub.is_hash) {                                                  \
-			hash = ivm_hash_fromString(ivm_string_trimHead(key)) % table->size;         \
+			hash = ivm_string_hash(key) % table->size;                                  \
                                                                                         \
 			tmp = table->tabl + hash;                                                   \
 			end = table->tabl + table->size;                                            \

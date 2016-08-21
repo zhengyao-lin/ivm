@@ -11,6 +11,7 @@
 #include "list.h"
 #include "heap.h"
 #include "ref.h"
+#include "hash.h"
 
 IVM_COM_HEADER
 
@@ -45,6 +46,7 @@ ivm_strdup_heap(const ivm_char_t *src,
 typedef struct {
 	ivm_uint_t len;
 	ivm_bool_t is_const;
+	ivm_char_t cont[];
 } ivm_string_t;
 
 #define IVM_STRING_GET_SIZE(len) \
@@ -78,7 +80,7 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 							   struct ivm_heap_t_tag *heap);
 
-/* if the length of string is bigger than IVM_DEFAULT_CONST_THRESHOLD, alloc in the state; else in the pool */
+/* if the length of string is greater than IVM_DEFAULT_CONST_THRESHOLD, alloc in the state; else in the pool */
 const ivm_string_t *
 ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 							   struct ivm_vmstate_t_tag *state);
@@ -90,7 +92,10 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 	(IVM_STRING_GET_SIZE((str)->len))
 
 #define ivm_string_trimHead(str) \
-	((ivm_char_t *)(((ivm_string_t *)str) + 1))
+	((str)->cont)
+
+ivm_hash_val_t
+ivm_string_hash(const ivm_string_t *str);
 
 IVM_INLINE
 ivm_bool_t

@@ -66,8 +66,7 @@ ivm_string_new_state(ivm_bool_t is_const,
 	
 	ret->is_const = is_const;
 	ret->len = len;
-	MEM_COPY(ivm_string_trimHead(ret), str,
-			 sizeof(ivm_char_t) * len);
+	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * len);
 
 	return ret;
 }
@@ -85,8 +84,7 @@ ivm_string_new_heap(ivm_bool_t is_const,
 
 	ret->is_const = is_const;
 	ret->len = len;
-	MEM_COPY(ivm_string_trimHead(ret), str,
-			 sizeof(ivm_char_t) * (len + 1));
+	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
 	return ret;
 }
@@ -104,8 +102,7 @@ _ivm_string_new_n_heap(ivm_bool_t is_const,
 
 	ret->is_const = is_const;
 	ret->len = len;
-	MEM_COPY(ivm_string_trimHead(ret), str,
-			 sizeof(ivm_char_t) * (len + 1));
+	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
 	return ret;
 }
@@ -119,6 +116,12 @@ ivm_string_initHead(ivm_string_t *str,
 	str->len = len;
 	
 	return;
+}
+
+ivm_hash_val_t
+ivm_string_hash(const ivm_string_t *str)
+{
+	return ivm_hash_fromString_c(str->cont, ivm_string_length(str));
 }
 
 IVM_INLINE
@@ -202,7 +205,7 @@ ivm_int_t
 ivm_string_compareToRaw(const ivm_string_t *a,
 						const ivm_char_t *b)
 {
-	return IVM_STRCMP(ivm_string_trimHead(a), b);
+	return IVM_STRCMP(a->cont, b);
 }
 
 ivm_int_t
@@ -210,7 +213,7 @@ ivm_string_compareToRaw_n(const ivm_string_t *a,
 						  const ivm_char_t *b,
 						  ivm_size_t len)
 {
-	return IVM_STRNCMP(ivm_string_trimHead(a),
+	return IVM_STRNCMP(a->cont,
 					   ivm_string_length(a),
 					   b, len);
 }

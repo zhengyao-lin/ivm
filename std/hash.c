@@ -147,37 +147,3 @@ END:
 
 	return ret;
 }
-
-/* refer from the time33 hash function in PHP */
-
-ivm_hash_val_t
-ivm_hash_fromString(const ivm_char_t *key)
-{
-	register ivm_hash_val_t hash = 5381;
-	ivm_size_t len = strlen(key);
- 
-	for (; len >= 8; len -= 8) {
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-		hash = ((hash << 5) + hash) + *key++;
-	}
- 
-	switch (len) {
-		case 7: hash = ((hash << 5) + hash) + *key++;
-		case 6: hash = ((hash << 5) + hash) + *key++;
-		case 5: hash = ((hash << 5) + hash) + *key++;
-		case 4: hash = ((hash << 5) + hash) + *key++;
-		case 3: hash = ((hash << 5) + hash) + *key++;
-		case 2: hash = ((hash << 5) + hash) + *key++;
-		case 1: hash = ((hash << 5) + hash) + *key++; break;
-		case 0: break;
-		default: ;
-	}
-
-	return hash;
-}

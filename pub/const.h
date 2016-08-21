@@ -43,9 +43,9 @@
 
 /* string pool block size */
 #define IVM_DEFAULT_STRING_POOL_BLOCK_SIZE 2048
-#define IVM_DEFAULT_STRING_POOL_BUFFER_SIZE 64
+#define IVM_DEFAULT_STRING_POOL_BUFFER_SIZE 32
 
-#define IVM_DEFAULT_CONST_THRESHOLD IVM_DEFAULT_STRING_POOL_BLOCK_SIZE
+#define IVM_DEFAULT_CONST_THRESHOLD 128
 
 #define IVM_DEFAULT_SLOT_TABLE_SIZE 2
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */
