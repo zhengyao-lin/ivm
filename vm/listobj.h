@@ -48,6 +48,11 @@ ivm_list_object_realIndex(ivm_list_object_t *list,
 	return ivm_list_realIndex(list->size, i);
 }
 
+ivm_size_t
+ivm_list_object_push(ivm_list_object_t *list,
+					 struct ivm_vmstate_t_tag *state,
+					 ivm_object_t *obj);
+
 IVM_INLINE
 ivm_object_t *
 ivm_list_object_get(ivm_list_object_t *list,

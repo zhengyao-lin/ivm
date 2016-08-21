@@ -20,6 +20,8 @@ ivm_list_object_new(ivm_vmstate_t *state,
 	if (size) {
 		ret->lst = MEM_ALLOC(sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE,
 							 ivm_object_t **);
+		IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
+
 		MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
 	} else {
 		ret->lst = IVM_NULL;
@@ -47,6 +49,8 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 	ret->alloc = ret->size = count;
 	ret->lst = MEM_ALLOC(sizeof(*ret->lst) * count,
 						 ivm_object_t **);
+
+	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
 
 	MEM_COPY(ret->lst, init, sizeof(*ret->lst) * count);
 
@@ -100,11 +104,44 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 		olst = list->lst;
 		list->lst = MEM_REALLOC(list->lst, sizeof(*olst) * list->alloc,
 								ivm_object_t **);
+
+		IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
 	}
 
 	MEM_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
 
 	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_list_object_expand(ivm_list_object_t *list,
+						ivm_vmstate_t *state)
+{
+	list->alloc <<= 1;
+	list->lst = MEM_REALLOC(
+		list->lst, sizeof(*list->lst) * list->alloc,
+		ivm_object_t **
+	);
+
+	IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
+
+	return;
+}
+
+ivm_size_t
+ivm_list_object_push(ivm_list_object_t *list,
+					 ivm_vmstate_t *state,
+					 ivm_object_t *obj)
+{
+	if (list->size + 1 >= list->alloc) {
+		_ivm_list_object_expand(list, state);
+	}
+
+	list->lst[list->size++] = obj;
+
+	return list->size;
 }
 
 ivm_object_t *

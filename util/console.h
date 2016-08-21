@@ -123,7 +123,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 		ivm_list_push(__ca_opt_list__, &__ca_tmp_opt__);                                   \
 	} else if (__ca_cur_arg__ &&                                                           \
 			   (!IVM_STRNCMP((opt_name), IVM_STRLEN(opt_name),                             \
-							__ca_cur_arg__->name, __ca_cur_arg__->nlen) ||                 \
+							 __ca_cur_arg__->name, __ca_cur_arg__->nlen) ||                \
 			    ((alias) &&                                                                \
 			   	 !IVM_STRNCMP((alias), IVM_STRLEN(alias),                                  \
 							  __ca_cur_arg__->name, __ca_cur_arg__->nlen)))) {             \

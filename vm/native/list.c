@@ -17,6 +17,19 @@ IVM_NATIVE_FUNC(_list_size)
 	return ivm_numeric_new(NAT_STATE(), ivm_list_object_getSize(IVM_AS(NAT_BASE(), ivm_list_object_t)));
 }
 
+IVM_NATIVE_FUNC(_list_push)
+{
+	ivm_object_t *obj;
+
+	CHECK_BASE(IVM_LIST_OBJECT_T);
+	MATCH_ARG(".", &obj);
+	
+	return ivm_numeric_new(
+		NAT_STATE(),
+		ivm_list_object_push(IVM_AS(NAT_BASE(), ivm_list_object_t), NAT_STATE(), obj)
+	);
+}
+
 IVM_NATIVE_FUNC(_list_slice)
 {
 	ivm_number_t start, end = IVM_NUMBER_MAX + 1, step = 1;

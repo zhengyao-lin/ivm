@@ -12,13 +12,14 @@
 #include "native.h"
 
 /*
-	rules:
-		1. 'n': check num type and get the value
-		2. 's': check string type and get the value
-		3. 'l': check list type and convert to list object
-		4. 'f': check function type and convert to function object
-		5. '.': no type check but accept the object
-		6. '*' prefix: following argument are all optional, but if they exist, the type will be checked[1][2]
+	rules:                                                                      pass in type
+		1. 'n': check num type and get the value                             -- ivm_number_t *
+		2. 's': check string type and get the value                          -- const ivm_string_t **
+		3. 'l': check list type and convert to list object                   -- ivm_list_object_t **
+		4. 'f': check function type and convert to function object           -- ivm_function_object_t **
+		5. '.': no type check but accept the object                          -- ivm_object_t **
+		6. '*' prefix: following argument are all optional,
+			   but if they exist, the type will be checked[1][2]             -- \
 
 		NOTE:
 			[1]. return address passed to an optional argument need to be initialized
@@ -63,8 +64,14 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 			SUB1('f', IVM_FUNCTION_OBJECT_T, ivm_function_object_t *, IVM_AS(tmp, ivm_function_object_t))
 
 			case '.':
-				*(va_arg(args, ivm_object_t **)) = ivm_function_arg_at(arg, i);
-				i++; break;
+				if (ivm_function_arg_has(arg, i)) {
+					*(va_arg(args, ivm_object_t **)) = ivm_function_arg_at(arg, i);
+					i++;
+				} else {
+					if (!next_opt) ret = i;
+					goto END;
+				}
+				break;
 
 			case '*':
 				IVM_ASSERT(!next_opt, IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK);
