@@ -7,12 +7,6 @@
 
 IVM_COM_HEADER
 
-/* context pool */
-#define ivm_vmstate_allocContext(state, len) \
-	(ivm_context_pool_alloc((state)->ct_pool, (len)))
-#define ivm_vmstate_dumpContext(state, ct) \
-	(ivm_context_pool_dump((state)->ct_pool, (ct)))
-
 IVM_COM_END
 
 #endif

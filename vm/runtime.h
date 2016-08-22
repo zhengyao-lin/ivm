@@ -56,10 +56,10 @@ void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_exec_t *exec,
-				   ivm_ctchain_t *context);
+				   ivm_context_t *ctx);
 
 #define ivm_runtime_dump(runtime, state) \
-	(ivm_ctchain_free((runtime)->ctx, (state)))
+	(ivm_context_free((runtime)->ctx, (state)))
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;
 

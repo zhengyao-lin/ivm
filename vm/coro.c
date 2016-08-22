@@ -154,7 +154,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_vmstack_t *tmp_stack;
 	ivm_frame_stack_t *tmp_frame_st;
 
-	ivm_ctchain_t *tmp_context;
+	ivm_context_t *tmp_context;
 
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;

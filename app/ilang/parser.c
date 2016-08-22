@@ -44,6 +44,8 @@ enum token_id_t {
 
 	T_CLONE,
 	T_DEL,
+	T_REF,
+	T_DEREF,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
@@ -121,6 +123,8 @@ token_name_table[] = {
 
 	"operator `clone`",
 	"operator `del`",
+	"operator `ref`",
+	"operator `deref`",
 
 	"semicolon",
 	"comma",
@@ -433,6 +437,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 
 		KEYWORD("clone", T_CLONE)
 		KEYWORD("del", T_DEL)
+		KEYWORD("ref", T_REF)
+		KEYWORD("deref", T_DEREF)
 #undef KEYWORD
 	};
 

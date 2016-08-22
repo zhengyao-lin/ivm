@@ -56,7 +56,7 @@ void profile_type()
 	print_type(ivm_type_t);
 	print_type(ivm_vmstate_t);
 	print_type(ivm_exec_t);
-	print_type(ivm_ctchain_t);
+	print_type(ivm_context_t);
 	print_type(ivm_frame_t);
 	IVM_TRACE("\n***size of types***\n");
 
@@ -70,7 +70,7 @@ int test_fib()
 	ivm_exec_t *exec1, *exec2;
 	ivm_string_pool_t *str_pool;
 	ivm_coro_t *coro;
-	ivm_ctchain_t *chain;
+	ivm_context_t *ctx;
 	ivm_size_t addr1, addr2;
 
 	str_pool = ivm_string_pool_new(IVM_TRUE);
@@ -85,9 +85,8 @@ int test_fib()
 	ivm_vmstate_registerFunc(state, fib);
 	
 	coro = ivm_coro_new(state);
-	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setLocal(chain, state, ivm_object_new(state));
-	ivm_ctchain_addRef(chain);
+	ctx = ivm_context_new(state, IVM_NULL);
+	ivm_context_addRef(ctx);
 
 	ivm_vmstate_addCoro_c(state, coro);
 
@@ -158,7 +157,7 @@ int test_fib()
 
 	// ivm_dbg_heapState(state, stderr);
 
-	ivm_ctchain_free(chain, state);
+	ivm_context_free(ctx, state);
 	ivm_vmstate_free(state);
 	ivm_exec_free(exec1);
 	ivm_exec_free(exec2);
@@ -174,7 +173,7 @@ int test_call()
 	ivm_exec_t *exec1;
 	ivm_string_pool_t *str_pool;
 	ivm_coro_t *coro;
-	ivm_ctchain_t *chain;
+	ivm_context_t *ctx;
 	ivm_size_t addr1, addr2, addr3;
 
 	char *chartab[] = { "a", "b", "c", "d",
@@ -222,9 +221,8 @@ int test_call()
 	ivm_vmstate_registerFunc(state, empty);
 	
 	coro = ivm_coro_new(state);
-	chain = ivm_ctchain_new(state, 1);
-	ivm_ctchain_setLocal(chain, state, ivm_object_new(state));
-	ivm_ctchain_addRef(chain);
+	ctx = ivm_context_new(state, IVM_NULL);
+	ivm_context_addRef(ctx);
 
 	ivm_vmstate_addCoro_c(state, coro);
 
@@ -281,7 +279,7 @@ int test_call()
 	// IVM_TRACE("\nstack state:\n");
 	// ivm_dbg_stackState(coro, stderr);
 
-	ivm_ctchain_free(chain, state);
+	ivm_context_free(ctx, state);
 	ivm_vmstate_free(state);
 	ivm_exec_free(exec1);
 
@@ -295,7 +293,7 @@ int test_vm()
 	int i;
 	ivm_vmstate_t *state;
 	ivm_object_t *obj1, *obj2, *obj3, *proto;
-	ivm_ctchain_t *chain;
+	ivm_context_t *ctx;
 	ivm_function_t *func1, *func2, *func3, *func4;
 	ivm_coro_t *coro1, *coro2;
 	ivm_size_t addr1, addr2, addr3, addr4;
@@ -351,7 +349,7 @@ int test_vm()
 	ivm_vmstate_registerFunc(state, func3);
 	ivm_vmstate_registerFunc(state, func4);
 	
-	chain = ivm_ctchain_new(state, 2);
+	ctx = ivm_context_new(state, IVM_NULL);
 
 	ivm_object_setSlot(obj1, state, STR("a", str_pool), obj2);
 	ivm_object_setSlot(obj1, state, STR("call_func", str_pool), obj3);
@@ -359,9 +357,10 @@ int test_vm()
 	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
-	ivm_ctchain_setObjAt(chain, state, 0, obj1);
-	ivm_ctchain_setObjAt(chain, state, 1, obj2);
-	ivm_ctchain_addRef(chain);
+	ivm_context_setSlotTable(ctx, state, IVM_OBJECT_GET(obj1, SLOTS));
+	ctx = ivm_context_new(state, ctx);
+	ivm_context_setSlotTable(ctx, state, IVM_OBJECT_GET(obj2, SLOTS));
+	ivm_context_addRef(ctx);
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);
 
@@ -539,10 +538,10 @@ int test_vm()
 	ivm_vmstate_addCoro_c(state, coro2);
 
 	ivm_coro_setRoot(coro1, state,
-					 IVM_AS(ivm_function_object_new(state, chain, func1),
+					 IVM_AS(ivm_function_object_new(state, ctx, func1),
 					 		ivm_function_object_t));
 	ivm_coro_setRoot(coro2, state,
-					 IVM_AS(ivm_function_object_new(state, chain, func2),
+					 IVM_AS(ivm_function_object_new(state, ctx, func2),
 					 		ivm_function_object_t));
 	/*for (i = 0; i < 100000; i++) {
 		ivm_object_new(state);
@@ -580,7 +579,7 @@ int test_vm()
 	ivm_dbg_printExec(exec4, "  ", stderr);
 #endif
 
-	ivm_ctchain_free(chain, state);
+	ivm_context_free(ctx, state);
 	ivm_exec_free(exec1); ivm_exec_free(exec2);
 	ivm_exec_free(exec3); ivm_exec_free(exec4);
 	ivm_vmstate_free(state);

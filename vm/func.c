@@ -84,23 +84,24 @@ void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
 {	
-	ivm_ctchain_free(
+	ivm_context_free(
 		IVM_AS(obj, ivm_function_object_t)->scope,
 		state
 	);
+
 	return;
 }
 
 ivm_object_t *
 ivm_function_object_new(ivm_vmstate_t *state,
-						ivm_ctchain_t *context,
+						ivm_context_t *scope,
 						const ivm_function_t *func)
 {
 	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
 
-	ret->scope = ivm_ctchain_addRef(context);
+	ret->scope = ivm_context_addRef(scope);
 	ret->val = func;
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
@@ -111,7 +112,7 @@ void
 ivm_function_object_traverser(ivm_object_t *obj,
 							  ivm_traverser_arg_t *arg)
 {
-	arg->trav_ctchain(
+	arg->trav_ctx(
 		IVM_AS(obj, ivm_function_object_t)->scope,
 		arg
 	);

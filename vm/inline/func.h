@@ -15,12 +15,12 @@ IVM_COM_HEADER
 
 #define INVOKE_HANDLER(e1, e2) \
 	if (func->is_native) {                                          \
-		ivm_runtime_invoke(runtime, state, IVM_NULL, context);      \
+		ivm_runtime_invoke(runtime, state, IVM_NULL, ctx);          \
 		return IVM_TRUE;                                            \
 	}                                                               \
                                                                     \
 	e1;                                                             \
-	ivm_runtime_invoke(runtime, state, &func->u.body, context);     \
+	ivm_runtime_invoke(runtime, state, &func->u.body, ctx);         \
 	e2;                                                             \
                                                                     \
 	return IVM_FALSE;
@@ -29,20 +29,21 @@ IVM_INLINE
 ivm_bool_t // is native
 _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
-					   ivm_ctchain_t *context,
+					   ivm_context_t *ctx,
 					   ivm_runtime_t *runtime)
 {
 	INVOKE_HANDLER(
-		{ context = ivm_ctchain_appendContext(context, state); },
+		{ ctx = ivm_context_new(state, ctx); },
 		0
 	);
 }
 
+// no new local context
 IVM_INLINE
 ivm_bool_t // is native
 _ivm_function_invoke_r(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
-					   ivm_ctchain_t *context,
+					   ivm_context_t *ctx,
 					   ivm_runtime_t *runtime)
 {
 	INVOKE_HANDLER(0, 0);
@@ -53,16 +54,16 @@ IVM_INLINE
 ivm_bool_t // is native
 _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
-					   ivm_ctchain_t *context,
+					   ivm_context_t *ctx,
 					   ivm_runtime_t *runtime,
 					   ivm_object_t *base)
 {
 	INVOKE_HANDLER(
-		{ context = ivm_ctchain_appendContext(context, state); },
+		{ ctx = ivm_context_new(state, ctx); },
 		{
 			/* set base slot */
 			ivm_context_setSlot(
-				ivm_ctchain_getLocal(context), state,
+				ctx, state,
 				IVM_VMSTATE_CONST(state, C_BASE), base
 			);
 		}
@@ -75,7 +76,7 @@ IVM_INLINE
 ivm_bool_t
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state,
-						   ivm_ctchain_t *context,
+						   ivm_context_t *ctx,
 						   ivm_coro_t *coro)
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
@@ -83,32 +84,32 @@ ivm_function_createRuntime(const ivm_function_t *func,
 
 	IVM_RUNTIME_SET(runtime, SP, sp);
 	IVM_RUNTIME_SET(runtime, BP, sp);
-	return _ivm_function_invoke_c(func, state, context, runtime);
+	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE
 ivm_bool_t // is native
 ivm_function_invoke(const ivm_function_t *func,
 					ivm_vmstate_t *state,
-					ivm_ctchain_t *context,
+					ivm_context_t *ctx,
 					ivm_runtime_t *runtime,
 					ivm_frame_stack_t *frame_st)
 {
 	ivm_frame_stack_push(frame_st, runtime);
-	return _ivm_function_invoke_c(func, state, context, runtime);
+	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE
 ivm_bool_t // is native
 ivm_function_invokeBase(const ivm_function_t *func,
 						ivm_vmstate_t *state,
-						ivm_ctchain_t *context,
+						ivm_context_t *ctx,
 						ivm_runtime_t *runtime,
 						ivm_frame_stack_t *frame_st,
 						ivm_object_t *base)
 {
 	ivm_frame_stack_push(frame_st, runtime);
-	return _ivm_function_invoke_b(func, state, context, runtime, base);
+	return _ivm_function_invoke_b(func, state, ctx, runtime, base);
 }
 
 IVM_INLINE
@@ -116,13 +117,13 @@ ivm_bool_t // is native
 ivm_function_invoke_r(const ivm_function_t *func,
 					  ivm_vmstate_t *state,
 					  ivm_coro_t *coro,
-					  ivm_ctchain_t *context)
+					  ivm_context_t *ctx)
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 
 	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
 
-	return _ivm_function_invoke_r(func, state, context, runtime);
+	return _ivm_function_invoke_r(func, state, ctx, runtime);
 }
 
 IVM_INLINE

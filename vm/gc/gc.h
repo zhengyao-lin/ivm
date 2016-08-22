@@ -13,7 +13,6 @@
 IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
-struct ivm_ctchain_t_tag;
 
 /* typedef ivm_mark_t ivm_mark_period_t; */
 
@@ -59,7 +58,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_slot_table_t *) ivm_wbslot_list_iterator_t;
 #define IVM_WBSLOT_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_slot_table_t *)
 
 typedef ivm_ptlist_t ivm_wbctx_list_t;
-typedef IVM_PTLIST_ITER_TYPE(ivm_ctchain_t *) ivm_wbctx_list_iterator_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_context_t *) ivm_wbctx_list_iterator_t;
 
 #define ivm_wbctx_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_WBCTX_LIST_BUFFER_SIZE))
 #define ivm_wbctx_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_WBCTX_LIST_BUFFER_SIZE))
@@ -69,8 +68,8 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_ctchain_t *) ivm_wbctx_list_iterator_t;
 #define ivm_wbctx_list_empty ivm_ptlist_empty
 
 #define IVM_WBCTX_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
-#define IVM_WBCTX_LIST_ITER_GET(iter) ((ivm_ctchain_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_WBCTX_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_ctchain_t *)
+#define IVM_WBCTX_LIST_ITER_GET(iter) ((ivm_context_t *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_WBCTX_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_context_t *)
 
 typedef struct ivm_collector_t_tag {
 	ivm_destruct_list_t des_log[2];
@@ -111,8 +110,8 @@ typedef struct ivm_traverser_arg_t_tag {
 	struct ivm_vmstate_t_tag *state;
 	ivm_heap_t *heap;
 	ivm_collector_t *collector;
-	void (*trav_ctchain)(struct ivm_ctchain_t_tag *chain,
-						 struct ivm_traverser_arg_t_tag *arg);
+	void (*trav_ctx)(ivm_context_t *ctx,
+					 struct ivm_traverser_arg_t_tag *arg);
 	ivm_int_t gen;
 } ivm_traverser_arg_t;
 

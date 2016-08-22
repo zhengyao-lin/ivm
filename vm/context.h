@@ -16,7 +16,13 @@ struct ivm_vmstate_t_tag;
 struct ivm_object_t_tag;
 
 typedef struct ivm_context_t_tag {
+	struct ivm_context_t_tag *prev;
 	ivm_slot_table_t *slots;
+	struct {
+		ivm_uint_t gen: 1;
+		ivm_uint_t wb: 1;
+		ivm_uint_t ref: 30;
+	} mark;
 } ivm_context_t;
 
 /*
@@ -31,140 +37,63 @@ typedef struct ivm_context_t_tag {
 	3. _cc -- use cache
  */
 
-#define ivm_context_getSlotTable(ctx) \
-	((ctx)->slots)
+#define ivm_context_getGen(ctx) ((ctx)->mark.gen)
+#define ivm_context_setGen(ctx, val) ((ctx)->mark.gen = (val))
 
-/*
-#define ivm_context_setSlotTable(ctx, table) \
-	((ctx)->slots = (table))
-*/
+#define ivm_context_getWB(ctx) ((ctx)->mark.wb)
+#define ivm_context_setWB(ctx, val) ((ctx)->mark.wb = (val))
 
-/*
- * context chain:
- * -------------------------------
- * | head | local | ... | global |
- * -------------------------------
- */
-
-typedef struct ivm_ctchain_t_tag {
-	IVM_REF_HEADER
-	ivm_uint_t len;
-	struct {
-		ivm_uint_t gen: 1;
-		ivm_uint_t wb: 1;
-	} mark;
-	ivm_context_t chain[];
-} ivm_ctchain_t;
-
-#define ivm_ctchain_getGen(chain) ((chain)->mark.gen)
-#define ivm_ctchain_setGen(chain, val) ((chain)->mark.gen = (val))
-
-#define ivm_ctchain_getWB(chain) ((chain)->mark.wb)
-#define ivm_ctchain_setWB(chain, val) ((chain)->mark.wb = (val))
-
-#define ivm_ctchain_getSize(len) \
-	(sizeof(ivm_ctchain_t) + (sizeof(ivm_context_t) * (len)))
-
-#define ivm_ctchain_getContextSize(chain) \
-	(sizeof(ivm_context_t) * (chain)->len)
+#define ivm_context_getPrev(ctx) ((ctx)->prev)
 
 IVM_INLINE
 ivm_context_t *
-ivm_ctchain_contextStart(ivm_ctchain_t *chain) // local context
+ivm_context_addRef(ivm_context_t *ctx)
 {
-	return chain->chain;
-}
-
-IVM_INLINE
-ivm_context_t *
-ivm_ctchain_contextLast(ivm_ctchain_t *chain) // global context
-{
-	return chain->chain + chain->len - 1;
-}
-
-IVM_INLINE
-ivm_context_t *
-ivm_ctchain_contextEnd(ivm_ctchain_t *chain)
-{
-	return chain->chain + chain->len;
-}
-
-IVM_INLINE
-ivm_context_t *
-ivm_ctchain_contextAt(ivm_ctchain_t *chain,
-					  ivm_int_t i)
-{
-	return chain->chain + i;
-}
-
-IVM_INLINE
-ivm_ctchain_t *
-ivm_ctchain_addRef(ivm_ctchain_t *chain)
-{
-	if (chain) {
-		ivm_ref_inc(chain);
+	if (ctx) {
+		ctx->mark.ref++;
 	}
 
-	return chain;
+	return ctx;
 }
 
-ivm_ctchain_t *
-ivm_ctchain_new(struct ivm_vmstate_t_tag *state, ivm_int_t len);
+ivm_context_t *
+ivm_context_new(struct ivm_vmstate_t_tag *state,
+				ivm_context_t *prev);
+
+void
+ivm_context_free(ivm_context_t *ctx,
+				 struct ivm_vmstate_t_tag *state);
+
+IVM_INLINE
+ivm_context_t *
+ivm_context_getGlobal(ivm_context_t *ctx)
+{
+	for (; ctx->prev; ctx = ctx->prev);
+	return ctx;
+}
 
 /*
-ivm_ctchain_t *
-ivm_ctchain_appendContext(ivm_ctchain_t *chain,
-						  struct ivm_vmstate_t_tag *state);
-
-ivm_ctchain_t *
-ivm_ctchain_clone(ivm_ctchain_t *chain,
-				  struct ivm_vmstate_t_tag *state);
-*/
-				  
-#define ivm_ctchain_getLocal ivm_ctchain_contextStart
-#define ivm_ctchain_getGlobal ivm_ctchain_contextLast
-
-/*
-	cache versions of search and setExistSlot are in inline/context.h
+	cache versions of search and searchAndSetExistSlot are in inline/context.h
  */
 
 ivm_object_t *
-ivm_ctchain_search(ivm_ctchain_t *chain,
+ivm_context_search(ivm_context_t *ctx,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_string_t *key);
 
 ivm_bool_t
-ivm_ctchain_setExistSlot(ivm_ctchain_t *chain,
-						 struct ivm_vmstate_t_tag *state,
-						 const ivm_string_t *key,
-						 ivm_object_t *val);
+ivm_context_searchAndSetExistSlot(ivm_context_t *ctx,
+								  struct ivm_vmstate_t_tag *state,
+								  const ivm_string_t *key,
+								  ivm_object_t *val);
 
-typedef ivm_context_t *ivm_ctchain_iterator_t;
+typedef ivm_ptpool_t ivm_context_pool_t;
 
-#define IVM_CTCHAIN_ITER_SET(iter, val) ((iter)->slots = val)
-#define IVM_CTCHAIN_ITER_GET(iter) ((iter)->slots)
-#define IVM_CTCHAIN_EACHPTR(chain, iter) \
-	ivm_ctchain_iterator_t __ctx_end_##iter##__; \
-	for ((iter) = ivm_ctchain_contextStart(chain), \
-		 __ctx_end_##iter##__ = ivm_ctchain_contextEnd(chain); \
-		 (iter) != __ctx_end_##iter##__; (iter)++)
-
-typedef struct {
-	ivm_ptpool_t *pools[IVM_CONTEXT_POOL_MAX_CACHE_LEN];
-} ivm_context_pool_t;
-
-ivm_context_pool_t *
-ivm_context_pool_new(ivm_size_t ecount);
-
-void
-ivm_context_pool_free(ivm_context_pool_t *pool);
-
-void
-ivm_context_pool_init(ivm_context_pool_t *pool,
-					  ivm_size_t ecount);
-
-void
-ivm_context_pool_destruct(ivm_context_pool_t *pool);
+#define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_context_t)))
+#define ivm_context_pool_free ivm_ptpool_free
+#define ivm_context_pool_alloc(pool) ((ivm_context_t *)ivm_ptpool_alloc(pool))
+#define ivm_context_pool_dump ivm_ptpool_dump
+#define ivm_context_pool_dumpAll ivm_ptpool_dumpAll
 
 IVM_COM_END
 

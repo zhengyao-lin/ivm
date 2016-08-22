@@ -281,7 +281,7 @@ OPCODE_GEN(SET_PROTO, "set_proto", N, -1, {
 })
 
 OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, 1, {
-	_TMP_OBJ1 = ivm_ctchain_search_cc(
+	_TMP_OBJ1 = ivm_context_search_cc(
 		_CONTEXT, _STATE,
 		SARG(), _INSTR
 	);
@@ -304,28 +304,22 @@ OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, -1, {
 
 	_TMP_OBJ1 = STACK_POP();
 
-	if (!ivm_ctchain_setExistSlot_cc( /* try to find and set existed slot */
+	if (!ivm_context_searchAndSetExistSlot_cc(
 			_CONTEXT, _STATE, _TMP_STR,
 			_TMP_OBJ1, _INSTR
 		)) {
-		/* found no existed slot -> set local slot */
-		ivm_context_setSlot_cc(
-			ivm_ctchain_getLocal(_CONTEXT),
-			_STATE, _TMP_STR, _TMP_OBJ1,
-			_INSTR
-		);
+		/* found no existed slot, set local slot */
+		ivm_context_setSlot_cc(_CONTEXT, _STATE, _TMP_STR, _TMP_OBJ1, _INSTR);
 	}
 
 	NEXT_INSTR();
 })
 
-/* let object in ink */
+/* loc object in ink */
 OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 	_TMP_OBJ1 = ivm_object_new_t(
 		_STATE,
-		ivm_context_getSlotTable(
-			ivm_ctchain_getLocal(_CONTEXT)
-		)
+		ivm_context_getSlotTable(_CONTEXT)
 	);
 	STACK_PUSH(_TMP_OBJ1);
 
@@ -334,7 +328,7 @@ OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_ctchain_setLocal(_CONTEXT, _STATE, STACK_POP());
+	ivm_context_setSlotTable(_CONTEXT, _STATE, IVM_OBJECT_GET(STACK_POP(), SLOTS));
 	NEXT_INSTR();
 })
 
@@ -342,9 +336,7 @@ OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 	_TMP_OBJ1 = ivm_object_new_t(
 		_STATE,
-		ivm_context_getSlotTable(
-			ivm_ctchain_getGlobal(_CONTEXT)
-		)
+		ivm_context_getSlotTable(ivm_context_getGlobal(_CONTEXT))
 	);
 	STACK_PUSH(_TMP_OBJ1);
 
@@ -353,7 +345,10 @@ OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_ctchain_setGlobal(_CONTEXT, _STATE, STACK_POP());
+	ivm_context_setSlotTable(
+		ivm_context_getGlobal(_CONTEXT),
+		_STATE, IVM_OBJECT_GET(STACK_POP(), SLOTS)
+	);
 	NEXT_INSTR();
 })
 
@@ -363,7 +358,7 @@ OPCODE_GEN(SET_LOCAL_SLOT, "set_local_slot", S, -1, {
 	CHECK_STACK(1);
 
 	ivm_context_setSlot_cc(
-		ivm_ctchain_getLocal(_CONTEXT),
+		_CONTEXT,
 		_STATE, SARG(), STACK_POP(),
 		_INSTR
 	);
@@ -373,7 +368,7 @@ OPCODE_GEN(SET_LOCAL_SLOT, "set_local_slot", S, -1, {
 
 OPCODE_GEN(GET_LOCAL_SLOT, "get_local_slot", S, 1, {
 	_TMP_OBJ1 = ivm_context_getSlot_cc(
-		ivm_ctchain_getLocal(_CONTEXT),
+		_CONTEXT,
 		_STATE, SARG(), _INSTR
 	);
 
@@ -386,7 +381,7 @@ OPCODE_GEN(SET_GLOBAL_SLOT, "set_global_slot", S, -1, {
 	CHECK_STACK(1);
 
 	ivm_context_setSlot_cc(
-		ivm_ctchain_getGlobal(_CONTEXT),
+		ivm_context_getGlobal(_CONTEXT),
 		_STATE, SARG(), STACK_POP(),
 		_INSTR
 	);
@@ -396,7 +391,7 @@ OPCODE_GEN(SET_GLOBAL_SLOT, "set_global_slot", S, -1, {
 
 OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, 1, {
 	_TMP_OBJ1 = ivm_context_getSlot_cc(
-		ivm_ctchain_getGlobal(_CONTEXT),
+		ivm_context_getGlobal(_CONTEXT),
 		_STATE, SARG(), _INSTR
 	);
 
@@ -410,13 +405,13 @@ OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, 1, {
 OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	if (AVAIL_STACK >= 1) {
 		ivm_context_setSlot_cc(
-			ivm_ctchain_getLocal(_CONTEXT),
+			_CONTEXT,
 			_STATE, SARG(), STACK_POP(),
 			_INSTR
 		);
 	} else {
 		ivm_context_setSlot_cc(
-			ivm_ctchain_getLocal(_CONTEXT),
+			_CONTEXT,
 			_STATE, SARG(), IVM_UNDEFINED(_STATE),
 			_INSTR
 		);

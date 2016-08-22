@@ -172,15 +172,15 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 IVM_INLINE
 ivm_bool_t
 IVM_WBCTX(ivm_vmstate_t *state,
-		  ivm_ctchain_t *chain,
+		  ivm_context_t *ctx,
 		  ivm_slot_table_t *value)
 {
 	// IVM_TRACE("hey!\n");
-	if (ivm_ctchain_getGen(chain) && value &&
+	if (ivm_context_getGen(ctx) && value &&
 		!ivm_slot_table_getGen(value)) {
-		if (!ivm_ctchain_getWB(chain)) {
-			ivm_collector_addWBContext(state->gc, chain);
-			ivm_ctchain_setWB(chain, 1);
+		if (!ivm_context_getWB(ctx)) {
+			ivm_collector_addWBContext(state->gc, ctx);
+			ivm_context_setWB(ctx, 1);
 		}
 		return IVM_TRUE;
 	}
@@ -281,6 +281,12 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state,
 	(MEM_FREE(cr))
 
 #endif
+
+/* context pool */
+#define ivm_vmstate_allocContext(state) \
+	(ivm_context_pool_alloc((state)->ct_pool))
+#define ivm_vmstate_dumpContext(state, ctx) \
+	(ivm_context_pool_dump((state)->ct_pool, (ctx)))
 
 #if 0
 

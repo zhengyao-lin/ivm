@@ -306,29 +306,35 @@ ivm_collector_updateObject(ivm_object_t **obj,
 IVM_PRIVATE
 IVM_INLINE
 void
-ivm_collector_travContextChain(ivm_ctchain_t *chain,
-							   ivm_traverser_arg_t *arg)
+ivm_collector_travSingleContext(ivm_context_t *ctx,
+								ivm_traverser_arg_t *arg)
 {
-	ivm_ctchain_iterator_t iter;
+	if (!ivm_context_getGen(ctx))
+		ivm_context_setGen(ctx, 1);
 
-	if (chain) {
-		if (ivm_ctchain_getGen(chain) > arg->gen &&
-			!ivm_ctchain_getWB(chain))
+	ivm_context_setWB(ctx, 0);
+	_ivm_context_setSlotTable_c(ctx,
+		ivm_collector_copySlotTable(
+			ivm_context_getSlotTable(ctx),
+			arg
+		)
+	);
+
+	return;
+}
+
+IVM_PRIVATE
+void
+ivm_collector_travContext(ivm_context_t *ctx,
+						  ivm_traverser_arg_t *arg)
+{
+	while (ctx) {
+		if (ivm_context_getGen(ctx) > arg->gen &&
+			!ivm_context_getWB(ctx))
 			return;
 
-		if (!ivm_ctchain_getGen(chain))
-			ivm_ctchain_setGen(chain, 1);
-			
-		ivm_ctchain_setWB(chain, 0);
-		IVM_CTCHAIN_EACHPTR(chain, iter) {
-			IVM_CTCHAIN_ITER_SET(
-				iter,
-				ivm_collector_copySlotTable(
-					IVM_CTCHAIN_ITER_GET(iter),
-					arg
-				)
-			);
-		}
+		ivm_collector_travSingleContext(ctx, arg);
+		ctx = ivm_context_getPrev(ctx);
 	}
 
 	return;
@@ -341,7 +347,7 @@ ivm_collector_travFrame(ivm_frame_t *frame,
 						ivm_traverser_arg_t *arg)
 {
 	if (frame) {
-		ivm_collector_travContextChain(IVM_FRAME_GET(frame, CONTEXT), arg);
+		ivm_collector_travContext(IVM_FRAME_GET(frame, CONTEXT), arg);
 	}
 
 	return;
@@ -354,7 +360,7 @@ ivm_collector_travRuntime(ivm_runtime_t *runtime,
 						  ivm_traverser_arg_t *arg)
 {
 	if (runtime) {
-		ivm_collector_travContextChain(IVM_RUNTIME_GET(runtime, CONTEXT), arg);
+		ivm_collector_travContext(IVM_RUNTIME_GET(runtime, CONTEXT), arg);
 	}
 
 	return;
@@ -480,7 +486,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 	if (!arg->gen) {
 		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
 			// IVM_TRACE("catch! %p\n", IVM_WBCTX_LIST_ITER_GET(citer));
-			ivm_collector_travContextChain(IVM_WBCTX_LIST_ITER_GET(citer), arg);
+			ivm_collector_travSingleContext(IVM_WBCTX_LIST_ITER_GET(citer), arg);
 		}
 	}
 
@@ -516,7 +522,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	arg.state = state;
 	arg.collector = collector;
-	arg.trav_ctchain = ivm_collector_travContextChain;
+	arg.trav_ctx = ivm_collector_travContext;
 	arg.gen = collector->gen;
 
 	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);

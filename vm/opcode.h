@@ -12,7 +12,6 @@ IVM_COM_HEADER
 
 struct ivm_coro_t_tag;
 struct ivm_vmstate_t_tag;
-struct ivm_ctchain_t_tag;
 struct ivm_exec_t_tag;
 struct ivm_instr_t_tag;
 
@@ -25,13 +24,6 @@ typedef enum {
 #undef OPCODE_GEN
 	IVM_OPCODE(LAST)
 } ivm_opcode_t;
-
-typedef ivm_int_t (*ivm_opcode_handler_t)(struct ivm_vmstate_t_tag *state,
-										  struct ivm_coro_t_tag *coro,
-										  ivm_vmstack_t *stack,
-										  struct ivm_ctchain_t_tag *context,
-										  ivm_string_pool_t *pool,
-										  struct ivm_instr_t_tag **instr);
 
 typedef struct {
 	ivm_opcode_t opc;

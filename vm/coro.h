@@ -117,11 +117,11 @@ IVM_INLINE
 ivm_context_t *
 ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
 {
-	ivm_ctchain_t *chain;
+	ivm_context_t *ctx;
 
 	if (coro->alive &&
-		(chain = IVM_RUNTIME_GET(&coro->runtime, CONTEXT))) {
-		return ivm_ctchain_getGlobal(chain);
+		(ctx = IVM_RUNTIME_GET(&coro->runtime, CONTEXT))) {
+		return ivm_context_getGlobal(ctx);
 	}
 
 	return IVM_NULL;

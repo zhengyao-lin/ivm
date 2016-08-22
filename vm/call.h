@@ -13,7 +13,7 @@
 IVM_COM_HEADER
 
 #define IVM_FRAME_HEADER \
-	struct ivm_ctchain_t_tag *ctx;   \
+	struct ivm_context_t_tag *ctx;   \
 	ivm_instr_t *ip;                 \
 	struct ivm_object_t_tag **bp;    \
 	ivm_instr_t *cat; /* catch */    \
@@ -23,7 +23,6 @@ IVM_COM_HEADER
 	(sizeof(struct { IVM_FRAME_HEADER }))
 
 struct ivm_vmstate_t_tag;
-struct ivm_ctchain_t_tag;
 struct ivm_runtime_t_tag;
 struct ivm_object_t_tag;
 
