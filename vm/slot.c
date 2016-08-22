@@ -45,7 +45,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 #endif
 
 	table->size = init;
-	table->uid = ivm_vmstate_genUID(state);
+	ivm_slot_table_updateUID(table, state);
 	table->tabl = ivm_vmstate_allocAt(state,
 									  sizeof(*table->tabl)
 									  * init,
@@ -108,7 +108,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 		ivm_slot_table_setCopy(ret, IVM_NULL);
 		// ret->mark.sub.gen = table->mark.sub.gen;
 		// ret->size = table->size;
-		ret->uid = ivm_vmstate_genUID(state);
+		ivm_slot_table_updateUID(ret, state);
 		ret->tabl = ivm_heap_alloc(heap,
 								   sizeof(*ret->tabl)
 								   * ret->size);
@@ -153,7 +153,7 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 		ivm_slot_table_setCopy(ret, IVM_NULL);
 		// ret->mark.sub.gen = table->mark.sub.gen;
 		// ret->size = table->size;
-		ret->uid = ivm_vmstate_genUID(state);
+		ivm_slot_table_updateUID(ret, state);
 		ret->tabl = ivm_vmstate_alloc(state,
 									  sizeof(*ret->tabl)
 									  * ret->size);
@@ -193,7 +193,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	ivm_slot_t *i, *end;
 	ivm_bool_t ret = IVM_FALSE;
 
-	table->uid = ivm_vmstate_genUID(state);
+	ivm_slot_table_updateUID(table, state);
 	table->tabl = ivm_vmstate_allocAt(
 		state, sizeof(*table->tabl) * dsize,
 		ivm_slot_table_getGen(table)

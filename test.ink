@@ -93,6 +93,23 @@ gid = group: {
 yield a to gid
 */
 
+a = "no!"
+f = fn: {
+	loc a = "wow"
+	del a
+	a = "yes!"
+}
+i = 0
+
+while i < 100000: {
+	f()
+	i = i + 1
+}
+
+print(a)
+
+ret
+
 print("123456".len())
 
 eval("print(\"from eval\")")

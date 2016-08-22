@@ -27,13 +27,18 @@ typedef struct ivm_slot_t_tag {
 IVM_INLINE
 void
 _ivm_slot_setValue(ivm_slot_t *slot,
-				   struct ivm_vmstate_t_tag *state,
 				   struct ivm_object_t_tag *obj)
 {
-	if (slot) {
-		slot->v = obj;
-	}
+	slot->v = obj;
+	return;
+}
 
+/* update slot table uid after this */
+IVM_INLINE
+void
+_ivm_slot_deleteKey(ivm_slot_t *slot)
+{
+	slot->k = IVM_NULL;
 	return;
 }
 
@@ -166,7 +171,7 @@ ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 	((ivm_slot_t *)ivm_instr_cacheData(instr))
 
 #define ivm_slot_table_setCacheSlot(state, instr, value) \
-	(_ivm_slot_setValue((ivm_slot_t *)ivm_instr_cacheData(instr), (state), (value)))
+	(_ivm_slot_setValue((ivm_slot_t *)ivm_instr_cacheData(instr), (value)))
 
 #define ivm_slot_table_getOops(table) ((table)->oops)
 #define ivm_slot_table_getOopCount(table) ((table)->mark.sub.oop_count)

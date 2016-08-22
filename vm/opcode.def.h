@@ -843,6 +843,8 @@ OPCODE_GEN(JUMP, "jump", A, 0, {
 })
 
 OPCODE_GEN(JUMP_TRUE, "jump_true", A, -1, {
+	CHECK_STACK(1);
+
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -851,6 +853,8 @@ OPCODE_GEN(JUMP_TRUE, "jump_true", A, -1, {
 })
 
 OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
+	CHECK_STACK(1);
+
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -890,6 +894,8 @@ OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", A, 0, {
 
 /* no pop */
 OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", A, -1, {
+	CHECK_STACK(1);
+
 	if (ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -898,6 +904,8 @@ OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", A, -1, {
 })
 
 OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
+	CHECK_STACK(1);
+
 	if (!ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -906,7 +914,6 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 })
 
 /* stack empty => goto the addr */
-/*
 OPCODE_GEN(CHECK, "check", A, -1, {
 	if (AVAIL_STACK) {
 		GOTO_SET_INSTR(ADDR_ARG());
@@ -914,7 +921,6 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 		NEXT_INSTR();
 	}
 })
-*/
 
 #if 0
 
