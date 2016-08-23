@@ -1,6 +1,6 @@
 # lib util
 
-add_lib_batch(util SHARED "*.c")
+add_lib_batch(ivm-util SHARED "*.c")
 
 # link libraries
-TARGET_LINK_LIBRARIES(util vm std m)
+TARGET_LINK_LIBRARIES(ivm-util ivm-vm ivm-std m)

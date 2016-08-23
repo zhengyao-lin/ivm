@@ -5,7 +5,7 @@ include(CMakeUtils.txt)
 
 project(ivm)
 
-add_executable(testbed test.c)
+##################################### compiler settings #####################################
 
 # global variables
 set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
@@ -14,6 +14,7 @@ set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 # set basic compile flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value")
 
+# avoid warnings on MinGW
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 endif()
@@ -35,6 +36,8 @@ else()
 	message(FATAL_ERROR "Unknown compile mode '${VERSION}'")
 endif()
 
+message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
+
 # reset output dir
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
@@ -42,22 +45,23 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # add include files
 include_directories(${IVM_PUB_HEAD_DIR})
 
+##################################### compiler settings #####################################
+
 # subdirs
 add_subdirectory(vm)
 add_subdirectory(std)
 add_subdirectory(mem)
 add_subdirectory(util)
 
-# link libraries
-target_link_libraries(testbed vm mem util iasp)
-
-message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
-
+# search for apps
 file(GLOB app_list "app/*")
-
 foreach(dir ${app_list})
 	add_subdirectory(${dir})
 	message(STATUS "Find application ${dir}")
 endforeach(dir ${app_list})
+
+# test exe
+add_executable(testbed test.c)
+target_link_libraries(testbed ivm-vm ivm-mem ivm-util)
 
 include(CMakeTests.txt)

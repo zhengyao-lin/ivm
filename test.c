@@ -639,7 +639,7 @@ int main(int argc, const char **argv)
 
 #endif
 
-#if 1
+#if 0
 	const char num[] = "0b1010101";
 	// const char str[] = "\\\"sdssd\\p\\n";
 	ivm_bool_t err = IVM_FALSE;

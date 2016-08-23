@@ -1,21 +1,23 @@
 macro(add_ias_test ias_file expect)
+	string(REGEX MATCH "[^/\\]*$" test_name ${ias_file})
 	add_test(
-		"ias_test_${ias_file}"
+		"${test_name}"
 		"${EXECUTABLE_OUTPUT_PATH}/ias" -p:disable ${ias_file}
 	)
 	set_tests_properties(
-		"ias_test_${ias_file}"
+		"${test_name}"
 		PROPERTIES PASS_REGULAR_EXPRESSION ${expect}
 	)
 endmacro()
 
 macro(add_ink_test ink_file expect)
+	string(REGEX MATCH "[^/\\]*$" test_name ${ink_file})
 	add_test(
-		"ink_test_${ink_file}"
+		"${test_name}"
 		"${EXECUTABLE_OUTPUT_PATH}/ilang" -p:disable ${ink_file}
 	)
 	set_tests_properties(
-		"ink_test_${ink_file}"
+		"${test_name}"
 		PROPERTIES PASS_REGULAR_EXPRESSION ${expect}
 	)
 endmacro()

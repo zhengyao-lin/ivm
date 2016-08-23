@@ -37,6 +37,7 @@ CMakeCache.txt
 *.cmake
 Makefile
 Testing
+install_manifest.txt
 
 # build files
 build
