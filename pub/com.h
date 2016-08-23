@@ -35,7 +35,7 @@
 #endif
 
 #ifndef IVM_LIB_PATH
-	// #error library path not specified
+	#error library path not specified
 #endif
 
 #endif

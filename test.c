@@ -632,6 +632,11 @@ int main(int argc, const char **argv)
 
 	test_call();
 	test_vm();
+
+	ivm_perf_printElapsed();
+
+	ivm_perf_reset();
+
 	test_fib();
 
 	ivm_perf_printElapsed();

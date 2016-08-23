@@ -81,14 +81,14 @@ int main(int argc, const char **argv)
 			}
 		})
 
-		OPTION("f", "-format", "[auto|iasm|iobj]",
-			   "specify input file format(source file(iasm) or cache file(iobj), use BEFORE file argument)", {
+		OPTION("f", "-format", "[auto|ias|ivc]",
+			   "specify input file format(source file(ias) or cache file(ivc), use BEFORE file argument)", {
 			if ((tmp_str = ARG()->value) != IVM_NULL) {
 				if (!IVM_STRCMP(tmp_str, "auto")) {
 					file_format = FORMAT_AUTO;
-				} else if (!IVM_STRCMP(tmp_str, "iasm")) {
+				} else if (!IVM_STRCMP(tmp_str, "ias")) {
 					file_format = FORMAT_IASM;
-				} else if (!IVM_STRCMP(tmp_str, "iobj")) {
+				} else if (!IVM_STRCMP(tmp_str, "ivc")) {
 					file_format = FORMAT_IOBJ;
 				} else {
 					ILLEGAL_ARG();
@@ -117,9 +117,9 @@ int main(int argc, const char **argv)
 				tmp_str = ARG()->value;
 
 				if (file_format == FORMAT_AUTO) {
-					if (ivm_console_arg_hasSuffix(tmp_str, IVM_IASM_FILE_SUFFIX)) {
+					if (ivm_console_arg_hasSuffix(tmp_str, IVM_ASM_FILE_SUFFIX)) {
 						file_format = FORMAT_IASM;
-					} else if (ivm_console_arg_hasSuffix(tmp_str, IVM_IOBJ_FILE_SUFFIX)) {
+					} else if (ivm_console_arg_hasSuffix(tmp_str, IVM_CACHE_FILE_SUFFIX)) {
 						file_format = FORMAT_IOBJ;
 					} else {
 						FAILED(IVM_FALSE, "unrecognizable file format of file %s", tmp_str);
@@ -185,7 +185,7 @@ int main(int argc, const char **argv)
 			unit = ivm_serial_unserializeExecUnit(s_unit);
 			ivm_serial_exec_unit_free(s_unit);
 		} else {
-			IVM_FATAL(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "iobj"));
+			IVM_FATAL(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "ivm cache"));
 		}
 	}
 

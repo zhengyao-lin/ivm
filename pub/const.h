@@ -71,7 +71,7 @@
 #define IVM_COPYRIGHT_HELP "this project is released under the MIT license"
 #define IVM_TAB "   "
 
-#define IVM_IASM_FILE_SUFFIX ".ias"
-#define IVM_IOBJ_FILE_SUFFIX ".iobj"
+#define IVM_ASM_FILE_SUFFIX ".ias"
+#define IVM_CACHE_FILE_SUFFIX ".ivc"
 
 #endif
