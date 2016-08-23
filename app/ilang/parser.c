@@ -1165,16 +1165,20 @@ RULE(unary_expr)
 			_ENV->unit,                               \
 			TOKEN_POS(tmp_token),                     \
 			RULE_RET_AT(1).u.expr,                    \
-			IVM_UNIOP_ID(op)                          \
+			op                                        \
 		);                                            \
 	})
 
 	SUB_RULE_SET(
-		UNARY_EXPR(T_NOT, "not expr", NOT)
-		UNARY_EXPR(T_SUB, "neg expr", NEG)
-		UNARY_EXPR(T_ADD, "pos expr", POS)
-		UNARY_EXPR(T_CLONE, "clone expr", CLONE)
-		UNARY_EXPR(T_DEL, "del expr", DEL)
+		UNARY_EXPR(T_NOT, "not expr", IVM_UNIOP_ID(NOT))
+		UNARY_EXPR(T_SUB, "neg expr", IVM_UNIOP_ID(NEG))
+		UNARY_EXPR(T_ADD, "pos expr", IVM_UNIOP_ID(POS))
+		UNARY_EXPR(T_CLONE, "clone expr", IVM_UNIOP_ID(CLONE))
+		UNARY_EXPR(T_DEL, "del expr", IVM_UNIOP_ID(DEL))
+
+		UNARY_EXPR(T_REF, "ref expr", ILANG_GEN_UNIOP_REF)
+		UNARY_EXPR(T_DEREF, "deref expr", ILANG_GEN_UNIOP_DEREF)
+
 		SUB_RULE(R(postfix_expr)
 		{
 			_RETVAL.expr = RULE_RET_AT(0).u.expr;

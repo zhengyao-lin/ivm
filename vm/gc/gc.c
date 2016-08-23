@@ -486,7 +486,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 	if (!arg->gen) {
 		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
 			// IVM_TRACE("catch! %p\n", IVM_WBCTX_LIST_ITER_GET(citer));
-			ivm_collector_travSingleContext(IVM_WBCTX_LIST_ITER_GET(citer), arg);
+			ivm_collector_travContext(IVM_WBCTX_LIST_ITER_GET(citer), arg);
 		}
 	}
 

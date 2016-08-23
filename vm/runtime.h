@@ -42,6 +42,14 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))
 
+ivm_context_t *
+ivm_runtime_appendContextNode(ivm_runtime_t *runtime,
+							  struct ivm_vmstate_t_tag *state);
+
+ivm_context_t *
+ivm_runtime_removeContextNode(ivm_runtime_t *runtime,
+							  struct ivm_vmstate_t_tag *state);
+
 ivm_runtime_t *
 ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 

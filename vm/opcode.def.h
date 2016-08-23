@@ -198,6 +198,16 @@ OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(
 
 #endif
 
+OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
+	_CONTEXT = ivm_runtime_appendContextNode(_RUNTIME, _STATE);
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
+	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	CHECK_STACK(1);
 

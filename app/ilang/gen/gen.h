@@ -363,6 +363,11 @@ COMMON_EXPR(oop_expr, "oop expression", {
    ivm_int_t oop);
 
 /* unary expr */
+enum {
+	ILANG_GEN_UNIOP_REF = IVM_UNIOP_COUNT + 1,
+	ILANG_GEN_UNIOP_DEREF
+};
+
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ilang_gen_expr_t *opr;

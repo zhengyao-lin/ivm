@@ -31,7 +31,7 @@
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
-#define GEN_ERR_MSG_CANNOT_ASSIGN_TO(expr_name)						"cannot assign to %s", (expr_name)
+#define GEN_ERR_MSG_CANNOT_ASSIGN_TO(expr_name)						"cannot assign to, delete or get the reference of %s", (expr_name)
 #define GEN_ERR_MSG_NESTED_RET										"nested return expression"
 #define GEN_ERR_MSG_FAILED_PARSE_NUM(val, len)						"failed parse num '%.*s'", (int)(len), (val)
 #define GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(type)						"unsupported unary operation type %d", (type)

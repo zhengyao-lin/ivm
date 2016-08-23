@@ -25,11 +25,12 @@ void
 ivm_context_free(ivm_context_t *ctx,
 				 ivm_vmstate_t *state)
 {
-	// IVM_TRACE("wow %d\n", ctx->mark.ref);
-	if (ctx && !--ctx->mark.ref) {
-		// IVM_TRACE("hi\n");
-		ivm_context_free(ctx->prev, state);
+	ivm_context_t *tmp;
+
+	while (ctx && !--ctx->mark.ref) {
+		tmp = ctx->prev;
 		ivm_vmstate_dumpContext(state, ctx);
+		ctx = tmp;
 	}
 
 	return;

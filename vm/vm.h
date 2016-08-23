@@ -155,11 +155,11 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 		   ivm_slot_table_t *table,
 		   ivm_object_t *value)
 {
-	// IVM_TRACE("wow %d %d\n", ivm_slot_table_getGen(table), IVM_OBJECT_GET(value, GEN));
+	// IVM_TRACE("wb %d %d\n", ivm_slot_table_getGen(table), IVM_OBJECT_GET(value, GEN));
 	if (ivm_slot_table_getGen(table) && value &&
 		!IVM_OBJECT_GET(value, GEN)) {
 		if (!ivm_slot_table_getWB(table)) {
-			// IVM_TRACE("pop! %p %p(%s)\n", table, value, IVM_OBJECT_GET(value, TYPE_NAME));
+			// IVM_TRACE("write %p %p(%s)\n", table, value, IVM_OBJECT_GET(value, TYPE_NAME));
 			ivm_collector_addWBSlotTable(state->gc, table);
 			ivm_slot_table_setWB(table, 1);
 		}
@@ -175,7 +175,6 @@ IVM_WBCTX(ivm_vmstate_t *state,
 		  ivm_context_t *ctx,
 		  ivm_slot_table_t *value)
 {
-	// IVM_TRACE("hey!\n");
 	if (ivm_context_getGen(ctx) && value &&
 		!ivm_slot_table_getGen(value)) {
 		if (!ivm_context_getWB(ctx)) {

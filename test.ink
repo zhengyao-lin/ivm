@@ -93,6 +93,15 @@ gid = group: {
 yield a to gid
 */
 
+b = "no"
+
+(fn: {
+	a = ref b
+	deref a = "yes"
+
+	print(deref a)
+})()
+
 print("123456".len())
 
 eval("print(\"from eval\")")

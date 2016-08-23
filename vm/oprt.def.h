@@ -143,6 +143,8 @@ BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	ivm_string_t *ret;
 	ivm_char_t *data;
 
+	RTM_ASSERT(!_ASSIGN, IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX);
+
 	str1 = ivm_string_object_getValue(_OP1);
 	len = ivm_string_length(str1);
 	idx = ivm_list_realIndex(len, ivm_numeric_getValue(_OP2));
