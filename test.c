@@ -629,6 +629,9 @@ int main(int argc, const char **argv)
 
 	//IVM_TRACE("%p %d\n", test_obj.mark.copy, sizeof(test_obj.mark.sub));
 
+	// profile_type();
+	// return 0;
+
 	ivm_char_t buf[128];
 	const ivm_char_t *err;
 

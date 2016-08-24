@@ -148,10 +148,14 @@ ivm_mod_search(const ivm_char_t *mod_name,
 		ivm_size_t alloc;
 		ivm_int_t ret;
 	} sufs[] = {
-		{ ".ivc",		5,		IVM_MOD_TYPE_IVC },
-		{ ".so",		4,		IVM_MOD_TYPE_DLL },
-		{ "/init.so",	9,		IVM_MOD_TYPE_DLL },
-		{ "/init.ivc",	10,		IVM_MOD_TYPE_IVC },
+#define SUF(val, type) \
+	{ (val), sizeof(val), IVM_MOD_TYPE_##type },
+
+		SUF(".ivc",						IVC)
+		SUF(IVM_DLL_SUFFIX,				DLL)
+		SUF("/init.ivc",				IVC)
+		SUF("/init" IVM_DLL_SUFFIX,		DLL)
+#undef SUF
 	};
 
 	len2 = IVM_STRLEN(mod_name);

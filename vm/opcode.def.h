@@ -42,7 +42,9 @@ OPCODE_GEN(NEW_FUNC, "new_func", X, 1, {
 	STACK_PUSH(
 		ivm_function_object_new(
 			_STATE, _CONTEXT,
-			ivm_vmstate_getFunc(_STATE, XARG())
+			ivm_vmstate_getFunc(
+				_STATE, IVM_RUNTIME_GET(_RUNTIME, OFFSET) + XARG()
+			)
 		)
 	);
 	NEXT_INSTR();

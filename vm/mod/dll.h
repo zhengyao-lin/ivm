@@ -29,7 +29,7 @@ IVM_COM_HEADER
 	#define ivm_dll_open(handler, path) ((*(handler) = dlopen((path), RTLD_NOW | RTLD_LOCAL)) != IVM_NULL)
 	#define ivm_dll_close(handler) dlclose(handler)
 	#define ivm_dll_getFunc(handler, name, type) \
-		((type)dlsym((handler), (name)))
+		((type)(ivm_ptr_t)dlsym((handler), (name)))
 	#define ivm_dll_error(handler) dlerror()
 
 	#define IVM_DLL_SUFFIX ".so"

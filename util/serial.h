@@ -29,6 +29,7 @@ typedef struct {
 } IVM_NOALIGN ivm_serial_exec_list_t;
 
 typedef struct {
+	ivm_uint32_t offset;
 	ivm_uint64_t root;
 	ivm_serial_exec_list_t *list;
 } IVM_NOALIGN ivm_serial_exec_unit_t;
@@ -48,6 +49,20 @@ ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
 
 ivm_serial_exec_unit_t *
 ivm_serial_execUnitFromFile(ivm_file_t *file);
+
+IVM_INLINE
+ivm_exec_unit_t *
+ivm_serial_parseCacheFile(ivm_file_t *file)
+{
+	ivm_exec_unit_t *ret;
+	ivm_serial_exec_unit_t *s_unit;
+
+	s_unit = ivm_serial_execUnitFromFile(file);
+	ret = ivm_serial_unserializeExecUnit(s_unit);
+	ivm_serial_exec_unit_free(s_unit);
+
+	return ret;
+}
 
 IVM_COM_END
 

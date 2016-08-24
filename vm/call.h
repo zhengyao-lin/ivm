@@ -4,6 +4,7 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
+#include "pub/mem.h"
 
 #include "std/pool.h"
 
@@ -12,15 +13,27 @@
 
 IVM_COM_HEADER
 
+/* part needed to init every call */
+#define IVM_FRAME_HEADER_INIT \
+	ivm_instr_t *ip;                 \
+	ivm_instr_t *cat; /* catch */    \
+	ivm_uint_t offset;               \
+	ivm_bool_t no_reg;
+
 #define IVM_FRAME_HEADER \
 	struct ivm_context_t_tag *ctx;   \
-	ivm_instr_t *ip;                 \
 	struct ivm_object_t_tag **bp;    \
-	ivm_instr_t *cat; /* catch */    \
-	ivm_bool_t no_reg;
+	/* init part */                  \
+	IVM_FRAME_HEADER_INIT
 
 #define IVM_FRAME_HEADER_SIZE \
 	(sizeof(struct { IVM_FRAME_HEADER }))
+
+#define IVM_FRAME_HEADER_INIT_SIZE \
+	(sizeof(struct { IVM_FRAME_HEADER_INIT }))
+
+#define IVM_FRAME_INIT_HEADER(frame) \
+	(MEM_INIT(&(frame)->ip, IVM_FRAME_HEADER_INIT_SIZE))
 
 struct ivm_vmstate_t_tag;
 struct ivm_runtime_t_tag;

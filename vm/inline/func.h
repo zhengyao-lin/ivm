@@ -15,7 +15,7 @@ IVM_COM_HEADER
 
 #define INVOKE_HANDLER(e1, e2) \
 	if (func->is_native) {                                          \
-		ivm_runtime_invoke(runtime, state, IVM_NULL, ctx);          \
+		ivm_runtime_invokeNative(runtime, state, ctx);              \
 		return IVM_TRUE;                                            \
 	}                                                               \
                                                                     \

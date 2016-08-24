@@ -286,12 +286,10 @@ END_EXEC:
 				_TMP_OBJ1 = IVM_NULL_OBJ(state);
 			}
 #endif
-			if (!tmp_ip) {
-				_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
-			} else {
-				IVM_FATAL("impossible");
-			}
-
+			IVM_ASSERT(!tmp_ip, "impossible");
+			_TMP_OBJ1 = IVM_NULL_OBJ(state);
+			goto ACTION_RETURN;
+			
 ACTION_RAISE:
 			do {
 				ivm_runtime_dump(tmp_runtime, state);

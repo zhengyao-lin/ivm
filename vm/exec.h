@@ -28,7 +28,8 @@ typedef struct ivm_source_pos_t_tag {
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
 
-	ivm_bool_t cached;
+	ivm_uint_t offset;
+
 	ivm_string_pool_t *pool;
 	ivm_source_pos_t pos;
 
@@ -38,6 +39,8 @@ typedef struct ivm_exec_t_tag {
 	ivm_size_t alloc;
 	ivm_size_t next;
 	ivm_instr_t *instrs;
+
+	ivm_bool_t cached;
 } ivm_exec_t;
 
 ivm_exec_t *
@@ -105,6 +108,9 @@ ivm_exec_setSourcePos(ivm_exec_t *exec,
 #define ivm_exec_setCached(exec, val) ((exec)->cached = (val))
 #define ivm_exec_pool(exec) ((exec)->pool)
 #define ivm_exec_instrs(exec) ((exec)->instrs)
+#define ivm_exec_offset(exec) ((exec)->offset)
+
+#define ivm_exec_setOffset(exec, val) ((exec)->offset = (val))
 	
 void
 ivm_exec_preproc(ivm_exec_t *exec,
@@ -174,8 +180,8 @@ ivm_exec_list_empty(ivm_exec_list_t *list)
 
 typedef struct {
 	ivm_size_t root;
-	ivm_size_t offset;
 	ivm_exec_list_t *execs;
+	ivm_uint_t offset;
 } ivm_exec_unit_t;
 
 ivm_exec_unit_t *
@@ -196,7 +202,7 @@ ivm_size_t
 ivm_exec_unit_registerExec(ivm_exec_unit_t *unit,
 						   ivm_exec_t *exec)
 {
-	return ivm_exec_list_push(unit->execs, exec) + unit->offset;
+	return ivm_exec_list_push(unit->execs, exec); // + unit->offset;
 }
 
 struct ivm_function_t_tag * /* root function */

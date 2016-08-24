@@ -18,7 +18,7 @@ _ivm_exec_init(ivm_exec_t *exec,
 			   ivm_string_pool_t *pool)
 {
 	ivm_ref_init(exec);
-	exec->cached = IVM_FALSE;
+	exec->offset = 0;
 	exec->pool = pool;
 	ivm_ref_inc(pool);
 
@@ -33,6 +33,8 @@ _ivm_exec_init(ivm_exec_t *exec,
 							ivm_instr_t *);
 
 	IVM_ASSERT(exec->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
+
+	exec->cached = IVM_FALSE;
 
 	return;
 }
@@ -252,6 +254,7 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 	ivm_exec_t *exec;
 	ivm_exec_list_iterator_t eiter;
 	ivm_size_t i = 0;
+	ivm_uint_t offset = unit->offset;
 
 	IVM_ASSERT(
 		unit->offset == ivm_vmstate_getLinkOffset(state),
@@ -262,6 +265,7 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 
 	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
 		exec = IVM_EXEC_LIST_ITER_GET(eiter);
+		ivm_exec_setOffset(exec, offset);
 
 		func = ivm_function_new(state, exec);
 		ivm_vmstate_registerFunc(state, func);

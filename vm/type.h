@@ -38,7 +38,7 @@ typedef char					ivm_char_t;
 #define IVM_FALSE				0
 #define IVM_TRUE				!0
 
-typedef ivm_uint64_t			ivm_size_t;
+typedef ivm_ulong_t				ivm_size_t;
 typedef ivm_uint8_t				ivm_byte_t;
 
 typedef ivm_int_t				ivm_type_tag_t;

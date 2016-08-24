@@ -20,16 +20,31 @@ ivm_runtime_new(ivm_vmstate_t *state)
 }
 
 void
+ivm_runtime_invokeNative(ivm_runtime_t *runtime,
+						 ivm_vmstate_t *state,
+						 ivm_context_t *ctx)
+{
+	runtime->ctx = ivm_context_addRef(ctx);
+	runtime->bp = runtime->sp;
+
+	IVM_FRAME_INIT_HEADER(runtime);
+
+	return;
+}
+
+void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_vmstate_t *state,
 				   const ivm_exec_t *exec,
 				   ivm_context_t *ctx)
 {
 	runtime->ctx = ivm_context_addRef(ctx);
-	runtime->ip = exec ? ivm_exec_instrPtrStart(exec) : IVM_NULL;
 	runtime->bp = runtime->sp;
-	runtime->cat = IVM_NULL;
-	runtime->no_reg = IVM_FALSE;
+
+	IVM_FRAME_INIT_HEADER(runtime);
+
+	runtime->ip = ivm_exec_instrPtrStart(exec);
+	runtime->offset = ivm_exec_offset(exec);
 
 	return;
 }

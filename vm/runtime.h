@@ -28,6 +28,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
 #define IVM_RUNTIME_GET_CATCH(runtime) ((runtime)->cat)
+#define IVM_RUNTIME_GET_OFFSET(runtime) ((runtime)->offset)
 #define IVM_RUNTIME_GET_NO_REG(runtime) ((runtime)->no_reg)
 
 #define IVM_RUNTIME_GET_SP_INC(runtime) ((runtime)->sp++)
@@ -56,10 +57,11 @@ ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 #define ivm_runtime_free(runtime, state) \
 	(MEM_FREE(runtime))
 
-/* just rewrite new environment */
-/* NOTICE: this function will NOT copy the context chain,
- *		   clone the context chain by yourself
- */
+/* rewrite the environment */
+void
+ivm_runtime_invokeNative(ivm_runtime_t *runtime,
+						 struct ivm_vmstate_t_tag *state,
+						 ivm_context_t *ctx);
 void
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,
