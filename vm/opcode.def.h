@@ -618,12 +618,9 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
-		if (ivm_vmstate_getException(_STATE)) {
-			RAISE(ivm_vmstate_popException(_STATE));
-		}
-
 		if (!_TMP_OBJ1) {
-			_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+			_TMP_OBJ1 = ivm_vmstate_popException(_STATE);
+			RAISE(_TMP_OBJ1);
 		}
 
 		RETURN();
@@ -682,12 +679,9 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
-		if (ivm_vmstate_getException(_STATE)) {
-			RAISE(ivm_vmstate_popException(_STATE));
-		}
-
 		if (!_TMP_OBJ1) {
-			_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+			_TMP_OBJ1 = ivm_vmstate_popException(_STATE);
+			RAISE(_TMP_OBJ1);
 		}
 
 		RETURN();

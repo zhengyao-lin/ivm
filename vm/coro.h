@@ -69,7 +69,7 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 			(coro), (state), __rtm_assert_buf__   \
 		);                                        \
 		ivm_vmstate_setException((state), exc);   \
-		return exc;                               \
+		return IVM_NULL;                          \
 	}
 
 ivm_object_t *

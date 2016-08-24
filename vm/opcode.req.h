@@ -60,8 +60,9 @@
 												  IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                               \
-	        if (ivm_vmstate_getException(_STATE)) {                                            \
-				RAISE(ivm_vmstate_popException(_STATE));                                       \
+	        if (!_TMP_OBJ1) {                                                                  \
+	        	_TMP_OBJ1 = ivm_vmstate_popException(_STATE);                                  \
+				RAISE(_TMP_OBJ1);                                                              \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
@@ -120,8 +121,9 @@
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);         \
-	        if (ivm_vmstate_getException(_STATE)) {                                            \
-				RAISE(ivm_vmstate_popException(_STATE));                                       \
+	        if (!_TMP_OBJ1) {                                                                  \
+	        	_TMP_OBJ1 = ivm_vmstate_popException(_STATE);                                  \
+				RAISE(_TMP_OBJ1);                                                              \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
@@ -151,8 +153,8 @@
 					   IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME),        \
 					   							  op_name,                                     \
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
-			 _TMP_CMP_REG                                                                      \
-			 = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);        \
+			_TMP_CMP_REG                                                                       \
+			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);         \
 			if (ivm_vmstate_getException(_STATE)) {                                            \
 				RAISE(ivm_vmstate_popException(_STATE));                                       \
 			}                                                                                  \

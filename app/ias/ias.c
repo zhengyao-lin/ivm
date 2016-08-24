@@ -211,5 +211,7 @@ int main(int argc, const char **argv)
 	ivm_file_free(cache_file);
 	ivm_file_free(output_cache);
 
+	ivm_env_clean();
+
 	return 0;
 }

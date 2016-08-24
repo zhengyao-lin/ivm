@@ -12,11 +12,14 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}\\\"")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value -DIVM_DEBUG=1")
 
 # avoid warnings on MinGW
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib\\\"")
+else()
+	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}\\\"")
 endif()
 
 if(CMAKE_C_COMPILER MATCHES "clang")
@@ -31,7 +34,7 @@ if(VERSION STREQUAL "release")
 elseif((VERSION STREQUAL "debug") OR (NOT DEFINED VERSION))
 	message(STATUS "Compile in debug mode")
 	set(CMAKE_BUILD_TYPE Debug)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 else()
 	message(FATAL_ERROR "Unknown compile mode '${VERSION}'")
 endif()
@@ -41,6 +44,8 @@ message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
 # reset output dir
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${PROJECT_BINARY_DIR}/lib\\\"")
 
 # add include files
 include_directories(${IVM_PUB_HEAD_DIR})
@@ -63,5 +68,8 @@ endforeach(dir ${app_list})
 # test exe
 add_executable(testbed test.c)
 target_link_libraries(testbed ivm-vm ivm-mem ivm-util)
+
+add_library(testmod SHARED testmod.c)
+target_link_libraries(testmod ivm-vm)
 
 include(CMakeTests.txt)

@@ -26,19 +26,11 @@ opcode_table[] = {
 
 };
 
-#if IVM_DEBUG
-
 #define checkLegal(o) \
 	IVM_ASSERT((o) < IVM_OPCODE(LAST), \
 			   IVM_ERROR_MSG_BAD_OPCODE); \
 	IVM_ASSERT(opcode_table[o].opc == (o), \
 			   IVM_ERROR_MSG_BAD_OPCODE_TABLE);
-
-#else
-
-#define checkLegal(o)
-
-#endif
 
 const ivm_char_t *
 ivm_opcode_table_getParam(ivm_opcode_t opc)

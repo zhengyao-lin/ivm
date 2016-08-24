@@ -17,6 +17,7 @@
 #include "vm/env.h"
 #include "vm/opcode.h"
 #include "vm/gc/gc.h"
+#include "vm/mod/mod.h"
 
 #include "std/io.h"
 
@@ -29,7 +30,7 @@
 IVM_NATIVE_FUNC(test)
 {
 	IVM_OUT("from native!!\n");
-	return IVM_NULL;
+	return IVM_NULL_OBJ(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(call_func)
@@ -628,17 +629,33 @@ int main(int argc, const char **argv)
 
 	//IVM_TRACE("%p %d\n", test_obj.mark.copy, sizeof(test_obj.mark.sub));
 
-#if 1
+	ivm_char_t buf[128];
+	const ivm_char_t *err;
 
-	test_call();
-	test_vm();
+	ivm_perf_reset();
+	ivm_perf_startProfile();
+
+	if (ivm_mod_search("libtestmod", buf, IVM_ARRLEN(buf))) {
+		IVM_TRACE("found mod: %s\n", buf);
+		ivm_mod_loadNative(buf, &err, IVM_NULL, IVM_NULL, IVM_NULL);
+		if (err) {
+			IVM_TRACE("error happened: %s\n", err);
+		}
+	} else {
+		IVM_TRACE("mod not found\n");
+	}
 
 	ivm_perf_printElapsed();
 
+#if 1
+
 	ivm_perf_reset();
+	test_call();
+	test_vm();
+	ivm_perf_printElapsed();
 
+	ivm_perf_reset();
 	test_fib();
-
 	ivm_perf_printElapsed();
 	// profile_type();
 
@@ -833,6 +850,8 @@ ivm_perf_printElapsed();
 
 	ivm_ptpool_free(pool);
 #endif
+
+	ivm_env_clean();
 
 	return 0;
 }

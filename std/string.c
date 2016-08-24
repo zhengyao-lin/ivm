@@ -9,6 +9,21 @@
 #include "bit.h"
 
 ivm_char_t *
+IVM_STRNDUP(const ivm_char_t *str,
+			ivm_size_t len)
+{
+	ivm_char_t *ret = MEM_ALLOC(sizeof(*ret) * (len + 1),
+								ivm_char_t *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string"));
+
+	MEM_COPY(ret, str, sizeof(*ret) * len);
+	ret[len] = '\0';
+
+	return ret;
+}
+
+ivm_char_t *
 ivm_strdup(const ivm_char_t *src)
 {
 	ivm_size_t size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);

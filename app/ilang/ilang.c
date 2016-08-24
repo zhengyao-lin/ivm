@@ -38,7 +38,7 @@ IVM_NATIVE_FUNC(print)
 					  IVM_OBJECT_GET(obj, TYPE_NAME));
 	}
 
-	return IVM_NULL;
+	return IVM_NULL_OBJ(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(call)
@@ -289,6 +289,8 @@ CLEAN:
 	IVM_TRACE("op count: %d\n", IVM_BINOP_COUNT);
 */
 #endif
+
+	ivm_env_clean();
 
 	return 0;
 }

@@ -1,10 +1,10 @@
 #ifndef _IVM_STD_IO_H_
 #define _IVM_STD_IO_H_
 
+#include <stdio.h>
+
 #include "pub/com.h"
 #include "pub/type.h"
-
-#include <stdio.h>
 
 IVM_COM_HEADER
 
@@ -50,6 +50,10 @@ typedef FILE *ivm_file_raw_t;
 
 #define IVM_FMODE_WRITE_BINARY "wb"
 #define IVM_FMODE_READ_BINARY "rb"
+
+ivm_bool_t
+ivm_file_access(const ivm_char_t *path,
+				const ivm_char_t *mode);
 
 typedef struct {
 	ivm_file_raw_t fp;

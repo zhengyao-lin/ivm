@@ -38,4 +38,10 @@
 	#error library path not specified
 #endif
 
+#if defined(IVM_OS_LINUX)
+	#define IVM_FILE_SEPARATOR '/'
+#elif defined(IVM_OS_WIN32)
+	#define IVM_FILE_SEPARATOR '\\'
+#endif
+
 #endif

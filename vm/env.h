@@ -9,8 +9,11 @@
 
 IVM_COM_HEADER
 
-int
+ivm_int_t
 ivm_env_init();
+
+void
+ivm_env_clean();
 
 IVM_COM_END
 

@@ -251,6 +251,7 @@ a.* = "hi"
 a.>> = fn b: b.value = a
 
 print(1 << 2)
+
 print(1024 >> 2)
 print(-1 >> 2)
 print(-1 >>> 1)

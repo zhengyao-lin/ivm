@@ -25,6 +25,10 @@ struct ivm_string_pool_t_tag;
 #define IVM_STRDUP_STATE(str, state) (ivm_strdup_state((str), (state)))
 #define IVM_STRDUP_HEAP(str, heap) (ivm_strdup_heap((str), (heap)))
 
+ivm_char_t *
+IVM_STRNDUP(const ivm_char_t *str,
+			ivm_size_t len);
+
 IVM_INLINE
 ivm_int_t
 IVM_STRNCMP(const ivm_char_t *a, ivm_size_t alen,

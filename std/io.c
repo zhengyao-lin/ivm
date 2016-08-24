@@ -6,6 +6,20 @@
 
 #include "io.h"
 
+ivm_bool_t
+ivm_file_access(const ivm_char_t *path,
+				const ivm_char_t *mode)
+{
+	ivm_file_raw_t fp = IVM_FOPEN(path, mode);
+
+	if (fp) {
+		IVM_FCLOSE(fp);
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
 ivm_file_t *
 ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode)
