@@ -1,5 +1,5 @@
-#ifndef _IVM_UTIL_SERIAL_H_
-#define _IVM_UTIL_SERIAL_H_
+#ifndef _IVM_VM_SERIAL_H_
+#define _IVM_VM_SERIAL_H_
 
 #include "pub/com.h"
 #include "pub/const.h"
@@ -54,12 +54,14 @@ IVM_INLINE
 ivm_exec_unit_t *
 ivm_serial_parseCacheFile(ivm_file_t *file)
 {
-	ivm_exec_unit_t *ret;
+	ivm_exec_unit_t *ret = IVM_NULL;
 	ivm_serial_exec_unit_t *s_unit;
 
 	s_unit = ivm_serial_execUnitFromFile(file);
-	ret = ivm_serial_unserializeExecUnit(s_unit);
-	ivm_serial_exec_unit_free(s_unit);
+	if (s_unit) {
+		ret = ivm_serial_unserializeExecUnit(s_unit);
+		ivm_serial_exec_unit_free(s_unit);
+	}
 
 	return ret;
 }

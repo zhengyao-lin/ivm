@@ -8,12 +8,12 @@
 
 #include "util/perf.h"
 #include "util/console.h"
-#include "util/serial.h"
 
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 #include "vm/dbg.h"
 #include "vm/env.h"
+#include "vm/serial.h"
 
 #include "gen/gen.h"
 #include "parser.h"
@@ -84,6 +84,8 @@ IVM_NATIVE_FUNC(eval)
 	ivm_exec_unit_free(exec_unit); exec_unit = IVM_NULL;
 
 	ivm_function_invoke_r(root, NAT_STATE(), NAT_CORO(), NAT_CONTEXT());
+	// remove local context
+	ivm_runtime_removeContextNode(IVM_CORO_GET(NAT_CORO(), RUNTIME), NAT_STATE());
 	ret = ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
 
 FAILED:

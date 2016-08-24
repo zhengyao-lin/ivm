@@ -30,6 +30,7 @@ IVM_COM_HEADER
 	fputc('\n', IVM_STDERR); \
 	IVM_ABORT();
 
+#define IVM_ERROR_MSG_UNKNOWN_ERROR						("unknown error")
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)			("failed to allocate new room for new " name)
 #define IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED(op)			(op " slot of undefined object")
 #define IVM_ERROR_MSG_INSERT_CELL_TO_NON_SUC_CELL		("insert cell into non-successive cells")
@@ -69,6 +70,10 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(ofs, exp)	"mismatched link offset(the actual offset is %lu while expecting %lu)", (ivm_ulong_t)(ofs), (ivm_ulong_t)(exp)
 #define IVM_ERROR_MSG_CONTEXT_NO_PREV_NODE				("current context node has no previous node")
 #define IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX			("cannot assign to string index")
+#define IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC				("failed to load init function")
+#define IVM_ERROR_MSG_FAILED_OPEN_FILE					("failed to open the file")
+#define IVM_ERROR_MSG_FAILED_PARSE_CACHE				("failed to parse the cache file")
+#define IVM_ERROR_MSG_CACHE_NO_ROOT						("root function not specified in the cache file")
 
 IVM_COM_END
 

@@ -48,23 +48,31 @@ enum {
 	IVM_MOD_TYPE_DLL
 };
 
-/*
-	IVM_FALSE for not find
-	IVM_MOD_TYPE_IVC for ivc file
-	IVM_MOD_TYPE_DLL for dll/so
-
-	if find the mod, the path will be written into path_buf
- */
-ivm_int_t
-ivm_mod_search(const ivm_char_t *mod_name,
-			   ivm_char_t *path_buf,
-			   ivm_size_t buf_size);
-
 typedef
 struct ivm_object_t_tag *
 (*ivm_mod_native_init_t)(struct ivm_vmstate_t_tag *state,
 						 struct ivm_coro_t_tag *coro,
 						 struct ivm_context_t_tag *context);
+
+typedef
+struct ivm_object_t_tag *
+(*ivm_mod_loader_t)(const ivm_char_t *path,
+					const ivm_char_t **err,
+					struct ivm_vmstate_t_tag *state,
+					struct ivm_coro_t_tag *coro,
+					struct ivm_context_t_tag *context);
+
+void
+ivm_mod_addModSuffix(const ivm_char_t *suffix,
+					 ivm_mod_loader_t loader);
+
+/*
+	return the loader function pointer
+ */
+ivm_mod_loader_t
+ivm_mod_search(const ivm_char_t *mod_name,
+			   ivm_char_t *path_buf,
+			   ivm_size_t buf_size);
 
 /*
 	if *err is not null, something is wrong
@@ -75,6 +83,13 @@ ivm_mod_loadNative(const ivm_char_t *path,
 				   struct ivm_vmstate_t_tag *state,
 				   struct ivm_coro_t_tag *coro,
 				   struct ivm_context_t_tag *context);
+
+struct ivm_object_t_tag *
+ivm_mod_loadCache(const ivm_char_t *path,
+				  const ivm_char_t **err,
+				  struct ivm_vmstate_t_tag *state,
+				  struct ivm_coro_t_tag *coro,
+				  struct ivm_context_t_tag *context);
 
 IVM_COM_END
 

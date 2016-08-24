@@ -123,7 +123,7 @@ ivm_function_invoke_r(const ivm_function_t *func,
 
 	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
 
-	return _ivm_function_invoke_r(func, state, ctx, runtime);
+	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE

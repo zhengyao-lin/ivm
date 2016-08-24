@@ -5,6 +5,7 @@
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/mem.h"
+#include "pub/inlines.h"
 #include "pub/vm.h"
 
 #include "std/string.h"
@@ -12,19 +13,21 @@
 #include "std/env.h"
 #include "std/list.h"
 
+#include "vm/serial.h"
+
 #include "mod.h"
 #include "dll.h"
 
-typedef ivm_ptlist_t ivm_mod_path_list_t;
-typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_mod_path_list_iteartor_t;
+typedef ivm_ptlist_t ivm_rawstr_list_t;
+typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_rawstr_list_iteartor_t;
 
-#define ivm_mod_path_list_init(list) ivm_ptlist_init_c((list), IVM_DEFAULT_MOD_PATH_LIST_BUFFER_SIZE)
-#define ivm_mod_path_list_dump(list) ivm_ptlist_dump(list)
-#define ivm_mod_path_list_push(list, val) ivm_ptlist_push((list), (val))
+#define ivm_rawstr_list_init(list) ivm_ptlist_init_c((list), IVM_DEFAULT_RAWSTR_LIST_BUFFER_SIZE)
+#define ivm_rawstr_list_dump(list) ivm_ptlist_dump(list)
+#define ivm_rawstr_list_push(list, val) ivm_ptlist_push((list), (val))
 
-#define IVM_MOD_PATH_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
-#define IVM_MOD_PATH_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_char_t *)
-#define IVM_MOD_PATH_LIST_EACHPTR_R(list, iter) IVM_PTLIST_EACHPTR_R((list), iter, ivm_char_t *)
+#define IVM_RAWSTR_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
+#define IVM_RAWSTR_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_char_t *)
+#define IVM_RAWSTR_LIST_EACHPTR_R(list, iter) IVM_PTLIST_EACHPTR_R((list), iter, ivm_char_t *)
 
 typedef ivm_list_t ivm_dll_list_t;
 typedef IVM_LIST_ITER_TYPE(ivm_dll_t) ivm_dll_list_iteartor_t;
@@ -36,13 +39,33 @@ typedef IVM_LIST_ITER_TYPE(ivm_dll_t) ivm_dll_list_iteartor_t;
 #define IVM_DLL_LIST_ITER_GET(iter) IVM_LIST_ITER_GET(iter, ivm_dll_t)
 #define IVM_DLL_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_dll_t)
 
-IVM_PRIVATE
-ivm_mod_path_list_t
-_mod_path_list;
+typedef struct {
+	const ivm_char_t *suf;
+	ivm_size_t len;
+	ivm_mod_loader_t loader;
+} ivm_mod_suffix_t;
+
+typedef ivm_list_t ivm_mod_suffix_list_t;
+typedef IVM_LIST_ITER_TYPE(ivm_mod_suffix_t) ivm_mod_suffix_list_iteartor_t;
+
+#define ivm_mod_suffix_list_init(list) ivm_list_init_c((list), sizeof(ivm_mod_suffix_t), 2)
+#define ivm_mod_suffix_list_dump(list) ivm_list_dump(list)
+#define ivm_mod_suffix_list_push(list, val) ivm_list_push((list), (val))
+
+#define IVM_MOD_SUFFIX_LIST_ITER_GET(iter) IVM_LIST_ITER_GET(iter, ivm_mod_suffix_t)
+#define IVM_MOD_SUFFIX_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ivm_mod_suffix_t)
 
 IVM_PRIVATE
-ivm_dll_list_t
-_dll_list;
+ivm_rawstr_list_t _mod_path_list;
+
+IVM_PRIVATE
+ivm_dll_list_t _dll_list;
+
+IVM_PRIVATE
+ivm_mod_suffix_list_t _mod_suffix_list;
+
+IVM_PRIVATE
+ivm_size_t _mod_suffix_max_len = 0;
 
 // BUG: need thread lock
 
@@ -50,7 +73,7 @@ IVM_PRIVATE
 void
 _ivm_mod_addModPath(const ivm_char_t *path)
 {
-	ivm_mod_path_list_push(&_mod_path_list, IVM_STRDUP(path));
+	ivm_rawstr_list_push(&_mod_path_list, IVM_STRDUP(path));
 	return;
 }
 
@@ -59,7 +82,24 @@ void
 _ivm_mod_addModPath_l(const ivm_char_t *path,
 					  ivm_size_t len)
 {
-	ivm_mod_path_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
+	ivm_rawstr_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
+	return;
+}
+
+void
+ivm_mod_addModSuffix(const ivm_char_t *suffix,
+					 ivm_mod_loader_t loader)
+{
+	ivm_size_t len = IVM_STRLEN(suffix);
+	ivm_mod_suffix_t suf = {
+		suffix, len, loader
+	};
+
+	if (len > _mod_suffix_max_len)
+		_mod_suffix_max_len = len;
+
+	ivm_mod_suffix_list_push(&_mod_suffix_list, &suf);
+
 	return;
 }
 
@@ -106,69 +146,86 @@ _ivm_mod_initModPath()
 ivm_int_t
 ivm_mod_init()
 {
-	ivm_mod_path_list_init(&_mod_path_list);
+	ivm_rawstr_list_init(&_mod_path_list);
 	ivm_dll_list_init(&_dll_list);
+	ivm_mod_suffix_list_init(&_mod_suffix_list);
+
+	ivm_mod_addModSuffix(IVM_DLL_SUFFIX, ivm_mod_loadNative);
+	ivm_mod_addModSuffix(IVM_CACHE_FILE_SUFFIX, ivm_mod_loadCache);
+
 	_ivm_mod_initModPath();
+
 	return 0;
 }
 
 void
 ivm_mod_clean()
 {
-	ivm_mod_path_list_iteartor_t miter;
+	ivm_rawstr_list_iteartor_t piter;
 	ivm_dll_list_iteartor_t diter;
 
-	IVM_MOD_PATH_LIST_EACHPTR(&_mod_path_list, miter) {
-		// IVM_TRACE("mod path: %s\n",IVM_MOD_PATH_LIST_ITER_GET(iter));
-		MEM_FREE(IVM_MOD_PATH_LIST_ITER_GET(miter));
+	IVM_RAWSTR_LIST_EACHPTR(&_mod_path_list, piter) {
+		// IVM_TRACE("mod path: %s\n",IVM_RAWSTR_LIST_ITER_GET(piter));
+		MEM_FREE(IVM_RAWSTR_LIST_ITER_GET(piter));
 	}
-	ivm_mod_path_list_dump(&_mod_path_list);
+	ivm_rawstr_list_dump(&_mod_path_list);
 
 	IVM_DLL_LIST_EACHPTR(&_dll_list, diter) {
 		ivm_dll_close(IVM_DLL_LIST_ITER_GET(diter));
 	}
 	ivm_dll_list_dump(&_dll_list);
 
+	ivm_mod_suffix_list_dump(&_mod_suffix_list);
+
 	return;
 }
 
-ivm_int_t
+ivm_mod_loader_t
 ivm_mod_search(const ivm_char_t *mod_name,
 			   ivm_char_t *path_buf,
 			   ivm_size_t buf_size)
 {
-	ivm_mod_path_list_iteartor_t iter;
+	ivm_rawstr_list_iteartor_t iter;
+	ivm_mod_suffix_list_iteartor_t siter;
 	const ivm_char_t *tmp;
 	ivm_char_t *brk;
 	ivm_size_t len1, len2, len3;
 	ivm_int_t i;
+	ivm_mod_suffix_t tmp_suf;
+
+/*
+	SUF(".ivc",						IVC)
+	SUF(IVM_DLL_SUFFIX,				DLL)
+	SUF("/init.ivc",				IVC)
+	SUF("/init" IVM_DLL_SUFFIX,		DLL)
+ */
 
 	struct {
 		const ivm_char_t *suf;
-		ivm_size_t alloc;
-		ivm_int_t ret;
+		ivm_size_t len;
 	} sufs[] = {
-#define SUF(val, type) \
-	{ (val), sizeof(val), IVM_MOD_TYPE_##type },
+#define SUF(val) \
+	{ (val), sizeof(val) - 1 },
 
-		SUF(".ivc",						IVC)
-		SUF(IVM_DLL_SUFFIX,				DLL)
-		SUF("/init.ivc",				IVC)
-		SUF("/init" IVM_DLL_SUFFIX,		DLL)
+		SUF("")
+		SUF("/init")
+
 #undef SUF
 	};
 
 	len2 = IVM_STRLEN(mod_name);
 
-	IVM_MOD_PATH_LIST_EACHPTR_R(&_mod_path_list, iter) {
-		tmp = IVM_MOD_PATH_LIST_ITER_GET(iter);
+	IVM_RAWSTR_LIST_EACHPTR_R(&_mod_path_list, iter) {
+		tmp = IVM_RAWSTR_LIST_ITER_GET(iter);
 		len1 = IVM_STRLEN(tmp);
 
 		/*
-			len1          1              len2          9        1
-			tmp + IVM_FILE_SEPARATOR + mod_name + "/init.ivc"   \0
+			max situation:
+
+			len1          1              len2        5         ?      1
+			tmp + IVM_FILE_SEPARATOR + mod_name + "/init" + ".suf" + "\0"
 		 */
-		ivm_char_t buf[len1 + 1 + len2 + 9 + 1];
+		ivm_char_t buf[len1 + 1 + len2 + 5 + _mod_suffix_max_len + 1];
 
 		MEM_COPY(buf, tmp, len1);
 		buf[len1] = IVM_FILE_SEPARATOR;
@@ -176,20 +233,27 @@ ivm_mod_search(const ivm_char_t *mod_name,
 		brk = buf + len1 + 1 + len2;
 
 		for (i = 0; i < IVM_ARRLEN(sufs); i++) {
-			MEM_COPY(brk, sufs[i].suf, sufs[i].alloc);
-			IVM_TRACE("mod search for %s\n", buf);
-			if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
-				len3 = len1 + 1 + len2 + sufs[i].alloc /* include '\0' */;
-				len3 = buf_size > len3 ? len3 : buf_size;
-				MEM_COPY(path_buf, buf, len3);
-				path_buf[len3] = '\0'; /* in case buf_size is smaller than string length */
+			MEM_COPY(brk, sufs[i].suf, sufs[i].len);
 
-				return sufs[i].ret;
+			IVM_MOD_SUFFIX_LIST_EACHPTR_R(&_mod_suffix_list, siter) {
+				tmp_suf = IVM_MOD_SUFFIX_LIST_ITER_GET(siter);
+				MEM_COPY(brk + sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
+
+				IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
+				if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
+					len3 = len1 + 1 + len2 + sufs[i].len + tmp_suf.len + 1;
+
+					len3 = buf_size > len3 ? len3 : buf_size;
+					MEM_COPY(path_buf, buf, len3);
+					path_buf[len3] = '\0'; /* in case buf_size is smaller than string length */
+
+					return tmp_suf.loader;
+				}
 			}
 		}
 	}
 
-	return IVM_FALSE;
+	return IVM_NULL;
 }
 
 ivm_object_t *
@@ -207,7 +271,7 @@ ivm_mod_loadNative(const ivm_char_t *path,
 	if (!ivm_dll_open(&handler, path)) {
 		tmp_err = ivm_dll_error(handler);
 		if (!tmp_err) {
-			tmp_err = "unknown error";
+			tmp_err = IVM_ERROR_MSG_UNKNOWN_ERROR;
 		}
 
 		goto END;
@@ -220,7 +284,7 @@ ivm_mod_loadNative(const ivm_char_t *path,
 
 		tmp_err = ivm_dll_error(handler);
 		if (!tmp_err) {
-			tmp_err = "failed to load init function";
+			tmp_err = IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC;
 		}
 
 		goto END;
@@ -229,6 +293,55 @@ ivm_mod_loadNative(const ivm_char_t *path,
 	ivm_dll_list_push(&_dll_list, &handler);
 
 	ret = init(state, coro, context);
+
+END:
+
+	if (err) {
+		*err = tmp_err;
+	}
+
+	return ret;
+}
+
+ivm_object_t *
+ivm_mod_loadCache(const ivm_char_t *path,
+				  const ivm_char_t **err,
+				  ivm_vmstate_t *state,
+				  ivm_coro_t *coro,
+				  ivm_context_t *context)
+{
+	const ivm_char_t *tmp_err = IVM_NULL;
+	ivm_object_t *ret = IVM_NULL;
+	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+	ivm_exec_unit_t *unit = IVM_NULL;
+	ivm_function_t *root;
+
+	if (!cache) {
+		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
+		goto END;
+	}
+
+	unit = ivm_serial_parseCacheFile(cache);
+
+	ivm_file_free(cache);
+	
+	if (!unit) {
+		tmp_err = IVM_ERROR_MSG_FAILED_PARSE_CACHE;
+		goto END;
+	}
+
+	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
+	root = ivm_exec_unit_mergeToVM(unit, state);
+
+	ivm_exec_unit_free(unit);
+
+	if (!root) {
+		tmp_err = IVM_ERROR_MSG_CACHE_NO_ROOT;
+		goto END;
+	}
+
+	ivm_function_invoke_r(root, state, coro, context);
+	ret = ivm_coro_resume(coro, state, IVM_NULL);
 
 END:
 

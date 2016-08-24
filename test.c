@@ -634,13 +634,15 @@ int main(int argc, const char **argv)
 
 	ivm_char_t buf[128];
 	const ivm_char_t *err;
+	ivm_mod_loader_t loader;
 
 	ivm_perf_reset();
 	ivm_perf_startProfile();
 
-	if (ivm_mod_search("libtestmod", buf, IVM_ARRLEN(buf))) {
+	loader = ivm_mod_search("libtestmod", buf, IVM_ARRLEN(buf));
+	if (loader) {
 		IVM_TRACE("found mod: %s\n", buf);
-		ivm_mod_loadNative(buf, &err, IVM_NULL, IVM_NULL, IVM_NULL);
+		loader(buf, &err, IVM_NULL, IVM_NULL, IVM_NULL);
 		if (err) {
 			IVM_TRACE("error happened: %s\n", err);
 		}

@@ -11,6 +11,7 @@
 #include "std/hash.h"
 #include "std/heap.h"
 
+#include "vm/serial.h"
 #include "vm/vm.h"
 #include "vm/dbg.h"
 #include "vm/err.h"
@@ -22,7 +23,6 @@
 
 #include "util/perf.h"
 #include "util/console.h"
-#include "util/serial.h"
 
 #include "parser.h"
 #include "gen.h"

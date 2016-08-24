@@ -257,8 +257,8 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 
 	if (!ivm_file_read(file, &size, sizeof(size), 1))
 		return IVM_NULL;
+	
 	// IVM_ASSERT(tmp, IVM_ERROR_MSG_FILE_FORMAT_ERR);
-
 	// IVM_TRACE("pool size: %ld\n", size);
 
 	ret = ivm_string_pool_new(IVM_TRUE);
@@ -541,7 +541,7 @@ ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
 ivm_serial_exec_unit_t *
 ivm_serial_execUnitFromFile(ivm_file_t *file)
 {
-	ivm_serial_exec_unit_t *ret = MEM_ALLOC(
+	ivm_serial_exec_unit_t *ret = MEM_ALLOC_INIT(
 		sizeof(*ret),
 		ivm_serial_exec_unit_t *
 	);
