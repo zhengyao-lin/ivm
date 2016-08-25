@@ -11,6 +11,7 @@
 
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
+#include "vm/mod/mod.h"
 #include "vm/dbg.h"
 #include "vm/env.h"
 #include "vm/serial.h"
@@ -44,7 +45,6 @@ IVM_NATIVE_FUNC(print)
 IVM_NATIVE_FUNC(call)
 {
 	ivm_function_object_t *func;
-	ivm_coro_t *coro;
 
 	CHECK_ARG_COUNT("call", 1);
 
@@ -53,11 +53,9 @@ IVM_NATIVE_FUNC(call)
 	IVM_ASSERT(IVM_IS_TYPE(func, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(func, TYPE_NAME)));
 
-	coro = IVM_VMSTATE_GET(NAT_STATE(), CUR_CORO);
+	ivm_function_object_invoke(func, NAT_STATE(), NAT_CORO());
 
-	ivm_function_object_invoke(func, NAT_STATE(), coro);
-
-	return ivm_coro_resume(coro, NAT_STATE(), IVM_NULL);
+	return ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
 }
 
 IVM_NATIVE_FUNC(eval)
@@ -95,6 +93,81 @@ FAILED:
 	return ret ? ret : IVM_NULL_OBJ(NAT_STATE());
 }
 
+IVM_PRIVATE
+IVM_INLINE
+ivm_exec_unit_t *
+_parse_source(const ivm_char_t *path)
+{
+	ivm_file_t *file;
+	ivm_char_t *src = IVM_NULL;
+	ilang_gen_trans_unit_t *t_unit = IVM_NULL;
+	ivm_exec_unit_t *ret = IVM_NULL;
+
+	file = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+
+	if (!file) goto FAILED;
+	
+	src = ivm_file_readAll(file);
+	ivm_file_free(file);
+
+	if (!src) goto FAILED;
+
+	t_unit = ilang_parser_parseSource(path, src, IVM_FALSE);
+
+	if (!t_unit) goto FAILED;
+
+	ret = ilang_gen_generateExecUnit_c(t_unit, 0);
+
+FAILED:
+	MEM_FREE(src);
+	ilang_gen_trans_unit_free(t_unit);
+
+	return ret;
+}
+
+IVM_PRIVATE
+ivm_object_t *
+ilang_mod_loadSource(const ivm_char_t *path,
+					 const ivm_char_t **err,
+					 ivm_vmstate_t *state,
+					 ivm_coro_t *coro,
+					 ivm_context_t *context)
+{
+	const ivm_char_t *tmp_err = IVM_NULL;
+	ivm_exec_unit_t *unit = _parse_source(path);
+	ivm_object_t *ret = IVM_NULL;
+	ivm_function_t *root;
+	ivm_context_t *dest;
+
+	if (!unit) {
+		tmp_err = IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE;
+		goto FAILED;
+	}
+
+	// set load offset
+	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
+	root = ivm_exec_unit_mergeToVM(unit, state);
+	ivm_exec_unit_free(unit);
+
+	IVM_ASSERT(root, "impossible");
+
+	ivm_function_invoke_r(root, state, coro, IVM_NULL);
+	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
+	ivm_coro_resume(coro, state, IVM_NULL);
+
+	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
+
+	ivm_context_free(dest, state);
+
+FAILED:
+
+	if (err) {
+		*err = tmp_err;
+	}
+
+	return ret;
+}
+
 ivm_list_t *
 _ilang_parser_getTokens(const ivm_char_t *src);
 
@@ -104,6 +177,7 @@ _ivm_parser_parseToken(ivm_list_t *tokens, ivm_bool_t *suc);
 int main(int argc, const char **argv)
 {
 	ivm_env_init();
+	ivm_mod_addModSuffix(".ink", ilang_mod_loadSource);
 
 	ivm_char_t *src = IVM_NULL;
 	ilang_gen_trans_unit_t *unit = IVM_NULL;
@@ -248,7 +322,7 @@ int main(int argc, const char **argv)
 		// set native
 		ivm_vmstate_lockGCFlag(state);
 
-		ctx = ivm_coro_getRuntimeGlobal(IVM_VMSTATE_GET(state, CUR_CORO));
+		ctx = ivm_coro_getRuntimeGlobal(ivm_vmstate_curCoro(state));
 
 		ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
 		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));

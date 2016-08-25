@@ -254,6 +254,19 @@ ivm_list_push(ivm_list_t *list, void *e)
 }
 
 IVM_INLINE
+ivm_size_t
+ivm_list_prepush(ivm_list_t *list, void **ptr)
+{
+	if (list->cur >= list->alloc) {
+		_ivm_list_expand(list);
+	}
+
+	*ptr = list->lst + (list->cur * list->esize);
+
+	return ++list->cur;
+}
+
+IVM_INLINE
 void *
 ivm_list_at(ivm_list_t *list, ivm_size_t i)
 {

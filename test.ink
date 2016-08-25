@@ -314,8 +314,6 @@ print("hello" == "hello")
 try: (fn:fn:fn:fn:raise "right!")()()()()
 catch err: print(err)
 
-print(call(fn:(yield "ok!")))
-
 i = 0
 
 fork fn a: {
@@ -336,63 +334,24 @@ yield "4"
 yield "skip"
 yield "5"
 
-gid = 0
-
-call(fn: {
-	call(fn: {
-		yield "6"
-		yield to gid = group: {
-			fork: {
-				print("from group: 1")
-				yield 1
-				print("from group: 3")
-				//print("hi")
-			}
-
-			fork: {
-				print("from group: 2")
-				yield 1
-				print("from group: 4")
-			}
-
-			while yield null: 0
-			print("end of the group")
-			yield to 0
-			print("very end")
-		}
-		yield "7"
-	})
-	print("#this is 8")
-	yield "9"
-})
+call(fn: try: yield catch err: print(err.msg))
 
 yield null
-
-print("stop fork")
-
-fork: {
-	call((fn: (yield 1, print("2?"))), "hi")
-}
-
-//yield null
-
-call(fn: (yield 2, print("1?")))
-
-yield to gid
 
 ///////////////////////////////////////
 
 fork: {
 	yield to gid = group: {
 		print("another group")
-		yield to 0
-		print("never printed")
+		try: yield to 0
+		catch err: print(err.msg)
 	}
 	print("not next?")
 }
 
 yield
-yield to gid
+print(gid)
+print(yield "hey" to gid)
 
 print(!"hi")
 

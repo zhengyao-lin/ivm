@@ -315,6 +315,7 @@ ivm_mod_loadCache(const ivm_char_t *path,
 	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
 	ivm_exec_unit_t *unit = IVM_NULL;
 	ivm_function_t *root;
+	ivm_context_t *dest;
 
 	if (!cache) {
 		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
@@ -340,8 +341,13 @@ ivm_mod_loadCache(const ivm_char_t *path,
 		goto END;
 	}
 
-	ivm_function_invoke_r(root, state, coro, context);
-	ret = ivm_coro_resume(coro, state, IVM_NULL);
+	ivm_function_invoke_r(root, state, coro, IVM_NULL);
+	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
+	ivm_coro_resume(coro, state, IVM_NULL);
+
+	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
+
+	ivm_context_free(dest, state);
 
 END:
 

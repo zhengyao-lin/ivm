@@ -87,6 +87,10 @@
 		RTM_FATAL(__VA_ARGS__);   \
 	}
 
+#define CHECK_CGID() \
+	RTM_ASSERT(ivm_vmstate_hasGroup(_STATE, _TMP_CGID),          \
+			   IVM_ERROR_MSG_CORO_GROUP_NOT_EXIST(_TMP_CGID));
+
 #define YIELD() goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
@@ -306,6 +310,7 @@
 #define _TMP_ARGC (tmp_argc)
 #define _TMP_ARGV (tmp_argv)
 #define _TMP_CATCH (tmp_catch)
+#define _TMP_CGID (tmp_cgid)
 #define _TMP_BOOL (tmp_bool)
 
 #define SET_JUMP_BACK(i) \

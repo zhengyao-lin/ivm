@@ -126,6 +126,8 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 		case ILANG_GEN_INTR_YIELD:
 			if (intr->val) {
 				intr->val->eval(intr->val, FLAG(0), env);
+			} else {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
 			}
 			
 			if (intr->to) {

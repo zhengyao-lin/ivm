@@ -74,6 +74,10 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_FAILED_OPEN_FILE					("failed to open the file")
 #define IVM_ERROR_MSG_FAILED_PARSE_CACHE				("failed to parse the cache file")
 #define IVM_ERROR_MSG_CACHE_NO_ROOT						("root function not specified in the cache file")
+#define IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE			("failed to parse source file")
+#define IVM_ERROR_MSG_YIELD_ATOM_CORO					("yield in a atomic coroutine(has native call(s) in the stack)")
+#define IVM_ERROR_MSG_CORO_GROUP_NOT_EXIST(cgid)		"coro group with id %d does not exist", (cgid)
+#define IVM_ERROR_MSG_CORO_GROUP_SUSPENDED(cgid)		"coro group with id %d has suspended and cannot be yielded to", (cgid)
 
 IVM_COM_END
 

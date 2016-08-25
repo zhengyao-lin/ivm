@@ -67,7 +67,7 @@ OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 
 	if (_TMP_ARGC > 0) {
 		_TMP_OBJ1 = ivm_list_object_new_c(_STATE, STACK_CUT(_TMP_ARGC), _TMP_ARGC);
-		ivm_list_object_reverse(_TMP_OBJ1);
+		ivm_list_object_reverse(IVM_AS(_TMP_OBJ1, ivm_list_object_t));
 		STACK_PUSH(_TMP_OBJ1);
 	} else {
 		STACK_PUSH(ivm_list_object_new(_STATE, 0));
@@ -703,7 +703,7 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 
-	ivm_vmstate_addToCurrentGroup(
+	ivm_vmstate_addCoroToCurGroup(
 		_STATE,
 		IVM_AS(_TMP_OBJ1, ivm_function_object_t)
 	);
@@ -743,12 +743,15 @@ OPCODE_GEN(GROUP_TO, "group_to", N, -1, {
 	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ2, IVM_NUMERIC_T),
 			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
 
+	_TMP_CGID = ivm_numeric_getValue(_TMP_OBJ2);
+	CHECK_CGID();
+
 	STACK_PUSH(
 		ivm_numeric_new(_STATE,
-			ivm_vmstate_addToGroup(
+			ivm_vmstate_addCoro(
 				_STATE,
 				IVM_AS(_TMP_OBJ1, ivm_function_object_t),
-				ivm_numeric_getValue(_TMP_OBJ2)
+				_TMP_CGID
 			)
 		)
 	);
@@ -757,23 +760,17 @@ OPCODE_GEN(GROUP_TO, "group_to", N, -1, {
 })
 
 OPCODE_GEN(YIELD, "yield", N, 0, {
-	if (AVAIL_STACK) {
-		_TMP_OBJ1 = STACK_POP();
-	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
-	}
+	CHECK_STACK(1);
+	
+	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(!IVM_CORO_GET(_CORO, HAS_NATIVE),
+			   IVM_ERROR_MSG_YIELD_ATOM_CORO);
 
 	INC_INSTR();
 	SAVE_RUNTIME(_INSTR);
-
-	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
-		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
-		UPDATE_RUNTIME();
-		STACK_PUSH(_TMP_OBJ1);
-		GOTO_CUR_INSTR();
-	} else {
-		YIELD();
-	}
+	
+	YIELD();
 })
 
 /*
@@ -783,32 +780,30 @@ OPCODE_GEN(YIELD, "yield", N, 0, {
 	-------------------------
  */
 OPCODE_GEN(YIELD_TO, "yield_to", N, -1, {
-	CHECK_STACK(1);
+	CHECK_STACK(2);
 
 	_TMP_OBJ2 = STACK_POP();
-
-	if (AVAIL_STACK) {
-		_TMP_OBJ1 = STACK_POP();
-	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
-	}
+	_TMP_OBJ1 = STACK_POP();
 
 	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ2, IVM_NUMERIC_T),
 			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
 
-	INC_INSTR();
+	_TMP_CGID = ivm_numeric_getValue(_TMP_OBJ2);
+
+	CHECK_CGID();
+
+	RTM_ASSERT(!ivm_vmstate_isGroupLocked(_STATE, _TMP_CGID),
+			   IVM_ERROR_MSG_CORO_GROUP_SUSPENDED(_TMP_CGID));
+
 	SAVE_RUNTIME(_INSTR);
+	
+	_TMP_OBJ1 = ivm_vmstate_schedule_g(_STATE, _TMP_OBJ1, _TMP_CGID);
 
-	ivm_vmstate_yieldTo(_STATE, ivm_numeric_getValue(_TMP_OBJ2));
+	// NOTE: _TMP_OBJ1 ?= NULL
 
-	if (IVM_CORO_GET(_CORO, HAS_NATIVE)) {
-		_TMP_OBJ1 = ivm_vmstate_schedule_r(_STATE, _TMP_OBJ1);
-		UPDATE_RUNTIME();
-		STACK_PUSH(_TMP_OBJ1);
-		GOTO_CUR_INSTR();
-	} else {
-		YIELD();
-	}
+	UPDATE_RUNTIME();
+	STACK_PUSH(_TMP_OBJ1);
+	NEXT_INSTR();
 })
 
 /*

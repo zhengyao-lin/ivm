@@ -22,8 +22,6 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_vmstack_init(&ret->stack);
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
-	ret->group = 0;
-	ret->is_cur = IVM_FALSE;
 	ret->alive = IVM_FALSE;
 	ret->has_native = IVM_FALSE;
 
@@ -56,11 +54,6 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 						const ivm_char_t *msg)
 {
 	ivm_object_t *ret = ivm_object_new(state);
-	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
-	ivm_frame_stack_iterator_t fiter;
-	ivm_frame_t *frame;
-	ivm_instr_t *tmp_ip;
 
 	ivm_object_setSlot(ret, state,
 		IVM_VMSTATE_CONST(state, C_MSG),
@@ -68,6 +61,12 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 	);
 
 #if 0
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
+	ivm_frame_stack_iterator_t fiter;
+	ivm_frame_t *frame;
+	ivm_instr_t *tmp_ip;
+
 	IVM_TRACE("trace:\n");
 
 #define PRINT_POS() \
@@ -177,6 +176,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	IVM_REG ivm_instr_t *tmp_catch;
 	// IVM_REG void *tmp_jump_back = IVM_NULL;
 	// IVM_REG ivm_bool_t tmp_has_jump = IVM_FALSE;
+	IVM_REG ivm_cgid_t tmp_cgid;
 	IVM_REG ivm_bool_t tmp_bool;
 
 	/*****************************
@@ -344,4 +344,67 @@ ACTION_YIELD:
 
 END:
 	return _TMP_OBJ1;
+}
+
+ivm_bool_t
+ivm_cgroup_switchCoro(ivm_cgroup_t *group)
+{
+	ivm_coro_list_iterator_t i, end;
+	ivm_coro_list_t *list = &group->coros;
+
+	for (i = IVM_CORO_LIST_ITER_AT(list, group->cur + 1),
+		 end = IVM_CORO_LIST_ITER_END(list);
+		 i != end; i++) {
+		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
+			group->cur = IVM_CORO_LIST_ITER_INDEX(list, i);
+			return IVM_TRUE;
+		}
+	}
+
+	for (end = i,
+		 i = IVM_CORO_LIST_ITER_BEGIN(list);
+		 i != end; i++) {
+		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
+			group->cur = IVM_CORO_LIST_ITER_INDEX(list, i);
+			return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
+}
+
+void
+ivm_cgroup_travAndCompact(ivm_cgroup_t *group,
+						  ivm_traverser_arg_t *arg)
+{
+	ivm_size_t ocur = group->cur,
+			   ncur = 0, i = 0;
+	ivm_coro_list_iterator_t cur_iter, citer;
+	ivm_coro_t *tmp_coro;
+	ivm_bool_t cur_set = IVM_FALSE;
+
+	cur_iter = IVM_CORO_LIST_ITER_BEGIN(&group->coros);
+	IVM_CORO_LIST_EACHPTR(&group->coros, citer) {
+		tmp_coro = IVM_CORO_LIST_ITER_GET(citer);
+		
+		if (ivm_coro_isAlive(tmp_coro)) {
+			arg->trav_coro(tmp_coro, arg);
+			IVM_CORO_LIST_ITER_SET(cur_iter, tmp_coro);
+			if (i == ocur) {
+				cur_set = IVM_TRUE;
+				group->cur = ncur;
+			}
+			cur_iter++;
+			ncur++;
+		} else {
+			ivm_coro_free(tmp_coro, arg->state);
+		}
+
+		i++;
+	}
+	ivm_coro_list_setSize(&group->coros, ncur);
+
+	IVM_ASSERT(cur_set || !ocur, "impossible");
+
+	return;
 }

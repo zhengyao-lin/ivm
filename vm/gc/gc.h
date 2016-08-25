@@ -13,6 +13,7 @@
 IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
+struct ivm_coro_t_tag;
 
 /* typedef ivm_mark_t ivm_mark_period_t; */
 
@@ -112,6 +113,8 @@ typedef struct ivm_traverser_arg_t_tag {
 	ivm_collector_t *collector;
 	void (*trav_ctx)(ivm_context_t *ctx,
 					 struct ivm_traverser_arg_t_tag *arg);
+	void (*trav_coro)(struct ivm_coro_t_tag *coro,
+					  struct ivm_traverser_arg_t_tag *arg);
 	ivm_int_t gen;
 } ivm_traverser_arg_t;
 

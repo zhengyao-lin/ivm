@@ -29,8 +29,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_context_pool_t *ct_pool;				// 8
 
-	ivm_coro_list_t coro_list;					// 24
-	ivm_cgroup_stack_t cgroup_stack;
+	ivm_cgroup_list_t coro_groups;
 
 	// ivm_type_list_t type_list;
 	ivm_func_list_t func_list;					// 24
@@ -44,8 +43,6 @@ typedef struct ivm_vmstate_t_tag {
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
-	ivm_size_t cur_coro;						// 8
-	ivm_cgid_t max_cgroup;
 	ivm_cgid_t cur_cgroup;
 	ivm_int_t gc_flag; /* gc flag:				// 4
 						  > 0: open
@@ -53,16 +50,11 @@ typedef struct ivm_vmstate_t_tag {
 						  < 0: locked */
 
 	ivm_uid_gen_t uid_gen;						// 4
-	ivm_uid_t coro_list_uid;
 } ivm_vmstate_t;
 
-#define IVM_VMSTATE_GET_CUR_CORO(state) (ivm_coro_list_at(&(state)->coro_list, (state)->cur_coro))
-#define IVM_VMSTATE_GET_CORO_LIST(state) (&(state)->coro_list)
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps)
-
-#define IVM_VMSTATE_SET_CUR_CORO(state, val) ((state)->cur_coro = (val))
 
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
@@ -324,9 +316,6 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 
 #endif
 
-#define ivm_vmstate_addCoro_c(state, coro) (ivm_coro_list_add(&(state)->coro_list, (coro)))
-#define ivm_vmstate_coroCompacted(state) ((state)->coro_list_uid = ivm_uid_gen_nextPtr((state)->uid_gen))
-
 #define ivm_vmstate_setException(state, obj) ((state)->except = (obj))
 #define ivm_vmstate_getException(state) ((state)->except)
 
@@ -339,33 +328,92 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 	return tmp;
 }
 
+IVM_INLINE
+ivm_size_t
+ivm_vmstate_addCoro_c(ivm_vmstate_t *state,
+					  ivm_coro_t *coro,
+					  ivm_cgid_t gid)
+{
+	return ivm_cgroup_addCoro(ivm_cgroup_list_at(&state->coro_groups, gid), coro);
+}
+
+IVM_INLINE
 ivm_size_t
 ivm_vmstate_addCoro(ivm_vmstate_t *state,
-					ivm_function_object_t *func);
+					ivm_function_object_t *func,
+					ivm_cgid_t gid)
+{
+	ivm_coro_t *coro;
+
+	coro = ivm_coro_new(state);
+	ivm_coro_setRoot(coro, state, func);
+	
+	return ivm_vmstate_addCoro_c(state, coro, gid);
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_vmstate_addCoroToCurGroup(ivm_vmstate_t *state,
+							  ivm_function_object_t *func)
+{
+	return ivm_vmstate_addCoro(state, func, state->cur_cgroup);
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_vmstate_addCoroToCurGroup_c(ivm_vmstate_t *state,
+								ivm_coro_t *coro)
+{
+	return ivm_vmstate_addCoro_c(state, coro, state->cur_cgroup);
+}
 
 ivm_cgid_t
 ivm_vmstate_addGroup(ivm_vmstate_t *state,
 					 ivm_function_object_t *func);
 
-ivm_cgid_t
-ivm_vmstate_addToGroup(ivm_vmstate_t *state,
-					   ivm_function_object_t *func,
-					   ivm_cgid_t gid);
+IVM_INLINE
+ivm_cgroup_t *
+ivm_vmstate_curGroup(ivm_vmstate_t *state)
+{
+	return ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup);
+}
 
-ivm_cgid_t
-ivm_vmstate_addToCurrentGroup(ivm_vmstate_t *state,
-							  ivm_function_object_t *func);
+IVM_INLINE
+ivm_coro_t *
+ivm_vmstate_curCoro(ivm_vmstate_t *state)
+{
+	return ivm_cgroup_curCoro(ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup));
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_vmstate_hasGroup(ivm_vmstate_t *state, ivm_cgid_t gid)
+{
+	return gid < ivm_cgroup_list_size(&state->coro_groups);
+}
 
 void
-ivm_vmstate_yieldTo(ivm_vmstate_t *state,
-					ivm_cgid_t gid);
+ivm_vmstate_travAndCompactGroup(ivm_vmstate_t *state,
+								ivm_traverser_arg_t *arg);
 
-void
-ivm_vmstate_schedule(ivm_vmstate_t *state);
+IVM_INLINE
+ivm_bool_t
+ivm_vmstate_isGroupLocked(ivm_vmstate_t *state, ivm_cgid_t gid)
+{
+	return ivm_cgroup_isLocked(ivm_cgroup_list_at(&state->coro_groups, gid));
+}
 
 ivm_object_t *
-ivm_vmstate_schedule_r(ivm_vmstate_t *state,
-					   ivm_object_t *ret);
+ivm_vmstate_schedule_g(ivm_vmstate_t *state,
+					   ivm_object_t *val,
+					   ivm_cgid_t gid);
+
+IVM_INLINE
+ivm_object_t *
+ivm_vmstate_schedule(ivm_vmstate_t *state)
+{
+	return ivm_vmstate_schedule_g(state, IVM_NULL, 0);
+}
 
 #define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
 

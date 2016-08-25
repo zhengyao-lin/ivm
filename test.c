@@ -36,12 +36,11 @@ IVM_NATIVE_FUNC(test)
 IVM_NATIVE_FUNC(call_func)
 {
 	ivm_function_object_t *func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
-	ivm_coro_t *coro = IVM_VMSTATE_GET(NAT_STATE(), CUR_CORO);
 
 	IVM_OUT("call function!!\n");
 
-	ivm_function_object_invoke(func, NAT_STATE(), coro);
-	ivm_coro_resume(coro, NAT_STATE(), IVM_NULL);
+	ivm_function_object_invoke(func, NAT_STATE(), NAT_CORO());
+	ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
 
 	return ivm_numeric_new(NAT_STATE(), 10016);
 }
@@ -89,7 +88,7 @@ int test_fib()
 	ctx = ivm_context_new(state, IVM_NULL);
 	ivm_context_addRef(ctx);
 
-	ivm_vmstate_addCoro_c(state, coro);
+	ivm_vmstate_addCoroToCurGroup_c(state, coro);
 
 #if 1
 	/********** top **********/
@@ -225,7 +224,7 @@ int test_call()
 	ctx = ivm_context_new(state, IVM_NULL);
 	ivm_context_addRef(ctx);
 
-	ivm_vmstate_addCoro_c(state, coro);
+	ivm_vmstate_addCoroToCurGroup_c(state, coro);
 
 	/********************** code ***********************/
 
@@ -535,8 +534,8 @@ int test_vm()
 	coro2 = ivm_coro_new(state);
 
 	/* add coroutines to vm state */
-	ivm_vmstate_addCoro_c(state, coro1);
-	ivm_vmstate_addCoro_c(state, coro2);
+	ivm_vmstate_addCoroToCurGroup_c(state, coro1);
+	ivm_vmstate_addCoroToCurGroup_c(state, coro2);
 
 	ivm_coro_setRoot(coro1, state,
 					 IVM_AS(ivm_function_object_new(state, ctx, func1),

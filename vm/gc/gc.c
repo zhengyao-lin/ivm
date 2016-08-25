@@ -412,41 +412,9 @@ IVM_INLINE
 void
 ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
-	ivm_coro_list_t *coros = IVM_VMSTATE_GET(arg->state, CORO_LIST);
 	ivm_type_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST), *end;
-	ivm_coro_t *tmp_coro, *cur_coro;
-	ivm_coro_list_iterator_t citer, cbegin;
-	ivm_bool_t compacted = IVM_FALSE;
 
-	cur_coro = IVM_VMSTATE_GET(arg->state, CUR_CORO);
-
-	cbegin = IVM_CORO_LIST_ITER_BEGIN(coros);
-	IVM_CORO_LIST_EACHPTR(coros, citer) {
-		tmp_coro = IVM_CORO_LIST_ITER_GET(citer);
-		if (ivm_coro_isAlive(tmp_coro)) {
-			ivm_collector_travCoro(tmp_coro, arg);
-			IVM_CORO_LIST_ITER_SET(cbegin, tmp_coro);
-
-			if (tmp_coro == cur_coro) {
-				IVM_VMSTATE_SET(
-					arg->state,
-					CUR_CORO,
-					IVM_CORO_LIST_ITER_INDEX(coros, cbegin)
-				);
-			}
-
-			cbegin++;
-		} else {
-			// assert tmp_coro != cur_coro
-			ivm_coro_free(tmp_coro, arg->state);
-			compacted = IVM_TRUE;
-		}
-	}
-	ivm_coro_list_setSize(coros, IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
-	// IVM_TRACE("remain coro: %ld\n", IVM_CORO_LIST_ITER_INDEX(coros, cbegin));
-	if (compacted) {
-		ivm_vmstate_coroCompacted(arg->state);
-	}
+	ivm_vmstate_travAndCompactGroup(arg->state, arg);
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
@@ -523,6 +491,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	arg.state = state;
 	arg.collector = collector;
 	arg.trav_ctx = ivm_collector_travContext;
+	arg.trav_coro = ivm_collector_travCoro;
 	arg.gen = collector->gen;
 
 	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);
