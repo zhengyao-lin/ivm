@@ -93,6 +93,12 @@ gid = group: {
 yield a to gid
 */
 
+sort = import("test/sort")
+mod = import("testmod")
+
+sort.printl(sort.bubble([5, 4, 3, 2, 1]))
+mod.test()
+
 b = "no"
 
 (fn: {

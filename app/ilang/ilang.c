@@ -93,6 +93,15 @@ FAILED:
 	return ret ? ret : IVM_NULL_OBJ(NAT_STATE());
 }
 
+IVM_NATIVE_FUNC(import)
+{
+	const ivm_string_t *mod;
+
+	MATCH_ARG("s", &mod);
+
+	return ivm_mod_load(mod, NAT_STATE(), NAT_CORO(), NAT_CONTEXT());
+}
+
 IVM_PRIVATE
 IVM_INLINE
 ivm_exec_unit_t *
@@ -111,7 +120,7 @@ _parse_source(const ivm_char_t *path)
 	ivm_file_free(file);
 
 	if (!src) goto FAILED;
-
+	
 	t_unit = ilang_parser_parseSource(path, src, IVM_FALSE);
 
 	if (!t_unit) goto FAILED;
@@ -151,8 +160,8 @@ ilang_mod_loadSource(const ivm_char_t *path,
 
 	IVM_ASSERT(root, "impossible");
 
-	ivm_function_invoke_r(root, state, coro, IVM_NULL);
-	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
+	ivm_function_invoke_r(root, state, coro, context);
+	dest = ivm_context_addRef(ivm_coro_getRuntimeLocal(coro));
 	ivm_coro_resume(coro, state, IVM_NULL);
 
 	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
@@ -327,6 +336,8 @@ int main(int argc, const char **argv)
 		ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
 		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));
 		ivm_context_setSlot_r(ctx, state, "eval", IVM_NATIVE_WRAP(state, eval));
+		ivm_context_setSlot_r(ctx, state, "import", IVM_NATIVE_WRAP(state, import));
+
 		ivm_context_setSlot_r(ctx, state, "null", IVM_NULL_OBJ(state));
 		ivm_context_setSlot_r(ctx, state, "undefined", IVM_UNDEFINED(state));
 

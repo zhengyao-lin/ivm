@@ -119,6 +119,17 @@ ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
 	return IVM_NULL;
 }
 
+IVM_INLINE
+ivm_context_t *
+ivm_coro_getRuntimeLocal(ivm_coro_t *coro)
+{
+	if (coro->alive) {
+		return IVM_RUNTIME_GET(&coro->runtime, CONTEXT);
+	}
+
+	return IVM_NULL;
+}
+
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 

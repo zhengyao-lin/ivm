@@ -703,7 +703,7 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 	RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 
-	ivm_vmstate_addCoroToCurGroup(
+	ivm_vmstate_addCoroToCurCGroup(
 		_STATE,
 		IVM_AS(_TMP_OBJ1, ivm_function_object_t)
 	);
@@ -721,7 +721,7 @@ OPCODE_GEN(GROUP, "group", N, 0, {
 
 	STACK_PUSH(
 		ivm_numeric_new(_STATE,
-			ivm_vmstate_addGroup(
+			ivm_vmstate_addCGroup(
 				_STATE,
 				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
 			)
@@ -792,7 +792,7 @@ OPCODE_GEN(YIELD_TO, "yield_to", N, -1, {
 
 	CHECK_CGID();
 
-	RTM_ASSERT(!ivm_vmstate_isGroupLocked(_STATE, _TMP_CGID),
+	RTM_ASSERT(!ivm_vmstate_isCGroupLocked(_STATE, _TMP_CGID),
 			   IVM_ERROR_MSG_CORO_GROUP_SUSPENDED(_TMP_CGID));
 
 	SAVE_RUNTIME(_INSTR);

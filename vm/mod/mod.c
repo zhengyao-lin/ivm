@@ -59,6 +59,9 @@ IVM_PRIVATE
 ivm_rawstr_list_t _mod_path_list;
 
 IVM_PRIVATE
+ivm_size_t _mod_path_max_len = 0;
+
+IVM_PRIVATE
 ivm_dll_list_t _dll_list;
 
 IVM_PRIVATE
@@ -73,7 +76,12 @@ IVM_PRIVATE
 void
 _ivm_mod_addModPath(const ivm_char_t *path)
 {
-	ivm_rawstr_list_push(&_mod_path_list, IVM_STRDUP(path));
+	ivm_size_t len = IVM_STRLEN(path);
+
+	if (len > _mod_path_max_len)
+		_mod_path_max_len = len;
+
+	ivm_rawstr_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
 	return;
 }
 
@@ -82,6 +90,9 @@ void
 _ivm_mod_addModPath_l(const ivm_char_t *path,
 					  ivm_size_t len)
 {
+	if (len > _mod_path_max_len)
+		_mod_path_max_len = len;
+
 	ivm_rawstr_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
 	return;
 }
@@ -180,16 +191,27 @@ ivm_mod_clean()
 	return;
 }
 
+IVM_PRIVATE
+IVM_INLINE
+ivm_size_t
+_get_max_buf_size(ivm_size_t mod_name_len)
+{
+	return _mod_path_max_len + 1 + mod_name_len + 5 + _mod_suffix_max_len + 1;
+}
+
+/* buffer guaranteed to have enough size */
+IVM_PRIVATE
+IVM_INLINE
 ivm_mod_loader_t
-ivm_mod_search(const ivm_char_t *mod_name,
-			   ivm_char_t *path_buf,
-			   ivm_size_t buf_size)
+_ivm_mod_search_c(const ivm_char_t *mod_name,
+				  ivm_size_t mod_len,
+				  ivm_char_t *buf)
 {
 	ivm_rawstr_list_iteartor_t iter;
 	ivm_mod_suffix_list_iteartor_t siter;
 	const ivm_char_t *tmp;
 	ivm_char_t *brk;
-	ivm_size_t len1, len2, len3;
+	ivm_size_t len1, len2;
 	ivm_int_t i;
 	ivm_mod_suffix_t tmp_suf;
 
@@ -213,19 +235,19 @@ ivm_mod_search(const ivm_char_t *mod_name,
 #undef SUF
 	};
 
-	len2 = IVM_STRLEN(mod_name);
+	len2 = mod_len;
+
+	/*
+		max situation:
+
+		len1          1              len2        5         ?      1
+		tmp + IVM_FILE_SEPARATOR + mod_name + "/init" + ".suf" + "\0"
+	 */
+	// ivm_char_t buf[_get_max_buf_size(len2)];
 
 	IVM_RAWSTR_LIST_EACHPTR_R(&_mod_path_list, iter) {
 		tmp = IVM_RAWSTR_LIST_ITER_GET(iter);
 		len1 = IVM_STRLEN(tmp);
-
-		/*
-			max situation:
-
-			len1          1              len2        5         ?      1
-			tmp + IVM_FILE_SEPARATOR + mod_name + "/init" + ".suf" + "\0"
-		 */
-		ivm_char_t buf[len1 + 1 + len2 + 5 + _mod_suffix_max_len + 1];
 
 		MEM_COPY(buf, tmp, len1);
 		buf[len1] = IVM_FILE_SEPARATOR;
@@ -241,17 +263,65 @@ ivm_mod_search(const ivm_char_t *mod_name,
 
 				IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
 				if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
-					len3 = len1 + 1 + len2 + sufs[i].len + tmp_suf.len + 1;
-
-					len3 = buf_size > len3 ? len3 : buf_size;
-					MEM_COPY(path_buf, buf, len3);
-					path_buf[len3] = '\0'; /* in case buf_size is smaller than string length */
-
 					return tmp_suf.loader;
 				}
 			}
 		}
 	}
+
+	return IVM_NULL;
+}
+
+ivm_mod_loader_t
+ivm_mod_search(const ivm_char_t *mod_name,
+			   ivm_char_t *path_buf,
+			   ivm_size_t buf_size)
+{
+	/*
+		max situation:
+
+		len1          1              len2        5         ?      1
+		tmp + IVM_FILE_SEPARATOR + mod_name + "/init" + ".suf" + "\0"
+	 */
+	ivm_size_t mod_len = IVM_STRLEN(mod_name), len;
+	ivm_char_t buf[_get_max_buf_size(mod_len)];
+	ivm_mod_loader_t ret;
+
+	ret = _ivm_mod_search_c(mod_name, mod_len, buf);
+
+	if (ret) {
+		len = IVM_STRLEN(buf) + 1;
+
+		len = buf_size >= len ? len : buf_size;
+		MEM_COPY(path_buf, buf, len);
+		path_buf[len - 1] = '\0'; /* in case buf_size is smaller than string length */
+	}
+
+	return ret;
+}
+
+ivm_object_t *
+ivm_mod_load(const ivm_string_t *mod_name,
+			 ivm_vmstate_t *state,
+			 ivm_coro_t *coro,
+			 ivm_context_t *context)
+{
+	ivm_mod_loader_t loader;
+	ivm_size_t len = ivm_string_length(mod_name);
+	ivm_char_t buf[_get_max_buf_size(len)];
+	const ivm_char_t *err;
+	ivm_object_t *ret;
+
+	loader = _ivm_mod_search_c(ivm_string_trimHead(mod_name),
+							   len, buf);
+
+	if (loader) {
+		ret = loader(buf, &err, state, coro, context);
+		// TODO: if ret == IVM_NULL, add exception
+		return ret;
+	}
+
+	// TODO: add exception
 
 	return IVM_NULL;
 }

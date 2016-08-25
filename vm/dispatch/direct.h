@@ -88,7 +88,7 @@
 	}
 
 #define CHECK_CGID() \
-	RTM_ASSERT(ivm_vmstate_hasGroup(_STATE, _TMP_CGID),          \
+	RTM_ASSERT(ivm_vmstate_hasCGroup(_STATE, _TMP_CGID),          \
 			   IVM_ERROR_MSG_CORO_GROUP_NOT_EXIST(_TMP_CGID));
 
 #define YIELD() goto ACTION_YIELD

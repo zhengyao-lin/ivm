@@ -101,7 +101,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 
 	if (out_ref || !len || ivm_instr_opcode(i - 1) != IVM_OPCODE(RETURN)) {
 		tmp = ivm_opt_instr_build(
-			.lineno = ivm_instr_lineno(i),
+			.lineno = -1,
 			.opc = IVM_OPCODE(RETURN),
 			.addr = -1
 		);

@@ -74,6 +74,12 @@ ivm_mod_search(const ivm_char_t *mod_name,
 			   ivm_char_t *path_buf,
 			   ivm_size_t buf_size);
 
+ivm_object_t *
+ivm_mod_load(const ivm_string_t *mod_name,
+			 ivm_vmstate_t *state,
+			 ivm_coro_t *coro,
+			 ivm_context_t *context);
+
 /*
 	if *err is not null, something is wrong
  */

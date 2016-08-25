@@ -95,14 +95,22 @@ ivm_coro_printException(ivm_coro_t *coro,
 						ivm_vmstate_t *state,
 						ivm_object_t *except)
 {
-	ivm_object_t *msg_obj = ivm_object_getSlot(
-		except, state,
-		IVM_VMSTATE_CONST(state, C_MSG)
-	);
+	ivm_object_t *msg_obj;
 	const ivm_char_t *msg = "custom exception";
 
-	if (msg_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
-		msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
+	if (except) {
+		msg_obj = ivm_object_getSlot(
+			except, state,
+			IVM_VMSTATE_CONST(state, C_MSG)
+		);
+
+		if (msg_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
+			msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
+		} else {
+			msg = "custom exception";
+		}
+	} else {
+		msg = "unknown exception";
 	}
 
 	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, msg));

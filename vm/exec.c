@@ -287,7 +287,7 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 	ivm_function_t *root = ivm_exec_unit_mergeToVM(unit, state);
 
 	if (root) {
-		ivm_vmstate_addCoroToCurGroup(
+		ivm_vmstate_addCoroToCurCGroup(
 			state, IVM_AS(
 				ivm_function_object_new(
 					state, IVM_NULL, root

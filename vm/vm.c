@@ -140,8 +140,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 }
 
 void
-ivm_vmstate_travAndCompactGroup(ivm_vmstate_t *state,
-								ivm_traverser_arg_t *arg)
+ivm_vmstate_travAndCompactCGroup(ivm_vmstate_t *state,
+								 ivm_traverser_arg_t *arg)
 {
 	ivm_cgroup_list_iterator_t giter;
 	ivm_cgroup_t *group;
@@ -157,8 +157,8 @@ ivm_vmstate_travAndCompactGroup(ivm_vmstate_t *state,
 }
 
 ivm_cgid_t
-ivm_vmstate_addGroup(ivm_vmstate_t *state,
-					 ivm_function_object_t *func)
+ivm_vmstate_addCGroup(ivm_vmstate_t *state,
+					  ivm_function_object_t *func)
 {
 	ivm_cgroup_list_iterator_t giter;
 	ivm_coro_t *coro;

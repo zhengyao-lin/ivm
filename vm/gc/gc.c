@@ -414,7 +414,7 @@ ivm_collector_travState(ivm_traverser_arg_t *arg)
 {
 	ivm_type_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST), *end;
 
-	ivm_vmstate_travAndCompactGroup(arg->state, arg);
+	ivm_vmstate_travAndCompactCGroup(arg->state, arg);
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {

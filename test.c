@@ -88,7 +88,7 @@ int test_fib()
 	ctx = ivm_context_new(state, IVM_NULL);
 	ivm_context_addRef(ctx);
 
-	ivm_vmstate_addCoroToCurGroup_c(state, coro);
+	ivm_vmstate_addCoroToCurCGroup_c(state, coro);
 
 #if 1
 	/********** top **********/
@@ -224,7 +224,7 @@ int test_call()
 	ctx = ivm_context_new(state, IVM_NULL);
 	ivm_context_addRef(ctx);
 
-	ivm_vmstate_addCoroToCurGroup_c(state, coro);
+	ivm_vmstate_addCoroToCurCGroup_c(state, coro);
 
 	/********************** code ***********************/
 
@@ -534,8 +534,8 @@ int test_vm()
 	coro2 = ivm_coro_new(state);
 
 	/* add coroutines to vm state */
-	ivm_vmstate_addCoroToCurGroup_c(state, coro1);
-	ivm_vmstate_addCoroToCurGroup_c(state, coro2);
+	ivm_vmstate_addCoroToCurCGroup_c(state, coro1);
+	ivm_vmstate_addCoroToCurCGroup_c(state, coro2);
 
 	ivm_coro_setRoot(coro1, state,
 					 IVM_AS(ivm_function_object_new(state, ctx, func1),

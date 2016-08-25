@@ -353,27 +353,27 @@ ivm_vmstate_addCoro(ivm_vmstate_t *state,
 
 IVM_INLINE
 ivm_size_t
-ivm_vmstate_addCoroToCurGroup(ivm_vmstate_t *state,
-							  ivm_function_object_t *func)
+ivm_vmstate_addCoroToCurCGroup(ivm_vmstate_t *state,
+							   ivm_function_object_t *func)
 {
 	return ivm_vmstate_addCoro(state, func, state->cur_cgroup);
 }
 
 IVM_INLINE
 ivm_size_t
-ivm_vmstate_addCoroToCurGroup_c(ivm_vmstate_t *state,
-								ivm_coro_t *coro)
+ivm_vmstate_addCoroToCurCGroup_c(ivm_vmstate_t *state,
+								 ivm_coro_t *coro)
 {
 	return ivm_vmstate_addCoro_c(state, coro, state->cur_cgroup);
 }
 
 ivm_cgid_t
-ivm_vmstate_addGroup(ivm_vmstate_t *state,
-					 ivm_function_object_t *func);
+ivm_vmstate_addCGroup(ivm_vmstate_t *state,
+					  ivm_function_object_t *func);
 
 IVM_INLINE
 ivm_cgroup_t *
-ivm_vmstate_curGroup(ivm_vmstate_t *state)
+ivm_vmstate_curCGroup(ivm_vmstate_t *state)
 {
 	return ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup);
 }
@@ -387,18 +387,18 @@ ivm_vmstate_curCoro(ivm_vmstate_t *state)
 
 IVM_INLINE
 ivm_bool_t
-ivm_vmstate_hasGroup(ivm_vmstate_t *state, ivm_cgid_t gid)
+ivm_vmstate_hasCGroup(ivm_vmstate_t *state, ivm_cgid_t gid)
 {
 	return gid < ivm_cgroup_list_size(&state->coro_groups);
 }
 
 void
-ivm_vmstate_travAndCompactGroup(ivm_vmstate_t *state,
-								ivm_traverser_arg_t *arg);
+ivm_vmstate_travAndCompactCGroup(ivm_vmstate_t *state,
+								 ivm_traverser_arg_t *arg);
 
 IVM_INLINE
 ivm_bool_t
-ivm_vmstate_isGroupLocked(ivm_vmstate_t *state, ivm_cgid_t gid)
+ivm_vmstate_isCGroupLocked(ivm_vmstate_t *state, ivm_cgid_t gid)
 {
 	return ivm_cgroup_isLocked(ivm_cgroup_list_at(&state->coro_groups, gid));
 }

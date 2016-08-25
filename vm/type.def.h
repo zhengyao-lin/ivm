@@ -18,7 +18,7 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t), {
 
 TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
 	
-	ivm_object_t *tmp = ivm_string_object_new(_STATE, IVM_NULL);
+	ivm_object_t *tmp = ivm_string_object_new(_STATE, IVM_VMSTATE_CONST(_STATE, C_EMPTY));
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
