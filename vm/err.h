@@ -78,6 +78,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_YIELD_ATOM_CORO					("yield in a atomic coroutine(has native call(s) in the stack)")
 #define IVM_ERROR_MSG_CORO_GROUP_NOT_EXIST(cgid)		"coro group with id %d does not exist", (cgid)
 #define IVM_ERROR_MSG_CORO_GROUP_SUSPENDED(cgid)		"coro group with id %d has suspended and cannot be yielded to", (cgid)
+#define IVM_ERROR_MSG_MOD_NOT_FOUND(mod)				"module '%s' not found in any specified module search path", (mod)
+#define IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, path, msg)	"error(s) happended loading module '%s'(found at %s): %s", (mod), (path), (msg)
 
 IVM_COM_END
 

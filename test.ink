@@ -96,6 +96,18 @@ yield a to gid
 sort = import("test/sort")
 mod = import("testmod")
 
+try: import("build/lib/wrongmod")
+catch err: print(err.msg)
+
+try: import("build/lib/libivm-vm")
+catch err: print(err.msg)
+
+try: import("never_found")
+catch err: print(err.msg)
+
+try: import("wrongmod")
+catch err: print(err.msg)
+
 sort.printl(sort.bubble([5, 4, 3, 2, 1]))
 mod.test()
 

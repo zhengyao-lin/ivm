@@ -55,20 +55,25 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 						struct ivm_vmstate_t_tag *state,
 						const ivm_char_t *msg);
 
+#define IVM_CORO_NATIVE_FATAL(coro, state, ...) \
+	ivm_char_t __rtm_assert_buf__[            \
+		IVM_DEFAULT_EXCEPTION_BUFFER_SIZE     \
+	];                                        \
+	ivm_object_t *exc;                        \
+	IVM_SNPRINTF(                             \
+		__rtm_assert_buf__,                   \
+		IVM_ARRLEN(__rtm_assert_buf__),       \
+		__VA_ARGS__                           \
+	);                                        \
+	exc = ivm_coro_newException_s(            \
+		(coro), (state), __rtm_assert_buf__   \
+	);                                        \
+	ivm_vmstate_setException((state), exc);   \
+	return IVM_NULL;
+
 #define IVM_CORO_NATIVE_ASSERT(coro, state, cond, ...) \
-	if (!(cond)) {                                \
-		char __rtm_assert_buf__[128];             \
-		ivm_object_t *exc;                        \
-		IVM_SNPRINTF(                             \
-			__rtm_assert_buf__,                   \
-			IVM_ARRLEN(__rtm_assert_buf__),       \
-			__VA_ARGS__                           \
-		);                                        \
-		exc = ivm_coro_newException_s(            \
-			(coro), (state), __rtm_assert_buf__   \
-		);                                        \
-		ivm_vmstate_setException((state), exc);   \
-		return IVM_NULL;                          \
+	if (!(cond)) {                                            \
+		IVM_CORO_NATIVE_FATAL((coro), (state), __VA_ARGS__);  \
 	}
 
 ivm_object_t *

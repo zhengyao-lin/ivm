@@ -72,7 +72,9 @@
 	goto OPCODE_##opc;
 
 #define RTM_FATAL(...) \
-	char __rtm_assert_buf__[256];             \
+	ivm_char_t __rtm_assert_buf__[            \
+		IVM_DEFAULT_EXCEPTION_BUFFER_SIZE     \
+	];                                        \
 	IVM_SNPRINTF(                             \
 		__rtm_assert_buf__,                   \
 		IVM_ARRLEN(__rtm_assert_buf__),       \

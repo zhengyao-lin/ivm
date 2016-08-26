@@ -261,7 +261,7 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 				tmp_suf = IVM_MOD_SUFFIX_LIST_ITER_GET(siter);
 				MEM_COPY(brk + sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
 
-				IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
+				// IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
 				if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
 					return tmp_suf.loader;
 				}
@@ -309,19 +309,23 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	ivm_mod_loader_t loader;
 	ivm_size_t len = ivm_string_length(mod_name);
 	ivm_char_t buf[_get_max_buf_size(len)];
-	const ivm_char_t *err;
+	const ivm_char_t *err = IVM_NULL, *mod = ivm_string_trimHead(mod_name);
 	ivm_object_t *ret;
 
-	loader = _ivm_mod_search_c(ivm_string_trimHead(mod_name),
-							   len, buf);
+	loader = _ivm_mod_search_c(mod, len, buf);
 
 	if (loader) {
 		ret = loader(buf, &err, state, coro, context);
-		// TODO: if ret == IVM_NULL, add exception
+
+		IVM_CORO_NATIVE_ASSERT(
+			coro, state, ret && !err,
+			IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
+		);
+
 		return ret;
 	}
 
-	// TODO: add exception
+	IVM_CORO_NATIVE_FATAL(coro, state, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
 
 	return IVM_NULL;
 }
