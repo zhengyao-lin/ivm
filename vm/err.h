@@ -9,26 +9,37 @@
 
 IVM_COM_HEADER
 
-#define IVM_ASSERT(cond, ...) \
-	if (!(cond)) { \
-		fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
-		fprintf(IVM_STDERR, __VA_ARGS__); \
-		fputc('\n', IVM_STDERR); \
-		IVM_ABORT(); \
-	}
-
-#define IVM_ASSERT_S(cond) \
-	if (!(cond)) { \
-		fprintf(IVM_STDERR, "at %s: line %d: assertion failed: %s\n", \
-				__FILE__, __LINE__, #cond); \
-		IVM_ABORT(); \
-	}
-
-#define IVM_FATAL(...) \
+#define IVM_ERROR(...) \
 	fprintf(IVM_STDERR, "at %s: line %d: ", __FILE__, __LINE__); \
 	fprintf(IVM_STDERR, __VA_ARGS__); \
-	fputc('\n', IVM_STDERR); \
-	IVM_ABORT();
+	fputc('\n', IVM_STDERR);
+
+#ifdef IVM_DEBUG
+
+	#define IVM_ASSERT(cond, ...) \
+		if (!(cond)) { \
+			IVM_ERROR(__VA_ARGS__); \
+			IVM_ABORT(); \
+		}
+
+	#define IVM_ASSERT_S(cond) \
+		if (!(cond)) { \
+			fprintf(IVM_STDERR, "at %s: line %d: assertion failed: %s\n", \
+					__FILE__, __LINE__, #cond); \
+			IVM_ABORT(); \
+		}
+
+	#define IVM_FATAL(...) \
+		IVM_ERROR(__VA_ARGS__); \
+		IVM_ABORT();
+
+#else
+
+	#define IVM_ASSERT(cond, ...) (cond)
+	#define IVM_ASSERT_S(cond) (cond)
+	#define IVM_FATAL(...)
+
+#endif
 
 #define IVM_ERROR_MSG_UNKNOWN_ERROR						("unknown error")
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)			("failed to allocate new room for new " name)

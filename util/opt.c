@@ -333,6 +333,8 @@ _to_reg_op(ivm_opcode_t cmp)
 #undef CASE
 
 	IVM_FATAL("impossible");
+
+	return IVM_OPCODE(NOP);
 }
 
 IVM_PRIVATE

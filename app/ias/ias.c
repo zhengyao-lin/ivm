@@ -185,7 +185,7 @@ int main(int argc, const char **argv)
 			unit = ivm_serial_unserializeExecUnit(s_unit);
 			ivm_serial_exec_unit_free(s_unit);
 		} else {
-			IVM_FATAL(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "ivm cache"));
+			IVM_ERROR(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "ivm cache"));
 		}
 	}
 

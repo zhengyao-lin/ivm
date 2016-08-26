@@ -12,7 +12,7 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -g -Wpedantic -Wno-unused-value -DIVM_DEBUG=1")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wpedantic -Wno-unused-value")
 
 # avoid warnings on MinGW
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -28,13 +28,26 @@ endif()
 
 # set flags for different versions
 if(VERSION STREQUAL "release")
+	
+	# real releasing mode
 	message(STATUS "Compile in release mode")
 	set(CMAKE_BUILD_TYPE Release)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+
+elseif(VERSION STREQUAL "prerelease")
+	
+	# prereleasing mode, used for performance test
+	message(STATUS "Compile in prerelease mode")
+	set(CMAKE_BUILD_TYPE Release)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -DIVM_DEBUG=1")
+
 elseif((VERSION STREQUAL "debug") OR (NOT DEFINED VERSION))
+
+	# normal debug mode
 	message(STATUS "Compile in debug mode")
 	set(CMAKE_BUILD_TYPE Debug)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_DEBUG=1")
+
 else()
 	message(FATAL_ERROR "Unknown compile mode '${VERSION}'")
 endif()
