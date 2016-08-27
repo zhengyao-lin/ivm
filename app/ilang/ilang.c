@@ -162,7 +162,10 @@ ilang_mod_loadSource(const ivm_char_t *path,
 
 	ivm_function_invoke_r(root, state, coro, context);
 	dest = ivm_context_addRef(ivm_coro_getRuntimeLocal(coro));
-	ivm_coro_resume(coro, state, IVM_NULL);
+
+	if (!ivm_coro_resume(coro, state, IVM_NULL)) {
+		goto FAILED;
+	}
 
 	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
 

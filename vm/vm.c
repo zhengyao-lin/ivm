@@ -199,6 +199,7 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 {
 	ivm_cgroup_t *group = ivm_cgroup_list_at(&state->coro_groups, gid);
 	ivm_cgid_t orig = state->cur_cgroup;
+	ivm_coro_t *coro;
 
 	if (!ivm_cgroup_isAlive(group)) {
 		return val;
@@ -208,7 +209,15 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 	ivm_cgroup_lock(group);
 
 	do {
-		val = ivm_coro_resume(ivm_cgroup_curCoro(group), state, val);
+		coro = ivm_cgroup_curCoro(group);
+		val = ivm_coro_resume(coro, state, val);
+		
+		if (!val) {
+			// coro killed by an exception
+			ivm_coro_printException(coro, state, ivm_vmstate_popException(state));
+			val = IVM_NULL_OBJ(state);
+		}
+
 		group = ivm_cgroup_list_at(&state->coro_groups, gid);
 	} while (ivm_cgroup_switchCoro(group));
 

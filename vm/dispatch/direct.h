@@ -96,6 +96,7 @@
 #define YIELD() goto ACTION_YIELD
 #define RETURN() goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
+
 #define RAISE(obj) \
 	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
 	SAVE_RUNTIME(tmp_ip);                                \
@@ -108,6 +109,21 @@
 	} else {                                             \
 		/* no raise protection -> fall back */           \
 		goto ACTION_RAISE;                               \
+	}
+
+/* exception detected */
+#define EXCEPTION() \
+	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
+	SAVE_RUNTIME(tmp_ip);                                \
+	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);        \
+	if (_TMP_CATCH) {                                    \
+		/* cancel raise protection */                    \
+		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);      \
+		STACK_PUSH(_TMP_OBJ1);                           \
+		GOTO_SET_INSTR(_TMP_CATCH);                      \
+	} else {                                             \
+		/* no raise protection -> fall back */           \
+		goto ACTION_EXCEPTION;                           \
 	}
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))

@@ -61,8 +61,7 @@
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                               \
 	        if (!_TMP_OBJ1) {                                                                  \
-	        	_TMP_OBJ1 = ivm_vmstate_popException(_STATE);                                  \
-				RAISE(_TMP_OBJ1);                                                              \
+	        	EXCEPTION();                                                                   \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
@@ -122,8 +121,7 @@
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);         \
 	        if (!_TMP_OBJ1) {                                                                  \
-	        	_TMP_OBJ1 = ivm_vmstate_popException(_STATE);                                  \
-				RAISE(_TMP_OBJ1);                                                              \
+	        	EXCEPTION();                                                                   \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
@@ -156,7 +154,7 @@
 			_TMP_CMP_REG                                                                       \
 			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);         \
 			if (ivm_vmstate_getException(_STATE)) {                                            \
-				RAISE(ivm_vmstate_popException(_STATE));                                       \
+				EXCEPTION();                                                                   \
 			}                                                                                  \
 	        STACK_PUSH(ivm_numeric_new(_STATE, _TMP_CMP_REG));                                 \
 			NEXT_INSTR();                                                                      \
@@ -190,7 +188,7 @@
 	        _TMP_CMP_REG                                                                       \
 	        = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, IVM_NULL);         \
 	        if (ivm_vmstate_getException(_STATE)) {                                            \
-				RAISE(ivm_vmstate_popException(_STATE));                                       \
+				EXCEPTION();                                                                   \
 			}                                                                                  \
 			NEXT_INSTR();                                                                      \
 		}                                                                                      \

@@ -24,7 +24,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	exec_backup = env->cur_exec;
 	env->cur_exec = exec;
 
-	ivm_exec_setSourcePos(exec, env->file);
+	// ivm_exec_setSourcePos(exec, env->file);
 
 	/*
 		ink calling convention:

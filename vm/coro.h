@@ -55,6 +55,11 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 						struct ivm_vmstate_t_tag *state,
 						const ivm_char_t *msg);
 
+void
+ivm_coro_printException(ivm_coro_t *coro,
+						struct ivm_vmstate_t_tag *state,
+						ivm_object_t *except);
+
 #define IVM_CORO_NATIVE_FATAL(coro, state, ...) \
 	ivm_char_t __rtm_assert_buf__[            \
 		IVM_DEFAULT_EXCEPTION_BUFFER_SIZE     \

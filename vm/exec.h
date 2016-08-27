@@ -19,11 +19,17 @@ struct ivm_vmstate_t_tag;
 struct ivm_function_t_tag;
 
 typedef struct ivm_source_pos_t_tag {
-	const ivm_string_t *file;
+	IVM_REF_HEADER
+	ivm_char_t *file;
 } ivm_source_pos_t;
 
-#define ivm_source_pos_build(file) ((ivm_source_pos_t) { (file) })
-#define ivm_source_pos_getPath(pos) ((pos)->file)
+ivm_source_pos_t *
+ivm_source_pos_new(const ivm_char_t *file);
+
+void
+ivm_source_pos_free(ivm_source_pos_t *pos);
+
+#define ivm_source_pos_getFile(pos) ((pos)->file)
 
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
@@ -31,7 +37,7 @@ typedef struct ivm_exec_t_tag {
 	ivm_uint_t offset;
 
 	ivm_string_pool_t *pool;
-	ivm_source_pos_t pos;
+	ivm_source_pos_t *pos;
 
 	// ivm_int_t max_stack; // max stack size needed
 	// ivm_int_t fin_stack; // final stack size
@@ -89,15 +95,22 @@ ivm_exec_empty(ivm_exec_t *exec)
 IVM_INLINE
 void
 ivm_exec_setSourcePos(ivm_exec_t *exec,
-					  const ivm_char_t *path)
+					  ivm_source_pos_t *pos)
 {
-	exec->pos = ivm_source_pos_build(
-		ivm_exec_getString(exec, ivm_exec_registerString(exec, path))
-	);
+	if (exec->pos) {
+		ivm_source_pos_free(exec->pos);
+	}
+
+	if (pos) {
+		ivm_ref_inc(pos);
+	}
+
+	exec->pos = pos;
+	
 	return;
 }
 
-#define ivm_exec_getSourcePos(exec) (&(exec)->pos)
+#define ivm_exec_getSourcePos(exec) ((exec)->pos)
 
 #define ivm_exec_setArgAt(exec, i, val) ((exec)->instrs[i].arg = ivm_opcode_arg_fromInt(val))
 
@@ -180,6 +193,7 @@ ivm_exec_list_empty(ivm_exec_list_t *list)
 
 typedef struct {
 	ivm_size_t root;
+	ivm_source_pos_t *pos;
 	ivm_exec_list_t *execs;
 	ivm_uint_t offset;
 } ivm_exec_unit_t;
@@ -196,6 +210,26 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit);
 #define ivm_exec_unit_offset(unit) ((unit)->offset)
 
 #define ivm_exec_unit_setOffset(unit, ofs) ((unit)->offset = (ofs))
+
+IVM_INLINE
+void
+ivm_exec_unit_setSourcePos(ivm_exec_unit_t *unit,
+						   ivm_source_pos_t *pos)
+{
+	if (unit->pos) {
+		ivm_source_pos_free(unit->pos);
+	}
+
+	if (pos) {
+		ivm_ref_inc(pos);
+	}
+
+	unit->pos = pos;
+	
+	return;
+}
+
+#define ivm_exec_unit_getSourcePos(unit) ((unit)->pos)
 
 IVM_INLINE
 ivm_size_t

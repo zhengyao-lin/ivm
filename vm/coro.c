@@ -60,7 +60,7 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 		ivm_string_object_new(state, IVM_CSTR(state, msg))
 	);
 
-#if 0
+#if 1
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_frame_stack_iterator_t fiter;
@@ -72,7 +72,7 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 #define PRINT_POS() \
 	if (tmp_ip) {                                                                       \
 		IVM_TRACE(IVM_TAB "%s: line %d: %s\n",                                          \
-				  ivm_string_trimHead(ivm_source_pos_getPath(ivm_instr_pos(tmp_ip))),   \
+				  ivm_source_pos_getFile(ivm_instr_pos(tmp_ip)),                        \
 				  ivm_instr_lineno(tmp_ip),                                             \
 				  ivm_opcode_table_getName(ivm_instr_opcode(tmp_ip)));                  \
 	}
@@ -299,20 +299,26 @@ END_EXEC:
 			goto ACTION_RETURN;
 			
 ACTION_RAISE:
+			ivm_vmstate_setException(state, _TMP_OBJ1);
+ACTION_EXCEPTION:
+
 			do {
 				ivm_runtime_dump(tmp_runtime, state);
 				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
 				if (tmp_frame) {
-					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE))
+					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
+						_TMP_OBJ1 = IVM_NULL;
 						goto END;
+					}
 				} else {
-					// killed by an exception
-					ivm_coro_printException(coro, state, _TMP_OBJ1);
 					ivm_coro_kill(coro, state);
+					_TMP_OBJ1 = IVM_NULL;
 					goto END;
 				}
 			} while (!IVM_FRAME_GET(tmp_frame, CATCH));
 			// find a frame with raise protection
+
+			ivm_vmstate_popException(state);
 
 			// tmp_frame != NULL
 			tmp_ip = IVM_FRAME_GET(tmp_frame, CATCH);

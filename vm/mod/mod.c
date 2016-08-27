@@ -317,10 +317,14 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	if (loader) {
 		ret = loader(buf, &err, state, coro, context);
 
-		IVM_CORO_NATIVE_ASSERT(
-			coro, state, ret && !err,
-			IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
-		);
+		if (!ret) {
+			if (!ivm_vmstate_getException(state)) {
+				IVM_CORO_NATIVE_FATAL(
+					coro, state,
+					IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
+				);
+			}
+		}
 
 		return ret;
 	}

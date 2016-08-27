@@ -11,6 +11,29 @@
 #include "exec.h"
 #include "byte.h"
 
+ivm_source_pos_t *
+ivm_source_pos_new(const ivm_char_t *file)
+{
+	ivm_source_pos_t *ret = MEM_ALLOC(sizeof(*ret),
+									  ivm_source_pos_t *);
+
+	ivm_ref_init(ret);
+	ret->file = IVM_STRDUP(file);
+
+	return ret;
+}
+
+void
+ivm_source_pos_free(ivm_source_pos_t *pos)
+{
+	if (pos && !ivm_ref_dec(pos)) {
+		MEM_FREE(pos->file);
+		MEM_FREE(pos);
+	}
+
+	return;
+}
+
 IVM_PRIVATE
 IVM_INLINE
 void
@@ -22,7 +45,7 @@ _ivm_exec_init(ivm_exec_t *exec,
 	exec->pool = pool;
 	ivm_ref_inc(pool);
 
-	exec->pos = ivm_source_pos_build(IVM_NULL);
+	exec->pos = IVM_NULL;
 
 	// exec->max_stack = 0;
 	// exec->fin_stack = 0;
@@ -56,6 +79,7 @@ ivm_exec_free(ivm_exec_t *exec)
 {
 	if (exec && !ivm_ref_dec(exec)) {
 		ivm_string_pool_free(exec->pool);
+		ivm_source_pos_free(exec->pos);
 		MEM_FREE(exec->instrs);
 		MEM_FREE(exec);
 	}
@@ -68,6 +92,7 @@ ivm_exec_dump(ivm_exec_t *exec)
 {
 	if (exec) {
 		ivm_string_pool_free(exec->pool);
+		ivm_source_pos_free(exec->pos);
 		MEM_FREE(exec->instrs);
 	}
 
@@ -80,9 +105,14 @@ ivm_exec_copy(ivm_exec_t *exec,
 {
 	ivm_size_t size;
 
-	*dest = *exec;
+	MEM_COPY(dest, exec, sizeof(*dest));
+
 	ivm_ref_init(dest);
 	ivm_ref_inc(dest->pool);
+	if (dest->pos) {
+		ivm_ref_inc(dest->pos);
+	}
+
 	size = sizeof(*exec->instrs) * exec->alloc;
 	dest->instrs = MEM_ALLOC(size, ivm_instr_t *);
 	MEM_COPY(dest->instrs, exec->instrs, size);
@@ -229,6 +259,7 @@ ivm_exec_unit_new(ivm_size_t root,
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable unit"));
 
 	ret->root = root;
+	ret->pos = IVM_NULL;
 	ret->execs = execs;
 	ret->offset = 0;
 
@@ -240,6 +271,7 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit)
 {
 	if (unit) {
 		ivm_exec_list_free(unit->execs);
+		ivm_source_pos_free(unit->pos);
 		MEM_FREE(unit);
 	}
 
@@ -250,11 +282,13 @@ ivm_function_t * /* root function */
 ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 						ivm_vmstate_t *state)
 {
-	ivm_function_t *func, *root = IVM_NULL;
+	ivm_function_t *func, *ret = IVM_NULL;
 	ivm_exec_t *exec;
 	ivm_exec_list_iterator_t eiter;
-	ivm_size_t i = 0;
+	ivm_size_t i = 0, root = unit->root;
+
 	ivm_uint_t offset = unit->offset;
+	ivm_source_pos_t *pos = unit->pos;
 
 	IVM_ASSERT(
 		unit->offset == ivm_vmstate_getLinkOffset(state),
@@ -265,19 +299,21 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 
 	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
 		exec = IVM_EXEC_LIST_ITER_GET(eiter);
+		
 		ivm_exec_setOffset(exec, offset);
+		ivm_exec_setSourcePos(exec, pos);
 
 		func = ivm_function_new(state, exec);
 		ivm_vmstate_registerFunc(state, func);
 
-		if (i++ == unit->root) {
-			root = func;
+		if (i++ == root) {
+			ret = func;
 		}
 
 		// ivm_exec_preproc(exec, state);
 	}
 
-	return root;
+	return ret;
 }
 
 ivm_vmstate_t *
