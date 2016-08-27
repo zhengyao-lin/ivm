@@ -208,11 +208,11 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 	IVM_SLOT_TABLE_EACHPTR(table, siter) {
 		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
 			// IVM_TRACE("  copied slot: %s: %p -> ",
-			//		  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
-			//		  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
+			// 	  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
+			// 	  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
 			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
 										(tmp = ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg)));
-			//IVM_TRACE("%p\n", tmp);
+			// IVM_TRACE("%p\n", tmp);
 		}
 	}
 
@@ -309,10 +309,11 @@ void
 ivm_collector_travSingleContext(ivm_context_t *ctx,
 								ivm_traverser_arg_t *arg)
 {
-	if (!ivm_context_getGen(ctx))
-		ivm_context_setGen(ctx, 1);
+	// IVM_TRACE("trax ctx %p\n", ctx);
 
+	ivm_context_setGen(ctx, 1);
 	ivm_context_setWB(ctx, 0);
+
 	_ivm_context_setSlotTable_c(ctx,
 		ivm_collector_copySlotTable(
 			ivm_context_getSlotTable(ctx),
@@ -488,14 +489,6 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_int_t tmp_ratio;
 	// ivm_size_t heap2_orig = IVM_HEAP_GET(heap2, BLOCK_USED);
 
-	arg.state = state;
-	arg.collector = collector;
-	arg.trav_ctx = ivm_collector_travContext;
-	arg.trav_coro = ivm_collector_travCoro;
-	arg.gen = collector->gen;
-
-	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);
-
 	if (collector->live_ratio > IVM_DEFAULT_GC_MAX_LIVE_RATIO &&
 		collector->skip_time < IVM_DEFAULT_GC_MAX_SKIP) {
 		// IVM_TRACE("skip! %d\n", collector->live_ratio);
@@ -503,6 +496,14 @@ ivm_collector_collect(ivm_collector_t *collector,
 		collector->skip_time++;
 		return;
 	}
+
+	arg.state = state;
+	arg.collector = collector;
+	arg.trav_ctx = ivm_collector_travContext;
+	arg.trav_coro = ivm_collector_travCoro;
+	arg.gen = collector->gen;
+
+	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);
 
 	collector->skip_time = 0;
 

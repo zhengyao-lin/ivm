@@ -43,6 +43,8 @@ typedef struct ivm_vmstate_t_tag {
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
+	ivm_char_t *cur_path;
+
 	ivm_cgid_t cur_cgroup;
 	ivm_int_t gc_flag; /* gc flag:				// 4
 						  > 0: open
@@ -92,15 +94,9 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 #define ivm_vmstate_lockGCFlag(state) ((state)->gc_flag = -1)
 #define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)
 
-#if 0
-
-#define ivm_vmstate_curHeap(state) ((state)->heap_count > 0 ? (state)->heaps[(state)->heap_count - 1] : IVM_NULL)
-void
-ivm_vmstate_addHeap(ivm_vmstate_t *state);
-ivm_heap_t *
-ivm_vmstate_findHeap(ivm_vmstate_t *state, ivm_object_t *obj);
-
-#endif
+#define ivm_vmstate_curPath(state) ((state)->cur_path)
+// the path will be free'd in ivm_vmstate_free
+#define ivm_vmstate_setPath(state, path) ((state)->cur_path = (path))
 
 #define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
 #define ivm_vmstate_getHeaps(state) ((state)->heaps)

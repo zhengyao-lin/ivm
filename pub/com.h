@@ -40,8 +40,10 @@
 
 #if defined(IVM_OS_LINUX)
 	#define IVM_FILE_SEPARATOR '/'
+	#define IVM_FILE_SEPARATOR_S "/"
 #elif defined(IVM_OS_WIN32)
 	#define IVM_FILE_SEPARATOR '\\'
+	#define IVM_FILE_SEPARATOR_S "\\"
 #endif
 
 #endif

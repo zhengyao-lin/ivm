@@ -60,7 +60,7 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 		ivm_string_object_new(state, IVM_CSTR(state, msg))
 	);
 
-#if 1
+#if 0
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_frame_stack_iterator_t fiter;

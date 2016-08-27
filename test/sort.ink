@@ -1,5 +1,5 @@
 
-list = []
+loc list = []
 
 loc bubble = fn list: {
 	loc i = 0

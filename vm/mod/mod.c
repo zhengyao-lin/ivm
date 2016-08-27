@@ -11,6 +11,7 @@
 #include "std/string.h"
 #include "std/io.h"
 #include "std/env.h"
+#include "std/sys.h"
 #include "std/list.h"
 
 #include "vm/serial.h"
@@ -22,8 +23,9 @@ typedef ivm_ptlist_t ivm_rawstr_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_char_t *) ivm_rawstr_list_iteartor_t;
 
 #define ivm_rawstr_list_init(list) ivm_ptlist_init_c((list), IVM_DEFAULT_RAWSTR_LIST_BUFFER_SIZE)
-#define ivm_rawstr_list_dump(list) ivm_ptlist_dump(list)
-#define ivm_rawstr_list_push(list, val) ivm_ptlist_push((list), (val))
+#define ivm_rawstr_list_dump ivm_ptlist_dump
+#define ivm_rawstr_list_push ivm_ptlist_push
+#define ivm_rawstr_list_pop(list) ((ivm_char_t *)ivm_ptlist_pop(list))
 
 #define IVM_RAWSTR_LIST_ITER_GET(iter) IVM_PTLIST_ITER_GET(iter)
 #define IVM_RAWSTR_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_char_t *)
@@ -82,6 +84,25 @@ _ivm_mod_addModPath(const ivm_char_t *path)
 		_mod_path_max_len = len;
 
 	ivm_rawstr_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
+
+	return;
+}
+
+IVM_PRIVATE
+void
+_ivm_mod_addModPath_n(ivm_char_t *path)
+{
+	ivm_size_t len;
+
+	if (path) {
+		len = IVM_STRLEN(path);
+
+		if (len > _mod_path_max_len)
+			_mod_path_max_len = len;
+	}
+
+	ivm_rawstr_list_push(&_mod_path_list, path);
+
 	return;
 }
 
@@ -94,6 +115,15 @@ _ivm_mod_addModPath_l(const ivm_char_t *path,
 		_mod_path_max_len = len;
 
 	ivm_rawstr_list_push(&_mod_path_list, IVM_STRNDUP(path, len));
+
+	return;
+}
+
+IVM_PRIVATE
+void
+_ivm_mod_popModPath_n()
+{
+	ivm_rawstr_list_pop(&_mod_path_list);
 	return;
 }
 
@@ -148,8 +178,7 @@ _ivm_mod_initModPath()
 		}
 	}
 
-	/* current path */
-	_ivm_mod_addModPath(".");
+	// _ivm_mod_addModPath(".");
 
 	return;
 }
@@ -247,6 +276,9 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 
 	IVM_RAWSTR_LIST_EACHPTR_R(&_mod_path_list, iter) {
 		tmp = IVM_RAWSTR_LIST_ITER_GET(iter);
+
+		if (!tmp) continue;
+
 		len1 = IVM_STRLEN(tmp);
 
 		MEM_COPY(buf, tmp, len1);
@@ -311,27 +343,34 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	ivm_char_t buf[_get_max_buf_size(len)];
 	const ivm_char_t *err = IVM_NULL, *mod = ivm_string_trimHead(mod_name);
 	ivm_object_t *ret;
+	ivm_char_t *path_backup, *path;
 
+	path_backup = ivm_vmstate_curPath(state);
+
+	_ivm_mod_addModPath_n(path_backup);
 	loader = _ivm_mod_search_c(mod, len, buf);
+	_ivm_mod_popModPath_n();
 
-	if (loader) {
-		ret = loader(buf, &err, state, coro, context);
+	IVM_CORO_NATIVE_ASSERT(coro, state, loader, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
 
-		if (!ret) {
-			if (!ivm_vmstate_getException(state)) {
-				IVM_CORO_NATIVE_FATAL(
-					coro, state,
-					IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
-				);
-			}
+	path = ivm_sys_getBasePath(buf);
+	ivm_vmstate_setPath(state, path);
+	
+	ret = loader(buf, &err, state, coro, context);
+
+	ivm_vmstate_setPath(state, path_backup);
+	MEM_FREE(path);
+
+	if (!ret) {
+		if (!ivm_vmstate_getException(state)) {
+			IVM_CORO_NATIVE_FATAL(
+				coro, state,
+				IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
+			);
 		}
-
-		return ret;
 	}
 
-	IVM_CORO_NATIVE_FATAL(coro, state, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
-
-	return IVM_NULL;
+	return ret;
 }
 
 ivm_object_t *

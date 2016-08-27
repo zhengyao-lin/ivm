@@ -20,7 +20,7 @@ ivm_context_setSlot(ivm_context_t *ctx,
 					ivm_object_t *value)
 {
 	if (!ctx->slots) {
-		ctx->slots = ivm_slot_table_new(state);
+		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
 	}
 
 	ivm_slot_table_setSlot(ctx->slots, state, key, value);
@@ -36,7 +36,7 @@ ivm_context_setSlot_r(ivm_context_t *ctx,
 					  ivm_object_t *value)
 {
 	if (!ctx->slots) {
-		ctx->slots = ivm_slot_table_new(state);
+		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
 	}
 
 	ivm_slot_table_setSlot_r(ctx->slots, state, rkey, value);
@@ -53,7 +53,7 @@ ivm_context_setSlot_cc(ivm_context_t *ctx,
 					   ivm_instr_t *instr)
 {
 	if (!ctx->slots) {
-		ctx->slots = ivm_slot_table_new(state);
+		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
 	}
 
 	ivm_slot_table_setSlot_cc(ctx->slots, state, key, value, instr);

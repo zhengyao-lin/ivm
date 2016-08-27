@@ -7,6 +7,7 @@
 
 #include "std/string.h"
 #include "std/ref.h"
+#include "std/sys.h"
 
 #include "exec.h"
 #include "byte.h"
@@ -321,6 +322,11 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 {
 	ivm_vmstate_t *state = ivm_vmstate_new();
 	ivm_function_t *root = ivm_exec_unit_mergeToVM(unit, state);
+	ivm_char_t *str;
+
+	if (unit->pos) {
+		ivm_vmstate_setPath(state, str = ivm_sys_getBasePath(ivm_source_pos_getFile(unit->pos)));
+	}
 
 	if (root) {
 		ivm_vmstate_addCoroToCurCGroup(

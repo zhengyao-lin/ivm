@@ -95,6 +95,7 @@ ivm_vmstate_new()
 
 	ivm_vmstate_unlockGCFlag(ret);
 
+	ret->cur_path = IVM_NULL;
 	// ret->coro_list_uid = ivm_uid_gen_nextPtr(ret->uid_gen);
 
 	return ret;
@@ -132,6 +133,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 			 i != end; i++) {
 			ivm_type_dump(i);
 		}
+
+		MEM_FREE(state->cur_path);
 
 		MEM_FREE(state);
 	}
