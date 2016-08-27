@@ -54,18 +54,37 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 						const ivm_char_t *msg)
 {
 	ivm_object_t *ret = ivm_object_new(state);
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+	ivm_instr_t *tmp_ip;
+	ivm_long_t line = -1;
+	const ivm_char_t *tmp_file = "<untraceable>";
+
+	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
 
 	ivm_object_setSlot(ret, state,
 		IVM_VMSTATE_CONST(state, C_MSG),
 		ivm_string_object_new(state, IVM_CSTR(state, msg))
 	);
 
+	if (tmp_ip) {
+		tmp_file = ivm_source_pos_getFile(ivm_instr_pos(tmp_ip));
+		line = ivm_instr_lineno(tmp_ip);
+	}
+
+	ivm_object_setSlot(ret, state,
+		IVM_VMSTATE_CONST(state, C_FILE),
+		ivm_string_object_new(state, IVM_CSTR(state, tmp_file))
+	);
+
+	ivm_object_setSlot(ret, state,
+		IVM_VMSTATE_CONST(state, C_LINE),
+		ivm_numeric_new(state, line)
+	);
+
 #if 0
-	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 	ivm_frame_stack_iterator_t fiter;
 	ivm_frame_t *frame;
-	ivm_instr_t *tmp_ip;
 
 	IVM_TRACE("trace:\n");
 
@@ -95,8 +114,10 @@ ivm_coro_printException(ivm_coro_t *coro,
 						ivm_vmstate_t *state,
 						ivm_object_t *except)
 {
-	ivm_object_t *msg_obj;
-	const ivm_char_t *msg = "custom exception";
+	ivm_object_t *msg_obj, *file_obj, *line_obj;
+	const ivm_char_t *msg = "custom exception",
+					 *file = "<unknown file>";
+	ivm_long_t line = -1;
 
 	if (except) {
 		msg_obj = ivm_object_getSlot(
@@ -104,16 +125,32 @@ ivm_coro_printException(ivm_coro_t *coro,
 			IVM_VMSTATE_CONST(state, C_MSG)
 		);
 
+		file_obj = ivm_object_getSlot(
+			except, state,
+			IVM_VMSTATE_CONST(state, C_FILE)
+		);
+
+		line_obj = ivm_object_getSlot(
+			except, state,
+			IVM_VMSTATE_CONST(state, C_LINE)
+		);
+
 		if (msg_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
 			msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
-		} else {
-			msg = "custom exception";
+		}
+
+		if (file_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
+			file = ivm_string_trimHead(ivm_string_object_getValue(file_obj));
+		}
+
+		if (line_obj && IVM_IS_TYPE(line_obj, IVM_NUMERIC_T)) {
+			line = ivm_numeric_getValue(line_obj);
 		}
 	} else {
 		msg = "unknown exception";
 	}
 
-	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, msg));
+	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, file, line, msg));
 	IVM_TRACE("\n");
 
 	return;

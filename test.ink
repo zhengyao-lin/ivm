@@ -93,21 +93,29 @@ gid = group: {
 yield a to gid
 */
 
+printe = fn e: {
+	loc file = e.file || "<unknown>"
+	loc line = e.line || -1
+	loc msg = e.msg || "unknown error"
+
+	print("ERROR: " + file + ": line " + line + ": " + msg)
+}
+
 __test = fn: {
 	sort = import("test/sort")
 	mod = import("testmod")
 
 	try: import("build/lib/wrongmod")
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: import("build/lib/libivm-vm")
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: import("never_found")
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: import("wrongmod")
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	sort.printl(sort.bubble([5, 4, 3, 2, 1]))
 	mod.test()
@@ -266,7 +274,7 @@ __test = fn: {
 	a.proto = b
 	c.proto = a
 	try: b.proto = c
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: print()
 	catch err: try: print()
@@ -309,13 +317,13 @@ __test = fn: {
 
 	print(a + 5)
 	try: a * 5
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: null()
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	try: {(1 + "s")}
-	catch err: print(err.msg)
+	catch err: printe(err)
 
 	b = {}
 	b.+ = fn a: print(base)
@@ -328,7 +336,7 @@ __test = fn: {
 		a.b = [].size
 		a.b(1, 2)
 	} catch err: {
-		print(err.msg)
+		printe(err)
 	}
 
 	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == null)
@@ -356,7 +364,7 @@ __test = fn: {
 	yield "skip"
 	yield "5"
 
-	call(fn: try: yield catch err: print(err.msg))
+	call(fn: try: yield catch err: printe(err))
 
 	yield null
 
@@ -366,7 +374,7 @@ __test = fn: {
 		yield to gid = group: {
 			print("another group")
 			try: yield to 0
-			catch err: print(err.msg)
+			catch err: printe(err)
 		}
 		print("not next?")
 	}
