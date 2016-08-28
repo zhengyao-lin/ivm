@@ -78,10 +78,19 @@ ivm_string_new_heap(ivm_bool_t is_const,
 					const ivm_char_t *str,
 					struct ivm_heap_t_tag *heap);
 
+IVM_INLINE
 void
-ivm_string_init(ivm_string_t *str,
-				ivm_bool_t is_const,
-				ivm_size_t len);
+ivm_string_initHead(ivm_string_t *str,
+					ivm_bool_t is_const,
+					ivm_size_t len)
+{
+	str->len = len;
+	str->is_const = is_const;
+	str->is_ascii = IVM_FALSE;
+	str->wlen = -1;
+	
+	return;
+}
 
 const ivm_string_t *
 ivm_string_copyIfNotConst_state(const ivm_string_t *str,
@@ -91,7 +100,7 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 							   struct ivm_heap_t_tag *heap);
 
-/* if the length of string is greater than IVM_DEFAULT_CONST_THRESHOLD, alloc in the state; else in the pool */
+/* if the length of string is greater than IVM_DEFAULT_MAX_CONST_SIZE, alloc in the state; else in the pool */
 const ivm_string_t *
 ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 							   struct ivm_vmstate_t_tag *state);
@@ -99,8 +108,22 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 #define ivm_string_length(str) \
 	((str)->len)
 
-#define ivm_string_realLength(str) \
-	((str)->wlen)
+IVM_INLINE
+ivm_size_t
+ivm_string_realLength(const ivm_string_t *str)
+{
+	ivm_string_t *head = (ivm_string_t *)str;
+
+	if (str->is_ascii) {
+		return str->len;
+	} else if (str->wlen != -1) {
+		return str->wlen;
+	}
+
+	// gen cache
+	head->is_ascii = ivm_conv_isAllAscii(str->cont);
+	return head->wlen = ivm_conv_mbstowcs_len(str->cont);
+}
 
 #define ivm_string_size(str) \
 	(IVM_STRING_GET_SIZE((str)->len))

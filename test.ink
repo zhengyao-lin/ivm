@@ -93,6 +93,18 @@ gid = group: {
 yield a to gid
 */
 
+/*
+i = 0
+a = "0"
+
+while i < 100000: {
+	a = a + i
+	i = i + 1
+}
+
+ret
+*/
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -406,14 +418,15 @@ __test = fn: {
 	if 0: {
 		i = 1
 
-	/*	while i < 1000000 && i > 0:
-			if i == 2 && 0: i = 
-			elif 1:
-				if 0 && 1: 0
-				else: i = i + 1
+		/*	while i < 1000000 && i > 0:
+				if i == 2 && 0: i = 
+				elif 1:
+					if 0 && 1: 0
+					else: i = i + 1
 
-		ret
-	*/
+			ret
+		*/
+
 		print(1 || 0) // 1
 
 		print(0 || 1) // 1

@@ -51,7 +51,8 @@
 #define IVM_DEFAULT_STRING_POOL_BLOCK_SIZE 2048
 #define IVM_DEFAULT_STRING_POOL_BUFFER_SIZE 32
 
-#define IVM_DEFAULT_CONST_THRESHOLD 128
+#define IVM_DEFAULT_MAX_CONST_SIZE 64
+#define IVM_DEFAULT_MAX_OBJECT_SIZE 1024
 
 #define IVM_DEFAULT_SLOT_TABLE_SIZE 2
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */
@@ -65,6 +66,7 @@
 #define IVM_DEFAULT_GC_BC_RESTORE_RATIO 30
 #define IVM_DEFAULT_GC_BC_WEIGHT 5
 #define IVM_DEFAULT_GC_MAX_SKIP 200
+#define IVM_DEFAULT_GC_WILD_THRESHOLD IVM_DEFAULT_INIT_HEAP_SIZE
 
 /* only one of the following definition can be 1 */
 #define IVM_DISPATCH_METHOD_DIRECT_THREAD 1

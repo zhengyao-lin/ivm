@@ -17,9 +17,14 @@ struct ivm_heap_t_tag;
 typedef struct {
 	IVM_OBJECT_HEADER
 	const ivm_string_t *val;
+	ivm_bool_t is_wild;
 } ivm_string_object_t;
 
 #define ivm_string_object_getValue(obj) (IVM_AS((obj), ivm_string_object_t)->val)
+
+void
+ivm_string_object_destructor(ivm_object_t *obj,
+							 struct ivm_vmstate_t_tag *state);
 
 void
 ivm_string_object_traverser(ivm_object_t *obj,

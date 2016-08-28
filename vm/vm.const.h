@@ -1,4 +1,4 @@
-/* string length must be less than IVM_DEFAULT_CONST_THRESHOLD */
+/* string length must be less than IVM_DEFAULT_MAX_CONST_SIZE */
 
 CONST_GEN(C_EMPTY, "")
 CONST_GEN(C_BASE, "base")

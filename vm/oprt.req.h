@@ -52,7 +52,7 @@
 		MEM_COPY(data + len1, buf, len2 * sizeof(ivm_char_t));                     \
 		data[size] = '\0';                                                         \
 	                                                                               \
-		ivm_string_init(ret, IVM_FALSE, size);                                     \
+		ivm_string_initHead(ret, IVM_FALSE, size);                                 \
 	                                                                               \
 		return ivm_string_object_new_c(_STATE, ret);                               \
 	}
@@ -74,7 +74,7 @@
 		MEM_COPY(data + len2, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));  \
 		data[size] = '\0';                                                            \
 	                                                                                  \
-		ivm_string_init(ret, IVM_FALSE, size);                                        \
+		ivm_string_initHead(ret, IVM_FALSE, size);                                    \
 	                                                                                  \
 		return ivm_string_object_new_c(_STATE, ret);                                  \
 	}

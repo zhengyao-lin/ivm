@@ -24,7 +24,9 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 
-}, .trav = ivm_string_object_traverser, .const_bool = IVM_TRUE)
+}, .des = ivm_string_object_destructor,
+   .trav = ivm_string_object_traverser,
+   .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t), {
 	

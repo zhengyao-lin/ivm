@@ -80,15 +80,7 @@ ivm_string_new_state(ivm_bool_t is_const,
 	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
 			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
 	
-	ret->is_const = is_const;
-	ret->is_ascii = ivm_conv_isAllAscii(str);
-	ret->len = len;
-
-	if (ret->is_ascii) {
-		ret->wlen = len;
-	} else {
-		ret->wlen = ivm_conv_mbstowcs_len(str);
-	}
+	ivm_string_initHead(ret, is_const, len);
 
 	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * len);
 
@@ -106,37 +98,11 @@ ivm_string_new_heap(ivm_bool_t is_const,
 	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
 			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
 
-	ret->is_const = is_const;
-	ret->is_ascii = ivm_conv_isAllAscii(str);
-	ret->len = len;
-
-	if (ret->is_ascii) {
-		ret->wlen = len;
-	} else {
-		ret->wlen = ivm_conv_mbstowcs_len(str);
-	}
+	ivm_string_initHead(ret, is_const, len);
 
 	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
 	return ret;
-}
-
-void
-ivm_string_init(ivm_string_t *str,
-				ivm_bool_t is_const,
-				ivm_size_t len)
-{
-	str->len = len;
-	str->is_const = is_const;
-	str->is_ascii = ivm_conv_isAllAscii(str->cont);
-
-	if (str->is_ascii) {
-		str->wlen = len;
-	} else {
-		str->wlen = ivm_conv_mbstowcs_len(str->cont);
-	}
-	
-	return;
 }
 
 ivm_hash_val_t
@@ -206,7 +172,7 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 	ivm_string_t *ret;
 
 	if (str && !str->is_const) {
-		if (ivm_string_length(str) < IVM_DEFAULT_CONST_THRESHOLD) {
+		if (ivm_string_length(str) < IVM_DEFAULT_MAX_CONST_SIZE) {
 			return
 			(const ivm_string_t *)
 			ivm_string_pool_register(IVM_VMSTATE_GET(state, CONST_POOL), str);
