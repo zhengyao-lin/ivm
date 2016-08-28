@@ -102,6 +102,8 @@ printe = fn e: {
 }
 
 __test = fn: {
+	print("测试宽字符串".len())
+
 	sort = import("test/sort")
 	mod = import("testmod")
 

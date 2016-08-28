@@ -123,7 +123,7 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 	MEM_COPY(data + len1, ivm_string_trimHead(str2), len2 * sizeof(ivm_char_t));
 	data[size] = '\0';
 
-	ivm_string_initHead(ret, IVM_FALSE, size);
+	ivm_string_init(ret, IVM_FALSE, size);
 
 	return ivm_string_object_new_c(_STATE, ret);
 })

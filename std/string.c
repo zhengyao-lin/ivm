@@ -3,6 +3,7 @@
 #include "pub/vm.h"
 #include "pub/type.h"
 
+#include "conv.h"
 #include "string.h"
 #include "heap.h"
 #include "hash.h"
@@ -80,7 +81,15 @@ ivm_string_new_state(ivm_bool_t is_const,
 			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
 	
 	ret->is_const = is_const;
+	ret->is_ascii = ivm_conv_isAllAscii(str);
 	ret->len = len;
+
+	if (ret->is_ascii) {
+		ret->wlen = len;
+	} else {
+		ret->wlen = ivm_conv_mbstowcs_len(str);
+	}
+
 	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * len);
 
 	return ret;
@@ -98,37 +107,34 @@ ivm_string_new_heap(ivm_bool_t is_const,
 			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
 
 	ret->is_const = is_const;
+	ret->is_ascii = ivm_conv_isAllAscii(str);
 	ret->len = len;
-	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
-	return ret;
-}
+	if (ret->is_ascii) {
+		ret->wlen = len;
+	} else {
+		ret->wlen = ivm_conv_mbstowcs_len(str);
+	}
 
-ivm_string_t *
-_ivm_string_new_n_heap(ivm_bool_t is_const,
-					   const ivm_char_t *str,
-					   ivm_size_t len,
-					   ivm_heap_t *heap)
-{
-	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
-
-	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
-			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
-
-	ret->is_const = is_const;
-	ret->len = len;
 	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
 	return ret;
 }
 
 void
-ivm_string_initHead(ivm_string_t *str,
-					ivm_bool_t is_const,
-					ivm_size_t len)
+ivm_string_init(ivm_string_t *str,
+				ivm_bool_t is_const,
+				ivm_size_t len)
 {
-	str->is_const = is_const;
 	str->len = len;
+	str->is_const = is_const;
+	str->is_ascii = ivm_conv_isAllAscii(str->cont);
+
+	if (str->is_ascii) {
+		str->wlen = len;
+	} else {
+		str->wlen = ivm_conv_mbstowcs_len(str->cont);
+	}
 	
 	return;
 }
@@ -374,13 +380,5 @@ ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)
 HASH(str, !ivm_string_compareToRaw(*i, str),
 	 ivm_string_new_heap(IVM_TRUE, str, pool->heap));
-
-ivm_ptr_t
-ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
-							  const ivm_char_t *str,
-							  ivm_size_t len)
-HASH(str, !ivm_string_compareToRaw_n(*i, str, len),
-	 _ivm_string_new_n_heap(IVM_TRUE, str, len, pool->heap));
-
 
 #undef HASH

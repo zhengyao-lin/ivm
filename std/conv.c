@@ -465,7 +465,7 @@ _filter_special(ivm_double_t fp, ivm_char_t *dest)
 }
 
 ivm_int_t
-ivm_dtoa(ivm_double_t d, ivm_char_t dest[25])
+ivm_conv_dtoa(ivm_double_t d, ivm_char_t dest[25])
 {
 	ivm_char_t digits[18];
 
@@ -492,4 +492,17 @@ ivm_dtoa(ivm_double_t d, ivm_char_t dest[25])
 	dest[str_len] = '\0';
 
 	return str_len;
+}
+
+ivm_bool_t
+ivm_conv_isAllAscii(const ivm_char_t *str)
+{
+	while (*str) {
+		if ((ivm_uchar_t)*str > 0x7F) {
+			return IVM_FALSE;
+		}
+		str++;
+	}
+
+	return IVM_TRUE;
 }

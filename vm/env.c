@@ -2,6 +2,8 @@
 #include "pub/mem.h"
 #include "pub/vm.h"
 
+#include "std/sys.h"
+
 #include "mod/mod.h"
 
 #include "env.h"
@@ -9,6 +11,8 @@
 ivm_int_t
 ivm_env_init()
 {
+	ivm_sys_setDefaultLocal();
+	
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	ivm_opcode_table_initOpEntry();
 #endif

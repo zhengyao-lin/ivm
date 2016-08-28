@@ -19,5 +19,5 @@ IVM_NATIVE_FUNC(_string_len)
 
 	str = ivm_string_object_getValue(IVM_AS(NAT_BASE(), ivm_string_object_t));
 
-	return ivm_numeric_new(NAT_STATE(), str ? ivm_string_length(str) : 0);
+	return ivm_numeric_new(NAT_STATE(), str ? ivm_string_realLength(str) : 0);
 }

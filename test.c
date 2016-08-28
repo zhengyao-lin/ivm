@@ -10,6 +10,7 @@
 #include "std/chain.h"
 #include "std/hash.h"
 #include "std/heap.h"
+#include "std/conv.h"
 
 #include "vm/vm.h"
 #include "vm/dbg.h"

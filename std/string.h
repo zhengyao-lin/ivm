@@ -8,6 +8,7 @@
 #include "pub/type.h"
 #include "pub/mem.h"
 
+#include "conv.h"
 #include "list.h"
 #include "heap.h"
 #include "ref.h"
@@ -40,16 +41,22 @@ IVM_STRNCMP(const ivm_char_t *a, ivm_size_t alen,
 
 ivm_char_t *
 ivm_strdup(const ivm_char_t *src);
+
 ivm_char_t *
 ivm_strdup_state(const ivm_char_t *src,
 				 struct ivm_vmstate_t_tag *state);
+
 ivm_char_t *
 ivm_strdup_heap(const ivm_char_t *src,
 				struct ivm_heap_t_tag *heap);
 
 typedef struct {
 	ivm_uint_t len;
-	ivm_bool_t is_const;
+
+	ivm_uint_t is_const: 1;
+	ivm_uint_t is_ascii: 1;
+	ivm_uint_t wlen: sizeof(ivm_uint_t) * 8 - 2; // length of wide char str(display length)
+
 	ivm_char_t cont[];
 } IVM_NOALIGN ivm_string_t;
 
@@ -72,9 +79,9 @@ ivm_string_new_heap(ivm_bool_t is_const,
 					struct ivm_heap_t_tag *heap);
 
 void
-ivm_string_initHead(ivm_string_t *str,
-					ivm_bool_t is_const,
-					ivm_size_t len);
+ivm_string_init(ivm_string_t *str,
+				ivm_bool_t is_const,
+				ivm_size_t len);
 
 const ivm_string_t *
 ivm_string_copyIfNotConst_state(const ivm_string_t *str,
@@ -91,6 +98,9 @@ ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 
 #define ivm_string_length(str) \
 	((str)->len)
+
+#define ivm_string_realLength(str) \
+	((str)->wlen)
 
 #define ivm_string_size(str) \
 	(IVM_STRING_GET_SIZE((str)->len))
@@ -169,11 +179,6 @@ ivm_string_pool_register_nc(ivm_string_pool_t *pool,
 ivm_ptr_t
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str);
-
-ivm_ptr_t
-ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
-							  const ivm_char_t *str,
-							  ivm_size_t len);
 
 #define ivm_string_pool_get(pool, i) ((pool)->table[i])
 
