@@ -73,6 +73,8 @@ ivm_vmstate_new()
 	#include "vm.const.h"
 #undef CONST_GEN
 
+	ret->wild_size = 0;
+
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 

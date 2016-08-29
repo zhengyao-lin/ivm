@@ -115,7 +115,8 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 	ivm_size_t len1 = ivm_string_length(str1);
 	ivm_size_t len2 = ivm_string_length(str2);
 	ivm_size_t size = len1 + len2;
-	ivm_string_t *ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));
+	ivm_bool_t is_wild;
+	ivm_string_t *ret = ivm_vmstate_tryAlloc(_STATE, IVM_STRING_GET_SIZE(size), &is_wild);
 
 	ivm_char_t *data = ivm_string_trimHead(ret);
 
@@ -125,6 +126,7 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 
 	ivm_string_initHead(ret, IVM_FALSE, size);
 
+	if (is_wild) return ivm_string_object_new_w(_STATE, ret);
 	return ivm_string_object_new_c(_STATE, ret);
 })
 

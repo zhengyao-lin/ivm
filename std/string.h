@@ -87,7 +87,7 @@ ivm_string_initHead(ivm_string_t *str,
 	str->len = len;
 	str->is_const = is_const;
 	str->is_ascii = IVM_FALSE;
-	str->wlen = -1;
+	str->wlen = 0;
 	
 	return;
 }
@@ -116,7 +116,7 @@ ivm_string_realLength(const ivm_string_t *str)
 
 	if (str->is_ascii) {
 		return str->len;
-	} else if (str->wlen != -1) {
+	} else if (str->wlen) {
 		return str->wlen;
 	}
 

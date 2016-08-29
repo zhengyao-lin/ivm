@@ -18,9 +18,10 @@ ivm_list_object_new(ivm_vmstate_t *state,
 	ret->size = size;
 
 	if (size) {
-		ret->lst = MEM_ALLOC(sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE,
-							 ivm_object_t **);
-		IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
+		ret->lst = ivm_vmstate_allocWild(
+			state,
+			sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE
+		);
 
 		MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
 	} else {
@@ -47,10 +48,10 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_T);
 
 	ret->alloc = ret->size = count;
-	ret->lst = MEM_ALLOC(sizeof(*ret->lst) * count,
-						 ivm_object_t **);
-
-	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
+	ret->lst = ivm_vmstate_allocWild(
+		state,
+		sizeof(*ret->lst) * count
+	);
 
 	MEM_COPY(ret->lst, init, sizeof(*ret->lst) * count);
 
@@ -102,10 +103,7 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 		list->alloc = size << 1;
 		list->size = size;
 		olst = list->lst;
-		list->lst = MEM_REALLOC(list->lst, sizeof(*olst) * list->alloc,
-								ivm_object_t **);
-
-		IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
+		list->lst = ivm_vmstate_reallocWild(state, list->lst, sizeof(*olst) * list->alloc);
 	}
 
 	MEM_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
@@ -120,12 +118,10 @@ _ivm_list_object_expand(ivm_list_object_t *list,
 						ivm_vmstate_t *state)
 {
 	list->alloc <<= 1;
-	list->lst = MEM_REALLOC(
-		list->lst, sizeof(*list->lst) * list->alloc,
-		ivm_object_t **
+	list->lst = ivm_vmstate_reallocWild(
+		state, list->lst,
+		sizeof(*list->lst) * list->alloc
 	);
-
-	IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list object"));
 
 	return;
 }
@@ -167,8 +163,11 @@ ivm_list_object_link(ivm_list_object_t *list1,
 					 ivm_vmstate_t *state)
 {
 	ivm_size_t size = list1->size + list2->size;
-	ivm_object_t **nlist = MEM_ALLOC(sizeof(*nlist) * size,
-									 ivm_object_t **);
+	ivm_object_t **nlist = ivm_vmstate_allocWild(
+		state,
+		sizeof(*nlist) * size
+	);
+
 	ivm_object_t *ret;
 
 	MEM_COPY(nlist, list1->lst, sizeof(*nlist) * list1->size);

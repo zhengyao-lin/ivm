@@ -43,9 +43,10 @@
 		ivm_string_t *ret;                                                         \
 		ivm_char_t buf[25];                                                        \
 		ivm_char_t *data;                                                          \
+		ivm_bool_t is_wild;                                                        \
 	                                                                               \
 		size = len1 + (len2 = ivm_conv_dtoa(ivm_numeric_getValue(op2), buf));      \
-		ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));                \
+		ret = ivm_vmstate_tryAlloc(_STATE, IVM_STRING_GET_SIZE(size), &is_wild);   \
 		data = ivm_string_trimHead(ret);                                           \
 	                                                                               \
 		MEM_COPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));      \
@@ -54,6 +55,7 @@
 	                                                                               \
 		ivm_string_initHead(ret, IVM_FALSE, size);                                 \
 	                                                                               \
+		if (is_wild) return ivm_string_object_new_w(_STATE, ret);                  \
 		return ivm_string_object_new_c(_STATE, ret);                               \
 	}
 
@@ -65,9 +67,10 @@
 		ivm_string_t *ret;                                                            \
 		ivm_char_t buf[25];                                                           \
 		ivm_char_t *data;                                                             \
+		ivm_bool_t is_wild;                                                           \
 	                                                                                  \
 		size = len1 + (len2 = ivm_conv_dtoa(ivm_numeric_getValue(op2), buf));         \
-		ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));                   \
+		ret = ivm_vmstate_tryAlloc(_STATE, IVM_STRING_GET_SIZE(size), &is_wild);      \
 		data = ivm_string_trimHead(ret);                                              \
 	                                                                                  \
 		MEM_COPY(data, buf, len2 * sizeof(ivm_char_t));                               \
@@ -76,6 +79,7 @@
 	                                                                                  \
 		ivm_string_initHead(ret, IVM_FALSE, size);                                    \
 	                                                                                  \
+		if (is_wild) return ivm_string_object_new_w(_STATE, ret);                     \
 		return ivm_string_object_new_c(_STATE, ret);                                  \
 	}
 

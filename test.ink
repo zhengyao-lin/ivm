@@ -93,18 +93,6 @@ gid = group: {
 yield a to gid
 */
 
-/*
-i = 0
-a = "0"
-
-while i < 100000: {
-	a = a + i
-	i = i + 1
-}
-
-ret
-*/
-
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1

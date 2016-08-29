@@ -52,7 +52,7 @@
 #define IVM_DEFAULT_STRING_POOL_BUFFER_SIZE 32
 
 #define IVM_DEFAULT_MAX_CONST_SIZE 64
-#define IVM_DEFAULT_MAX_OBJECT_SIZE 1024
+#define IVM_DEFAULT_MAX_OBJECT_SIZE IVM_DEFAULT_INIT_HEAP_SIZE
 
 #define IVM_DEFAULT_SLOT_TABLE_SIZE 2
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */

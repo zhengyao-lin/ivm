@@ -11,7 +11,6 @@ ivm_string_object_destructor(ivm_object_t *obj,
 							 ivm_vmstate_t *state)
 {
 	MEM_FREE((ivm_string_t *)IVM_AS(obj, ivm_string_object_t)->val);
-
 	return;
 }
 

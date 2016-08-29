@@ -42,7 +42,8 @@ IVM_COM_HEADER
 #endif
 
 #define IVM_ERROR_MSG_UNKNOWN_ERROR								("unknown error")
-#define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)					("failed to allocate new room for new " name)
+#define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)					("failed to allocate new memory for new " name)
+#define IVM_ERROR_MSG_FAILED_ALLOC								("failed to allocate new memory")
 #define IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED(op)					(op " slot of undefined object")
 #define IVM_ERROR_MSG_INSERT_CELL_TO_NON_SUC_CELL				("insert cell into non-successive cells")
 #define IVM_ERROR_MSG_WRONG_FREE_HEAP							("free object with wrong heap")

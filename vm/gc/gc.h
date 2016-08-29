@@ -107,6 +107,9 @@ typedef struct ivm_collector_t_tag {
 #define ivm_collector_getGen(collector) \
 	((collector)->gen)
 
+#define ivm_collector_setGen(collector, val) \
+	((collector)->gen = (val))
+
 typedef struct ivm_traverser_arg_t_tag {
 	struct ivm_vmstate_t_tag *state;
 	ivm_heap_t *heap;

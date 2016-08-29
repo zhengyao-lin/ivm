@@ -4,6 +4,8 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
+#include "pub/mem.h"
+#include "pub/err.h"
 
 #include "std/pool.h"
 #include "std/string.h"
@@ -44,6 +46,8 @@ typedef struct ivm_vmstate_t_tag {
 #undef CONST_GEN
 
 	ivm_char_t *cur_path;
+
+	ivm_size_t wild_size;
 
 	ivm_cgid_t cur_cgroup;
 	ivm_int_t gc_flag; /* gc flag:				// 4
@@ -228,6 +232,71 @@ ivm_vmstate_swapHeap(ivm_vmstate_t *state,
 	state->heaps[j] = tmp;
 
 	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_addWildSize(ivm_vmstate_t *state,
+						ivm_size_t size)
+{
+	if ((state->wild_size += size) > IVM_DEFAULT_GC_WILD_THRESHOLD) {
+		state->wild_size = 0;
+		ivm_collector_setGen(state->gc, 1);
+		ivm_vmstate_openGCFlag(state);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void *
+ivm_vmstate_allocWild(ivm_vmstate_t *state,
+					  ivm_size_t size)
+{
+	void *ret;
+
+	ivm_vmstate_addWildSize(state, size);
+	ret = MEM_ALLOC(size, void *);
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
+
+	return ret;
+}
+
+IVM_INLINE
+void *
+ivm_vmstate_reallocWild(ivm_vmstate_t *state,
+						void *orig,
+						ivm_size_t size)
+{
+	void *ret;
+
+	ivm_vmstate_addWildSize(state, size);
+	ret = MEM_REALLOC(orig, size, void *);
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
+
+	return ret;
+}
+
+IVM_INLINE
+void *
+ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
+					 ivm_size_t size,
+					 ivm_bool_t *is_wild)
+{
+	void *ret;
+
+	if (size <= IVM_DEFAULT_MAX_OBJECT_SIZE) {
+		*is_wild = IVM_FALSE;
+		return ivm_vmstate_alloc(state, size);
+	}
+
+	ivm_vmstate_addWildSize(state, size);
+	*is_wild = IVM_TRUE;
+	ret = MEM_ALLOC(size, void *);
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
+
+	return ret;
 }
 
 /* function pool */
