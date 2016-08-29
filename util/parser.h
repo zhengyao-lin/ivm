@@ -157,6 +157,7 @@ _is_match(const char c,
 		case '-': return (c >= reg[1] && c <= reg[2]) ||
 						 (c <= reg[1] && c >= reg[2]);
 		case '.': return IVM_TRUE;
+		case '$': return (ivm_uchar_t)c > 0x7F; // not ascii
 		default: ;
 	}
 

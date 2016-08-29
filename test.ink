@@ -104,6 +104,14 @@ printe = fn e: {
 __test = fn: {
 	print("测试宽字符串".len())
 
+	変数1 = "この変数"
+	print(変数1)
+
+	变量1 = "这个变量"
+	print(变量1)
+
+	ret
+
 	sort = import("test/sort")
 	mod = import("testmod")
 
