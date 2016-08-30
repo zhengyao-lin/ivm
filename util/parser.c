@@ -115,9 +115,7 @@ ivm_parser_parseNum(const ivm_char_t *src,
 	return ret * sign;
 }
 
-IVM_PRIVATE
-IVM_INLINE
-void
+ivm_size_t
 ivm_parser_parseStr_c(ivm_char_t *buf,
 					  const ivm_char_t *str,
 					  ivm_size_t len)
@@ -148,9 +146,9 @@ ivm_parser_parseStr_c(ivm_char_t *buf,
 		*i++ = *str;
 	}
 
-	*i = '\0';
+	*i++ = '\0';
 
-	return;
+	return IVM_PTR_DIFF(i, buf, ivm_char_t);
 }
 
 ivm_char_t *

@@ -19,6 +19,7 @@ enum token_id_t {
 	T_NONE = 0,
 	T_UNKNOWN,
 	T_ID,
+	T_STR_ID,
 	T_INT,
 	T_FLOAT,
 	T_STR,
@@ -46,6 +47,8 @@ enum token_id_t {
 	T_DEL,
 	T_REF,
 	T_DEREF,
+
+	T_IMPORT,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
@@ -99,6 +102,7 @@ token_name_table[] = {
 	IVM_NULL,
 	"unknown character",
 	"identifier",
+	"string identifier",
 	"integer",
 	"float",
 	"string",
@@ -125,6 +129,8 @@ token_name_table[] = {
 	"operator `del`",
 	"operator `ref`",
 	"operator `deref`",
+
+	"keyword `import`",
 
 	"semicolon",
 	"comma",
@@ -203,7 +209,7 @@ enum state_t {
 	ST_IN_ID,
 	
 	ST_IN_STR_ID,
-	ST_IN_ID_STR_ESC,
+	ST_IN_STR_ID_ESC,
 	
 	ST_IN_STR,
 	ST_IN_STR_ESC,
@@ -375,12 +381,12 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 
 		/* IN_STR_ID */
 		{
-			{ "=`", ST_INIT, T_ID, .exc = IVM_TRUE },
-			{ "=\\", ST_IN_ID_STR_ESC },
+			{ "=`", ST_INIT, T_STR_ID, .exc = IVM_TRUE },
+			{ "=\\", ST_IN_STR_ID_ESC },
 			{ ".", ST_IN_STR_ID }
 		},
 
-		/* IN_ID_STR_ESC */
+		/* IN_STR_ID_ESC */
 		{
 			{ ".", ST_IN_STR_ID }
 		},
@@ -441,6 +447,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("del", T_DEL)
 		KEYWORD("ref", T_REF)
 		KEYWORD("deref", T_DEREF)
+
+		KEYWORD("import", T_IMPORT)
 #undef KEYWORD
 	};
 
@@ -454,6 +462,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 					tmp_token->id = keywords[j].id;
 				}
 			}
+		} else if (tmp_token->id == T_STR_ID) {
+			tmp_token->id = T_ID;
 		}
 	}
 
@@ -467,6 +477,7 @@ struct rule_val_t {
 	union {
 		ilang_gen_expr_t *expr;
 		ilang_gen_expr_list_t *expr_list;
+		ilang_gen_token_value_list_t *token_list;
 		ilang_gen_table_entry_t slot;
 		ilang_gen_table_entry_list_t *slot_list;
 		ilang_gen_param_t param;
@@ -696,10 +707,66 @@ RULE(slot_list_opt)
 
 			ilang_gen_table_entry_list_push(tmp_list, &tmp_entry);
 		})
+
 		SUB_RULE({
 			_RETVAL.slot_list = ilang_gen_table_entry_list_new(_ENV->unit);
 		})
 	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	mod_name_sub:
+		: '.' nllo id mod_name_sub
+		| %empty
+ */
+RULE(mod_name_sub)
+{
+	ilang_gen_token_value_list_t *tokens;
+	ilang_gen_token_value_t tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(mod_name_sub)
+		{
+			tokens
+			= _RETVAL.token_list
+			= RULE_RET_AT(1).u.token_list;
+			tmp_token = TOKEN_VAL(TOKEN_AT(1));
+
+			ilang_gen_token_value_list_push(tokens, &tmp_token);
+		})
+
+		SUB_RULE({
+			_RETVAL.token_list = ilang_gen_token_value_list_new(_ENV->unit);
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	mod_name
+		: id mod_name_sub
+ */
+RULE(mod_name)
+{
+	ilang_gen_token_value_list_t *tokens;
+	ilang_gen_token_value_t tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ID) R(mod_name_sub)
+		{
+			tokens
+			= _RETVAL.token_list
+			= RULE_RET_AT(0).u.token_list;
+			tmp_token = TOKEN_VAL(TOKEN_AT(0));
+
+			ilang_gen_token_value_list_push(tokens, &tmp_token);
+		})
+	)
 
 	FAILED({})
 	MATCHED({})
@@ -711,7 +778,8 @@ RULE(slot_list_opt)
 		| int
 		| float
 		| id
-		| '(' expr ')'
+		| 'import' nllo mod_name
+		| '(' nllo expr nllo ')'
 		| '{' expr_list '}'
 		| '{' nllo slot_list_opt nllo '}'
  */
@@ -758,6 +826,16 @@ RULE(primary_expr)
 			_RETVAL.expr = ilang_gen_id_expr_new(
 				_ENV->unit,
 				TOKEN_POS(tmp_token), TOKEN_VAL(tmp_token)
+			);
+		})
+
+		SUB_RULE(T(T_IMPORT) R(nllo) R(mod_name) DBB(PRINT_MATCH_TOKEN("import expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_import_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.token_list
 			);
 		})
 

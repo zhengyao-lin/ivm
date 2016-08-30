@@ -268,6 +268,39 @@ COMMON_EXPR(id_expr, "id expression", {
 	ret->val = val;
 }, ilang_gen_token_value_t val);
 
+/* import expr */
+typedef ivm_list_t ilang_gen_token_value_list_t;
+typedef IVM_LIST_ITER_TYPE(ilang_gen_token_value_t) ilang_gen_token_value_list_iterator_t;
+
+IVM_INLINE
+ilang_gen_token_value_list_t *
+ilang_gen_token_value_list_new(ilang_gen_trans_unit_t *unit)
+{
+	ivm_list_t *list = ivm_list_new(sizeof(ilang_gen_token_value_t));
+	
+	ivm_ptlist_push(unit->list_log, list);
+
+	return list;
+}
+
+#define ilang_gen_token_value_list_push ivm_list_push
+#define ilang_gen_token_value_list_size ivm_list_size
+
+#define ILANG_GEN_TOKEN_VALUE_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ilang_gen_token_value_t)
+#define ILANG_GEN_TOKEN_VALUE_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_token_value_t)
+#define ILANG_GEN_TOKEN_VALUE_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ilang_gen_token_value_t)
+#define ILANG_GEN_TOKEN_VALUE_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ilang_gen_token_value_t)
+#define ILANG_GEN_TOKEN_VALUE_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ilang_gen_token_value_t)
+
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_token_value_list_t *mod;
+} ilang_gen_import_expr_t;
+
+COMMON_EXPR(import_expr, "import expression", {
+	ret->mod = mod;
+}, ilang_gen_token_value_list_t *mod);
+
 /* table expr */
 typedef struct {
 	ilang_gen_pos_t pos;

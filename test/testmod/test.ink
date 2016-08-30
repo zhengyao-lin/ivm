@@ -1,2 +1,2 @@
 
-import("beside_me")
+`import`("beside_me")

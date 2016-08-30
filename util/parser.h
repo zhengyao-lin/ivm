@@ -16,6 +16,11 @@ ivm_parser_parseNum(const ivm_char_t *src,
 					ivm_bool_t *overflow,
 					ivm_bool_t *err);
 
+ivm_size_t
+ivm_parser_parseStr_c(ivm_char_t *buf,
+					  const ivm_char_t *str,
+					  ivm_size_t len);
+
 ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len);

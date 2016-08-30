@@ -102,6 +102,19 @@ printe = fn e: {
 }
 
 __test = fn: {
+	import test.sort
+
+	test.sort.printl(test.sort.bubble([5, 4, 3, 2, 1]))
+
+	import test.testmod.sub
+	import test.testmod.sub.a
+	import test.testmod.sub.b
+
+	test.testmod.sub.a.shout()
+	test.testmod.sub.b.shout()
+
+	import testmod
+
 	print("测试宽字符串".len())
 
 	変数1 = "この変数"
@@ -110,27 +123,25 @@ __test = fn: {
 	变量1 = "这个变量"
 	print(变量1)
 
-	ret
+	sort = `import`("test/sort")
+	mod = `import`("testmod")
 
-	sort = import("test/sort")
-	mod = import("testmod")
-
-	try: import("build/lib/wrongmod")
+	try: `import`("build/lib/wrongmod")
 	catch err: printe(err)
 
-	try: import("build/lib/libivm-vm")
+	try: `import`("build/lib/libivm-vm")
 	catch err: printe(err)
 
-	try: import("never_found")
+	try: `import`("never_found")
 	catch err: printe(err)
 
-	try: import("wrongmod")
+	try: `import`("wrongmod")
 	catch err: printe(err)
 
 	sort.printl(sort.bubble([5, 4, 3, 2, 1]))
 	mod.test()
 
-	import("test/testmod/test")
+	`import`("test/testmod/test")
 
 	b = "no"
 

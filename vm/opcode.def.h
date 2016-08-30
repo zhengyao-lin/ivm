@@ -210,6 +210,47 @@ OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	NEXT_INSTR();
 })
 
+/*
+	assert_* is similar to get_*, but if the slot doesn't exist,
+	these instrs will create a new object and set it to the slot
+ */
+
+OPCODE_GEN(ASSERT_SLOT, "assert_slot", S, 0, {
+	CHECK_STACK(1);
+	
+	_TMP_STR = SARG();
+
+	_TMP_OBJ2 = STACK_POP();
+	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ2, _STATE, _TMP_STR, _INSTR);
+
+	if (!_TMP_OBJ1) {
+		_TMP_OBJ1 = ivm_object_new(_STATE);
+		ivm_object_setSlot_cc(_TMP_OBJ2, _STATE, _TMP_STR, _TMP_OBJ1, _INSTR);
+	}
+
+	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(ASSERT_CONTEXT_SLOT, "assert_context_slot", S, 1, {
+	_TMP_STR = SARG();
+
+	_TMP_OBJ1 = ivm_context_search_cc(
+		_CONTEXT, _STATE,
+		_TMP_STR, _INSTR
+	);
+
+	if (!_TMP_OBJ1) {
+		_TMP_OBJ1 = ivm_object_new(_STATE);
+		ivm_context_setSlot_cc(_CONTEXT, _STATE, _TMP_STR, _TMP_OBJ1, _INSTR);
+	}
+
+	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	CHECK_STACK(1);
 
