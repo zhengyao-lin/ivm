@@ -13,19 +13,27 @@
 #define UNIOP_PROC_NAME(op, t) ivm_uniop_##op##_##t
 #define BINOP_PROC_NAME(t1, op, t2) ivm_binop_##t1##_##op##_##t2
 
+#define UNIOP_PROC_DEF(name) \
+	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
+								   ivm_coro_t *__coro__,       \
+								   ivm_object_t *__op1__)
+
+#define BINOP_PROC_DEF(name) \
+	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
+								   ivm_coro_t *__coro__,       \
+								   ivm_object_t *__op1__,      \
+								   ivm_object_t *__op2__,      \
+								   ivm_object_t *__assign__)
+
 #define UNIOP_GEN(op, t, ...) \
-	IVM_PRIVATE ivm_object_t * UNIOP_PROC_NAME(op, t)(ivm_vmstate_t *__state__, \
-													  ivm_coro_t *__coro__,     \
-													  ivm_object_t *__op1__)    \
+	UNIOP_PROC_DEF(UNIOP_PROC_NAME(op, t)) \
 	__VA_ARGS__
 
 #define BINOP_GEN(t1, op, t2, ...) \
-	IVM_PRIVATE ivm_object_t * BINOP_PROC_NAME(t1, op, t2)(ivm_vmstate_t *__state__,   \
-														   ivm_coro_t *__coro__,       \
-														   ivm_object_t *__op1__,      \
-														   ivm_object_t *__op2__,      \
-														   ivm_object_t *__assign__)   \
+	BINOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2)) \
 	__VA_ARGS__
+
+#define BINOP_GEN_C(t1, op, t2, func)
 
 #define _STATE (__state__)
 #define _CORO (__coro__)
@@ -36,6 +44,48 @@
 	#include "oprt.req.h"
 	#include "oprt.def.h"
 
+	BINOP_PROC_DEF(ivm_binop_getStringIndex)
+	{
+		ivm_object_t *tmp_obj;
+
+		if (_ASSIGN) {
+			ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _ASSIGN);
+			return _ASSIGN;
+		}
+
+		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));
+
+		return tmp_obj ? tmp_obj : IVM_NULL_OBJ(_STATE);
+	}
+
+	BINOP_PROC_DEF(ivm_binop_linkStringNum)
+	{
+		LINK_STRING_NUM(_OP1, _OP2, {
+			MEM_COPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+			MEM_COPY(data + len1, buf, len2 * sizeof(ivm_char_t));
+			data[size] = '\0';
+		});
+	}
+
+	BINOP_PROC_DEF(ivm_binop_linkStringNum_r)
+	{
+		LINK_STRING_NUM(_OP2, _OP1, {
+			MEM_COPY(data, buf, len2 * sizeof(ivm_char_t));
+			MEM_COPY(data + len2, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+			data[size] = '\0';
+		});
+	}
+
+	BINOP_PROC_DEF(ivm_binop_constFalse)
+	{
+		return (ivm_object_t *)(ivm_ptr_t)IVM_FALSE;
+	}
+
+	BINOP_PROC_DEF(ivm_binop_constTrue)
+	{
+		return (ivm_object_t *)(ivm_ptr_t)IVM_TRUE;
+	}
+
 #undef _STATE
 #undef _OP1
 #undef _OP2
@@ -43,6 +93,7 @@
 
 #undef UNIOP_GEN
 #undef BINOP_GEN
+#undef BINOP_GEN_C
 
 ivm_binop_table_t *
 ivm_binop_table_new()
@@ -96,8 +147,11 @@ ivm_oprt_initType(ivm_vmstate_t *state)
 
 #define BINOP_GEN(t1, op, t2, ...) \
 	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
-	 /* tmp_table ? 0 : (tmp_table = ivm_type_setBinopTable(tmp_type, op, ivm_binop_table_new())), */ \
 	 ivm_binop_table_set(tmp_table, t2, BINOP_PROC_NAME(t1, op, t2)));
+
+#define BINOP_GEN_C(t1, op, t2, func) \
+	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
+	 ivm_binop_table_set(tmp_table, t2, (func)));
 
 #define UNIOP_GEN(op, t, ...) \
 	(ivm_uniop_table_set(ivm_type_getUniopTable(type_list + t), \
@@ -105,7 +159,9 @@ ivm_oprt_initType(ivm_vmstate_t *state)
 
 	#include "oprt.def.h"
 
+#undef UNIOP_GEN
 #undef BINOP_GEN
+#undef BINOP_GEN_C
 
 	return;
 }
