@@ -48,33 +48,9 @@ ivm_heap_init(ivm_heap_t *heap,
 void
 ivm_heap_dump(ivm_heap_t *heap);
 
-/* assert: addup < bsize */
-IVM_INLINE
+/* assert: size < bsize */
 void *
-_ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t addup)
-{
-	ivm_byte_t *curb;
-
-	if (++heap->btop < heap->bcount) {
-		curb = heap->blocks[heap->btop];
-	} else {
-		heap->btop = heap->bcount++;
-
-		heap->blocks = MEM_REALLOC(heap->blocks,
-								   sizeof(*heap->blocks)
-								   * heap->bcount,
-								   ivm_byte_t **);
-
-		curb
-		= heap->blocks[heap->btop]
-		= MEM_ALLOC(heap->bsize, ivm_byte_t *);
-	}
-
-	heap->bcurp = curb + addup;
-	heap->bendp = curb + heap->bsize;
-
-	return curb;
-}
+_ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t size);
 
 IVM_INLINE
 ivm_bool_t
@@ -87,21 +63,26 @@ IVM_INLINE
 void *
 ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {
-	void *ret;
-	ivm_byte_t *next;
+	// IVM_ASSERT(size, IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size));
+	void *ret = heap->bcurp;
 
-	IVM_ASSERT(size && size <= heap->bsize,
-			   IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size));
-
-	ret = heap->bcurp;
-	next = heap->bcurp += size;
-
-	if (next <= heap->bendp) {
+	if ((heap->bcurp += size) <= heap->bendp) {
 		return ret;
 	}
+	
+	*add_block = IVM_TRUE;
+	return _ivm_heap_addBlock(heap, size);
+}
 
-	if (add_block)
-		*add_block = IVM_TRUE;
+IVM_INLINE
+void *
+ivm_heap_alloc(ivm_heap_t *heap, ivm_size_t size)
+{
+	void *ret = heap->bcurp;
+
+	if ((heap->bcurp += size) <= heap->bendp) {
+		return ret;
+	}
 
 	return _ivm_heap_addBlock(heap, size);
 }
@@ -123,8 +104,6 @@ ivm_heap_isIn(ivm_heap_t *heap, void *ptr)
 
 	return IVM_FALSE;
 }
-
-#define ivm_heap_alloc(heap, size) (ivm_heap_alloc_c((heap), (size), IVM_NULL))
 
 IVM_INLINE
 void *

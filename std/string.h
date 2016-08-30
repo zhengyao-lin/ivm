@@ -100,7 +100,6 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
 							   struct ivm_heap_t_tag *heap);
 
-/* if the length of string is greater than IVM_DEFAULT_MAX_CONST_SIZE, alloc in the state; else in the pool */
 const ivm_string_t *
 ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 							   struct ivm_vmstate_t_tag *state);

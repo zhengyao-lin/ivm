@@ -168,21 +168,9 @@ const ivm_string_t *
 ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
 							   ivm_vmstate_t *state)
 {
-	ivm_size_t size;
-	ivm_string_t *ret;
-
 	if (str && !str->is_const) {
-		if (ivm_string_length(str) < IVM_DEFAULT_MAX_CONST_SIZE) {
-			return
-			(const ivm_string_t *)
-			ivm_string_pool_register(IVM_VMSTATE_GET(state, CONST_POOL), str);
-		}
-
-		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
-		ret = ivm_vmstate_alloc(state, size);
-		MEM_COPY(ret, str, size);
-
-		return ret;
+		return (const ivm_string_t *)
+		ivm_string_pool_register(IVM_VMSTATE_GET(state, CONST_POOL), str);
 	}
 
 	return str;

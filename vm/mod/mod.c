@@ -355,6 +355,8 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	path = ivm_sys_getBasePath(buf);
 	ivm_vmstate_setPath(state, path);
+
+	IVM_TRACE("========> cur path: %s\n", path);
 	
 	ret = loader(buf, &err, state, coro, context);
 

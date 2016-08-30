@@ -115,3 +115,64 @@ ivm_heap_compact(ivm_heap_t *heap)
 
 	return;
 }
+
+IVM_PRIVATE
+IVM_INLINE
+void *
+_ivm_heap_addLargeBlock(ivm_heap_t *heap, ivm_size_t size)
+{
+	ivm_byte_t *cur_block;
+
+	if (++heap->btop < heap->bcount) {
+		heap->blocks[heap->btop]
+		= cur_block
+		= MEM_REALLOC(heap->blocks[heap->btop], size, ivm_byte_t *);
+	} else {
+		heap->btop = heap->bcount++;
+
+		heap->blocks = MEM_REALLOC(heap->blocks,
+								   sizeof(*heap->blocks)
+								   * heap->bcount,
+								   ivm_byte_t **);
+
+		cur_block
+		= heap->blocks[heap->btop]
+		= MEM_ALLOC(size, ivm_byte_t *);
+	}
+
+	heap->bcurp
+	= heap->bendp
+	= cur_block + size;
+
+	return cur_block;
+}
+
+void *
+_ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t size)
+{
+	ivm_byte_t *cur_block;
+
+	if (size <= heap->bsize) {
+		if (++heap->btop < heap->bcount) {
+			cur_block = heap->blocks[heap->btop];
+		} else {
+			heap->btop = heap->bcount++;
+
+			heap->blocks = MEM_REALLOC(heap->blocks,
+									   sizeof(*heap->blocks)
+									   * heap->bcount,
+									   ivm_byte_t **);
+
+			cur_block
+			= heap->blocks[heap->btop]
+			= MEM_ALLOC(heap->bsize, ivm_byte_t *);
+		}
+
+		heap->bcurp = cur_block + size;
+		heap->bendp = cur_block + heap->bsize;
+	} else {
+		return _ivm_heap_addLargeBlock(heap, size);
+	}
+
+	return cur_block;
+}
