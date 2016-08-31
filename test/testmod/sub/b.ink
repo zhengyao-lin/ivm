@@ -1,7 +1,7 @@
 
 import a
 
-print(a.shout)
+print(typeof(a))
 
 print("importing b")
 

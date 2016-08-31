@@ -110,7 +110,11 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 				
 				if (!i) {
 					// first
-					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ASSERT_CONTEXT_SLOT, buf);
+					if (count > 1) {
+						ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ASSERT_LOCAL_SLOT, buf);
+					} else {
+						ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_LOCAL_SLOT, buf);
+					}
 				} else if (i + 1 != count) {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ASSERT_SLOT, buf);
 				}
@@ -118,8 +122,10 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 				i++;
 			}
 
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT, buf);
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+			if (count > 1) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT, buf);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+			}
 		}
 	}
 
@@ -194,6 +200,8 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_t *elems = list_expr->elems;
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_elem;
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "list expression", flag);
 
 	ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
 		tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);

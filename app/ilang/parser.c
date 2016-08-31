@@ -2045,14 +2045,30 @@ RULE(intr_expr)
 
 /*
 	assign_expr
-		: eq_expr '=' prefix_expr
+		: logic_or_expr '=' nllo prefix_expr
+		| '[' nllo arg_list_opt nllo ']' '=' nllo prefix_expr
  */
 RULE(assign_expr)
 {
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(eq_expr)
+		SUB_RULE(T(T_LBRAKT) R(nllo)
+				 R(arg_list_opt)
+				 R(nllo) T(T_RBRAKT)
+				 T(T_ASSIGN) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(2);
+			_RETVAL.expr = ilang_gen_assign_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				IVM_NULL,
+				RULE_RET_AT(1).u.expr_list,
+				RULE_RET_AT(4).u.expr
+			);
+		})
+		
+		SUB_RULE(R(logic_or_expr)
 				 T(T_ASSIGN) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
@@ -2060,6 +2076,7 @@ RULE(assign_expr)
 				_ENV->unit,
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(0).u.expr,
+				IVM_NULL,
 				RULE_RET_AT(2).u.expr
 			);
 		})
@@ -2399,7 +2416,12 @@ RULE(group_expr)
 		: assign_expr
 		| intr_expr
 		| fn_expr
-		| eq_expr
+		| try_expr
+		| if_expr
+		| while_expr
+		| fork_expr
+		| group_expr
+		| logic_or_expr
  */
 
 RULE(prefix_expr)
@@ -2493,7 +2515,7 @@ RULE(comma_expr)
 
 /*
 	expr
-		: intr_expr
+		: comma_expr
  */
 RULE(expr)
 {

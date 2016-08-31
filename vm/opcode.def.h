@@ -76,6 +76,29 @@ OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
+	_TMP_ARGC = IARG();
+
+	_TMP_OBJ1 = STACK_POP();
+	RTM_ASSERT(
+		IVM_IS_TYPE(_TMP_OBJ1, IVM_LIST_OBJECT_T),
+		IVM_ERROR_MSG_UNPACK_NON_LIST(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))
+	);
+
+	if (_TMP_ARGC) {
+		_TMP_ARGV = STACK_ENSURE(_TMP_ARGC);
+
+		_ivm_list_object_unpackTo(
+			IVM_AS(_TMP_OBJ1, ivm_list_object_t),
+			_STATE, _TMP_ARGV, _TMP_ARGC
+		);
+
+		STACK_INC_C(_TMP_ARGC);
+	}
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(CLONE, "clone", N, 1, {
 	CHECK_STACK(1);
 
@@ -224,27 +247,26 @@ OPCODE_GEN(ASSERT_SLOT, "assert_slot", S, 0, {
 	
 	_TMP_STR = SARG();
 
-	_TMP_OBJ2 = STACK_POP();
-	NOT_NONE(_TMP_OBJ2);
+	_TMP_OBJ1 = STACK_POP();
+	NOT_NONE(_TMP_OBJ1);
 
-	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ2, _STATE, _TMP_STR, _INSTR);
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, _TMP_STR, _INSTR);
 
-	if (!_TMP_OBJ1) {
-		_TMP_OBJ1 = ivm_object_new(_STATE);
-		ivm_object_setSlot_cc(_TMP_OBJ2, _STATE, _TMP_STR, _TMP_OBJ1, _INSTR);
+	if (!_TMP_OBJ2) {
+		_TMP_OBJ2 = ivm_object_new(_STATE);
+		ivm_object_setSlot_cc(_TMP_OBJ1, _STATE, _TMP_STR, _TMP_OBJ2, _INSTR);
 	}
 
-	STACK_PUSH(_TMP_OBJ1);
+	STACK_PUSH(_TMP_OBJ2);
 
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(ASSERT_CONTEXT_SLOT, "assert_context_slot", S, 1, {
+OPCODE_GEN(ASSERT_LOCAL_SLOT, "assert_local_slot", S, 1, {
 	_TMP_STR = SARG();
 
-	_TMP_OBJ1 = ivm_context_search_cc(
-		_CONTEXT, _STATE,
-		_TMP_STR, _INSTR
+	_TMP_OBJ1 = ivm_context_getSlot_cc(
+		_CONTEXT, _STATE, _TMP_STR, _INSTR
 	);
 
 	if (!_TMP_OBJ1) {
@@ -652,7 +674,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	if (!IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T)) {
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
 		if (_TMP_OBJ2) {
-			STACK_INC(_TMP_ARGC);
+			STACK_INC_C(_TMP_ARGC);
 			STACK_PUSH(_TMP_OBJ1);
 			STACK_PUSH(_TMP_OBJ2);
 			GOTO_INSTR(INVOKE_BASE);
@@ -696,7 +718,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	} else {
 		INVOKE_STACK();
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC(_TMP_ARGC);
+		STACK_INC_C(_TMP_ARGC);
 		INVOKE();
 	}
 })
@@ -756,7 +778,7 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 	} else {
 		INVOKE_STACK();
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC(_TMP_ARGC);
+		STACK_INC_C(_TMP_ARGC);
 		INVOKE();
 	}
 })

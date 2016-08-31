@@ -94,6 +94,12 @@ ivm_list_object_step(ivm_list_object_t *list,
 					 ivm_long_t step);
 
 void
+_ivm_list_object_unpackTo(ivm_list_object_t *list,
+						  struct ivm_vmstate_t_tag *state,
+						  ivm_object_t **sp,
+						  ivm_size_t req);
+
+void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   struct ivm_vmstate_t_tag *state);
 

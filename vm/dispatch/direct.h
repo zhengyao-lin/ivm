@@ -169,7 +169,14 @@
 #endif
 
 #define STACK_CUR() (tmp_sp)
-#define STACK_INC(i) (tmp_sp += (i))
+#define STACK_INC_C(i) (tmp_sp += (i))
+
+#define STACK_ENSURE(i) \
+	((tmp_sp + (i) >= tmp_st_end                 \
+	  ? SAVE_STACK_NOPUSH(),                     \
+	    ivm_vmstack_ensure(_STACK, _CORO, (i)),  \
+	    UPDATE_STACK()                           \
+	  : 0), tmp_sp)
 
 #if IVM_STACK_CACHE_N_TOS == 0
 

@@ -40,6 +40,11 @@ ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 				  struct ivm_coro_t_tag *coro);
 
 void
+ivm_vmstack_ensure(ivm_vmstack_t *stack,
+				   struct ivm_coro_t_tag *coro,
+				   ivm_size_t size);
+
+void
 ivm_vmstack_push(struct ivm_coro_t_tag *coro,
 				 struct ivm_object_t_tag *obj);
 

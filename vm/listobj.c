@@ -17,16 +17,12 @@ ivm_list_object_new(ivm_vmstate_t *state,
 	ret->alloc = IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE;
 	ret->size = size;
 
-	if (size) {
-		ret->lst = ivm_vmstate_allocWild(
-			state,
-			sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE
-		);
+	ret->lst = ivm_vmstate_allocWild(
+		state,
+		sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE
+	);
 
-		MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
-	} else {
-		ret->lst = IVM_NULL;
-	}
+	MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 
@@ -213,6 +209,28 @@ ivm_list_object_step(ivm_list_object_t *list,
 	}
 
 	list->size = i;
+
+	return;
+}
+
+void
+_ivm_list_object_unpackTo(ivm_list_object_t *list,
+						  ivm_vmstate_t *state,
+						  ivm_object_t **sp,
+						  ivm_size_t req)
+{
+	ivm_object_t **lst = list->lst;
+	ivm_size_t i, j, size = list->size;
+
+	j = req - 1;
+
+	for (i = 0; i != req && i != size; i++) {
+		sp[j--] = lst[i] ? lst[i] : IVM_NONE(state);
+	}
+
+	for (; i != req; i++) {
+		sp[j--] = IVM_NONE(state);
+	}
 
 	return;
 }

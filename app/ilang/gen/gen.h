@@ -633,13 +633,17 @@ COMMON_EXPR(intr_expr, "intr expression", {
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ilang_gen_expr_t *lhe;
+	ilang_gen_expr_list_t *multi;
 	ilang_gen_expr_t *rhe;
 } ilang_gen_assign_expr_t;
 
 COMMON_EXPR(assign_expr, "assign expression", {
 	ret->lhe = lhe;
+	ret->multi = multi;
 	ret->rhe = rhe;
-}, ilang_gen_expr_t *lhe, ilang_gen_expr_t *rhe);
+}, ilang_gen_expr_t *lhe,
+   ilang_gen_expr_list_t *multi,
+   ilang_gen_expr_t *rhe);
 
 #undef COMMON_EXPR
 
