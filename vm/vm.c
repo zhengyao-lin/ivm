@@ -78,10 +78,10 @@ ivm_vmstate_new()
 	ret->gc_flag = IVM_FALSE;
 	ret->gc = ivm_collector_new(ret);
 
+	ivm_vmstate_lockGCFlag(ret);
+
 	ret->except = IVM_NULL;
 	ivm_uid_gen_init(&ret->uid_gen);
-
-	ivm_vmstate_lockGCFlag(ret);
 
 	for (i = 0, tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++, i++) {
@@ -94,6 +94,9 @@ ivm_vmstate_new()
 	}
 
 	ivm_oprt_initType(ret);
+
+	ret->loaded_mod = ivm_object_new(ret);
+	ret->obj_none = ivm_none_new(ret);
 
 	ivm_vmstate_unlockGCFlag(ret);
 
@@ -220,7 +223,7 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 		if (!val) {
 			// coro killed by an exception
 			ivm_coro_printException(coro, state, ivm_vmstate_popException(state));
-			val = IVM_NULL_OBJ(state);
+			val = IVM_NONE(state);
 		}
 
 		group = ivm_cgroup_list_at(&state->coro_groups, gid);

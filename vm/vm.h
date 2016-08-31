@@ -40,6 +40,8 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_collector_t *gc;						// 8
 
 	ivm_object_t *except;
+	ivm_object_t *loaded_mod;
+	ivm_object_t *obj_none;
 
 #define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
 	#include "vm.const.h"						// 8
@@ -392,6 +394,12 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 	state->except = IVM_NULL;
 	return tmp;
 }
+
+#define ivm_vmstate_getLoadedMod(state) ((state)->loaded_mod)
+#define ivm_vmstate_setLoadedMod(state, obj) ((state)->loaded_mod = (obj))
+
+#define ivm_vmstate_getNone(state) ((state)->obj_none)
+#define ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))
 
 IVM_INLINE
 ivm_size_t

@@ -55,7 +55,7 @@
 
 		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));
 
-		return tmp_obj ? tmp_obj : IVM_NULL_OBJ(_STATE);
+		return tmp_obj ? tmp_obj : IVM_NONE(_STATE);
 	}
 
 	BINOP_PROC_DEF(ivm_binop_linkStringNum)

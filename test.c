@@ -31,7 +31,7 @@
 IVM_NATIVE_FUNC(test)
 {
 	IVM_OUT("from native!!\n");
-	return IVM_NULL_OBJ(NAT_STATE());
+	return IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(call_func)
@@ -496,7 +496,7 @@ int test_vm()
 	ivm_exec_addInstr(exec1, INVOKE, 0);
 
 	addr1 = ivm_exec_addInstr(exec1, JUMP, 0);
-	addr3 = ivm_exec_addInstr(exec1, NEW_NULL);
+	addr3 = ivm_exec_addInstr(exec1, NEW_NONE);
 	addr4 = ivm_exec_addInstr(exec1, JUMP_FALSE, 0);
 	addr2 = ivm_exec_addInstr(exec1, NOP);
 	ivm_exec_setArgAt(exec1, addr1, addr2 - addr1);

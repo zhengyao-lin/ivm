@@ -45,7 +45,7 @@ root {
 
 c2 {
 	out "coro2"
-	new_null
+	new_none
 	yield
 	out "coro2 end"
 }
@@ -54,7 +54,7 @@ c1 {
 	out "coro1"
 	new_func c2
 	fork
-	new_null
+	new_none
 	yield
 	out "coro1 end"
 }
@@ -65,7 +65,7 @@ coro_test2 {
 
 	fork; fork
 
-	new_null
+	new_none
 	yield
 
 	new_func wait
@@ -75,12 +75,12 @@ coro_test2 {
 do_something {
 	new_func coro_test2
 	fork
-	new_null
+	new_none
 	yield
 }
 
 wait {
-	new_null
+	new_none
 loop: yield
 	dup
 	jump_false end
@@ -131,6 +131,6 @@ loop:
 	jump loop
 
 end:
-	new_null
+	new_none
 	yield
 }

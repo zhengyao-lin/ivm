@@ -273,7 +273,7 @@ __test = fn: {
 	yield yield 10 to gid
 
 	i = 0
-	f = null
+	f = none
 
 	(fn: {
 		f = fn: print(val)
@@ -340,7 +340,7 @@ __test = fn: {
 	try: a * 5
 	catch err: printe(err)
 
-	try: null()
+	try: none()
 	catch err: printe(err)
 
 	try: {(1 + "s")}
@@ -360,7 +360,7 @@ __test = fn: {
 		printe(err)
 	}
 
-	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == null)
+	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == none)
 	print("hello" == "hello")
 	try: (fn:fn:fn:fn:raise "right!")()()()()
 	catch err: print(err)
@@ -369,7 +369,7 @@ __test = fn: {
 
 	fork fn a: {
 		print("init " + a)
-		while a = yield null:
+		while a = yield none:
 			if a == "skip":
 				print("skip")
 			else: {
@@ -387,7 +387,7 @@ __test = fn: {
 
 	call(fn: try: yield catch err: printe(err))
 
-	yield null
+	yield none
 
 	///////////////////////////////////////
 

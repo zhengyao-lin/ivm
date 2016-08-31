@@ -411,17 +411,30 @@ ivm_collector_travType(ivm_type_t *type,
 IVM_PRIVATE
 IVM_INLINE
 void
-ivm_collector_travState(ivm_traverser_arg_t *arg)
+ivm_collector_travState(ivm_vmstate_t *state,
+						ivm_traverser_arg_t *arg)
 {
-	ivm_type_t *types = IVM_VMSTATE_GET(arg->state, TYPE_LIST), *end;
+	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
 
-	ivm_vmstate_travAndCompactCGroup(arg->state, arg);
+	ivm_vmstate_travAndCompactCGroup(state, arg);
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
 		ivm_collector_travType(types,
 							   arg);
 	}
+
+	ivm_vmstate_setException(state,
+		ivm_collector_copyObject(ivm_vmstate_getException(state), arg)
+	);
+
+	ivm_vmstate_setLoadedMod(state,
+		ivm_collector_copyObject(ivm_vmstate_getLoadedMod(state), arg)
+	);
+
+	ivm_vmstate_setNone(state,
+		ivm_collector_copyObject(ivm_vmstate_getNone(state), arg)
+	);
 
 	return;
 }
@@ -521,7 +534,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	// IVM_TRACE("***collecting*** %d\n", arg.gen);
 
 	ivm_collector_checkWriteBarrier(collector, &arg);
-	ivm_collector_travState(&arg);
+	ivm_collector_travState(state, &arg);
 
 	if (arg.gen) {
 		tmp_ratio = IVM_HEAP_GET(swap, BLOCK_USED) * 100 /

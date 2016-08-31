@@ -353,13 +353,18 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	IVM_CORO_NATIVE_ASSERT(coro, state, loader, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
 
+	ret = ivm_object_getSlot_r(ivm_vmstate_getLoadedMod(state), state, buf);
+	if (ret) return ret;
+
 	path = ivm_sys_getBasePath(buf);
 	ivm_vmstate_setPath(state, path);
 
-	IVM_TRACE("========> cur path: %s\n", path);
+	// IVM_TRACE("========> cur path: %s %s\n", path, buf);
+	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, IVM_NONE(state));
 	
 	ret = loader(buf, &err, state, coro, context);
 
+	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, ret);
 	ivm_vmstate_setPath(state, path_backup);
 	MEM_FREE(path);
 

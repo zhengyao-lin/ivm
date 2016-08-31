@@ -89,7 +89,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			if (intr->val) {
 				intr->val->eval(intr->val, FLAG(0), env);
 			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			}
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RETURN);
 			break;
@@ -127,7 +127,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			if (intr->val) {
 				intr->val->eval(intr->val, FLAG(0), env);
 			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			}
 			
 			if (intr->to) {
@@ -193,7 +193,7 @@ ilang_gen_fork_expr_eval(ilang_gen_expr_t *expr,
 		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), FORK);
 		if (!flag.is_top_level) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 		}
 	}
 

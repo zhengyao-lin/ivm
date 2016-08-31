@@ -39,7 +39,7 @@ IVM_NATIVE_FUNC(print)
 					  IVM_OBJECT_GET(obj, TYPE_NAME));
 	}
 
-	return IVM_NULL_OBJ(NAT_STATE());
+	return IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(call)
@@ -90,7 +90,7 @@ FAILED:
 	ilang_gen_trans_unit_free(unit);
 	ivm_exec_unit_free(exec_unit);
 
-	return ret ? ret : IVM_NULL_OBJ(NAT_STATE());
+	return ret ? ret : IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(import)
@@ -339,8 +339,7 @@ int main(int argc, const char **argv)
 		ivm_context_setSlot_r(ctx, state, "eval", IVM_NATIVE_WRAP(state, eval));
 		ivm_context_setSlot_r(ctx, state, "import", IVM_NATIVE_WRAP(state, import));
 
-		ivm_context_setSlot_r(ctx, state, "null", IVM_NULL_OBJ(state));
-		ivm_context_setSlot_r(ctx, state, "undefined", IVM_UNDEFINED(state));
+		ivm_context_setSlot_r(ctx, state, "none", IVM_NONE(state));
 
 		ivm_vmstate_unlockGCFlag(state);
 

@@ -1,4 +1,8 @@
 
+import a
+
+print(a.shout)
+
 print("importing b")
 
 `import`("../test")

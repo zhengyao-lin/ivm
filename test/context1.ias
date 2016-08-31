@@ -17,10 +17,10 @@ root {
 	pop
 
 	get_context_slot "a"
-	out_type // -> "undefined"
+	out_type // -> "none"
 
 	get_context_slot "b"
-	out_type // -> "undefined"
+	out_type // -> "none"
 }
 
 /*

@@ -71,7 +71,7 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 	}
 
 	if (!has_ret && !flag.is_top_level) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NULL);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 	}
 
 	return NORET();

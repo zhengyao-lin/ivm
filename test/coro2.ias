@@ -66,7 +66,7 @@ loop:
 	jump loop
 end:
 
-	new_null
+	new_none
 	yield
 }
 

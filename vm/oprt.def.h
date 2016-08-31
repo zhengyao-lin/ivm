@@ -65,11 +65,8 @@ BINOP_GEN(IVM_NUMERIC_T, LE, IVM_NUMERIC_T, {
 	return (ivm_object_t *)(ivm_ptr_t)(ivm_numeric_getValue(_OP1) <= ivm_numeric_getValue(_OP2));
 })
 
-BINOP_GEN_C(IVM_UNDEFINED_T, EQ, IVM_UNDEFINED_T, ivm_binop_constTrue)
-BINOP_GEN_C(IVM_UNDEFINED_T, NE, IVM_UNDEFINED_T, ivm_binop_constFalse)
-
-BINOP_GEN_C(IVM_NULL_T, EQ, IVM_NULL_T, ivm_binop_constTrue)
-BINOP_GEN_C(IVM_NULL_T, NE, IVM_NULL_T, ivm_binop_constFalse)
+BINOP_GEN_C(IVM_NONE_T, EQ, IVM_NONE_T, ivm_binop_constTrue)
+BINOP_GEN_C(IVM_NONE_T, NE, IVM_NONE_T, ivm_binop_constFalse)
 
 BINOP_GEN(IVM_OBJECT_T, EQ, IVM_OBJECT_T, {
 	return (ivm_object_t *)(ivm_ptr_t)(_OP1 == _OP2);
@@ -165,7 +162,7 @@ BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, {
 
 	tmp = ivm_list_object_get(IVM_AS(_OP1, ivm_list_object_t), ivm_numeric_getValue(_OP2));
 
-	return tmp ? tmp : IVM_UNDEFINED(_STATE);
+	return tmp ? tmp : IVM_NONE(_STATE);
 })
 
 BINOP_GEN(IVM_LIST_OBJECT_T, ADD, IVM_LIST_OBJECT_T, {

@@ -7,8 +7,8 @@ OPCODE_GEN(NEW_NIL, "new_nil", N, 1, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(NEW_NULL, "new_null", N, 1, {
-	STACK_PUSH(IVM_NULL_OBJ(_STATE));
+OPCODE_GEN(NEW_NONE, "new_none", N, 1, {
+	STACK_PUSH(IVM_NONE(_STATE));
 	NEXT_INSTR();
 })
 
@@ -255,7 +255,7 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = ivm_object_getSlot_cc(STACK_POP(), _STATE, SARG(), _INSTR);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -265,7 +265,7 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, 1, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = ivm_object_getSlot_cc(STACK_TOP(), _STATE, SARG(), _INSTR);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -310,7 +310,7 @@ OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = ivm_object_getProto(STACK_POP());
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -338,7 +338,7 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, 1, {
 		_CONTEXT, _STATE,
 		SARG(), _INSTR
 	);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 /*
 	if (_TMP_OBJ1) {
@@ -425,7 +425,7 @@ OPCODE_GEN(GET_LOCAL_SLOT, "get_local_slot", S, 1, {
 		_STATE, SARG(), _INSTR
 	);
 
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -448,7 +448,7 @@ OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, 1, {
 		_STATE, SARG(), _INSTR
 	);
 
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -465,7 +465,7 @@ OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	} else {
 		ivm_context_setSlot_cc(
 			_CONTEXT,
-			_STATE, SARG(), IVM_UNDEFINED(_STATE),
+			_STATE, SARG(), IVM_NONE(_STATE),
 			_INSTR
 		);
 	}
@@ -510,7 +510,7 @@ OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	_TMP_OBJ1 = STACK_POP();
 	_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IARG());
 
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_UNDEFINED(_STATE));
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
 })
@@ -867,7 +867,7 @@ OPCODE_GEN(RETURN, "return", N, -1, {
 	if (AVAIL_STACK) {
 		_TMP_OBJ1 = STACK_POP();
 	} else {
-		_TMP_OBJ1 = IVM_NULL_OBJ(_STATE);
+		_TMP_OBJ1 = IVM_NONE(_STATE);
 	}
 
 	RETURN();

@@ -15,7 +15,7 @@
 
 IVM_COM_HEADER
 
-#define _IVM_MARK_HEADER_BITS 3 // (2 + IVM_OOP_COUNT)
+#define _IVM_MARK_HEADER_BITS 4 // (2 + IVM_OOP_COUNT)
 
 #define IVM_OBJECT_HEADER \
 	ivm_type_t *type;                                          \
@@ -29,6 +29,7 @@ IVM_COM_HEADER
 				_IVM_MARK_HEADER_BITS;                         \
 			/* ivm_uint_t oop: IVM_OOP_COUNT; */               \
 			ivm_uint_t oop: 1;                                 \
+			ivm_uint_t locked: 1;                              \
 			ivm_uint_t wb: 1;                                  \
 			ivm_uint_t gen: 1;                                 \
 		} sub;                                                 \
@@ -249,10 +250,21 @@ ivm_object_getSlot(ivm_object_t *obj,
 				   const ivm_string_t *key);
 
 ivm_object_t *
+ivm_object_getSlot_r(ivm_object_t *obj,
+					 struct ivm_vmstate_t_tag *state,
+					 const ivm_char_t *rkey);
+
+ivm_object_t *
 ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_instr_t *instr);
+
+void
+ivm_object_setOop(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state,
+				  ivm_int_t op,
+				  ivm_object_t *func);
 
 #if 0
 /* no prototype */

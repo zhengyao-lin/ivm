@@ -280,7 +280,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 											IVM_RUNTIME_GET(&coro->runtime, CONTEXT),
 											IVM_FUNCTION_SET_ARG_2(0, IVM_NULL));
 		if (!_TMP_OBJ1) {
-			_TMP_OBJ1 = IVM_NULL_OBJ(state);
+			_TMP_OBJ1 = IVM_NONE(state);
 		}
 
 		ivm_coro_kill(coro, state);
@@ -328,11 +328,11 @@ END_EXEC:
 			if (AVAIL_STACK) {
 				_TMP_OBJ1 = STACK_POP();
 			} else {
-				_TMP_OBJ1 = IVM_NULL_OBJ(state);
+				_TMP_OBJ1 = IVM_NONE(state);
 			}
 #endif
 			IVM_ASSERT(!tmp_ip, "impossible");
-			_TMP_OBJ1 = IVM_NULL_OBJ(state);
+			_TMP_OBJ1 = IVM_NONE(state);
 			goto ACTION_RETURN;
 			
 ACTION_RAISE:

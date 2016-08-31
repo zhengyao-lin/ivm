@@ -84,22 +84,12 @@ ivm_object_new_t(struct ivm_vmstate_t_tag *state,
 
 IVM_INLINE
 ivm_object_t *
-ivm_object_newNull(ivm_vmstate_t *state)
+ivm_none_new(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(ret, state, IVM_NULL_T);
-
-	return ret;
-}
-
-IVM_INLINE
-ivm_object_t *
-ivm_object_newUndefined(ivm_vmstate_t *state)
-{
-	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(ret, state, IVM_UNDEFINED_T);
+	ivm_object_init(ret, state, IVM_NONE_T);
+	ret->mark.sub.locked = IVM_TRUE;
 
 	return ret;
 }
@@ -140,33 +130,7 @@ ivm_object_getProto(ivm_object_t *obj)
 	return obj->proto;
 }
 
-#define IVM_NULL_OBJ(state) (ivm_object_newNull(state))
-#define IVM_UNDEFINED(state) (ivm_object_newUndefined(state))
-
-
-IVM_INLINE
-void
-ivm_object_setOop(ivm_object_t *obj,
-				  ivm_vmstate_t *state,
-				  ivm_int_t op,
-				  ivm_object_t *func)
-{
-	ivm_slot_table_t *slots = obj->slots;
-
-	if (slots) {
-		if (ivm_slot_table_isShared(slots)) {
-			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
-			IVM_WBOBJ_SLOT(state, obj, slots);
-		}
-	} else {
-		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
-	}
-
-	ivm_object_markOop(obj);
-	ivm_slot_table_setOop(slots, state, op, func);
-
-	return;
-}
+#define IVM_NONE(state) ivm_vmstate_getNone(state)
 
 IVM_INLINE
 ivm_object_t *

@@ -38,7 +38,7 @@ root {
 	invoke 0
 
 	out_stack_size 		// -> "1"
-	out_type			// -> "null"
+	out_type			// -> "none"
 
 	out "hey" 			// -> "hey"
 }

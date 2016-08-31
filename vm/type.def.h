@@ -1,7 +1,4 @@
-TYPE_GEN(IVM_UNDEFINED_T, undefined, sizeof(ivm_object_t), {
-}, .const_bool = IVM_FALSE)
-
-TYPE_GEN(IVM_NULL_T, null, sizeof(ivm_object_t), {
+TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), {
 }, .const_bool = IVM_FALSE)
 
 TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t), {
