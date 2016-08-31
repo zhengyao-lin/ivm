@@ -549,7 +549,8 @@ __test = fn: {
 
 	print(a.b)
 
-	print(top a.b)
+	try: print(top a.b)
+	catch: print("yes")
 
 	a = "yes!"
 	b = "no!"

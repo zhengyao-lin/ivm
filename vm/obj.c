@@ -94,7 +94,6 @@ ivm_object_setSlot(ivm_object_t *obj,
 	ivm_slot_table_t *slots;
 
 	// IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
-	if (obj->mark.sub.locked) return;
 
 	slots = obj->slots;
 
@@ -122,7 +121,6 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 	const ivm_string_t *key;
 
 	// IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
-	if (obj->mark.sub.locked) return;
 
 	key = (const ivm_string_t *)
 		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
@@ -153,7 +151,6 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	ivm_slot_table_t *slots;
 
 	// IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
-	if (obj->mark.sub.locked) return;
 
 	slots = obj->slots;
 
@@ -286,8 +283,6 @@ ivm_object_setOop(ivm_object_t *obj,
 				  ivm_object_t *func)
 {
 	ivm_slot_table_t *slots = obj->slots;
-
-	if (obj->mark.sub.locked) return;
 
 	if (slots) {
 		if (ivm_slot_table_isShared(slots)) {

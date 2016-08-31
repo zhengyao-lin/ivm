@@ -131,6 +131,7 @@ ivm_object_getProto(ivm_object_t *obj)
 }
 
 #define IVM_NONE(state) ivm_vmstate_getNone(state)
+#define IVM_IS_NONE(state, obj) ((obj) == ivm_vmstate_getNone(state))
 
 IVM_INLINE
 ivm_object_t *

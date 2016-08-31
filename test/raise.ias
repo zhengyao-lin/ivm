@@ -20,7 +20,7 @@ CATCH:				// catch (err) {
 	set_arg "err"
 
 	get_context_slot "err"
-	out_str
+	out_str // -> "this is an serious error"
 	pop
 
 	jump FINAL		// }
@@ -31,5 +31,5 @@ FINAL:				// final {
 root {
 	new_func protected
 	invoke 0
-	out "everything is ok"
+	out "everything is ok" // -> "everything is ok"
 }
