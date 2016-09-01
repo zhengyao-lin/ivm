@@ -562,7 +562,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 		collector->gen = 0;
 	} else if (IVM_HEAP_GET(heap2, BLOCK_TOP) > orig) {
 		// IVM_TRACE("hi\n");
-		IVM_TRACE("heap2 is full\n");
+		// IVM_TRACE("heap2 is full\n");
 		collector->gen = 1;
 	}
 

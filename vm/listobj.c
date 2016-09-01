@@ -131,6 +131,8 @@ ivm_list_object_push(ivm_list_object_t *list,
 		_ivm_list_object_expand(list, state);
 	}
 
+	IVM_WBOBJ(state, IVM_AS_OBJ(list), obj);
+
 	list->lst[list->size++] = obj;
 
 	return list->size;
