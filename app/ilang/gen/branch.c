@@ -320,6 +320,57 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 }
 
 ilang_gen_value_t
+ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
+						ilang_gen_flag_t flag,
+						ilang_gen_env_t *env)
+{
+	ilang_gen_for_expr_t *for_expr = IVM_AS(expr, ilang_gen_for_expr_t);
+	ivm_size_t addr1;
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "for expression", flag);
+
+	/*
+		<gen iteree>
+		get_slot_n "iter"
+		invoke_base
+
+		addr1:
+			iter_next addr2(end loop label)
+			invoke_base 0
+			rprot_cac
+			<gen var as leftval>
+
+			<body>
+
+			jump addr1
+		addr2: pop
+	 */
+
+	for_expr->iteree->eval(for_expr->iteree, FLAG(0), env);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, "iter");
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 0);
+
+	addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ITER_NEXT, 0);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 0);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_CAC);
+
+	ilang_gen_leftval_eval(for_expr->var, expr, env);
+
+	for_expr->body->eval(for_expr->body, FLAG(.is_top_level = IVM_TRUE), env);
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, addr1 - ivm_exec_cur(env->cur_exec));
+	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_N, 2);
+
+	if (!flag.is_top_level) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
 ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_flag_t flag,
 						ilang_gen_env_t *env)

@@ -1,5 +1,5 @@
 // pseudo iter
-
+// 
 list_proto = [].proto
 
 list_proto.iter = fn: {
@@ -30,13 +30,34 @@ a = list.iter()
 while 1: {
 	try: i = a.next()
 	catch err:
-		if err != "done":
-			raise err
-		else:
-			break
+		break
 	if !(i % 1000):
 		print(i)
 }
+
+/*
+a.iter()
+
+for i in a: <body>
+
+<gen a>
+get_slot_n "iter"
+invoke_base
+
+l1:
+	dup                 =
+	get_slot_n "next"   => iter_next l2(end loop label)
+	rprot_set l2        =>
+	invoke_base         =
+rprot_cac
+
+<gen i as leftval>
+
+<body>
+
+jump l1
+l2:
+*/
 
 // -> "num: 0.000"
 // -> "num: 1000.000"

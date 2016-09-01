@@ -149,14 +149,41 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 	return NORET();
 }
 
+void
+ilang_gen_leftval_eval(ilang_gen_leftval_t val,
+					   ilang_gen_expr_t *expr,
+					   ilang_gen_env_t *env)
+{
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_expr;
+
+	if (val.one) {
+		val.one->eval(
+			val.one,
+			FLAG(.is_left_val = IVM_TRUE),
+			env
+		);
+	} else {
+		ivm_exec_addInstr_l(
+			env->cur_exec, GET_LINE(expr),
+			UNPACK_LIST, ilang_gen_expr_list_size(val.multi)
+		);
+
+		ILANG_GEN_EXPR_LIST_EACHPTR_R(val.multi, eiter) {
+			tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+			tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
+		}
+	}
+
+	return;
+}
+
 ilang_gen_value_t
 ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 						   ilang_gen_flag_t flag,
 						   ilang_gen_env_t *env)
 {
 	ilang_gen_assign_expr_t *assign = IVM_AS(expr, ilang_gen_assign_expr_t);
-	ilang_gen_expr_list_iterator_t eiter;
-	ilang_gen_expr_t *tmp_expr;
 
 	// assign expression itself should not be left value
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
@@ -165,24 +192,7 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
 	}
-
-	if (assign->lhe) {
-		assign->lhe->eval(
-			assign->lhe,
-			FLAG(.is_left_val = IVM_TRUE),
-			env
-		);
-	} else {
-		ivm_exec_addInstr_l(
-			env->cur_exec, GET_LINE(expr),
-			UNPACK_LIST, ilang_gen_expr_list_size(assign->multi)
-		);
-
-		ILANG_GEN_EXPR_LIST_EACHPTR_R(assign->multi, eiter) {
-			tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-			tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
-		}
-	}
+	ilang_gen_leftval_eval(assign->lhe, expr, env);
 
 	return NORET();
 }

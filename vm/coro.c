@@ -339,6 +339,8 @@ ACTION_RAISE:
 			ivm_vmstate_setException(state, _TMP_OBJ1);
 ACTION_EXCEPTION:
 
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(EXCEPTION, _TMP_OBJ1));
+
 			do {
 				ivm_runtime_dump(tmp_runtime, state);
 				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
@@ -364,7 +366,7 @@ ACTION_EXCEPTION:
 
 			UPDATE_STACK();
 			// push raised object
-			STACK_PUSH(_TMP_OBJ1);
+			STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(state));
 			
 			goto ACTION_RAISE_NEXT;
 

@@ -570,6 +570,13 @@ OPCODE_GEN(POP, "pop", N, -1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(POP_N, "pop_n", I, -1, {
+	_TMP_ARGC = IARG();
+	CHECK_STACK(_TMP_ARGC);
+	STACK_CUT(_TMP_ARGC);
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(DUP_N, "dup_n", I, 1, {
 	ivm_size_t i = IARG();
 
@@ -711,7 +718,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
 		if (!_TMP_OBJ1) {
-			RAISE(ivm_vmstate_popException(_STATE));
+			EXCEPTION();
 		}
 
 		RETURN();
@@ -771,7 +778,7 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
 		if (!_TMP_OBJ1) {
-			RAISE(ivm_vmstate_popException(_STATE));
+			EXCEPTION();
 		}
 
 		RETURN();
@@ -891,6 +898,22 @@ OPCODE_GEN(YIELD_TO, "yield_to", N, -1, {
 
 	UPDATE_RUNTIME();
 	STACK_PUSH(_TMP_OBJ1);
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_TOP(); // iter
+	NOT_NONE(_TMP_OBJ1);
+	STACK_PUSH(_TMP_OBJ1);
+
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
+	STACK_PUSH(_TMP_OBJ2 ? _TMP_OBJ2 : IVM_NONE(_STATE)); // get iter.next
+
+	// set raise protection
+	IVM_RUNTIME_SET(_RUNTIME, CATCH, ADDR_ARG());
+
 	NEXT_INSTR();
 })
 

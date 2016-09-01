@@ -291,6 +291,9 @@ DRAW_END:
 		case IVM_CORO_ACTION_RETURN:
 			IVM_TRACE("****** ACTION: RETURN(%s) ******", TYPE_NAME_OF(runtime.retval));
 			break;
+		case IVM_CORO_ACTION_EXCEPTION:
+			IVM_TRACE("****** ACTION: EXCEPTION(%s) ******", TYPE_NAME_OF(runtime.retval));
+			break;
 	}
 
 	getc(stdin);

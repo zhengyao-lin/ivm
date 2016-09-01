@@ -30,6 +30,8 @@ enum token_id_t {
 	T_ELIF,
 	T_ELSE,
 	T_WHILE,
+	T_FOR,
+	T_IN,
 	T_TRY,
 	T_CATCH,
 	T_FINAL,
@@ -112,6 +114,8 @@ token_name_table[] = {
 	"keyword `elif`",
 	"keyword `else`",
 	"keyword `while`",
+	"keyword `for`",
+	"keyword `in`",
 	"keyword `try`",
 	"keyword `catch`",
 	"keyword `final`",
@@ -430,6 +434,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("elif", T_ELIF)
 		KEYWORD("else", T_ELSE)
 		KEYWORD("while", T_WHILE)
+		KEYWORD("for", T_FOR)
+		KEYWORD("in", T_IN)
 		KEYWORD("try", T_TRY)
 		KEYWORD("catch", T_CATCH)
 		KEYWORD("final", T_FINAL)
@@ -485,6 +491,7 @@ struct rule_val_t {
 		ilang_gen_branch_t branch;
 		ilang_gen_branch_list_t *branch_list;
 		ilang_gen_catch_branch_t catch_branch;
+		ilang_gen_leftval_t leftval;
 		ilang_gen_trans_unit_t *unit;
 		ivm_int_t oop;
 	} u;
@@ -2044,39 +2051,53 @@ RULE(intr_expr)
 }
 
 /*
+	leftval
+		: '[' nllo arg_list_opt nllo ']'
+		| logic_or_expr
+ */
+RULE(leftval)
+{
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_LBRAKT) R(nllo)
+				 R(arg_list_opt)
+				 R(nllo) T(T_RBRAKT)
+		{
+			_RETVAL.leftval = ilang_gen_leftval_build(
+				IVM_NULL,
+				RULE_RET_AT(1).u.expr_list
+			);
+		})
+		
+		SUB_RULE(R(logic_or_expr)
+		{
+			_RETVAL.leftval = ilang_gen_leftval_build(
+				RULE_RET_AT(0).u.expr,
+				IVM_NULL
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	assign_expr
-		: logic_or_expr '=' nllo prefix_expr
-		| '[' nllo arg_list_opt nllo ']' '=' nllo prefix_expr
+		| leftval '=' nllo prefix_expr
  */
 RULE(assign_expr)
 {
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_LBRAKT) R(nllo)
-				 R(arg_list_opt)
-				 R(nllo) T(T_RBRAKT)
-				 T(T_ASSIGN) R(nllo) R(prefix_expr)
-		{
-			tmp_token = TOKEN_AT(2);
-			_RETVAL.expr = ilang_gen_assign_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				IVM_NULL,
-				RULE_RET_AT(1).u.expr_list,
-				RULE_RET_AT(4).u.expr
-			);
-		})
-		
-		SUB_RULE(R(logic_or_expr)
-				 T(T_ASSIGN) R(nllo) R(prefix_expr)
+		SUB_RULE(R(leftval) T(T_ASSIGN) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_assign_expr_new(
 				_ENV->unit,
 				TOKEN_POS(tmp_token),
-				RULE_RET_AT(0).u.expr,
-				IVM_NULL,
+				RULE_RET_AT(0).u.leftval,
 				RULE_RET_AT(2).u.expr
 			);
 		})
@@ -2212,6 +2233,38 @@ RULE(while_expr)
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(1).u.expr,
 				RULE_RET_AT(4).u.expr
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	for_expr
+		: 'for' nllo leftval nllo 'in' nllo expr nllo ':' preifx_expr
+ */
+RULE(leftval);
+RULE(for_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_FOR) R(nllo)
+				 R(leftval) R(nllo)
+				 T(T_IN) R(nllo)
+				 R(expr) R(nllo)
+				 T(T_COLON) R(nllo) 
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("for expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_for_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.leftval,
+				RULE_RET_AT(4).u.expr,
+				RULE_RET_AT(7).u.expr
 			);
 		})
 	);
@@ -2419,6 +2472,7 @@ RULE(group_expr)
 		| try_expr
 		| if_expr
 		| while_expr
+		| for_expr
 		| fork_expr
 		| group_expr
 		| logic_or_expr
@@ -2433,6 +2487,7 @@ RULE(prefix_expr)
 		SUB_RULE(R(try_expr))
 		SUB_RULE(R(if_expr))
 		SUB_RULE(R(while_expr))
+		SUB_RULE(R(for_expr))
 		SUB_RULE(R(fork_expr))
 		SUB_RULE(R(group_expr))
 		SUB_RULE(R(logic_or_expr))

@@ -103,7 +103,7 @@ printe = fn e: {
 
 __test = fn: {
 	import test.sort
-
+	
 	test.sort.printl(test.sort.bubble([5, 4, 3, 2, 1]))
 
 	import test.testmod.sub

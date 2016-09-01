@@ -81,7 +81,6 @@ _ivm_list_object_new_nc(ivm_vmstate_t *state,
 	return IVM_AS_OBJ(ret);
 }
 
-
 /* assert size > osize */
 IVM_PRIVATE
 IVM_INLINE
@@ -257,6 +256,46 @@ ivm_list_object_traverser(ivm_object_t *obj,
 		 i != end; i++) {
 		ivm_collector_copyObject_p(*i, arg, i);
 	}
+
+	return;
+}
+
+ivm_object_t *
+ivm_list_object_iter_new(ivm_vmstate_t *state,
+						 ivm_list_object_t *list)
+{
+	ivm_list_object_iter_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_ITER_T);
+
+	ret->list = list;
+	ret->cur = 0;
+
+	return IVM_AS_OBJ(ret);
+}
+
+ivm_object_t *
+ivm_list_object_iter_next(ivm_list_object_iter_t *iter,
+						  ivm_vmstate_t *state)
+{
+	ivm_object_t *ret;
+
+	if (iter->cur >= ivm_list_object_getSize(iter->list)) {
+		return IVM_NULL;
+	}
+
+	ret = _ivm_list_object_get_c(iter->list, iter->cur++);
+
+	return ret ? ret : IVM_NONE(state);
+}
+
+void
+ivm_list_object_iter_traverser(ivm_object_t *obj,
+							   ivm_traverser_arg_t *arg)
+{
+	ivm_list_object_iter_t *iter = IVM_AS(obj, ivm_list_object_iter_t);
+
+	iter->list = IVM_AS(ivm_collector_copyObject(IVM_AS_OBJ(iter->list), arg), ivm_list_object_t);
 
 	return;
 }

@@ -169,6 +169,7 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 }
 
 IVM_PRIVATE
+IVM_INLINE
 ivm_object_t *
 _ivm_object_searchProtoSlot(ivm_object_t *obj,
 							ivm_vmstate_t *state,
@@ -184,6 +185,34 @@ _ivm_object_searchProtoSlot(ivm_object_t *obj,
 		if (i->slots) {
 			ret = ivm_slot_getValue(
 				ivm_slot_table_getSlot(i->slots, state, key),
+				state
+			);
+		}
+		if (ret) break;
+		i = ivm_object_getProto(i);
+	}
+
+	return ret;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+ivm_object_t *
+_ivm_object_searchProtoSlot_cc(ivm_object_t *obj,
+							   ivm_vmstate_t *state,
+							   const ivm_string_t *key,
+							   ivm_instr_t *instr)
+{
+	ivm_object_t *i = ivm_object_getProto(obj),
+				 *ret = IVM_NULL;
+
+	if (!i) return ret;
+
+	/* no loop is allowed when setting proto */
+	while (i) {
+		if (i->slots) {
+			ret = ivm_slot_getValue(
+				ivm_slot_table_getSlot_cc(i->slots, state, key, instr),
 				state
 			);
 		}
@@ -270,7 +299,7 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 	}
 
 	if (!ret) {
-		ret = _ivm_object_searchProtoSlot(obj, state, key);
+		ret = _ivm_object_searchProtoSlot_cc(obj, state, key, instr);
 	}
 
 	return ret;

@@ -17,6 +17,7 @@ struct ivm_traverser_arg_t_tag;
 
 typedef struct {
 	IVM_OBJECT_HEADER
+	
 	ivm_size_t alloc;
 	ivm_size_t size;
 	ivm_object_t **lst;
@@ -30,6 +31,10 @@ ivm_object_t *
 ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 					  ivm_object_t **init,
 					  ivm_size_t size);
+
+ivm_object_t *
+ivm_list_object_iter_new(struct ivm_vmstate_t_tag *state,
+						 ivm_list_object_t *list);
 
 #define ivm_list_object_core(list) ((list)->lst)
 
@@ -75,6 +80,14 @@ ivm_list_object_get(ivm_list_object_t *list,
 	return IVM_NULL;
 }
 
+IVM_INLINE
+ivm_object_t *
+_ivm_list_object_get_c(ivm_list_object_t *list,
+					   ivm_long_t i)
+{
+	return list->lst[i];
+}
+
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,
 					struct ivm_vmstate_t_tag *state,
@@ -106,6 +119,21 @@ ivm_list_object_destructor(ivm_object_t *obj,
 void
 ivm_list_object_traverser(ivm_object_t *obj,
 						  struct ivm_traverser_arg_t_tag *arg);
+
+typedef struct {
+	IVM_OBJECT_HEADER
+
+	ivm_list_object_t *list;
+	ivm_size_t cur;
+} ivm_list_object_iter_t;
+
+ivm_object_t *
+ivm_list_object_iter_next(ivm_list_object_iter_t *iter,
+						  struct ivm_vmstate_t_tag *state);
+
+void
+ivm_list_object_iter_traverser(ivm_object_t *obj,
+							   struct ivm_traverser_arg_t_tag *arg);
 
 IVM_COM_END
 

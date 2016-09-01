@@ -73,3 +73,24 @@ IVM_NATIVE_FUNC(_list_slice)
 
 	return ret;
 }
+
+IVM_NATIVE_FUNC(_list_iter)
+{
+	CHECK_BASE(IVM_LIST_OBJECT_T);
+	return ivm_list_object_iter_new(NAT_STATE(), IVM_AS(NAT_BASE(), ivm_list_object_t));
+}
+
+IVM_NATIVE_FUNC(_list_iter_next)
+{
+	ivm_list_object_iter_t *iter;
+	ivm_object_t *ret;
+
+	CHECK_BASE(IVM_LIST_OBJECT_ITER_T);
+
+	iter = IVM_AS(NAT_BASE(), ivm_list_object_iter_t);
+	ret = ivm_list_object_iter_next(iter, NAT_STATE());
+
+	RTM_ASSERT(ret, IVM_ERROR_MSG_ITER_END);
+
+	return ret;
+}
