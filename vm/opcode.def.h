@@ -248,7 +248,7 @@ OPCODE_GEN(ASSERT_SLOT, "assert_slot", S, 0, {
 	_TMP_STR = SARG();
 
 	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(_TMP_STR));
 
 	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, _TMP_STR, _INSTR);
 
@@ -283,7 +283,7 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
 	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
@@ -296,7 +296,7 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, 1, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_TOP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
 	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
@@ -324,7 +324,7 @@ OPCODE_GEN(SET_SLOT, "set_slot", S, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
 	ivm_object_setSlot_cc(_TMP_OBJ1, _STATE, SARG(), STACK_POP(), _INSTR);
 	STACK_PUSH(_TMP_OBJ1);
@@ -338,7 +338,7 @@ OPCODE_GEN(SET_SLOT_B, "set_slot_b", S, -1, {
 
 	_TMP_OBJ2 = STACK_POP();
 	_TMP_OBJ1 = STACK_TOP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
 	ivm_object_setSlot_cc(_TMP_OBJ1, _STATE, SARG(), _TMP_OBJ2, _INSTR);
 
@@ -349,7 +349,7 @@ OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, "proto");
 
 	_TMP_OBJ1 = ivm_object_getProto(_TMP_OBJ1);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
@@ -363,7 +363,7 @@ OPCODE_GEN(SET_PROTO, "set_proto", N, -1, {
 	_TMP_OBJ1 = STACK_POP(); // obj
 	_TMP_OBJ2 = STACK_POP(); // proto
 
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, "proto");
 
 	// no circular prototype ref
 	RTM_ASSERT(
@@ -425,7 +425,7 @@ OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_context_setSlotTable(_CONTEXT, _STATE, IVM_OBJECT_GET(STACK_POP(), SLOTS));
+	ivm_context_linkToObject(_CONTEXT, _STATE, STACK_POP());
 	NEXT_INSTR();
 })
 
@@ -442,9 +442,9 @@ OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_context_setSlotTable(
+	ivm_context_linkToObject(
 		ivm_context_getGlobal(_CONTEXT),
-		_STATE, IVM_OBJECT_GET(STACK_POP(), SLOTS)
+		_STATE, STACK_POP()
 	);
 	NEXT_INSTR();
 })
@@ -529,7 +529,7 @@ OPCODE_GEN(SET_OOP, "set_oop", I, -1, {
 	_TMP_OBJ1 = STACK_POP();
 	_TMP_OBJ2 = STACK_POP();
 
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, "overload op");
 
 	ivm_object_setOop(_TMP_OBJ1, _STATE, IARG(), _TMP_OBJ2);
 
@@ -545,7 +545,7 @@ OPCODE_GEN(SET_OOP_B, "set_oop_b", I, -1, {
 	_TMP_OBJ2 = STACK_POP();
 	_TMP_OBJ1 = STACK_TOP();
 
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, "overload op");
 
 	ivm_object_setOop(_TMP_OBJ1, _STATE, IARG(), _TMP_OBJ2);
 
@@ -556,7 +556,7 @@ OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1);
+	NOT_NONE(_TMP_OBJ1, "overload op");
 
 	_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IARG());
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
@@ -905,11 +905,11 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_TOP(); // iter
-	NOT_NONE(_TMP_OBJ1);
 	STACK_PUSH(_TMP_OBJ1);
 
 	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
-	STACK_PUSH(_TMP_OBJ2 ? _TMP_OBJ2 : IVM_NONE(_STATE)); // get iter.next
+	RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
+	STACK_PUSH(_TMP_OBJ2); // get iter.next
 
 	// set raise protection
 	ivm_runtime_pushCatch(_RUNTIME, ADDR_ARG());

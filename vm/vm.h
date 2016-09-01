@@ -301,6 +301,60 @@ ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
 	return ret;
 }
 
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_constantize(ivm_vmstate_t *state,
+						const ivm_string_t *str)
+{
+	if (!ivm_string_isConst(str)) {
+		return (const ivm_string_t *)
+		ivm_string_pool_register(state->const_pool, str);
+	}
+
+	return str;
+}
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_allocRawString(ivm_vmstate_t *state,
+						   const ivm_char_t *str)
+{
+	ivm_size_t len = IVM_STRLEN(str),
+			   size = IVM_STRING_GET_SIZE(len);
+	ivm_string_t *ret;
+
+	if (size < IVM_DEFAULT_MAX_CONST_STRING_SIZE) {
+		return (const ivm_string_t *)
+		ivm_string_pool_registerRaw(state->const_pool, str);
+	}
+
+	ret = ivm_vmstate_alloc(state, size);
+	MEM_COPY(ivm_string_trimHead(ret), str, sizeof(*str) * (len + 1));
+	ivm_string_initHead(ret, IVM_FALSE, len);
+
+	return ret;
+}
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_allocString(ivm_vmstate_t *state,
+						const ivm_string_t *str)
+{
+	ivm_size_t size;
+	ivm_string_t *ret;
+
+	if (!ivm_string_isConst(str)) {
+		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
+		ret = ivm_vmstate_alloc(state, size);
+		
+		MEM_COPY(ret, str, size);
+
+		return ret;
+	}
+
+	return str;
+}
+
 /* function pool */
 #if IVM_USE_FUNCTION_POOL
 

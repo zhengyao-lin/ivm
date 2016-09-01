@@ -34,19 +34,14 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					 i++) {                                                      \
 					if (IS_EMPTY_SLOT(i)) {                                      \
 						if (obj) {                                               \
-							i->k = ivm_string_copyIfNotConst_pool(key, state);   \
+							i->k = ivm_vmstate_constantize(state, key);          \
 							i->v = obj;                                          \
 							e1;                                                  \
 						}                                                        \
 						return;                                                  \
 					} else if (ivm_string_compare(i->k, key)) {                  \
-						if (obj) {                                               \
-							i->v = obj;                                          \
-							e1;                                                  \
-						} else {                                                 \
-							i->k = IVM_NULL;                                     \
-							ivm_slot_table_updateUID(table, state);              \
-						}                                                        \
+						i->v = obj;                                              \
+						e1;                                                      \
 						return;                                                  \
 					}                                                            \
 				}                                                                \
@@ -56,19 +51,14 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					 i++) {                                                      \
 					if (IS_EMPTY_SLOT(i)) {                                      \
 						if (obj) {                                               \
-							i->k = ivm_string_copyIfNotConst_pool(key, state);   \
+							i->k = ivm_vmstate_constantize(state, key);          \
 							i->v = obj;                                          \
 							e1;                                                  \
 						}                                                        \
 						return;                                                  \
 					} else if (ivm_string_compare(i->k, key)) {                  \
-						if (obj) {                                               \
-							i->v = obj;                                          \
-							e1;                                                  \
-						} else {                                                 \
-							i->k = IVM_NULL;                                     \
-							ivm_slot_table_updateUID(table, state);              \
-						}                                                        \
+						i->v = obj;                                              \
+						e1;                                                      \
 						return;                                                  \
 					}                                                            \
 				}                                                                \
@@ -83,30 +73,24 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 				 i != end; i++) {                                                \
 				if (IS_EMPTY_SLOT(i)) {                                          \
 					if (obj) {                                                   \
-						i->k = ivm_string_copyIfNotConst_pool(key, state);       \
+						i->k = ivm_vmstate_constantize(state, key);              \
 						i->v = obj;                                              \
 						e1;                                                      \
 					}                                                            \
 					return;                                                      \
 				} else if (ivm_string_compare(i->k, key)) {                      \
-					if (obj) {                                                   \
-						i->v = obj;                                              \
-						e1;                                                      \
-					} else {                                                     \
-						i->k = IVM_NULL;                                         \
-						ivm_slot_table_updateUID(table, state);                  \
-					}                                                            \
+					i->v = obj;                                                  \
+					e1;                                                          \
 					return;                                                      \
 				}                                                                \
 			}                                                                    \
-			if (!obj) return;                                                    \
                                                                                  \
 			osize = table->size;                                                 \
 			if (_ivm_slot_table_expand(table, state)) {                          \
 				goto TO_HASH_TABLE;                                              \
 			}                                                                    \
 			tmp = table->tabl + osize;                                           \
-			tmp->k = ivm_string_copyIfNotConst_pool(key, state);                 \
+			tmp->k = ivm_vmstate_constantize(state, key);                        \
 			tmp->v = obj;                                                        \
 			e2;                                                                  \
 		}                                                                        \
@@ -166,6 +150,7 @@ SET_SLOT(
 				if (IS_EMPTY_SLOT(i)) {                                                 \
 					return IVM_NULL;                                                    \
 				} else if (ivm_string_compare(i->k, key)) {                             \
+					if (!i->v) return IVM_NULL;                                         \
 					e1;                                                                 \
 					return i;                                                           \
 				}                                                                       \
@@ -175,6 +160,7 @@ SET_SLOT(
 				if (IS_EMPTY_SLOT(i)) {                                                 \
 					return IVM_NULL;                                                    \
 				} else if (ivm_string_compare(i->k, key)) {                             \
+					if (!i->v) return IVM_NULL;                                         \
 					e1;                                                                 \
 					return i;                                                           \
 				}                                                                       \
@@ -186,6 +172,7 @@ SET_SLOT(
 				if (!tmp->k) {                                                          \
 					return IVM_NULL;                                                    \
 				} else if (ivm_string_compare(tmp->k, key)) {                           \
+					if (!tmp->v) return IVM_NULL;                                       \
 					e2;                                                                 \
 					return tmp;                                                         \
 				}                                                                       \
@@ -255,7 +242,9 @@ GET_SLOT(
 		//IVM_TRACE("got it! %p %p\n",
 		//		  ivm_slot_table_getCacheSlot(state, instr)->k,
 		//		  ivm_slot_table_getCacheSlot(state, instr)->v);
-		return ivm_slot_table_getCacheSlot(state, instr);
+
+		tmp = ivm_slot_table_getCacheSlot(state, instr);
+		return tmp->v ? tmp : IVM_NULL;
 	},
 	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i),
 	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)tmp)
@@ -276,13 +265,9 @@ ivm_slot_table_setExistSlot(ivm_slot_table_t *table,
 	ivm_slot_t *slot = ivm_slot_table_getSlot(table, state, key);
 
 	if (slot) {
-		if (obj) {
-			IVM_WBSLOT(state, table, obj);
-			_ivm_slot_setValue(slot, obj);
-		} else {
-			_ivm_slot_deleteKey(slot);
-			ivm_slot_table_updateUID(table, state);
-		}
+		IVM_WBSLOT(state, table, obj);
+		_ivm_slot_setValue(slot, obj);
+
 		return IVM_TRUE;
 	}
 
@@ -300,13 +285,9 @@ ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
 	ivm_slot_t *slot = ivm_slot_table_getSlot_cc(table, state, key, instr);
 
 	if (slot) {
-		if (obj) {
-			IVM_WBSLOT(state, table, obj);
-			_ivm_slot_setValue(slot, obj);
-		} else {
-			_ivm_slot_deleteKey(slot);
-			ivm_slot_table_updateUID(table, state);
-		}
+		IVM_WBSLOT(state, table, obj);
+		_ivm_slot_setValue(slot, obj);
+
 		return IVM_TRUE;
 	}
 

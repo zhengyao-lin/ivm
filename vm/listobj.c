@@ -237,10 +237,47 @@ _ivm_list_object_unpackTo(ivm_list_object_t *list,
 }
 
 void
+ivm_list_object_multiply(ivm_list_object_t *list,
+						 ivm_vmstate_t *state,
+						 ivm_size_t times)
+{
+	ivm_size_t osize = list->size, esize;
+	ivm_object_t **lst, **cur;
+
+	_ivm_list_object_expandTo(list, state, osize * times);
+
+	cur = lst = list->lst;
+	esize = sizeof(*lst) * osize;
+
+	while (times--) {
+		MEM_COPY(cur += osize, lst, esize);
+	}
+
+	return;
+}
+
+void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {
 	MEM_FREE(IVM_AS(obj, ivm_list_object_t)->lst);
+	return;
+}
+
+void
+ivm_list_object_cloner(ivm_object_t *obj,
+					   ivm_vmstate_t *state)
+{
+	ivm_list_object_t *list = IVM_AS(obj, ivm_list_object_t);
+	ivm_size_t size = sizeof(*list->lst) * list->alloc;
+	ivm_object_t **nlst = ivm_vmstate_allocWild(state, size);
+
+	MEM_COPY(nlst, list->lst, size);
+
+	list->lst = nlst;
+
+	ivm_vmstate_addDesLog(state, obj);
+
 	return;
 }
 

@@ -36,7 +36,7 @@ ivm_object_clone(ivm_object_t *obj,
 	ivm_object_t *ret = ivm_vmstate_alloc(state, size);
 
 	MEM_COPY(ret, obj, size);
-	ivm_slot_table_copyShared(ret->slots);
+	ret->slots = ivm_slot_table_copyShared(ret->slots, state);
 
 	if (type->clone) {
 		type->clone(ret, state);
@@ -78,6 +78,9 @@ ivm_object_new_t(struct ivm_vmstate_t_tag *state,
 
 	ivm_object_init(ret, state, IVM_OBJECT_T);
 	ret->slots = slots;
+	if (slots) {
+		ivm_slot_table_setLinked(slots);
+	}
 
 	return ret;
 }

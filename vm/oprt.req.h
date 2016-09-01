@@ -28,17 +28,15 @@
 	ivm_string_t *ret;                                                         \
 	ivm_char_t buf[25];                                                        \
 	ivm_char_t *data;                                                          \
-	ivm_bool_t is_wild;                                                        \
                                                                                \
 	size = len1 + (len2 = ivm_conv_dtoa(ivm_numeric_getValue(op2), buf));      \
-	ret = ivm_vmstate_tryAlloc(_STATE, IVM_STRING_GET_SIZE(size), &is_wild);   \
+	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));                \
 	data = ivm_string_trimHead(ret);                                           \
                                                                                \
 	e;                                                                         \
                                                                                \
 	ivm_string_initHead(ret, IVM_FALSE, size);                                 \
                                                                                \
-	if (is_wild) return ivm_string_object_new_w(_STATE, ret);                  \
 	return ivm_string_object_new_c(_STATE, ret);                               \
 
 #endif

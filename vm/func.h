@@ -123,10 +123,6 @@ typedef struct {
 	const ivm_function_t *val;
 } ivm_function_object_t;
 
-void
-ivm_function_object_destructor(ivm_object_t *obj,
-							   struct ivm_vmstate_t_tag *state);
-
 ivm_object_t *
 ivm_function_object_new(struct ivm_vmstate_t_tag *state,
 						ivm_context_t *scope,
@@ -139,6 +135,14 @@ ivm_function_object_newNative(struct ivm_vmstate_t_tag *state,
 {
 	return ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, func));
 }
+
+void
+ivm_function_object_destructor(ivm_object_t *obj,
+							   struct ivm_vmstate_t_tag *state);
+
+void
+ivm_function_object_cloner(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state);
 
 void
 ivm_function_object_traverser(ivm_object_t *obj,

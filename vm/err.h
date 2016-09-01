@@ -44,7 +44,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_UNKNOWN_ERROR								("unknown error")
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)					("failed to allocate new memory for new " name)
 #define IVM_ERROR_MSG_FAILED_ALLOC								("failed to allocate new memory")
-#define IVM_ERROR_MSG_OP_SLOT_OF_NONE(op)						("cannot " op " none object")
+#define IVM_ERROR_MSG_OP_NONE(op)								("cannot " op " none object")
+#define IVM_ERROR_MSG_OP_SLOT_OF_NONE(name)						"cannot get/set/del slot '%s' of none object", (name)
 #define IVM_ERROR_MSG_INSERT_CELL_TO_NON_SUC_CELL				("insert cell into non-successive cells")
 #define IVM_ERROR_MSG_WRONG_FREE_HEAP							("free object with wrong heap")
 #define IVM_ERROR_MSG_NO_SPARE_MEM								("no spare memory left in heap")
@@ -94,6 +95,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, path, msg)			"error(s) happended loading module '%s'(found at %s): %s", (mod), (path), (msg)
 #define IVM_ERROR_MSG_UNPACK_NON_LIST(type)						"cannot unpack the object of type <%s>", (type)
 #define IVM_ERROR_MSG_ITER_END									"iteration has done"
+#define IVM_ERROR_MSG_NON_ITERABLE								"non-iterable object used for iteration"
 
 IVM_COM_END
 

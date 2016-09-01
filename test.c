@@ -358,9 +358,9 @@ int test_vm()
 	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
 	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
 
-	ivm_context_setSlotTable(ctx, state, IVM_OBJECT_GET(obj1, SLOTS));
+	ivm_context_linkToObject(ctx, state, obj1);
 	ctx = ivm_context_new(state, ctx);
-	ivm_context_setSlotTable(ctx, state, IVM_OBJECT_GET(obj2, SLOTS));
+	ivm_context_linkToObject(ctx, state, obj2);
 	ivm_context_addRef(ctx);
 
 	IVM_TRACE("%f\n", IVM_AS(obj2, ivm_numeric_t)->val);

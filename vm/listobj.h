@@ -113,8 +113,17 @@ _ivm_list_object_unpackTo(ivm_list_object_t *list,
 						  ivm_size_t req);
 
 void
+ivm_list_object_multiply(ivm_list_object_t *list,
+						 struct ivm_vmstate_t_tag *state,
+						 ivm_size_t times);
+
+void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   struct ivm_vmstate_t_tag *state);
+
+void
+ivm_list_object_cloner(ivm_object_t *obj,
+					   struct ivm_vmstate_t_tag *state);
 
 void
 ivm_list_object_traverser(ivm_object_t *obj,

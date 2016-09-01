@@ -128,11 +128,17 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 
 IVM_INLINE
 void
-ivm_context_setSlotTable(ivm_context_t *ctx,
+ivm_context_linkToObject(ivm_context_t *ctx,
 						 ivm_vmstate_t *state,
-						 ivm_slot_table_t *table)
+						 ivm_object_t *obj)
 {
-	IVM_WBCTX(state, ctx, ctx->slots = table);
+	ivm_slot_table_t *slots = IVM_OBJECT_GET(obj, SLOTS);
+
+	slots = ivm_slot_table_copyOnWrite(slots, state);
+	IVM_OBJECT_SET(obj, SLOTS, slots);
+
+	IVM_WBCTX(state, ctx, ctx->slots = slots);
+
 	return;
 }
 

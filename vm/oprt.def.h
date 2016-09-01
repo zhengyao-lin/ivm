@@ -102,8 +102,7 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 	ivm_size_t len1 = ivm_string_length(str1);
 	ivm_size_t len2 = ivm_string_length(str2);
 	ivm_size_t size = len1 + len2;
-	ivm_bool_t is_wild;
-	ivm_string_t *ret = ivm_vmstate_tryAlloc(_STATE, IVM_STRING_GET_SIZE(size), &is_wild);
+	ivm_string_t *ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));
 
 	ivm_char_t *data = ivm_string_trimHead(ret);
 
@@ -113,7 +112,6 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 
 	ivm_string_initHead(ret, IVM_FALSE, size);
 
-	if (is_wild) return ivm_string_object_new_w(_STATE, ret);
 	return ivm_string_object_new_c(_STATE, ret);
 })
 
@@ -169,6 +167,20 @@ BINOP_GEN(IVM_LIST_OBJECT_T, ADD, IVM_LIST_OBJECT_T, {
 	return ivm_list_object_link(IVM_AS(_OP1, ivm_list_object_t),
 								IVM_AS(_OP2, ivm_list_object_t),
 								_STATE);
+})
+
+BINOP_GEN(IVM_LIST_OBJECT_T, MUL, IVM_NUMERIC_T, {
+	ivm_number_t times = ivm_numeric_getValue(_OP2);
+	ivm_list_object_t *ret;
+
+	if (times <= 0) {
+		return ivm_list_object_new(_STATE, 0);
+	}
+
+	ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_list_object_t);
+	ivm_list_object_multiply(ret, _STATE, times);
+
+	return IVM_AS_OBJ(ret);
 })
 
 BINOP_GEN(IVM_NUMERIC_T, SHL, IVM_NUMERIC_T, {

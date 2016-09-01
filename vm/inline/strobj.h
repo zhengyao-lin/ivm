@@ -19,12 +19,12 @@ ivm_string_object_new_c(ivm_vmstate_t *state,
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
 
 	ret->val = val;
-	ret->is_wild = IVM_FALSE;
 
 	return IVM_AS_OBJ(ret);
 }
 
 /* string is allocated in system heap(wild) */
+/*
 IVM_INLINE
 ivm_object_t *
 ivm_string_object_new_w(ivm_vmstate_t *state,
@@ -41,6 +41,7 @@ ivm_string_object_new_w(ivm_vmstate_t *state,
 
 	return IVM_AS_OBJ(ret);
 }
+*/
 
 /* create with raw c string */
 IVM_INLINE
@@ -49,19 +50,10 @@ ivm_string_object_new_r(ivm_vmstate_t *state,
 						const ivm_char_t *val)
 {
 	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-	ivm_size_t len = IVM_STRLEN(val);
-	ivm_string_t *str;
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
 
-	ret->val = str = ivm_vmstate_tryAlloc(state, IVM_STRING_GET_SIZE(len), &ret->is_wild);
-
-	MEM_COPY(ivm_string_trimHead(str), val, sizeof(ivm_char_t) * (len + 1));
-	ivm_string_initHead(str, IVM_TRUE, len);
-
-	if (ret->is_wild) {
-		ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
-	}
+	ret->val = ivm_vmstate_allocRawString(state, val);
 
 	return IVM_AS_OBJ(ret);
 }
@@ -75,8 +67,7 @@ ivm_string_object_new(ivm_vmstate_t *state,
 
 	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
 
-	ret->val = ivm_string_copyIfNotConst_pool(val, state);
-	ret->is_wild = IVM_FALSE;
+	ret->val = ivm_vmstate_allocString(state, val);
 
 	return IVM_AS_OBJ(ret);
 }

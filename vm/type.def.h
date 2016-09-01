@@ -21,8 +21,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 
-}, .des = ivm_string_object_destructor,
-   .trav = ivm_string_object_traverser,
+}, .trav = ivm_string_object_traverser,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t), {
@@ -37,6 +36,7 @@ TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t), {
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_ITER), IVM_NATIVE_WRAP(_STATE, _list_iter));
 
 }, .des = ivm_list_object_destructor,
+   .clone = ivm_list_object_cloner,
    .trav = ivm_list_object_traverser,
    .const_bool = IVM_TRUE)
 
@@ -47,6 +47,7 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t), {
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 }, .des = ivm_function_object_destructor,
+   .clone = ivm_function_object_cloner,
    .trav = ivm_function_object_traverser,
    .const_bool = IVM_TRUE)
 

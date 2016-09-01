@@ -1,3 +1,10 @@
+a = 1
+b = 2
+
+del a
+
+print(b) // -> "num: 2.000"
+
 a = "no!"
 f = fn: {
 	loc a = "wow"

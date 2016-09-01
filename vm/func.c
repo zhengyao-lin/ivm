@@ -80,18 +80,6 @@ ivm_function_free(ivm_function_t *func,
 	return;
 }
 
-void
-ivm_function_object_destructor(ivm_object_t *obj,
-							   ivm_vmstate_t *state)
-{	
-	ivm_context_free(
-		IVM_AS(obj, ivm_function_object_t)->scope,
-		state
-	);
-
-	return;
-}
-
 ivm_object_t *
 ivm_function_object_new(ivm_vmstate_t *state,
 						ivm_context_t *scope,
@@ -106,6 +94,28 @@ ivm_function_object_new(ivm_vmstate_t *state,
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
 	return IVM_AS_OBJ(ret);
+}
+
+void
+ivm_function_object_destructor(ivm_object_t *obj,
+							   ivm_vmstate_t *state)
+{	
+	ivm_context_free(
+		IVM_AS(obj, ivm_function_object_t)->scope,
+		state
+	);
+
+	return;
+}
+
+void
+ivm_function_object_cloner(ivm_object_t *obj,
+						   ivm_vmstate_t *state)
+{
+	ivm_context_addRef(IVM_AS(obj, ivm_function_object_t)->scope);
+	ivm_vmstate_addDesLog(state, obj);
+	
+	return;
 }
 
 void

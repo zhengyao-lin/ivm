@@ -27,15 +27,12 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 					 ivm_int_t gen)
 {
 	MEM_INIT(&table->mark, sizeof(table->mark));
-	// SET_BIT_FALSE(table->mark.sub.is_hash);
-	// SET_BIT_FALSE(table->mark.sub.is_shared);
+
 	ivm_slot_table_setGen(table, gen);
 
 	if (init < IVM_DEFAULT_SLOT_TABLE_SIZE) {
 		init = IVM_DEFAULT_SLOT_TABLE_SIZE;
 	}
-
-	// IVM_TRACE("%d\n", init);
 
 #if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	if (init >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
@@ -95,42 +92,28 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 					ivm_vmstate_t *state,
 					ivm_heap_t *heap)
 {
-	ivm_slot_table_t *ret = IVM_NULL;
-	// ivm_slot_t *tmp, *end;
+	ivm_slot_table_t *ret;
 
-	if (table) {
-		ret = ivm_heap_addCopy(heap, table, sizeof(*table));
+	ret = ivm_heap_addCopy(heap, table, sizeof(*table));
 
-		// MEM_INIT(&ret->mark, sizeof(ret->mark));
-		// ret->mark.sub.is_hash = table->mark.sub.is_hash;
-		// SET_BIT_FALSE(ret->mark.sub.is_shared);
-		ivm_slot_table_setWB(ret, 0);
-		ivm_slot_table_setCopy(ret, IVM_NULL);
-		// ret->mark.sub.gen = table->mark.sub.gen;
-		// ret->size = table->size;
-		ivm_slot_table_updateUID(ret, state);
-		ret->tabl = ivm_heap_alloc(heap,
-								   sizeof(*ret->tabl)
-								   * ret->size);
-		if (ret->oops) {
-			ret->oops = ivm_heap_addCopy(
-				heap, ret->oops,
-				sizeof(*ret->oops) * ret->mark.sub.oop_count
-			);
-		}
-		MEM_COPY(ret->tabl,
-				 table->tabl,
-				 sizeof(*ret->tabl)
-				 * ret->size);
-#if 0
-		for (tmp = ret->tabl,
-			 end = ret->tabl + ret->size;
-			 tmp != end;
-			 tmp++) {
-			tmp->k = ivm_string_copyIfNotConst_heap(tmp->k, heap);
-		}
-#endif
+	ivm_slot_table_setWB(ret, 0);
+	ivm_slot_table_setCopy(ret, IVM_NULL);
+
+	ivm_slot_table_updateUID(ret, state);
+	ret->tabl = ivm_heap_alloc(heap,
+							   sizeof(*ret->tabl)
+							   * ret->size);
+	if (ret->oops) {
+		ret->oops = ivm_heap_addCopy(
+			heap, ret->oops,
+			sizeof(*ret->oops) * ret->mark.sub.oop_count
+		);
 	}
+
+	MEM_COPY(ret->tabl,
+			 table->tabl,
+			 sizeof(*ret->tabl)
+			 * ret->size);
 
 	return ret;
 }
@@ -139,44 +122,29 @@ ivm_slot_table_t *
 _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 						   ivm_vmstate_t *state)
 {
-	ivm_slot_table_t *ret = IVM_NULL;
-	// ivm_slot_t *tmp, *end;
+	ivm_slot_table_t *ret;
 
-	if (table) {
-		ret = ivm_vmstate_addCopy(state, table, sizeof(*table));
-		// ret = ivm_vmstate_alloc(state, sizeof(*ret));
-		// MEM_INIT(&ret->mark, sizeof(ret->mark));
-		// ret->mark.sub.is_hash = table->mark.sub.is_hash;
-		SET_BIT_FALSE(ret->mark.sub.is_shared);
-		ivm_slot_table_setWB(ret, 0);
-		ivm_slot_table_setGen(ret, 0);
-		ivm_slot_table_setCopy(ret, IVM_NULL);
-		// ret->mark.sub.gen = table->mark.sub.gen;
-		// ret->size = table->size;
-		ivm_slot_table_updateUID(ret, state);
-		ret->tabl = ivm_vmstate_alloc(state,
-									  sizeof(*ret->tabl)
-									  * ret->size);
-		if (ret->oops) {
-			ret->oops = ivm_vmstate_addCopy(
-				state, ret->oops,
-				sizeof(*ret->oops) * ret->mark.sub.oop_count
-			);
-		}
-		MEM_COPY(ret->tabl,
-				 table->tabl,
-				 sizeof(*ret->tabl)
-				 * ret->size);
+	ret = ivm_vmstate_addCopy(state, table, sizeof(*table));
 
-#if 0
-		for (tmp = ret->tabl,
-			 end = ret->tabl + ret->size;
-			 tmp != end;
-			 tmp++) {
-			tmp->k = ivm_string_copyIfNotConst_state(tmp->k, state);
-		}
-#endif
+	ivm_slot_table_setWB(ret, 0);
+	ivm_slot_table_setGen(ret, 0);
+	ivm_slot_table_setCopy(ret, IVM_NULL);
+
+	ivm_slot_table_updateUID(ret, state);
+	ret->tabl = ivm_vmstate_alloc(state,
+								  sizeof(*ret->tabl)
+								  * ret->size);
+	if (ret->oops) {
+		ret->oops = ivm_vmstate_addCopy(
+			state, ret->oops,
+			sizeof(*ret->oops) * ret->mark.sub.oop_count
+		);
 	}
+
+	MEM_COPY(ret->tabl,
+			 table->tabl,
+			 sizeof(*ret->tabl)
+			 * ret->size);
 
 	return ret;
 }

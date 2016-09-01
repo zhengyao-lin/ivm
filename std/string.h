@@ -48,7 +48,7 @@ ivm_strdup_state(const ivm_char_t *src,
 
 ivm_char_t *
 ivm_strdup_heap(const ivm_char_t *src,
-				struct ivm_heap_t_tag *heap);
+				ivm_heap_t *heap);
 
 typedef struct {
 	ivm_uint_t len;
@@ -68,16 +68,6 @@ typedef struct {
 #define IVM_STRING_LEGAL_LEN(len) \
 	((len) < IVM_STRING_MAX_LEN)
 
-ivm_string_t *
-ivm_string_new_state(ivm_bool_t is_const,
-					 const ivm_char_t *str,
-					 struct ivm_vmstate_t_tag *state);
-
-ivm_string_t *
-ivm_string_new_heap(ivm_bool_t is_const,
-					const ivm_char_t *str,
-					struct ivm_heap_t_tag *heap);
-
 IVM_INLINE
 void
 ivm_string_initHead(ivm_string_t *str,
@@ -93,19 +83,14 @@ ivm_string_initHead(ivm_string_t *str,
 }
 
 const ivm_string_t *
-ivm_string_copyIfNotConst_state(const ivm_string_t *str,
-								struct ivm_vmstate_t_tag *state);
-
-const ivm_string_t *
-ivm_string_copyIfNotConst_heap(const ivm_string_t *str,
-							   struct ivm_heap_t_tag *heap);
-
-const ivm_string_t *
-ivm_string_copyIfNotConst_pool(const ivm_string_t *str,
-							   struct ivm_vmstate_t_tag *state);
+ivm_string_copyNonConst(const ivm_string_t *str,
+						ivm_heap_t *heap);
 
 #define ivm_string_length(str) \
 	((str)->len)
+
+#define ivm_string_isConst(str) \
+	((str)->is_const)
 
 IVM_INLINE
 ivm_size_t

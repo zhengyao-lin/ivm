@@ -23,3 +23,14 @@ a = fn: {
 }
 
 a()
+
+d1 = 10
+d2 = 123
+d3 = 1024
+
+local = loc
+a = clone local
+
+local.what = "yes"
+
+print(what) // -> "str: yes"

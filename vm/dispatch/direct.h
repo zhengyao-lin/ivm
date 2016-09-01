@@ -89,11 +89,11 @@
 		RTM_FATAL(__VA_ARGS__);   \
 	}
 
-#define NOT_NONE(obj) \
-	RTM_ASSERT(!IVM_IS_NONE(_STATE, (obj)), IVM_ERROR_MSG_OP_SLOT_OF_NONE("get/set slot of"));
+#define NOT_NONE(obj, slot) \
+	RTM_ASSERT(!IVM_IS_NONE(_STATE, (obj)), IVM_ERROR_MSG_OP_SLOT_OF_NONE(slot));
 
 #define NOT_NONE_OP(obj, op) \
-	RTM_ASSERT(!IVM_IS_NONE(_STATE, (obj)), IVM_ERROR_MSG_OP_SLOT_OF_NONE(op));
+	RTM_ASSERT(!IVM_IS_NONE(_STATE, (obj)), IVM_ERROR_MSG_OP_NONE(op));
 
 #define CHECK_CGID() \
 	RTM_ASSERT(ivm_vmstate_hasCGroup(_STATE, _TMP_CGID),          \
