@@ -209,9 +209,9 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_vmstack_t *stack = runtime.stack;
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);;
 
-	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d, cmp_reg: %d, catch: %p):\n",
+	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d, cmp_reg: %d, has catch: %s):\n",
 			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg,
-			  (void *)IVM_RUNTIME_GET(IVM_CORO_GET(runtime.coro, RUNTIME), CATCH));
+			  ivm_runtime_hasCatch(IVM_CORO_GET(runtime.coro, RUNTIME)) ? "yes" : "no");
 
 #if 0
 #if IVM_STACK_CACHE_N_TOS == 1

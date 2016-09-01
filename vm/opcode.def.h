@@ -912,7 +912,7 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	STACK_PUSH(_TMP_OBJ2 ? _TMP_OBJ2 : IVM_NONE(_STATE)); // get iter.next
 
 	// set raise protection
-	IVM_RUNTIME_SET(_RUNTIME, CATCH, ADDR_ARG());
+	ivm_runtime_pushCatch(_RUNTIME, ADDR_ARG());
 
 	NEXT_INSTR();
 })
@@ -921,12 +921,12 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	raise protection set/cancel
  */
 OPCODE_GEN(RPROT_SET, "rprot_set", A, 0, {
-	IVM_RUNTIME_SET(_RUNTIME, CATCH, ADDR_ARG());
+	ivm_runtime_pushCatch(_RUNTIME, ADDR_ARG());
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
-	IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);
+	ivm_runtime_popCatch(_RUNTIME);
 	NEXT_INSTR();
 })
 

@@ -104,12 +104,10 @@
 #define INVOKE() goto ACTION_INVOKE
 
 #define RAISE(obj) \
-	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
+	_TMP_CATCH = ivm_runtime_popCatch(_RUNTIME);         \
 	SAVE_RUNTIME(tmp_ip);                                \
 	_TMP_OBJ1 = (obj);                                   \
 	if (_TMP_CATCH) {                                    \
-		/* cancel raise protection */                    \
-		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);      \
 		STACK_PUSH(_TMP_OBJ1);                           \
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \
@@ -119,12 +117,10 @@
 
 /* exception detected */
 #define EXCEPTION() \
-	_TMP_CATCH = IVM_RUNTIME_GET(_RUNTIME, CATCH);       \
+	_TMP_CATCH = ivm_runtime_popCatch(_RUNTIME);         \
 	SAVE_RUNTIME(tmp_ip);                                \
 	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);        \
 	if (_TMP_CATCH) {                                    \
-		/* cancel raise protection */                    \
-		IVM_RUNTIME_SET(_RUNTIME, CATCH, IVM_NULL);      \
 		STACK_PUSH(_TMP_OBJ1);                           \
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \

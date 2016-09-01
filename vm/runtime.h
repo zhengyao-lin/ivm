@@ -9,6 +9,7 @@
 #include "func.h"
 #include "context.h"
 #include "call.h"
+#include "instr.h"
 
 IVM_COM_HEADER
 
@@ -27,7 +28,6 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
-#define IVM_RUNTIME_GET_CATCH(runtime) ((runtime)->cat)
 #define IVM_RUNTIME_GET_OFFSET(runtime) ((runtime)->offset)
 #define IVM_RUNTIME_GET_NO_REG(runtime) ((runtime)->no_reg)
 
@@ -37,7 +37,6 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_SET_IP(runtime, val) ((runtime)->ip = (val))
 #define IVM_RUNTIME_SET_BP(runtime, val) ((runtime)->bp = (val))
 #define IVM_RUNTIME_SET_SP(runtime, val) ((runtime)->sp = (val))
-#define IVM_RUNTIME_SET_CATCH(runtime, val) ((runtime)->cat = (val))
 #define IVM_RUNTIME_SET_NO_REG(runtime, val) ((runtime)->no_reg = (val))
 
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
@@ -68,8 +67,40 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   const ivm_exec_t *exec,
 				   ivm_context_t *ctx);
 
-#define ivm_runtime_dump(runtime, state) \
-	(ivm_context_free((runtime)->ctx, (state)))
+IVM_INLINE
+void
+ivm_runtime_dump(ivm_runtime_t *runtime,
+				 struct ivm_vmstate_t_tag *state)
+{
+	ivm_context_free(runtime->ctx, state);
+	if (runtime->nested_cat) {
+		ivm_instr_stack_free(runtime->cat.astack);
+	}
+
+	return;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_runtime_hasCatch(ivm_runtime_t *runtime)
+{
+	return ivm_frame_hasCatch(IVM_AS(runtime, ivm_frame_t));
+}
+
+IVM_INLINE
+ivm_instr_t *
+ivm_runtime_popCatch(ivm_runtime_t *runtime)
+{
+	return ivm_frame_popCatch(IVM_AS(runtime, ivm_frame_t));
+}
+
+IVM_INLINE
+void
+ivm_runtime_pushCatch(ivm_runtime_t *runtime, ivm_instr_t *cat)
+{
+	ivm_frame_pushCatch(IVM_AS(runtime, ivm_frame_t), cat);
+	return;
+}
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;
 

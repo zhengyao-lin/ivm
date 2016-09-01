@@ -15,10 +15,14 @@ IVM_COM_HEADER
 
 /* part needed to init every call */
 #define IVM_FRAME_HEADER_INIT \
-	ivm_instr_t *ip;                 \
-	ivm_instr_t *cat; /* catch */    \
-	ivm_uint_t offset;               \
-	ivm_bool_t no_reg;
+	ivm_instr_t *ip;                       \
+	union {                                \
+		ivm_instr_t *addr; /* catch */     \
+		ivm_instr_stack_t *astack;         \
+	} cat;                                 \
+	ivm_uint_t offset;                     \
+	ivm_bool_t no_reg;                     \
+	ivm_bool_t nested_cat;
 
 #define IVM_FRAME_HEADER \
 	struct ivm_context_t_tag *ctx;   \
@@ -46,15 +50,26 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
-#define IVM_FRAME_GET_CATCH(frame) ((frame)->cat)
 #define IVM_FRAME_GET_NO_REG(frame) ((frame)->no_reg)
 
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
-#define IVM_FRAME_SET_CATCH(frame, val) ((frame)->cat = (val))
 #define IVM_FRAME_SET_NO_REG(frame, val) ((frame)->no_reg = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
+
+IVM_INLINE
+ivm_bool_t
+ivm_frame_hasCatch(ivm_frame_t *frame)
+{
+	return frame->cat.addr != IVM_NULL;
+}
+
+ivm_instr_t *
+ivm_frame_popCatch(ivm_frame_t *frame);
+
+void
+ivm_frame_pushCatch(ivm_frame_t *frame, ivm_instr_t *cat);
 
 typedef struct ivm_frame_stack_t_tag {
 	ivm_uint_t alloc;

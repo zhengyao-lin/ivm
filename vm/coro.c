@@ -354,15 +354,13 @@ ACTION_EXCEPTION:
 					_TMP_OBJ1 = IVM_NULL;
 					goto END;
 				}
-			} while (!IVM_FRAME_GET(tmp_frame, CATCH));
+			} while (!ivm_frame_hasCatch(tmp_frame));
 			// find a frame with raise protection
 
 			ivm_vmstate_popException(state);
 
 			// tmp_frame != NULL
-			tmp_ip = IVM_FRAME_GET(tmp_frame, CATCH);
-			// IVM_FRAME_SET(tmp_frame, CATCH, IVM_NULL);
-			IVM_RUNTIME_SET(tmp_runtime, CATCH, IVM_NULL);
+			tmp_ip = ivm_runtime_popCatch(_RUNTIME);
 
 			UPDATE_STACK();
 			// push raised object
