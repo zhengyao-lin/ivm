@@ -1,6 +1,6 @@
 # cmake version: haven't really tested, but the higher the better
 # remove it if necessary
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.8)
 include(CMakeUtils.txt)
 
 project(ivm)
