@@ -16,7 +16,7 @@ IVM_COM_HEADER
 		1. bool ivm_dll_open(handler_ptr, path)
 		2. void ivm_dll_close(handler)
 		3. func ivm_dll_getFunc(handler, fn_name, fn_type)
-		4. string ivm_dll_error(handler) // this will allocate new mem, free it using ivm_dll_freeError
+		4. string ivm_dll_error(handler, is_const) // if the message need free, is_const will be set to false
 		5. string ivm_dll_freeError(str) // free the message string
 
 	const:
@@ -36,15 +36,10 @@ IVM_COM_HEADER
 
 	IVM_INLINE
 	ivm_char_t *
-	ivm_dll_error(ivm_dll_t handler)
+	ivm_dll_error(ivm_dll_t handler, ivm_bool_t *is_const)
 	{
-		const ivm_char_t *err = dlerror();
-
-		if (err) {
-			return IVM_STRDUP(err);
-		}
-
-		return IVM_NULL;
+		*is_const = IVM_TRUE;
+		return dlerror();
 	}
 
 	#define ivm_dll_freeError(str) STD_FREE(str)
@@ -64,7 +59,7 @@ IVM_COM_HEADER
 
 	IVM_INLINE
 	ivm_char_t *
-	ivm_dll_error(ivm_dll_t handler)
+	ivm_dll_error(ivm_dll_t handler, ivm_bool_t *is_const)
 	{
 		LPVOID buf;
 		DWORD err = GetLastError();
@@ -77,6 +72,8 @@ IVM_COM_HEADER
 			err,
 			0, (LPTSTR)&buf, 0, NULL
 		);
+
+		*is_const = IVM_FALSE;
 
 		return buf;
 	}

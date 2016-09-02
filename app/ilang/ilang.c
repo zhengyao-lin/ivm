@@ -149,6 +149,7 @@ IVM_PRIVATE
 ivm_object_t *
 ilang_mod_loadSource(const ivm_char_t *path,
 					 ivm_char_t **err,
+					 ivm_bool_t *is_const,
 					 ivm_vmstate_t *state,
 					 ivm_coro_t *coro,
 					 ivm_context_t *context)
@@ -159,8 +160,10 @@ ilang_mod_loadSource(const ivm_char_t *path,
 	ivm_function_t *root;
 	ivm_context_t *dest;
 
+	*is_const = IVM_TRUE;
+
 	if (!unit) {
-		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE);
+		tmp_err = IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE;
 		goto FAILED;
 	}
 

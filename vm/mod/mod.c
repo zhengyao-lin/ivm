@@ -76,6 +76,7 @@ IVM_PRIVATE
 ivm_object_t *
 _ivm_mod_loadCache(const ivm_char_t *path,
 				   ivm_char_t **err,
+				   ivm_bool_t *is_const,
 				   ivm_vmstate_t *state,
 				   ivm_coro_t *coro,
 				   ivm_context_t *context);
@@ -84,6 +85,7 @@ IVM_PRIVATE
 ivm_object_t *
 _ivm_mod_loadNative(const ivm_char_t *path,
 					ivm_char_t **err,
+					ivm_bool_t *is_const,
 					ivm_vmstate_t *state,
 					ivm_coro_t *coro,
 					ivm_context_t *context);
@@ -352,6 +354,7 @@ IVM_PRIVATE
 ivm_object_t *
 _ivm_mod_loadNative(const ivm_char_t *path,
 					ivm_char_t **err,
+					ivm_bool_t *is_const,
 					ivm_vmstate_t *state,
 					ivm_coro_t *coro,
 					ivm_context_t *context)
@@ -361,10 +364,13 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 	ivm_mod_native_init_t init;
 	ivm_object_t *ret = IVM_NULL;
 
+	*is_const = IVM_TRUE;
+
 	if (!ivm_dll_open(&handler, path)) {
-		tmp_err = ivm_dll_error(handler);
+		tmp_err = ivm_dll_error(handler, is_const);
+
 		if (!tmp_err) {
-			tmp_err = IVM_STRDUP(IVM_ERROR_MSG_UNKNOWN_ERROR);
+			tmp_err = IVM_ERROR_MSG_UNKNOWN_ERROR;
 		}
 
 		goto END;
@@ -375,9 +381,10 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 	if (!init) {
 		ivm_dll_close(handler);
 
-		tmp_err = ivm_dll_error(handler);
+		tmp_err = ivm_dll_error(handler, is_const);
+
 		if (!tmp_err) {
-			tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC);
+			tmp_err = IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC;
 		}
 
 		goto END;
@@ -389,9 +396,7 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 
 END:
 
-	if (err) {
-		*err = tmp_err;
-	}
+	*err = tmp_err;
 
 	return ret;
 }
@@ -400,6 +405,7 @@ IVM_PRIVATE
 ivm_object_t *
 _ivm_mod_loadCache(const ivm_char_t *path,
 				   ivm_char_t **err,
+				   ivm_bool_t *is_const,
 				   ivm_vmstate_t *state,
 				   ivm_coro_t *coro,
 				   ivm_context_t *context)
@@ -411,8 +417,10 @@ _ivm_mod_loadCache(const ivm_char_t *path,
 	ivm_function_t *root;
 	ivm_context_t *dest;
 
+	*is_const = IVM_TRUE;
+
 	if (!cache) {
-		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_OPEN_FILE);
+		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
 		goto END;
 	}
 
@@ -421,7 +429,7 @@ _ivm_mod_loadCache(const ivm_char_t *path,
 	ivm_file_free(cache);
 	
 	if (!unit) {
-		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_PARSE_CACHE);
+		tmp_err = IVM_ERROR_MSG_FAILED_PARSE_CACHE;
 		goto END;
 	}
 
@@ -431,7 +439,7 @@ _ivm_mod_loadCache(const ivm_char_t *path,
 	ivm_exec_unit_free(unit);
 
 	if (!root) {
-		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_CACHE_NO_ROOT);
+		tmp_err = IVM_ERROR_MSG_CACHE_NO_ROOT;
 		goto END;
 	}
 
@@ -445,9 +453,7 @@ _ivm_mod_loadCache(const ivm_char_t *path,
 
 END:
 
-	if (err) {
-		*err = tmp_err;
-	}
+	*err = tmp_err;
 
 	return ret;
 }
@@ -465,6 +471,7 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	ivm_char_t buf[_get_max_buf_size(len)];
 	ivm_char_t *err = IVM_NULL;
 	ivm_char_t *path_backup, *path;
+	ivm_bool_t is_const;
 
 	ivm_object_t *ret;
 
@@ -485,7 +492,7 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	// IVM_TRACE("========> cur path: %s %s\n", path, buf);
 	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, IVM_NONE(state));
 	
-	ret = loader(buf, &err, state, coro, context);
+	ret = loader(buf, &err, &is_const, state, coro, context);
 
 	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, ret);
 	ivm_vmstate_setPath(state, path_backup);
@@ -500,7 +507,9 @@ ivm_mod_load(const ivm_string_t *mod_name,
 		}
 	}
 
-	ivm_dll_freeError(err);
+	if (!is_const) {
+		ivm_dll_freeError(err);
+	}
 
 	return ret;
 }

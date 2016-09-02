@@ -58,6 +58,7 @@ typedef
 struct ivm_object_t_tag *
 (*ivm_mod_loader_t)(const ivm_char_t *path,
 					ivm_char_t **err,
+					ivm_bool_t *is_const,
 					struct ivm_vmstate_t_tag *state,
 					struct ivm_coro_t_tag *coro,
 					struct ivm_context_t_tag *context);
