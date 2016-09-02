@@ -36,13 +36,13 @@ a.[] = fn idx: {
 a[1, 2, 3]
 a[]
 
-// -> "num: 5.000"
+// -> "num: 5"
 // -> "str: unable to invoke object of type <string>"
 // -> "str: yes!"
 // -> "str: yes!"
 // 
-// -> "num: 1.000"
-// -> "num: 2.000"
-// -> "num: 3.000"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
 //
 // -> "str: none"

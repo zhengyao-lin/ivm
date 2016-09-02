@@ -3,7 +3,7 @@ b = 2
 
 del a
 
-print(b) // -> "num: 2.000"
+print(b) // -> "num: 2"
 
 a = "no!"
 f = fn: {

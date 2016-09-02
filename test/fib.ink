@@ -3,4 +3,4 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(25)) // -> "num: 121393.000"
+print(fib(25)) // -> "num: 121393"

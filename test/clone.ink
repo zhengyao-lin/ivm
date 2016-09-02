@@ -7,9 +7,9 @@ a[2] = "no!!"
 for i in b:
 	print(i)
 
-// -> "num: 1.000"
-// -> "num: 2.000"
-// -> "num: 3.000"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
 
 gen = fn: {
 	loc msg = "yes"

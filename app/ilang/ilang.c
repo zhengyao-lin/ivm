@@ -22,6 +22,7 @@
 IVM_NATIVE_FUNC(print)
 {
 	ivm_object_t *obj;
+	ivm_char_t buf[25];
 
 	CHECK_ARG_COUNT("print", 1);
 
@@ -29,7 +30,8 @@ IVM_NATIVE_FUNC(print)
 
 	switch (IVM_TYPE_TAG_OF(obj)) {
 		case IVM_NUMERIC_T:
-			IVM_TRACE("num: %.3f\n", ivm_numeric_getValue(obj));
+			ivm_conv_dtoa(ivm_numeric_getValue(obj), buf);
+			IVM_TRACE("num: %s\n", buf);
 			break;
 		case IVM_STRING_OBJECT_T:
 			IVM_TRACE("str: %s\n", ivm_string_trimHead(ivm_string_object_getValue(obj)));

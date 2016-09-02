@@ -45,10 +45,10 @@ f()
 // -> "str: failed to set add op of none"
 // -> "str: cannot clone none"
 // 
-// -> "num: 1.000"
-// -> "num: 1.000"
-// -> "num: 1.000"
-// -> "num: 0.000"
-// -> "num: 0.000"
+// -> "num: 1"
+// -> "num: 1"
+// -> "num: 1"
+// -> "num: 0"
+// -> "num: 0"
 // 
 // -> "str: yes"

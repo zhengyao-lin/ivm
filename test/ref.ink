@@ -3,7 +3,7 @@ del b
 
 loc a = ref b
 deref a = 10
-print(b) // -> "num: 10.000"
+print(b) // -> "num: 10"
 
 loc a = ref b[0]
 
@@ -31,4 +31,4 @@ f("it's arg 1", "arg2", "three", ref outv)
 print(outv["arg 1"]) // -> "str: it's arg 1"
 print(outv["arg 2"]) // -> "str: arg2"
 print(outv["arg 3"]) // -> "str: three"
-print(outv["arg 4"] == none) // -> "num: 1.000"
+print(outv["arg 4"] == none) // -> "num: 1"

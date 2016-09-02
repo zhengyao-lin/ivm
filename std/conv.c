@@ -481,13 +481,13 @@ ivm_conv_dtoa(ivm_double_t d, ivm_char_t dest[25])
 	ivm_int_t spec = _filter_special(d, dest + str_len);
 
 	if (spec) {
-		return str_len + spec;
+		str_len += spec;
+	} else {
+		ivm_int_t k = 0;
+		ivm_int_t ndigits = _grisu2(d, digits, &k);
+
+		str_len += _emit_digits(digits, ndigits, dest + str_len, k, neg);
 	}
-
-	ivm_int_t k = 0;
-	ivm_int_t ndigits = _grisu2(d, digits, &k);
-
-	str_len += _emit_digits(digits, ndigits, dest + str_len, k, neg);
 
 	dest[str_len] = '\0';
 
