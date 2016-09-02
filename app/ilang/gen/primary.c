@@ -201,17 +201,29 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_elem;
 
-	GEN_ASSERT_NOT_LEFT_VALUE(expr, "list expression", flag);
+	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "list expression", flag);
 
-	ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
-		tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-		tmp_elem->eval(tmp_elem, FLAG(0), env);
-	}
+	if (flag.is_left_val) {
+		ivm_exec_addInstr_l(
+			env->cur_exec, GET_LINE(expr),
+			UNPACK_LIST, ilang_gen_expr_list_size(elems)
+		);
 
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, ilang_gen_expr_list_size(elems));
-	
-	if (flag.is_top_level) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+		ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+			tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+			tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE), env);
+		}
+	} else {
+		ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+			tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+			tmp_elem->eval(tmp_elem, FLAG(0), env);
+		}
+
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, ilang_gen_expr_list_size(elems));
+		
+		if (flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+		}
 	}
 
 	return NORET();

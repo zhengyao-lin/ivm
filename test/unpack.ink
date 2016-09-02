@@ -44,6 +44,15 @@ printl([a, b])
 
 [] = [1, 2]
 
+i = -1
+l = []
+r = fn: ref l[i = i + 1]
+
+[[deref r(), deref r()], deref r(), [deref r(), [deref r(), deref r()], deref r()]] = [[1, 2], 3, [4, [5, 6], 7]]
+
+for i in l:
+	print(i)
+
 // -> "str: ### list ###"
 // -> "num: 1.000"
 // -> "num: 2.000"
@@ -62,3 +71,11 @@ printl([a, b])
 // -> "str: ### list ###"
 // -> "str: first"
 // -> "str: second"
+// 
+// -> "num: 1.000"
+// -> "num: 2.000"
+// -> "num: 3.000"
+// -> "num: 4.000"
+// -> "num: 5.000"
+// -> "num: 6.000"
+// -> "num: 7.000"

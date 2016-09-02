@@ -354,7 +354,8 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 0);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_CAC);
 
-	ilang_gen_leftval_eval(for_expr->var, expr, env);
+	// ilang_gen_leftval_eval(for_expr->var, expr, env);
+	for_expr->var->eval(for_expr->var, FLAG(.is_left_val = IVM_TRUE), env);
 
 	for_expr->body->eval(for_expr->body, FLAG(.is_top_level = IVM_TRUE), env);
 

@@ -491,7 +491,6 @@ struct rule_val_t {
 		ilang_gen_branch_t branch;
 		ilang_gen_branch_list_t *branch_list;
 		ilang_gen_catch_branch_t catch_branch;
-		ilang_gen_leftval_t leftval;
 		ilang_gen_trans_unit_t *unit;
 		ivm_int_t oop;
 	} u;
@@ -2052,29 +2051,15 @@ RULE(intr_expr)
 
 /*
 	leftval
-		: '[' nllo arg_list_opt nllo ']'
-		| logic_or_expr
+		: logic_or_expr
  */
 RULE(leftval)
 {
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_LBRAKT) R(nllo)
-				 R(arg_list_opt)
-				 R(nllo) T(T_RBRAKT)
-		{
-			_RETVAL.leftval = ilang_gen_leftval_build(
-				IVM_NULL,
-				RULE_RET_AT(1).u.expr_list
-			);
-		})
-		
 		SUB_RULE(R(logic_or_expr)
 		{
-			_RETVAL.leftval = ilang_gen_leftval_build(
-				RULE_RET_AT(0).u.expr,
-				IVM_NULL
-			);
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 		})
 	);
 
@@ -2097,7 +2082,7 @@ RULE(assign_expr)
 			_RETVAL.expr = ilang_gen_assign_expr_new(
 				_ENV->unit,
 				TOKEN_POS(tmp_token),
-				RULE_RET_AT(0).u.leftval,
+				RULE_RET_AT(0).u.expr,
 				RULE_RET_AT(2).u.expr
 			);
 		})
@@ -2262,7 +2247,7 @@ RULE(for_expr)
 			_RETVAL.expr = ilang_gen_for_expr_new(
 				_ENV->unit,
 				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.leftval,
+				RULE_RET_AT(1).u.expr,
 				RULE_RET_AT(4).u.expr,
 				RULE_RET_AT(7).u.expr
 			);

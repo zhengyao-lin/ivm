@@ -93,6 +93,18 @@ gid = group: {
 yield a to gid
 */
 
+_i = -1
+i = fn: _i = _i + 1
+l = []
+r = fn: ref l[i()]
+
+[[deref r(), deref r()], deref r(), [deref r(), [deref r(), deref r()], deref r()]] = [[1, 2], 3, [4, [5, 6], 7]]
+
+for i in l:
+	print(i)
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1

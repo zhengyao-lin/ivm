@@ -571,21 +571,8 @@ COMMON_EXPR(while_expr, "while expression", {
 
 /* for expr */
 typedef struct {
-	ilang_gen_expr_t *one;
-	ilang_gen_expr_list_t *multi;
-} ilang_gen_leftval_t;
-
-#define ilang_gen_leftval_build(one, multi) \
-	((ilang_gen_leftval_t) { (one), (multi) })
-
-void
-ilang_gen_leftval_eval(ilang_gen_leftval_t val,
-					   ilang_gen_expr_t *expr,
-					   ilang_gen_env_t *env);
-
-typedef struct {
 	ILANG_GEN_EXPR_HEADER
-	ilang_gen_leftval_t var;
+	ilang_gen_expr_t *var;
 	ilang_gen_expr_t *iteree;
 	ilang_gen_expr_t *body;
 } ilang_gen_for_expr_t;
@@ -594,7 +581,7 @@ COMMON_EXPR(for_expr, "for expression", {
 	ret->var = var;
 	ret->iteree = iteree;
 	ret->body = body;
-}, ilang_gen_leftval_t var,
+}, ilang_gen_expr_t *var,
    ilang_gen_expr_t *iteree,
    ilang_gen_expr_t *body);
 
@@ -661,14 +648,14 @@ COMMON_EXPR(intr_expr, "intr expression", {
 /* assign expr */
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
-	ilang_gen_leftval_t lhe;
+	ilang_gen_expr_t *lhe;
 	ilang_gen_expr_t *rhe;
 } ilang_gen_assign_expr_t;
 
 COMMON_EXPR(assign_expr, "assign expression", {
 	ret->lhe = lhe;
 	ret->rhe = rhe;
-}, ilang_gen_leftval_t lhe,
+}, ilang_gen_expr_t *lhe,
    ilang_gen_expr_t *rhe);
 
 #undef COMMON_EXPR
