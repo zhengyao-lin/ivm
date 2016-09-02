@@ -47,7 +47,7 @@ ivm_perf_printElapsed()
 	IVM_TRACE("program: %ld ticks(%fs)\n",
 			  prog, (double)prog / CLOCKS_PER_SEC);
 
-	IVM_TRACE("gc times: %zd\n", ivm_perf_gc_count);
+	IVM_TRACE("gc times: %ld\n", ivm_perf_gc_count);
 
 	IVM_TRACE("gc: %ld ticks(%fs)\n",
 			  ivm_perf_gc_time,

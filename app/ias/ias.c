@@ -35,7 +35,7 @@ int main(int argc, const char **argv)
 	} file_format = FORMAT_AUTO; // auto
 
 	ivm_char_t *src;
-	const ivm_char_t *cache_file_path;
+	const ivm_char_t *cache_file_path = IVM_NULL;
 	ias_gen_env_t *env;
 	ivm_exec_unit_t *unit = IVM_NULL;
 	ivm_vmstate_t *state = IVM_NULL;

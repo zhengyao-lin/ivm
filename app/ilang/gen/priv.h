@@ -20,14 +20,14 @@
 #define GET_LINE(expr) ((expr)->pos.line)
 
 #define GEN_ERR(p, ...) \
-	IVM_TRACE("ilang generator error: at line %zd pos %zd: ", (p).line, (p).pos); \
+	IVM_TRACE("ilang generator error: at line %ld pos %ld: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n"); \
 	longjmp(env->err_handle, 1);
 	// IVM_EXIT(1);
 
 #define GEN_WARN(p, ...) \
-	IVM_TRACE("ilang generator warning: at line %zd pos %zd: ", (p).line, (p).pos); \
+	IVM_TRACE("ilang generator warning: at line %ld pos %ld: ", (p).line, (p).pos); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 

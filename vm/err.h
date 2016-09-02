@@ -67,7 +67,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC						"cannot serialize cached executable"
 #define IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE				"unexpected instruction string operand cache(not appear in the string pool)"
 #define IVM_ERROR_MSG_FILE_FORMAT_ERR(file, format)				"wrong file format of file %s, expecting %s file", (file), (format)
-#define IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, max)				"illegal string len %lu(expect less than %lu)", (ivm_ulong_t)(len), (ivm_ulong_t)(max)
+#define IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, max)				"illegal string len %ld(expect less than %ld)", (ivm_ulong_t)(len), (ivm_ulong_t)(max)
 #define IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE				("decache function id without vm state")
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT							("root function of coroutine cannot be native")
 #define IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO						("no code generated for target address")
@@ -80,7 +80,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK						("repeated optional mark in argument rule")
 #define IVM_ERROR_MSG_ILLEGAL_STEP								("illegal step")
 #define IVM_ERROR_MSG_STRING_IDX_EXCEED(i, size)				"string index exceeded(index %ld is too large for the string of size %ld)", (i), (size)
-#define IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(ofs, exp)			"mismatched link offset(the actual offset is %lu while expecting %lu)", (ivm_ulong_t)(ofs), (ivm_ulong_t)(exp)
+#define IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(ofs, exp)			"mismatched link offset(the actual offset is %ld while expecting %ld)", (ivm_ulong_t)(ofs), (ivm_ulong_t)(exp)
 #define IVM_ERROR_MSG_CONTEXT_NO_PREV_NODE						("current context node has no previous node")
 #define IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX					("cannot assign to string index")
 #define IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC						("failed to load init function")

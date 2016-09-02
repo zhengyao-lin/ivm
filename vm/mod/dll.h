@@ -60,7 +60,7 @@ IVM_COM_HEADER
 	#define ivm_dll_open(handler, path) ((*(handler) = LoadLibrary(path)) != IVM_NULL)
 	#define ivm_dll_close(handler) FreeLibrary(handler)
 	#define ivm_dll_getFunc(handler, name, type) \
-		GetProcAddress((handler), (name))
+		((type)GetProcAddress((handler), (name)))
 
 	IVM_INLINE
 	ivm_char_t *

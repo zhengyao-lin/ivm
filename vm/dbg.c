@@ -106,7 +106,7 @@ ivm_dbg_printExecUnit(ivm_exec_unit_t *unit, FILE *fp)
 			fputc('\n', fp);
 		}
 
-		fprintf(fp, "exec %lu:\n", i);
+		fprintf(fp, "exec %ld:\n", i);
 		i++;
 		ivm_dbg_printExec(
 			IVM_EXEC_LIST_ITER_GET(eiter),
@@ -131,8 +131,8 @@ _ivm_dbg_printHeap(ivm_heap_t *heap,
 			   total = IVM_HEAP_GET(heap, BLOCK_TOTAL);
 
 	fprintf(fp, "%sblock size: %.2fMB\n", prefix, B2MB(bsize));
-	fprintf(fp, "%sblock count: %zd\n", prefix, bcount);
-	fprintf(fp, "%susage: %zd in %zd\n", prefix, used, total);
+	fprintf(fp, "%sblock count: %ld\n", prefix, bcount);
+	fprintf(fp, "%susage: %ld in %ld\n", prefix, used, total);
 
 	return;
 }
@@ -209,7 +209,7 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_vmstack_t *stack = runtime.stack;
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);;
 
-	IVM_TRACE("\nstack state(sp: %zd, bp: %zd, cst: %d, cmp_reg: %d, has catch: %s):\n",
+	IVM_TRACE("\nstack state(sp: %ld, bp: %ld, cst: %d, cmp_reg: %d, has catch: %s):\n",
 			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg,
 			  ivm_runtime_hasCatch(IVM_CORO_GET(runtime.coro, RUNTIME)) ? "yes" : "no");
 

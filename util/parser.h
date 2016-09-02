@@ -114,17 +114,17 @@ struct trans_entry_t {
 
 /* error */
 #define PARSER_ERR_LP(l, p, ...) \
-	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: ", (l), (p)); \
+	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld pos %ld: ", (l), (p)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
 #define PARSER_ERR_P(p, ...) \
-	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at pos %zd: ", (p)); \
+	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at pos %ld: ", (p)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
 #define PARSER_ERR_L(l, ...) \
-	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd: ", (l)); \
+	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld: ", (l)); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
@@ -133,10 +133,10 @@ void
 PARSER_ERR_EM(struct err_msg_t *err)
 {
 	if (err->expect) {
-		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: unexpected %s, expecting %s \n",
+		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld pos %ld: unexpected %s, expecting %s \n",
 				  (err)->line, (err)->pos, (err)->given, (err)->expect);
 	} else {
-		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %zd pos %zd: unexpected %s \n",
+		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld pos %ld: unexpected %s \n",
 				  (err)->line, (err)->pos, (err)->given);
 	}
 
@@ -182,7 +182,7 @@ _ivm_parser_dumpToken(ivm_list_t *tokens)
 	for (i = 0; i < size; i++) {
 		tmp = (struct token_t *)ivm_list_at(tokens, i);
 
-		IVM_TRACE("token %-25svalue '%.*s'(len %zd)\n",
+		IVM_TRACE("token %-25svalue '%.*s'(len %ld)\n",
 				  token_name_table[tmp->id],
 				  (int)tmp->len, tmp->val, tmp->len);
 	}

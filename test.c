@@ -45,7 +45,7 @@ IVM_NATIVE_FUNC(call_func)
 	return ivm_numeric_new(NAT_STATE(), 10016);
 }
 
-#define print_type(type) (IVM_TRACE(#type ": %zd\n", sizeof(type)))
+#define print_type(type) (IVM_TRACE(#type ": %ld\n", sizeof(type)))
 
 void profile_type()
 {
