@@ -57,7 +57,7 @@ struct ivm_object_t_tag *
 typedef
 struct ivm_object_t_tag *
 (*ivm_mod_loader_t)(const ivm_char_t *path,
-					const ivm_char_t **err,
+					ivm_char_t **err,
 					struct ivm_vmstate_t_tag *state,
 					struct ivm_coro_t_tag *coro,
 					struct ivm_context_t_tag *context);
@@ -79,23 +79,6 @@ ivm_mod_load(const ivm_string_t *mod_name,
 			 ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
 			 ivm_context_t *context);
-
-/*
-	if *err is not null, something is wrong
- */
-struct ivm_object_t_tag *
-ivm_mod_loadNative(const ivm_char_t *path,
-				   const ivm_char_t **err,
-				   struct ivm_vmstate_t_tag *state,
-				   struct ivm_coro_t_tag *coro,
-				   struct ivm_context_t_tag *context);
-
-struct ivm_object_t_tag *
-ivm_mod_loadCache(const ivm_char_t *path,
-				  const ivm_char_t **err,
-				  struct ivm_vmstate_t_tag *state,
-				  struct ivm_coro_t_tag *coro,
-				  struct ivm_context_t_tag *context);
 
 IVM_COM_END
 

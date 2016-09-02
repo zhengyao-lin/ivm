@@ -4,6 +4,8 @@
 #include "pub/type.h"
 #include "pub/com.h"
 
+#include "std/string.h"
+
 IVM_COM_HEADER
 
 /*
@@ -14,7 +16,8 @@ IVM_COM_HEADER
 		1. bool ivm_dll_open(handler_ptr, path)
 		2. void ivm_dll_close(handler)
 		3. func ivm_dll_getFunc(handler, fn_name, fn_type)
-		4. string ivm_dll_error(handler)
+		4. string ivm_dll_error(handler) // this will allocate new mem, free it using ivm_dll_freeError
+		5. string ivm_dll_freeError(str) // free the message string
 
 	const:
 		1. IVM_DLL_SUFFIX
@@ -30,13 +33,60 @@ IVM_COM_HEADER
 	#define ivm_dll_close(handler) dlclose(handler)
 	#define ivm_dll_getFunc(handler, name, type) \
 		((type)(ivm_ptr_t)dlsym((handler), (name)))
-	#define ivm_dll_error(handler) dlerror()
+
+	IVM_INLINE
+	ivm_char_t *
+	ivm_dll_error(ivm_dll_t handler)
+	{
+		const ivm_char_t *err = dlerror();
+
+		if (err) {
+			return IVM_STRDUP(err);
+		}
+
+		return IVM_NULL;
+	}
+
+	#define ivm_dll_freeError(str) MEM_FREE(str)
 
 	#define IVM_DLL_SUFFIX ".so"
 
 #elif defined(IVM_OS_WIN32)
+
+	#include <winbase.h>
+
+	typedef HMODULE ivm_dll_t;
+
+	#define ivm_dll_open(handler, path) ((*(handler) = LoadLibrary(path)) != IVM_NULL)
+	#define ivm_dll_close(handler) FreeLibrary(handler)
+	#define ivm_dll_getFunc(handler, name, type) \
+		GetProcAddress((handler), (name))
+
+	IVM_INLINE
+	ivm_char_t *
+	ivm_dll_error(ivm_dll_t handler)
+	{
+		LPVOID buf;
+		DWORD err = GetLastError();
+
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+			FORMAT_MESSAGE_FROM_SYSTEM |
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			IVM_NULL,
+			err,
+			0, (LPTSTR)&buf, 0, NULL
+		);
+
+		return buf;
+	}
+
+	#define ivm_dll_freeError(str) LocalFree(str)
+
+	#define IVM_DLL_SUFFIX ".dll"
+
 #else
-	#error does not support dynamically linked library on this platform
+	#error no support for dynamically linked library on this os
 #endif
 
 IVM_COM_END

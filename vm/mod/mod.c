@@ -72,6 +72,22 @@ ivm_mod_suffix_list_t _mod_suffix_list;
 IVM_PRIVATE
 ivm_size_t _mod_suffix_max_len = 0;
 
+IVM_PRIVATE
+ivm_object_t *
+_ivm_mod_loadCache(const ivm_char_t *path,
+				   ivm_char_t **err,
+				   ivm_vmstate_t *state,
+				   ivm_coro_t *coro,
+				   ivm_context_t *context);
+
+IVM_PRIVATE
+ivm_object_t *
+_ivm_mod_loadNative(const ivm_char_t *path,
+					ivm_char_t **err,
+					ivm_vmstate_t *state,
+					ivm_coro_t *coro,
+					ivm_context_t *context);
+
 // BUG: need thread lock
 
 IVM_PRIVATE
@@ -190,8 +206,8 @@ ivm_mod_init()
 	ivm_dll_list_init(&_dll_list);
 	ivm_mod_suffix_list_init(&_mod_suffix_list);
 
-	ivm_mod_addModSuffix(IVM_DLL_SUFFIX, ivm_mod_loadNative);
-	ivm_mod_addModSuffix(IVM_CACHE_FILE_SUFFIX, ivm_mod_loadCache);
+	ivm_mod_addModSuffix(IVM_DLL_SUFFIX, _ivm_mod_loadNative);
+	ivm_mod_addModSuffix(IVM_CACHE_FILE_SUFFIX, _ivm_mod_loadCache);
 
 	_ivm_mod_initModPath();
 
@@ -332,6 +348,110 @@ ivm_mod_search(const ivm_char_t *mod_name,
 	return ret;
 }
 
+IVM_PRIVATE
+ivm_object_t *
+_ivm_mod_loadNative(const ivm_char_t *path,
+					ivm_char_t **err,
+					ivm_vmstate_t *state,
+					ivm_coro_t *coro,
+					ivm_context_t *context)
+{
+	ivm_char_t *tmp_err = IVM_NULL;
+	ivm_dll_t handler;
+	ivm_mod_native_init_t init;
+	ivm_object_t *ret = IVM_NULL;
+
+	if (!ivm_dll_open(&handler, path)) {
+		tmp_err = ivm_dll_error(handler);
+		if (!tmp_err) {
+			tmp_err = IVM_STRDUP(IVM_ERROR_MSG_UNKNOWN_ERROR);
+		}
+
+		goto END;
+	}
+
+	init = ivm_dll_getFunc(handler, IVM_MOD_NATIVE_INIT_FUNC, ivm_mod_native_init_t);
+
+	if (!init) {
+		ivm_dll_close(handler);
+
+		tmp_err = ivm_dll_error(handler);
+		if (!tmp_err) {
+			tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC);
+		}
+
+		goto END;
+	}
+
+	ivm_dll_list_push(&_dll_list, &handler);
+
+	ret = init(state, coro, context);
+
+END:
+
+	if (err) {
+		*err = tmp_err;
+	}
+
+	return ret;
+}
+
+IVM_PRIVATE
+ivm_object_t *
+_ivm_mod_loadCache(const ivm_char_t *path,
+				   ivm_char_t **err,
+				   ivm_vmstate_t *state,
+				   ivm_coro_t *coro,
+				   ivm_context_t *context)
+{
+	ivm_char_t *tmp_err = IVM_NULL;
+	ivm_object_t *ret = IVM_NULL;
+	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+	ivm_exec_unit_t *unit = IVM_NULL;
+	ivm_function_t *root;
+	ivm_context_t *dest;
+
+	if (!cache) {
+		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_OPEN_FILE);
+		goto END;
+	}
+
+	unit = ivm_serial_parseCacheFile(cache);
+
+	ivm_file_free(cache);
+	
+	if (!unit) {
+		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_PARSE_CACHE);
+		goto END;
+	}
+
+	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
+	root = ivm_exec_unit_mergeToVM(unit, state);
+
+	ivm_exec_unit_free(unit);
+
+	if (!root) {
+		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_CACHE_NO_ROOT);
+		goto END;
+	}
+
+	ivm_function_invoke_r(root, state, coro, IVM_NULL);
+	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
+	ivm_coro_resume(coro, state, IVM_NULL);
+
+	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
+
+	ivm_context_free(dest, state);
+
+END:
+
+	if (err) {
+		*err = tmp_err;
+	}
+
+	return ret;
+}
+
 ivm_object_t *
 ivm_mod_load(const ivm_string_t *mod_name,
 			 ivm_vmstate_t *state,
@@ -340,10 +460,13 @@ ivm_mod_load(const ivm_string_t *mod_name,
 {
 	ivm_mod_loader_t loader;
 	ivm_size_t len = ivm_string_length(mod_name);
+
+	const ivm_char_t *mod = ivm_string_trimHead(mod_name);
 	ivm_char_t buf[_get_max_buf_size(len)];
-	const ivm_char_t *err = IVM_NULL, *mod = ivm_string_trimHead(mod_name);
-	ivm_object_t *ret;
+	ivm_char_t *err = IVM_NULL;
 	ivm_char_t *path_backup, *path;
+
+	ivm_object_t *ret;
 
 	path_backup = ivm_vmstate_curPath(state);
 
@@ -370,114 +493,14 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	if (!ret) {
 		if (!ivm_vmstate_getException(state)) {
-			IVM_CORO_NATIVE_FATAL(
+			IVM_CORO_NATIVE_FATAL_C(
 				coro, state,
 				IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, buf, err)
 			);
 		}
 	}
 
-	return ret;
-}
-
-ivm_object_t *
-ivm_mod_loadNative(const ivm_char_t *path,
-				   const ivm_char_t **err,
-				   ivm_vmstate_t *state,
-				   ivm_coro_t *coro,
-				   ivm_context_t *context)
-{
-	const ivm_char_t *tmp_err = IVM_NULL;
-	ivm_dll_t handler;
-	ivm_mod_native_init_t init;
-	ivm_object_t *ret = IVM_NULL;
-
-	if (!ivm_dll_open(&handler, path)) {
-		tmp_err = ivm_dll_error(handler);
-		if (!tmp_err) {
-			tmp_err = IVM_ERROR_MSG_UNKNOWN_ERROR;
-		}
-
-		goto END;
-	}
-
-	init = ivm_dll_getFunc(handler, IVM_MOD_NATIVE_INIT_FUNC, ivm_mod_native_init_t);
-
-	if (!init) {
-		ivm_dll_close(handler);
-
-		tmp_err = ivm_dll_error(handler);
-		if (!tmp_err) {
-			tmp_err = IVM_ERROR_MSG_FAILED_LOAD_INIT_FUNC;
-		}
-
-		goto END;
-	}
-
-	ivm_dll_list_push(&_dll_list, &handler);
-
-	ret = init(state, coro, context);
-
-END:
-
-	if (err) {
-		*err = tmp_err;
-	}
-
-	return ret;
-}
-
-ivm_object_t *
-ivm_mod_loadCache(const ivm_char_t *path,
-				  const ivm_char_t **err,
-				  ivm_vmstate_t *state,
-				  ivm_coro_t *coro,
-				  ivm_context_t *context)
-{
-	const ivm_char_t *tmp_err = IVM_NULL;
-	ivm_object_t *ret = IVM_NULL;
-	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
-	ivm_exec_unit_t *unit = IVM_NULL;
-	ivm_function_t *root;
-	ivm_context_t *dest;
-
-	if (!cache) {
-		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
-		goto END;
-	}
-
-	unit = ivm_serial_parseCacheFile(cache);
-
-	ivm_file_free(cache);
-	
-	if (!unit) {
-		tmp_err = IVM_ERROR_MSG_FAILED_PARSE_CACHE;
-		goto END;
-	}
-
-	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
-	root = ivm_exec_unit_mergeToVM(unit, state);
-
-	ivm_exec_unit_free(unit);
-
-	if (!root) {
-		tmp_err = IVM_ERROR_MSG_CACHE_NO_ROOT;
-		goto END;
-	}
-
-	ivm_function_invoke_r(root, state, coro, IVM_NULL);
-	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
-	ivm_coro_resume(coro, state, IVM_NULL);
-
-	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
-
-	ivm_context_free(dest, state);
-
-END:
-
-	if (err) {
-		*err = tmp_err;
-	}
+	ivm_dll_freeError(err);
 
 	return ret;
 }

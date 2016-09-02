@@ -146,19 +146,19 @@ FAILED:
 IVM_PRIVATE
 ivm_object_t *
 ilang_mod_loadSource(const ivm_char_t *path,
-					 const ivm_char_t **err,
+					 ivm_char_t **err,
 					 ivm_vmstate_t *state,
 					 ivm_coro_t *coro,
 					 ivm_context_t *context)
 {
-	const ivm_char_t *tmp_err = IVM_NULL;
+	ivm_char_t *tmp_err = IVM_NULL;
 	ivm_exec_unit_t *unit = _parse_source(path);
 	ivm_object_t *ret = IVM_NULL;
 	ivm_function_t *root;
 	ivm_context_t *dest;
 
 	if (!unit) {
-		tmp_err = IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE;
+		tmp_err = IVM_STRDUP(IVM_ERROR_MSG_FAILED_TO_PARSE_SOURCE);
 		goto FAILED;
 	}
 

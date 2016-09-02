@@ -632,6 +632,7 @@ int main(int argc, const char **argv)
 	// profile_type();
 	// return 0;
 
+#if 0
 	ivm_char_t buf[128];
 	const ivm_char_t *err;
 	ivm_mod_loader_t loader;
@@ -651,6 +652,7 @@ int main(int argc, const char **argv)
 	}
 
 	ivm_perf_printElapsed();
+#endif
 
 #if 1
 
