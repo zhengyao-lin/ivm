@@ -23,7 +23,26 @@ res = 0
 if a > 11: print("no!")
 else: print("yes!")
 
+a = [1, 2, 3]
+
+a.[] = fn idx: {
+	if typeof(idx) == "list":
+		for i in idx:
+			print(i)
+	else:
+		print(typeof(idx))
+}
+
+a[1, 2, 3]
+a[]
+
 // -> "num: 5.000"
 // -> "str: unable to invoke object of type <string>"
 // -> "str: yes!"
 // -> "str: yes!"
+// 
+// -> "num: 1.000"
+// -> "num: 2.000"
+// -> "num: 3.000"
+//
+// -> "str: none"

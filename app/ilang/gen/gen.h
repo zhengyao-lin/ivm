@@ -181,6 +181,7 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
 
 #define ilang_gen_expr_list_push ivm_ptlist_push
 #define ilang_gen_expr_list_size ivm_ptlist_size
+#define ilang_gen_expr_list_at(list, i) ivm_ptlist_at((list), (i))
 
 #define ILANG_GEN_EXPR_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define ILANG_GEN_EXPR_LIST_ITER_GET(iter) ((ilang_gen_expr_t *)IVM_PTLIST_ITER_GET(iter))
@@ -449,8 +450,19 @@ COMMON_EXPR(cmp_expr, "compare expression", {
 	ret->cmp_type = cmp_type;
 }, ilang_gen_expr_t *op1, ilang_gen_expr_t *op2, ivm_int_t cmp_type);
 
-/* logic expr */
+/* index expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *op;
+	ilang_gen_expr_list_t *idx;
+} ilang_gen_index_expr_t;
 
+COMMON_EXPR(index_expr, "index expression", {
+	ret->op = op;
+	ret->idx = idx;
+}, ilang_gen_expr_t *op, ilang_gen_expr_list_t *idx);
+
+/* logic expr */
 enum {
 	ILANG_GEN_LOGIC_AND = 0,
 	ILANG_GEN_LOGIC_OR = 1

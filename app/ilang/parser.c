@@ -1052,15 +1052,17 @@ RULE(oop)
 
 /*
 	postfix_expr_sub
-		: '(' arg_list_opt ')' postfix_expr_sub
+		: '(' nllo arg_list_opt nllo ')' postfix_expr_sub
+		| '[' nllo arg_list_opt nllo ']' postfix_expr_sub
 		| '.' id postfix_expr_sub
 		| '.' oop postfix_expr_sub
+		| id postfix_expr_sub
 		| %empty
  */
 RULE(postfix_expr_sub)
 {
 	struct token_t *tmp_token, *id;
-	ilang_gen_expr_t *tmp_expr = IVM_NULL, *tmp_idx;
+	ilang_gen_expr_t *tmp_expr = IVM_NULL;
 	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
 	ivm_int_t oop;
 
@@ -1085,6 +1087,31 @@ RULE(postfix_expr_sub)
 				));
 			} else {
 				_RETVAL.expr = ilang_gen_call_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, tmp_expr_list
+				);
+			}
+		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo) R(arg_list_opt) R(nllo) T(T_RBRAKT) R(postfix_expr_sub)
+		DBB(PRINT_MATCH_TOKEN("index expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			tmp_expr_list = RULE_RET_AT(1).u.expr_list;
+			tmp_expr = RULE_RET_AT(3).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_index_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, tmp_expr_list
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_index_expr_new(
 					_ENV->unit,
 					TOKEN_POS(tmp_token), IVM_NULL, tmp_expr_list
 				);
@@ -1135,33 +1162,6 @@ RULE(postfix_expr_sub)
 				_RETVAL.expr = ilang_gen_oop_expr_new(
 					_ENV->unit,
 					TOKEN_POS(tmp_token), IVM_NULL, oop
-				);
-			}
-		})
-
-		SUB_RULE(T(T_LBRAKT) R(expr) T(T_RBRAKT) R(postfix_expr_sub)
-		DBB(PRINT_MATCH_TOKEN("index expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			tmp_idx = RULE_RET_AT(0).u.expr;
-			tmp_expr = RULE_RET_AT(1).u.expr;
-
-			if (tmp_expr) {
-				_RETVAL.expr = tmp_expr;
-				// find the innermost expression
-				while (GET_OPERAND(tmp_expr, 1))
-					tmp_expr = GET_OPERAND(tmp_expr, 1);
-
-				SET_OPERAND(tmp_expr, 1, ilang_gen_binary_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, tmp_idx,
-					IVM_BINOP_ID(IDX)
-				));
-			} else {
-				_RETVAL.expr = ilang_gen_binary_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, tmp_idx,
-					IVM_BINOP_ID(IDX)
 				);
 			}
 		})

@@ -133,9 +133,7 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_binary_expr_t *binary_expr = IVM_AS(expr, ilang_gen_binary_expr_t);
 	ilang_gen_expr_t *op1, *op2;
 
-	if (binary_expr->type != IVM_BINOP_ID(IDX)) {
-		GEN_ASSERT_NOT_LEFT_VALUE(expr, "binary expression(except index expression)", flag);
-	}
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "binary expression(except index expression)", flag);
 
 	op1 = binary_expr->op1;
 	op2 = binary_expr->op2;
@@ -157,14 +155,6 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 		BR(AND)
 		BR(EOR)
 		BR(IOR)
-		case IVM_BINOP_ID(IDX):
-			if (flag.is_left_val) {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX_ASSIGN);
-				ivm_exec_addInstr(env->cur_exec, POP);
-			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
-			}
-			break;
 		BR(SHL)
 		BR(SHAR)
 		BR(SHLR)
@@ -196,10 +186,6 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 
 	op1->eval(op1, FLAG(0), env);
 	op2->eval(op2, FLAG(0), env);
-
-	if (flag.is_top_level) {
-		return NORET();
-	}
 
 #if 0
 #define BR(op) \
@@ -233,6 +219,57 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 
 	if (flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env)
+{
+	ilang_gen_index_expr_t *index_expr = IVM_AS(expr, ilang_gen_index_expr_t);
+	ilang_gen_expr_list_iterator_t eiter;
+	ilang_gen_expr_t *tmp_expr;
+	ivm_size_t count;
+
+	index_expr->op->eval(index_expr->op, FLAG(0), env);
+
+	/*
+		count		index obj
+		0			none
+		1			arg1
+		>1			[arg1, arg2, ...]
+	 */
+	switch (count = ilang_gen_expr_list_size(index_expr->idx)) {
+		case 0:
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+			break;
+		
+		case 1:
+			tmp_expr = ilang_gen_expr_list_at(index_expr->idx, 0);
+			tmp_expr->eval(tmp_expr, FLAG(0), env);
+			break;
+
+		default: {
+			ILANG_GEN_EXPR_LIST_EACHPTR_R(index_expr->idx, eiter) {
+				tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+				tmp_expr->eval(tmp_expr, FLAG(0), env);
+			}
+
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, count);
+		}
+	}
+
+	if (flag.is_left_val) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX_ASSIGN);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	} else {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+		}
 	}
 
 	return NORET();
