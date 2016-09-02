@@ -13,6 +13,7 @@
 #include "heap.h"
 #include "ref.h"
 #include "hash.h"
+#include "enc.h"
 
 IVM_COM_HEADER
 
@@ -105,8 +106,8 @@ ivm_string_realLength(const ivm_string_t *str)
 	}
 
 	// gen cache
-	head->is_ascii = ivm_conv_isAllAscii(str->cont);
-	return head->wlen = ivm_conv_mbstowcs_len(str->cont);
+	head->is_ascii = ivm_enc_isAllAscii(str->cont);
+	return head->wlen = ivm_enc_utf8_strlen(str->cont);
 }
 
 #define ivm_string_size(str) \

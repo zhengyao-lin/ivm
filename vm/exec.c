@@ -10,7 +10,6 @@
 #include "std/sys.h"
 
 #include "exec.h"
-#include "byte.h"
 
 ivm_source_pos_t *
 ivm_source_pos_new(const ivm_char_t *file)

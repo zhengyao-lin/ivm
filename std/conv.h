@@ -18,8 +18,7 @@ IVM_COM_HEADER
 ivm_int_t
 ivm_conv_dtoa(ivm_double_t d, ivm_char_t dest[25]);
 
-ivm_bool_t
-ivm_conv_isAllAscii(const ivm_char_t *str);
+#if 0
 
 IVM_INLINE
 ivm_size_t
@@ -48,6 +47,8 @@ ivm_conv_wcstombs(const ivm_wchar_t *wcs, ivm_char_t *buf, ivm_size_t buf_size)
 {
 	return wcstombs(buf, wcs, buf_size);
 }
+
+#endif
 
 IVM_COM_END
 

@@ -493,16 +493,3 @@ ivm_conv_dtoa(ivm_double_t d, ivm_char_t dest[25])
 
 	return str_len;
 }
-
-ivm_bool_t
-ivm_conv_isAllAscii(const ivm_char_t *str)
-{
-	while (*str) {
-		if ((ivm_uchar_t)*str > 0x7F) {
-			return IVM_FALSE;
-		}
-		str++;
-	}
-
-	return IVM_TRUE;
-}

@@ -9,7 +9,6 @@
 
 #include "dbg.h"
 #include "opcode.h"
-#include "byte.h"
 #include "instr.h"
 #include "exec.h"
 #include "obj.h"
