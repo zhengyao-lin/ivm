@@ -4,8 +4,8 @@
 #include "pub/com.h"
 #include "pub/vm.h"
 
-#include "../num.h"
-#include "../obj.h"
+#include "vm/num.h"
+#include "vm/obj.h"
 
 IVM_COM_HEADER
 

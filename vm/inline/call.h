@@ -1,13 +1,14 @@
 #ifndef _IVM_VM_INLINE_CALL_H_
 #define _IVM_VM_INLINE_CALL_H_
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 
-#include "../call.h"
-#include "../obj.h"
+#include "std/mem.h"
+
+#include "vm/call.h"
+#include "vm/obj.h"
 
 IVM_COM_HEADER
 
@@ -20,7 +21,7 @@ ivm_frame_new(ivm_vmstate_t *state,
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame"));
 
-	MEM_COPY(ret, runtime, sizeof(IVM_FRAME_HEADER_SIZE));
+	STD_MEMCPY(ret, runtime, sizeof(IVM_FRAME_HEADER_SIZE));
 
 	return ret;
 }
@@ -38,7 +39,7 @@ void
 _ivm_frame_stack_expand(ivm_frame_stack_t *stack)
 {
 	stack->alloc <<= 1;
-	stack->frames = MEM_REALLOC(stack->frames,
+	stack->frames = STD_REALLOC(stack->frames,
 								sizeof(ivm_frame_t)
 								* stack->alloc,
 								ivm_frame_t *);
@@ -57,7 +58,7 @@ ivm_frame_stack_push(ivm_frame_stack_t *stack,
 		_ivm_frame_stack_expand(stack);
 	}
 
-	MEM_COPY(stack->frames + stack->top++, runtime,
+	STD_MEMCPY(stack->frames + stack->top++, runtime,
 			 IVM_FRAME_HEADER_SIZE);
 
 	return;
@@ -72,7 +73,7 @@ ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 
 	if (stack->top) {
 		runtime->sp = runtime->bp;
-		MEM_COPY(runtime, (ret = stack->frames + --stack->top),
+		STD_MEMCPY(runtime, (ret = stack->frames + --stack->top),
 				 IVM_FRAME_HEADER_SIZE);
 	}
 

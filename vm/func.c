@@ -1,10 +1,12 @@
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
 
+#include "std/mem.h"
+
 #include "gc/gc.h"
+
 #include "func.h"
 #include "context.h"
 #include "runtime.h"
@@ -22,7 +24,7 @@ _ivm_function_init(ivm_function_t *func,
 		ivm_exec_copy(body, &func->u.body);
 		ivm_exec_preproc(&func->u.body, state);
 	} else {
-		MEM_INIT(&func->u.body, sizeof(func->u.body));
+		STD_INIT(&func->u.body, sizeof(func->u.body));
 	}
 
 	return;

@@ -2,9 +2,10 @@
 
 #include "pub/type.h"
 #include "pub/com.h"
-#include "pub/mem.h"
 #include "pub/vm.h"
 #include "pub/err.h"
+
+#include "std/mem.h"
 
 #include "oprt.h"
 #include "obj.h"
@@ -61,8 +62,8 @@
 	BINOP_PROC_DEF(ivm_binop_linkStringNum)
 	{
 		LINK_STRING_NUM(_OP1, _OP2, {
-			MEM_COPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
-			MEM_COPY(data + len1, buf, len2 * sizeof(ivm_char_t));
+			STD_MEMCPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+			STD_MEMCPY(data + len1, buf, len2 * sizeof(ivm_char_t));
 			data[size] = '\0';
 		});
 	}
@@ -70,8 +71,8 @@
 	BINOP_PROC_DEF(ivm_binop_linkStringNum_r)
 	{
 		LINK_STRING_NUM(_OP2, _OP1, {
-			MEM_COPY(data, buf, len2 * sizeof(ivm_char_t));
-			MEM_COPY(data + len2, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+			STD_MEMCPY(data, buf, len2 * sizeof(ivm_char_t));
+			STD_MEMCPY(data + len2, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
 			data[size] = '\0';
 		});
 	}
@@ -98,7 +99,7 @@
 ivm_binop_table_t *
 ivm_binop_table_new()
 {
-	ivm_binop_table_t *ret = MEM_ALLOC(sizeof(ivm_binop_table_t),
+	ivm_binop_table_t *ret = STD_ALLOC(sizeof(ivm_binop_table_t),
 									   ivm_binop_table_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("binary operator table"));
@@ -113,8 +114,8 @@ void
 ivm_binop_table_free(ivm_binop_table_t *table)
 {
 	if (table) {
-		MEM_FREE(table->lst);
-		MEM_FREE(table);
+		STD_FREE(table->lst);
+		STD_FREE(table);
 	}
 
 	return;
@@ -132,7 +133,7 @@ void
 ivm_binop_table_dump(ivm_binop_table_t *table)
 {
 	if (table) {
-		MEM_FREE(table->lst);
+		STD_FREE(table->lst);
 	}
 
 	return;

@@ -4,9 +4,9 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
-#include "pub/mem.h"
 #include "pub/err.h"
 
+#include "std/mem.h"
 #include "std/pool.h"
 #include "std/string.h"
 #include "std/heap.h"
@@ -258,7 +258,7 @@ ivm_vmstate_allocWild(ivm_vmstate_t *state,
 	void *ret;
 
 	ivm_vmstate_addWildSize(state, size);
-	ret = MEM_ALLOC(size, void *);
+	ret = STD_ALLOC(size, void *);
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
@@ -273,7 +273,7 @@ ivm_vmstate_reallocWild(ivm_vmstate_t *state,
 	void *ret;
 
 	ivm_vmstate_addWildSize(state, size);
-	ret = MEM_REALLOC(orig, size, void *);
+	ret = STD_REALLOC(orig, size, void *);
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
@@ -294,7 +294,7 @@ ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
 
 	ivm_vmstate_addWildSize(state, size);
 	*is_wild = IVM_TRUE;
-	ret = MEM_ALLOC(size, void *);
+	ret = STD_ALLOC(size, void *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
@@ -329,7 +329,7 @@ ivm_vmstate_allocRawString(ivm_vmstate_t *state,
 	}
 
 	ret = ivm_vmstate_alloc(state, size);
-	MEM_COPY(ivm_string_trimHead(ret), str, sizeof(*str) * (len + 1));
+	STD_MEMCPY(ivm_string_trimHead(ret), str, sizeof(*str) * (len + 1));
 	ivm_string_initHead(ret, IVM_FALSE, len);
 
 	return ret;
@@ -347,7 +347,7 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 		ret = ivm_vmstate_alloc(state, size);
 		
-		MEM_COPY(ret, str, size);
+		STD_MEMCPY(ret, str, size);
 
 		return ret;
 	}
@@ -366,16 +366,16 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 #else
 
 #define ivm_vmstate_allocFunc(state) \
-	(MEM_ALLOC(sizeof(ivm_function_t), ivm_function_t *))
+	(STD_ALLOC(sizeof(ivm_function_t), ivm_function_t *))
 #define ivm_vmstate_dumpFunc(state, func) \
-	(MEM_FREE(func))
+	(STD_FREE(func))
 
 #endif
 
 #define ivm_vmstate_allocFrame(state) \
-	(MEM_ALLOC(sizeof(ivm_frame_t), ivm_frame_t *))
+	(STD_ALLOC(sizeof(ivm_frame_t), ivm_frame_t *))
 #define ivm_vmstate_dumpFrame(state, fr) \
-	(MEM_FREE(fr))
+	(STD_FREE(fr))
 
 /* coro pool */
 #if IVM_USE_CORO_POOL
@@ -388,9 +388,9 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 #else
 
 #define ivm_vmstate_allocCoro(state) \
-	(MEM_ALLOC(sizeof(ivm_coro_t), ivm_coro_t *))
+	(STD_ALLOC(sizeof(ivm_coro_t), ivm_coro_t *))
 #define ivm_vmstate_dumpCoro(state, cr) \
-	(MEM_FREE(cr))
+	(STD_FREE(cr))
 
 #endif
 

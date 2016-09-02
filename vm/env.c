@@ -1,5 +1,5 @@
 #include "pub/const.h"
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/vm.h"
 
 #include "std/sys.h"

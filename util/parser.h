@@ -403,7 +403,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	struct token_t *__tmp_token__ = IVM_NULL; \
 	ivm_bool_t __has_matched__ = IVM_FALSE; \
 	struct err_msg_t __tmp_err__; \
-	MEM_INIT(__ret__, sizeof(*__ret__)); \
+	STD_INIT(__ret__, sizeof(*__ret__)); \
 	__reti__ == __reti__; /* reduce unused variable warning */ \
 	__toki__ == __toki__; \
 	__tmp_token__ == __tmp_token__; \

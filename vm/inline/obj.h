@@ -6,9 +6,9 @@
 
 #include "std/string.h"
 
-#include "../instr.h"
-#include "../obj.h"
-#include "../slot.h"
+#include "vm/instr.h"
+#include "vm/obj.h"
+#include "vm/slot.h"
 
 IVM_COM_HEADER
 
@@ -18,7 +18,7 @@ ivm_object_init(ivm_object_t *obj,
 				ivm_vmstate_t *state,
 				ivm_type_tag_t type)
 {
-	MEM_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
+	STD_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
 	obj->proto = ivm_type_getProto(
 		obj->type = ivm_vmstate_getType(state, type)
 	);
@@ -35,7 +35,7 @@ ivm_object_clone(ivm_object_t *obj,
 	ivm_size_t size = type->size;
 	ivm_object_t *ret = ivm_vmstate_alloc(state, size);
 
-	MEM_COPY(ret, obj, size);
+	STD_MEMCPY(ret, obj, size);
 	ret->slots = ivm_slot_table_copyShared(ret->slots, state);
 
 	if (type->clone) {

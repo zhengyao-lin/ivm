@@ -4,7 +4,7 @@
 #include "pub/com.h"
 #include "pub/vm.h"
 
-#include "../slot.h"
+#include "vm/slot.h"
 
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
@@ -315,8 +315,8 @@ ivm_slot_table_setOop(ivm_slot_table_t *table,
 			ivm_slot_table_getGen(table)
 		);
 
-		MEM_COPY(table->oops, oops, sizeof(*table->oops) * osize);
-		MEM_INIT(table->oops + osize, sizeof(*table->oops) * (size - osize));
+		STD_MEMCPY(table->oops, oops, sizeof(*table->oops) * osize);
+		STD_INIT(table->oops + osize, sizeof(*table->oops) * (size - osize));
 	}
 
 	IVM_WBSLOT(state, table, func);

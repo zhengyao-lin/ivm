@@ -1,6 +1,7 @@
 #include "pub/type.h"
-#include "pub/mem.h"
 #include "pub/err.h"
+
+#include "std/mem.h"
 
 #include "vmstack.h"
 #include "obj.h"
@@ -12,7 +13,7 @@ ivm_vmstack_init(ivm_vmstack_t *stack)
 {
 	stack->size = IVM_DEFAULT_VMSTACK_BUFFER_SIZE;
 	stack->edge = (
-		(stack->bottom = MEM_ALLOC(
+		(stack->bottom = STD_ALLOC(
 			sizeof(*stack->bottom)
 			* IVM_DEFAULT_VMSTACK_BUFFER_SIZE,
 			ivm_object_t **
@@ -27,7 +28,7 @@ ivm_vmstack_init(ivm_vmstack_t *stack)
 ivm_vmstack_t *
 ivm_vmstack_new()
 {
-	ivm_vmstack_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_vmstack_t *ret = STD_ALLOC(sizeof(*ret),
 								   ivm_vmstack_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
@@ -41,8 +42,8 @@ void
 ivm_vmstack_free(ivm_vmstack_t *stack)
 {
 	if (stack) {
-		MEM_FREE(stack->bottom);
-		MEM_FREE(stack);
+		STD_FREE(stack->bottom);
+		STD_FREE(stack);
 	}
 
 	return;
@@ -52,7 +53,7 @@ void
 ivm_vmstack_dump(ivm_vmstack_t *stack)
 {
 	if (stack) {
-		MEM_FREE(stack->bottom);
+		STD_FREE(stack->bottom);
 	}
 
 	return;
@@ -68,7 +69,7 @@ ivm_vmstack_inc(ivm_vmstack_t *stack,
 
 	stack->size <<= 1;
 	ost = stack->bottom;
-	nst = MEM_REALLOC(
+	nst = STD_REALLOC(
 		ost,
 		sizeof(*ost)
 		* stack->size,
@@ -100,7 +101,7 @@ ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 
 	stack->size <<= 1;
 	ost = stack->bottom;
-	nst = MEM_REALLOC(
+	nst = STD_REALLOC(
 		ost,
 		sizeof(*ost)
 		* stack->size,
@@ -146,7 +147,7 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 	}
 
 	ost = stack->bottom;
-	nst = MEM_REALLOC(
+	nst = STD_REALLOC(
 		ost,
 		sizeof(*ost)
 		* stack->size,

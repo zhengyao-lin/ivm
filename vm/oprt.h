@@ -3,9 +3,9 @@
 
 #include "pub/com.h"
 #include "pub/const.h"
-#include "pub/mem.h"
 #include "pub/type.h"
 
+#include "std/mem.h"
 #include "std/list.h"
 
 IVM_COM_HEADER
@@ -114,7 +114,7 @@ enum {
 
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 
-#define ivm_uniop_table_init(table) (MEM_INIT((table), sizeof(ivm_uniop_table_t)))
+#define ivm_uniop_table_init(table) (STD_INIT((table), sizeof(ivm_uniop_table_t)))
 #define ivm_uniop_table_get(table, i) ((table)[i])
 #define ivm_uniop_table_set(table, i, proc) ((table)[i] = (proc))
 
@@ -150,11 +150,11 @@ void
 _ivm_binop_table_incTo(ivm_binop_table_t *table,
 					   ivm_size_t size) /* size >= table->size */
 {
-	table->lst = MEM_REALLOC(table->lst,
+	table->lst = STD_REALLOC(table->lst,
 							 sizeof(ivm_binop_proc_t) * size,
 							 ivm_binop_proc_t *);
 	
-	MEM_INIT(table->lst + table->size,
+	STD_INIT(table->lst + table->size,
 			 sizeof(ivm_binop_proc_t) * (size - table->size));
 
 	table->size = size;

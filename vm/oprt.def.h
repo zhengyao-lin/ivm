@@ -106,8 +106,8 @@ BINOP_GEN(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, {
 
 	ivm_char_t *data = ivm_string_trimHead(ret);
 
-	MEM_COPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
-	MEM_COPY(data + len1, ivm_string_trimHead(str2), len2 * sizeof(ivm_char_t));
+	STD_MEMCPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+	STD_MEMCPY(data + len1, ivm_string_trimHead(str2), len2 * sizeof(ivm_char_t));
 	data[size] = '\0';
 
 	ivm_string_initHead(ret, IVM_FALSE, size);
@@ -141,7 +141,7 @@ BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(1));
 	data = ivm_string_trimHead(ret);
 
-	MEM_COPY(data, ivm_string_trimHead(str1) + idx, sizeof(ivm_char_t));
+	STD_MEMCPY(data, ivm_string_trimHead(str1) + idx, sizeof(ivm_char_t));
 	data[1] = '\0';
 
 	return ivm_string_object_new_c(_STATE, ret);

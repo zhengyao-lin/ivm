@@ -1,7 +1,8 @@
-#include "pub/mem.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
+
+#include "std/mem.h"
 
 #include "num.h"
 #include "obj.h"

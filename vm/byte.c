@@ -1,4 +1,4 @@
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/err.h"
 
 #include "std/string.h"
@@ -28,7 +28,7 @@ ivm_byte_newString(const ivm_char_t *str)
 ivm_byte_t *
 ivm_byte_newSInt8(ivm_sint8_t num)
 {
-	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
+	ivm_byte_t *ret = STD_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint8_t)
 								   / sizeof(*ret)),
 								ivm_byte_t *);
@@ -43,7 +43,7 @@ ivm_byte_newSInt8(ivm_sint8_t num)
 ivm_byte_t *
 ivm_byte_newSInt16(ivm_sint16_t num)
 {
-	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
+	ivm_byte_t *ret = STD_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint16_t)
 								   / sizeof(*ret)),
 								ivm_byte_t *);
@@ -58,7 +58,7 @@ ivm_byte_newSInt16(ivm_sint16_t num)
 ivm_byte_t *
 ivm_byte_newSInt32(ivm_sint32_t num)
 {
-	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
+	ivm_byte_t *ret = STD_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint32_t)
 								   / sizeof(*ret)),
 								ivm_byte_t *);
@@ -73,7 +73,7 @@ ivm_byte_newSInt32(ivm_sint32_t num)
 ivm_byte_t *
 ivm_byte_newSInt64(ivm_sint64_t num)
 {
-	ivm_byte_t *ret = MEM_ALLOC(sizeof(*ret)
+	ivm_byte_t *ret = STD_ALLOC(sizeof(*ret)
 								* (sizeof(ivm_sint64_t)
 								   / sizeof(*ret)),
 								ivm_byte_t *);
@@ -94,7 +94,7 @@ ivm_byte_writeString(ivm_byte_t *bytes, ivm_size_t size, const ivm_char_t *str)
 		return 0;
 	}
 
-	MEM_COPY(bytes, str, ret_size);
+	STD_MEMCPY(bytes, str, ret_size);
 
 	return ret_size / sizeof(*bytes);
 }

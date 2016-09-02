@@ -1,7 +1,7 @@
 #include "pub/type.h"
-#include "pub/mem.h"
 #include "pub/err.h"
 
+#include "mem.h"
 #include "string.h"
 #include "sys.h"
 
@@ -20,11 +20,11 @@ ivm_sys_getBasePath(const ivm_char_t *file)
 
 			if (!len) return IVM_STRDUP(IVM_FILE_SEPARATOR_S);
 
-			ret = MEM_ALLOC(sizeof(*ret) * (len + 1),
+			ret = STD_ALLOC(sizeof(*ret) * (len + 1),
 							ivm_char_t *);
 			IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("path"));
 
-			MEM_COPY(ret, file, len);
+			STD_MEMCPY(ret, file, len);
 			ret[len] = '\0';
 			
 			return ret;

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/err.h"
@@ -26,7 +26,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 					 ivm_size_t init,
 					 ivm_int_t gen)
 {
-	MEM_INIT(&table->mark, sizeof(table->mark));
+	STD_INIT(&table->mark, sizeof(table->mark));
 
 	ivm_slot_table_setGen(table, gen);
 
@@ -49,7 +49,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 									  gen);
 	table->oops = IVM_NULL;
 	// table->mark.sub.oop_count = 0;
-	MEM_INIT(table->tabl,
+	STD_INIT(table->tabl,
 			 sizeof(*table->tabl)
 			 * init);
 
@@ -110,7 +110,7 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 		);
 	}
 
-	MEM_COPY(ret->tabl,
+	STD_MEMCPY(ret->tabl,
 			 table->tabl,
 			 sizeof(*ret->tabl)
 			 * ret->size);
@@ -141,7 +141,7 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 		);
 	}
 
-	MEM_COPY(ret->tabl,
+	STD_MEMCPY(ret->tabl,
 			 table->tabl,
 			 sizeof(*ret->tabl)
 			 * ret->size);
@@ -169,7 +169,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 
 	// IVM_TRACE("slot table expanding!\n");
 
-	MEM_INIT(table->tabl,
+	STD_INIT(table->tabl,
 			 sizeof(*table->tabl)
 			 * dsize);
 	table->size = dsize;
@@ -192,7 +192,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 			}
 		}
 	} else {
-		MEM_COPY(table->tabl, otable, sizeof(*table->tabl) * osize);
+		STD_MEMCPY(table->tabl, otable, sizeof(*table->tabl) * osize);
 	}
 
 	return ret;

@@ -1,11 +1,12 @@
 #ifndef _IVM_STD_LIST_H_
 #define _IVM_STD_LIST_H_
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/err.h"
+
+#include "mem.h"
 
 IVM_COM_HEADER
 
@@ -51,7 +52,7 @@ void
 ivm_ptlist_dump(ivm_ptlist_t *ptlist)
 {
 	if (ptlist) {
-		MEM_FREE(ptlist->lst);
+		STD_FREE(ptlist->lst);
 	}
 
 	return;
@@ -68,7 +69,7 @@ IVM_INLINE
 void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
-	ptlist->lst = MEM_REALLOC(ptlist->lst,
+	ptlist->lst = STD_REALLOC(ptlist->lst,
 							  sizeof(*ptlist->lst)
 							  * (ptlist->alloc <<= 1),
 							  void **);
@@ -168,7 +169,7 @@ ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
 {
 	if (size > ptlist->alloc) {
 		ptlist->alloc = size;
-		ptlist->lst = MEM_REALLOC(ptlist->lst,
+		ptlist->lst = STD_REALLOC(ptlist->lst,
 								  sizeof(*ptlist->lst)
 								  * ptlist->alloc,
 								  void **);
@@ -186,7 +187,7 @@ ivm_ptlist_insert(ivm_ptlist_t *ptlist,
 {
 	if (i >= ptlist->cur) {
 		ivm_ptlist_incTo(ptlist, i + 1);
-		MEM_INIT(ptlist->lst + ptlist->cur,
+		STD_INIT(ptlist->lst + ptlist->cur,
 				 sizeof(*ptlist->lst) * (i - ptlist->cur));
 		ptlist->cur = i + 1;
 	}
@@ -222,7 +223,7 @@ void
 ivm_list_dump(ivm_list_t *list)
 {
 	if (list) {
-		MEM_FREE(list->lst);
+		STD_FREE(list->lst);
 	}
 
 	return;
@@ -233,7 +234,7 @@ void
 _ivm_list_expand(ivm_list_t *list)
 {
 	list->alloc <<= 1;
-	list->lst = MEM_REALLOC(list->lst,
+	list->lst = STD_REALLOC(list->lst,
 							list->esize * list->alloc,
 							ivm_byte_t *);
 	return;
@@ -247,7 +248,7 @@ ivm_list_push(ivm_list_t *list, void *e)
 		_ivm_list_expand(list);
 	}
 
-	MEM_COPY(list->lst + (list->cur * list->esize),
+	STD_MEMCPY(list->lst + (list->cur * list->esize),
 			 e, list->esize);
 
 	return ++list->cur;

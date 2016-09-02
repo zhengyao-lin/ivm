@@ -1,8 +1,9 @@
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/vm.h"
-#include "pub/mem.h"
 #include "pub/inlines.h"
+
+#include "std/mem.h"
 
 #include "listobj.h"
 
@@ -22,7 +23,7 @@ ivm_list_object_new(ivm_vmstate_t *state,
 		sizeof(*ret->lst) * IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE
 	);
 
-	MEM_INIT(ret->lst, sizeof(*ret->lst) * size);
+	STD_INIT(ret->lst, sizeof(*ret->lst) * size);
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 
@@ -49,7 +50,7 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 		sizeof(*ret->lst) * count
 	);
 
-	MEM_COPY(ret->lst, init, sizeof(*ret->lst) * count);
+	STD_MEMCPY(ret->lst, init, sizeof(*ret->lst) * count);
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 
@@ -101,7 +102,7 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 		list->lst = ivm_vmstate_reallocWild(state, list->lst, sizeof(*olst) * list->alloc);
 	}
 
-	MEM_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
+	STD_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
 
 	return;
 }
@@ -167,8 +168,8 @@ ivm_list_object_link(ivm_list_object_t *list1,
 
 	ivm_object_t *ret;
 
-	MEM_COPY(nlist, list1->lst, sizeof(*nlist) * list1->size);
-	MEM_COPY(nlist + list1->size, list2->lst, sizeof(*nlist) * list2->size);
+	STD_MEMCPY(nlist, list1->lst, sizeof(*nlist) * list1->size);
+	STD_MEMCPY(nlist + list1->size, list2->lst, sizeof(*nlist) * list2->size);
 
 	ret = _ivm_list_object_new_nc(state, nlist, size);
 
@@ -250,7 +251,7 @@ ivm_list_object_multiply(ivm_list_object_t *list,
 	esize = sizeof(*lst) * osize;
 
 	while (times--) {
-		MEM_COPY(cur += osize, lst, esize);
+		STD_MEMCPY(cur += osize, lst, esize);
 	}
 
 	return;
@@ -260,7 +261,7 @@ void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {
-	MEM_FREE(IVM_AS(obj, ivm_list_object_t)->lst);
+	STD_FREE(IVM_AS(obj, ivm_list_object_t)->lst);
 	return;
 }
 
@@ -272,7 +273,7 @@ ivm_list_object_cloner(ivm_object_t *obj,
 	ivm_size_t size = sizeof(*list->lst) * list->alloc;
 	ivm_object_t **nlst = ivm_vmstate_allocWild(state, size);
 
-	MEM_COPY(nlst, list->lst, size);
+	STD_MEMCPY(nlst, list->lst, size);
 
 	list->lst = nlst;
 

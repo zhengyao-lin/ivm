@@ -1,9 +1,9 @@
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/vm.h"
 #include "pub/err.h"
 #include "pub/inlines.h"
 
+#include "std/mem.h"
 #include "std/ref.h"
 
 #include "context.h"
@@ -16,7 +16,7 @@ ivm_context_new(ivm_vmstate_t *state,
 
 	if (prev) ivm_context_addRef(prev);
 	ret->prev = prev;
-	MEM_INIT(&ret->slots, sizeof(ret->slots) + sizeof(ret->mark));
+	STD_INIT(&ret->slots, sizeof(ret->slots) + sizeof(ret->mark));
 
 	return ret;
 }

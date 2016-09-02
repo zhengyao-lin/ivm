@@ -4,8 +4,9 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
-#include "pub/mem.h"
 #include "pub/err.h"
+
+#include "std/mem.h"
 
 IVM_COM_HEADER
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "pub/const.h"
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"

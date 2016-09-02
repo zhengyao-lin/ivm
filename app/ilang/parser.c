@@ -3,12 +3,12 @@
 #include <string.h>
 #include <math.h>
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 
+#include "std/mem.h"
 #include "std/list.h"
 #include "std/string.h"
 

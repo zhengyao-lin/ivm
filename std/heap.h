@@ -1,10 +1,11 @@
 #ifndef _IVM_STD_HEAP_H_
 #define _IVM_STD_HEAP_H_
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
 #include "pub/err.h"
+
+#include "mem.h"
 
 IVM_COM_HEADER
 
@@ -111,7 +112,7 @@ ivm_heap_addCopy(ivm_heap_t *heap, void *ptr, ivm_size_t size)
 {
 	void *new_ptr = ivm_heap_alloc(heap, size);
 
-	MEM_COPY(new_ptr, ptr, size);
+	STD_MEMCPY(new_ptr, ptr, size);
 
 	return new_ptr;
 }
@@ -125,7 +126,7 @@ ivm_heap_addCopy_c(ivm_heap_t *heap,
 {
 	void *new_ptr = ivm_heap_alloc_c(heap, size, add_block);
 
-	MEM_COPY(new_ptr, ptr, size);
+	STD_MEMCPY(new_ptr, ptr, size);
 
 	return new_ptr;
 }

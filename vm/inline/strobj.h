@@ -4,8 +4,8 @@
 #include "pub/com.h"
 #include "pub/vm.h"
 
-#include "../strobj.h"
-#include "../obj.h"
+#include "vm/strobj.h"
+#include "vm/obj.h"
 
 IVM_COM_HEADER
 

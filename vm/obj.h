@@ -2,10 +2,10 @@
 #define _IVM_VM_OBJ_H_
 
 #include "pub/com.h"
-#include "pub/mem.h"
 #include "pub/const.h"
 #include "pub/type.h"
 
+#include "std/mem.h"
 #include "std/list.h"
 #include "std/string.h"
 

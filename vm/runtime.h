@@ -2,7 +2,7 @@
 #define _IVM_VM_RUNTIME_H_
 
 #include "pub/com.h"
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/type.h"
 
 #include "exec.h"
@@ -54,7 +54,7 @@ ivm_runtime_t *
 ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 
 #define ivm_runtime_free(runtime, state) \
-	(MEM_FREE(runtime))
+	(STD_FREE(runtime))
 
 /* rewrite the environment */
 void

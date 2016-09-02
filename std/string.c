@@ -1,8 +1,8 @@
-#include "pub/mem.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/type.h"
 
+#include "mem.h"
 #include "conv.h"
 #include "string.h"
 #include "heap.h"
@@ -13,12 +13,12 @@ ivm_char_t *
 IVM_STRNDUP(const ivm_char_t *str,
 			ivm_size_t len)
 {
-	ivm_char_t *ret = MEM_ALLOC(sizeof(*ret) * (len + 1),
+	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1),
 								ivm_char_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string"));
 
-	MEM_COPY(ret, str, sizeof(*ret) * len);
+	STD_MEMCPY(ret, str, sizeof(*ret) * len);
 	ret[len] = '\0';
 
 	return ret;
@@ -28,11 +28,11 @@ ivm_char_t *
 ivm_strdup(const ivm_char_t *src)
 {
 	ivm_size_t size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
-	ivm_char_t *ret = MEM_ALLOC(size, ivm_char_t *);
+	ivm_char_t *ret = STD_ALLOC(size, ivm_char_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new string"));
 
-	MEM_COPY(ret, src, size);
+	STD_MEMCPY(ret, src, size);
 
 	return ret;
 }
@@ -47,7 +47,7 @@ ivm_strdup_state(const ivm_char_t *src,
 	if (src) {
 		size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
 		ret = ivm_vmstate_alloc(state, size);
-		MEM_COPY(ret, src, size);
+		STD_MEMCPY(ret, src, size);
 	}
 
 	return ret;
@@ -63,7 +63,7 @@ ivm_strdup_heap(const ivm_char_t *src,
 	if (src) {
 		size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
 		ret = ivm_heap_alloc(heap, size);
-		MEM_COPY(ret, src, size);
+		STD_MEMCPY(ret, src, size);
 	}
 
 	return ret;
@@ -86,7 +86,7 @@ ivm_string_copyNonConst(const ivm_string_t *str,
 		size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 		ret = ivm_heap_alloc(heap, size);
 
-		MEM_COPY(ret, str, size);
+		STD_MEMCPY(ret, str, size);
 
 		return ret;
 	}
@@ -114,7 +114,7 @@ ivm_string_compareToRaw_n(const ivm_string_t *a,
 ivm_string_pool_t *
 ivm_string_pool_new(ivm_bool_t is_fixed)
 {
-	ivm_string_pool_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret),
 									   ivm_string_pool_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
@@ -124,7 +124,7 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 	
 	ret->is_fixed = is_fixed;
 	ret->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
-	ret->table = MEM_ALLOC_INIT(sizeof(*ret->table)
+	ret->table = STD_ALLOC_INIT(sizeof(*ret->table)
 								* IVM_DEFAULT_STRING_POOL_BUFFER_SIZE,
 								const ivm_string_t **);
 
@@ -138,8 +138,8 @@ ivm_string_pool_free(ivm_string_pool_t *pool)
 {
 	if (pool && !ivm_ref_dec(pool)) {
 		ivm_heap_free(pool->heap);
-		MEM_FREE(pool->table);
-		MEM_FREE(pool);
+		STD_FREE(pool->table);
+		STD_FREE(pool);
 	}
 
 	return;
@@ -156,19 +156,19 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 
 	if (pool->is_fixed) {
 		pool->size <<= 1;
-		pool->table = MEM_REALLOC(pool->table,
+		pool->table = STD_REALLOC(pool->table,
 								  sizeof(*pool->table) * pool->size,
 								  const ivm_string_t **);
 
 		IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
 
-		MEM_INIT(pool->table + (ret = osize),
+		STD_INIT(pool->table + (ret = osize),
 				 sizeof(ivm_string_t *) * (pool->size - osize));
 	} else {
 		otable = pool->table;
 
 		pool->size <<= 1;
-		pool->table = MEM_ALLOC_INIT(sizeof(*pool->table) * pool->size,
+		pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size,
 									 const ivm_string_t **);
 
 		for (i = otable, end = otable + osize;
@@ -176,7 +176,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 			ivm_string_pool_register(pool, *i);
 		}
 
-		MEM_FREE(otable);
+		STD_FREE(otable);
 	}
 
 	return ret;
@@ -245,7 +245,7 @@ _ivm_string_copy_heap(const ivm_string_t *str,
 
 	size = IVM_STRING_GET_SIZE(ivm_string_length(str));
 	ret = ivm_heap_alloc(heap, size);
-	MEM_COPY(ret, str, size);
+	STD_MEMCPY(ret, str, size);
 	ret->is_const = IVM_TRUE;
 
 	return ret;
@@ -266,7 +266,7 @@ _ivm_string_new_heap(ivm_bool_t is_const,
 
 	ivm_string_initHead(ret, is_const, len);
 
-	MEM_COPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
+	STD_MEMCPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
 	return ret;
 }

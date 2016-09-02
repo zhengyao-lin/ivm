@@ -1,9 +1,9 @@
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/vm.h"
 
+#include "std/mem.h"
 #include "std/string.h"
 #include "std/io.h"
 
@@ -26,7 +26,7 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 	// IVM_ASSERT(!ivm_exec_cached(exec),
 	//		   IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC);
 
-	tmp = ret.instrs = MEM_ALLOC(
+	tmp = ret.instrs = STD_ALLOC(
 		sizeof(*ret.instrs) * ret.size,
 		ivm_serial_instr_t *
 	);
@@ -76,7 +76,7 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 							  ivm_vmstate_t *state)
 {
 	ivm_serial_exec_list_t *
-	ret = MEM_ALLOC(sizeof(*ret),
+	ret = STD_ALLOC(sizeof(*ret),
 					ivm_serial_exec_list_t *);
 	ivm_exec_list_iterator_t eiter;
 	ivm_exec_t *tmp_exec;
@@ -87,7 +87,7 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable list"));
 
 	pools = ret->pool_list = ivm_string_pool_list_new();
-	i = ret->execs = MEM_ALLOC(
+	i = ret->execs = STD_ALLOC(
 		sizeof(*ret->execs)
 		* (ret->size = ivm_exec_list_size(list)),
 		ivm_serial_exec_t *
@@ -133,7 +133,7 @@ ivm_serial_exec_unit_t *
 ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
 							 ivm_vmstate_t *state)
 {
-	ivm_serial_exec_unit_t *ret = MEM_ALLOC(
+	ivm_serial_exec_unit_t *ret = STD_ALLOC(
 		sizeof(*ret),
 		ivm_serial_exec_unit_t *
 	);
@@ -167,7 +167,7 @@ void
 _ivm_serial_exec_dump(ivm_serial_exec_t *exec)
 {
 	if (exec) {
-		MEM_FREE(exec->instrs);
+		STD_FREE(exec->instrs);
 	}
 
 	return;
@@ -187,8 +187,8 @@ _ivm_serial_exec_list_free(ivm_serial_exec_list_t *list)
 				_ivm_serial_exec_dump(i);
 			}
 		}
-		MEM_FREE(list->execs);
-		MEM_FREE(list);
+		STD_FREE(list->execs);
+		STD_FREE(list);
 	}
 
 	return;
@@ -199,7 +199,7 @@ ivm_serial_exec_unit_free(ivm_serial_exec_unit_t *unit)
 {
 	if (unit) {
 		_ivm_serial_exec_list_free(unit->list);
-		MEM_FREE(unit);
+		STD_FREE(unit);
 	}
 
 	return;
@@ -263,7 +263,7 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 
 	ret = ivm_string_pool_new(IVM_TRUE);
 
-	table = MEM_ALLOC(sizeof(*table) * size,
+	table = STD_ALLOC(sizeof(*table) * size,
 					  const ivm_string_t **);
 
 	if (!table) {
@@ -300,7 +300,7 @@ CLEAN:;
 
 	ivm_ref_inc(ret);
 	ivm_string_pool_free(ret);
-	MEM_FREE(table);
+	STD_FREE(table);
 
 	return IVM_NULL;
 
@@ -413,7 +413,7 @@ _ivm_serial_execFromFile(ivm_file_t *file,
 	if (!ivm_file_read(file, &ret->pool, sizeof(ret->pool), 1)) return IVM_FALSE;
 	if (!ivm_file_read(file, &ret->size, sizeof(ret->size), 1)) return IVM_FALSE;
 
-	ret->instrs = MEM_ALLOC(
+	ret->instrs = STD_ALLOC(
 		sizeof(*ret->instrs) * ret->size,
 		ivm_serial_instr_t *
 	);
@@ -422,7 +422,7 @@ _ivm_serial_execFromFile(ivm_file_t *file,
 
 	if (ivm_file_read(file, ret->instrs, sizeof(*ret->instrs), ret->size)
 		!= ret->size) {
-		MEM_FREE(ret->instrs);
+		STD_FREE(ret->instrs);
 		ret->instrs = IVM_NULL;
 		return IVM_FALSE;
 	}
@@ -476,7 +476,7 @@ _ivm_serial_execListFromFile(ivm_file_t *file)
 {
 	ivm_serial_exec_t *i, *end;
 	ivm_serial_exec_list_t *
-	ret = MEM_ALLOC_INIT(
+	ret = STD_ALLOC_INIT(
 		sizeof(*ret),
 		ivm_serial_exec_list_t *
 	);
@@ -489,7 +489,7 @@ _ivm_serial_execListFromFile(ivm_file_t *file)
 	if (!ivm_file_read(file, &ret->size, sizeof(ret->size), 1))
 		goto CLEAN;
 
-	i = ret->execs = MEM_ALLOC_INIT( /* avoid error in cleaning */
+	i = ret->execs = STD_ALLOC_INIT( /* avoid error in cleaning */
 		sizeof(*ret->execs)
 		* ret->size,
 		ivm_serial_exec_t *
@@ -541,7 +541,7 @@ ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
 ivm_serial_exec_unit_t *
 ivm_serial_execUnitFromFile(ivm_file_t *file)
 {
-	ivm_serial_exec_unit_t *ret = MEM_ALLOC_INIT(
+	ivm_serial_exec_unit_t *ret = STD_ALLOC_INIT(
 		sizeof(*ret),
 		ivm_serial_exec_unit_t *
 	);

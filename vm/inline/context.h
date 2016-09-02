@@ -7,8 +7,8 @@
 
 #include "std/string.h"
 
-#include "../obj.h"
-#include "../context.h"
+#include "vm/obj.h"
+#include "vm/context.h"
 
 IVM_COM_HEADER
 

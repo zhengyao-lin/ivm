@@ -1,5 +1,6 @@
 #include "pub/type.h"
-#include "pub/mem.h"
+
+#include "std/mem.h"
 
 #include "opt.h"
 
@@ -20,7 +21,7 @@ _ivm_opt_il_new(ivm_string_pool_t *pool,
 				ivm_size_t size,
 				ivm_bool_t cached)
 {
-	ivm_opt_il_t *ret = MEM_ALLOC_INIT(sizeof(*ret),
+	ivm_opt_il_t *ret = STD_ALLOC_INIT(sizeof(*ret),
 									   ivm_opt_il_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("opt il"));
@@ -45,7 +46,7 @@ ivm_opt_il_free(ivm_opt_il_t *il)
 	}
 	ivm_opt_instr_list_free(il->instrs);
 
-	MEM_FREE(il);
+	STD_FREE(il);
 
 	return;
 }

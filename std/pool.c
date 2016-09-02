@@ -1,6 +1,6 @@
-#include "pub/mem.h"
 #include "pub/err.h"
 
+#include "mem.h"
 #include "pool.h"
 #include "list.h"
 #include "heap.h"
@@ -9,7 +9,7 @@ ivm_ptpool_t *
 ivm_ptpool_new(ivm_size_t ecount,
 			   ivm_size_t esize)
 {
-	ivm_ptpool_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_ptpool_t *ret = STD_ALLOC(sizeof(*ret),
 								  ivm_ptpool_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptpool"));
@@ -28,7 +28,7 @@ ivm_ptpool_free(ivm_ptpool_t *pool)
 		ivm_heap_dump(&pool->heap);
 		ivm_ptlist_dump(&pool->freed);
 
-		MEM_FREE(pool);
+		STD_FREE(pool);
 	}
 
 	return;

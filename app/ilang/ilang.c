@@ -137,7 +137,7 @@ _parse_source(const ivm_char_t *path)
 	ret = ilang_gen_generateExecUnit_c(t_unit, 0);
 
 FAILED:
-	MEM_FREE(src);
+	STD_FREE(src);
 	ilang_gen_trans_unit_free(t_unit);
 
 	return ret;
@@ -363,7 +363,7 @@ int main(int argc, const char **argv)
 
 CLEAN:
 	ilang_gen_trans_unit_free(unit);
-	MEM_FREE(src);
+	STD_FREE(src);
 	ivm_file_free(src_file);
 	ivm_file_free(output_cache);
 

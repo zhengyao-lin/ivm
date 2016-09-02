@@ -1,12 +1,11 @@
 #ifndef _IVM_STD_POOL_H_
 #define _IVM_STD_POOL_H_
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
 #include "pub/err.h"
 
-#include "chain.h"
+#include "mem.h"
 #include "list.h"
 #include "heap.h"
 

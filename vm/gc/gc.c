@@ -1,9 +1,10 @@
-#include "pub/mem.h"
 #include "pub/const.h"
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
+
+#include "std/mem.h"
 
 #include "util/perf.h"
 
@@ -19,7 +20,7 @@
 ivm_collector_t *
 ivm_collector_new()
 {
-	ivm_collector_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_collector_t *ret = STD_ALLOC(sizeof(*ret),
 									 ivm_collector_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
@@ -119,7 +120,7 @@ ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 		ivm_wbslot_list_dump(&collector->wb_slot);
 		ivm_wbctx_list_dump(&collector->wb_ctx);
 		
-		MEM_FREE(collector);
+		STD_FREE(collector);
 	}
 
 	return;

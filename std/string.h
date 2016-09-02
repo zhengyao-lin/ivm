@@ -6,8 +6,8 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
-#include "pub/mem.h"
 
+#include "mem.h"
 #include "conv.h"
 #include "list.h"
 #include "heap.h"
@@ -36,7 +36,7 @@ IVM_STRNCMP(const ivm_char_t *a, ivm_size_t alen,
 			const ivm_char_t *b, ivm_size_t blen)
 {
 	if (alen != blen) return alen - blen;
-	return MEM_COMPARE(a, b, alen);
+	return STD_MEMCMP(a, b, alen);
 }
 
 ivm_char_t *
@@ -125,7 +125,7 @@ ivm_string_compare(const ivm_string_t *a,
 {
 	return (a == b)
 		   || ((ivm_string_length(a) == ivm_string_length(b))
-				&& (!MEM_COMPARE(ivm_string_trimHead(a),
+				&& (!STD_MEMCMP(ivm_string_trimHead(a),
 								 ivm_string_trimHead(b),
 								 ivm_string_length(a))));
 }
@@ -199,7 +199,7 @@ void
 ivm_string_pool_setTable(ivm_string_pool_t *pool,
 						 const ivm_string_t **table)
 {
-	MEM_FREE(pool->table);
+	STD_FREE(pool->table);
 	pool->table = table;
 	return;
 }

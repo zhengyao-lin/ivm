@@ -1,4 +1,4 @@
-#include "pub/mem.h"
+#include "std/mem.h"
 #include "pub/err.h"
 #include "pub/com.h"
 #include "pub/inlines.h"
@@ -40,7 +40,7 @@ ivm_type_t static_type_list[] = {
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
-	ivm_vmstate_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_vmstate_t *ret = STD_ALLOC(sizeof(*ret),
 								   ivm_vmstate_t *);
 	ivm_type_t *tmp_type, *end;
 	ivm_cgroup_t *tmp_group;
@@ -139,9 +139,9 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 			ivm_type_dump(i);
 		}
 
-		MEM_FREE(state->cur_path);
+		STD_FREE(state->cur_path);
 
-		MEM_FREE(state);
+		STD_FREE(state);
 	}
 
 	return;

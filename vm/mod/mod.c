@@ -4,10 +4,10 @@
 #include "pub/type.h"
 #include "pub/com.h"
 #include "pub/err.h"
-#include "pub/mem.h"
 #include "pub/inlines.h"
 #include "pub/vm.h"
 
+#include "std/mem.h"
 #include "std/string.h"
 #include "std/io.h"
 #include "std/env.h"
@@ -222,7 +222,7 @@ ivm_mod_clean()
 
 	IVM_RAWSTR_LIST_EACHPTR(&_mod_path_list, piter) {
 		// IVM_TRACE("mod path: %s\n",IVM_RAWSTR_LIST_ITER_GET(piter));
-		MEM_FREE(IVM_RAWSTR_LIST_ITER_GET(piter));
+		STD_FREE(IVM_RAWSTR_LIST_ITER_GET(piter));
 	}
 	ivm_rawstr_list_dump(&_mod_path_list);
 
@@ -297,17 +297,17 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 
 		len1 = IVM_STRLEN(tmp);
 
-		MEM_COPY(buf, tmp, len1);
+		STD_MEMCPY(buf, tmp, len1);
 		buf[len1] = IVM_FILE_SEPARATOR;
-		MEM_COPY(buf + len1 + 1, mod_name, len2);
+		STD_MEMCPY(buf + len1 + 1, mod_name, len2);
 		brk = buf + len1 + 1 + len2;
 
 		for (i = 0; i < IVM_ARRLEN(sufs); i++) {
-			MEM_COPY(brk, sufs[i].suf, sufs[i].len);
+			STD_MEMCPY(brk, sufs[i].suf, sufs[i].len);
 
 			IVM_MOD_SUFFIX_LIST_EACHPTR_R(&_mod_suffix_list, siter) {
 				tmp_suf = IVM_MOD_SUFFIX_LIST_ITER_GET(siter);
-				MEM_COPY(brk + sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
+				STD_MEMCPY(brk + sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
 
 				// IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
 				if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
@@ -341,7 +341,7 @@ ivm_mod_search(const ivm_char_t *mod_name,
 		len = IVM_STRLEN(buf) + 1;
 
 		len = buf_size >= len ? len : buf_size;
-		MEM_COPY(path_buf, buf, len);
+		STD_MEMCPY(path_buf, buf, len);
 		path_buf[len - 1] = '\0'; /* in case buf_size is smaller than string length */
 	}
 
@@ -489,7 +489,7 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, ret);
 	ivm_vmstate_setPath(state, path_backup);
-	MEM_FREE(path);
+	STD_FREE(path);
 
 	if (!ret) {
 		if (!ivm_vmstate_getException(state)) {

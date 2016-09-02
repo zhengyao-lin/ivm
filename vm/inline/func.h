@@ -6,10 +6,10 @@
 
 #include "std/string.h"
 
-#include "../obj.h"
-#include "../context.h"
-#include "../func.h"
-#include "../runtime.h"
+#include "vm/obj.h"
+#include "vm/context.h"
+#include "vm/func.h"
+#include "vm/runtime.h"
 
 IVM_COM_HEADER
 
@@ -154,7 +154,7 @@ ivm_function_setExec(ivm_function_t *func,
 		ivm_exec_copy(body, &func->u.body);
 		ivm_exec_preproc(&func->u.body, state);
 	} else {
-		MEM_INIT(&func->u.body, sizeof(func->u.body));
+		STD_INIT(&func->u.body, sizeof(func->u.body));
 	}
 
 	return;

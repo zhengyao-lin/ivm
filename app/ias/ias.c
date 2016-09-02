@@ -5,21 +5,12 @@
 
 #include "pub/const.h"
 #include "pub/inlines.h"
-
-#include "std/pool.h"
-#include "std/chain.h"
-#include "std/hash.h"
-#include "std/heap.h"
-
-#include "vm/serial.h"
-#include "vm/vm.h"
-#include "vm/dbg.h"
-#include "vm/err.h"
-#include "vm/env.h"
-#include "vm/opcode.h"
-#include "vm/gc/gc.h"
+#include "pub/vm.h"
 
 #include "std/io.h"
+
+#include "vm/env.h"
+#include "vm/serial.h"
 
 #include "util/perf.h"
 #include "util/console.h"
@@ -178,7 +169,7 @@ int main(int argc, const char **argv)
 		}
 
 		ias_gen_env_free(env);
-		MEM_FREE(src);
+		STD_FREE(src);
 	} else if (cache_file) {
 		s_unit = ivm_serial_execUnitFromFile(cache_file);
 		if (s_unit) {

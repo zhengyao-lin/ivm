@@ -47,13 +47,13 @@ IVM_COM_HEADER
 		return IVM_NULL;
 	}
 
-	#define ivm_dll_freeError(str) MEM_FREE(str)
+	#define ivm_dll_freeError(str) STD_FREE(str)
 
 	#define IVM_DLL_SUFFIX ".so"
 
 #elif defined(IVM_OS_WIN32)
 
-	#include <winbase.h>
+	#include <windows.h>
 
 	typedef HMODULE ivm_dll_t;
 

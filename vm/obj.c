@@ -1,10 +1,10 @@
 #include "pub/const.h"
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
 
+#include "std/mem.h"
 #include "std/string.h"
 
 #include "gc/gc.h"
@@ -15,7 +15,7 @@
 ivm_type_t *
 ivm_type_new(ivm_type_t type)
 {
-	ivm_type_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_type_t *ret = STD_ALLOC(sizeof(*ret),
 								ivm_type_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
@@ -35,7 +35,7 @@ ivm_type_free(ivm_type_t *type)
 			ivm_binop_table_dump(type->binops + i);
 		}
 
-		MEM_FREE(type);
+		STD_FREE(type);
 	}
 
 	return;
@@ -46,7 +46,7 @@ ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 {
 	ivm_binop_table_t *i, *end;
 
-	MEM_COPY(type, src, sizeof(*type));
+	STD_MEMCPY(type, src, sizeof(*type));
 
 	for (i = type->binops, end = i + IVM_ARRLEN(type->binops);
 		 i != end; i++) {

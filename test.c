@@ -7,7 +7,6 @@
 #include "pub/inlines.h"
 
 #include "std/pool.h"
-#include "std/chain.h"
 #include "std/hash.h"
 #include "std/heap.h"
 #include "std/conv.h"
@@ -743,7 +742,7 @@ ivm_perf_printElapsed();
 	ivm_vmstate_free(state);
 
 	if (argc == 2) {
-		MEM_FREE(src);
+		STD_FREE(src);
 	}
 
 	IVM_TRACE("%d opcodes\n", IVM_OPCODE(LAST));
@@ -790,28 +789,6 @@ ivm_perf_printElapsed();
 	printf("%s\n", ivm_string_trimHead(ret));
 
 	ivm_string_pool_free(pool);
-
-#endif
-
-#if 0
-	ivm_ptchain_t *chain = ivm_ptchain_new();
-
-	profile_start();
-
-	ivm_ptchain_addTail(chain, (void *)1);
-	ivm_ptchain_addTail(chain, (void *)1);
-	ivm_ptchain_addTail(chain, (void *)1);
-	ivm_ptchain_removeTail(chain);
-	ivm_ptchain_addTail(chain, (void *)2);
-
-	IVM_TRACE("%d\n", (int)ivm_ptchain_removeTail(chain));
-	IVM_TRACE("%zd\n", sizeof(ivm_object_t));
-
-	profile_output();
-
-	ivm_ptchain_free(chain);
-
-	profile_type();
 
 #endif
 

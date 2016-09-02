@@ -2,4 +2,4 @@
 
 #include "mem.h"
 
-ivm_size_t _mem_allocated = 0;
+ivm_size_t _std_allocated = 0;

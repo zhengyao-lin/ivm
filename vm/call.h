@@ -4,8 +4,8 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
-#include "pub/mem.h"
 
+#include "std/mem.h"
 #include "std/pool.h"
 
 #include "instr.h"
@@ -37,7 +37,7 @@ IVM_COM_HEADER
 	(sizeof(struct { IVM_FRAME_HEADER_INIT }))
 
 #define IVM_FRAME_INIT_HEADER(frame) \
-	(MEM_INIT(&(frame)->ip, IVM_FRAME_HEADER_INIT_SIZE))
+	(STD_INIT(&(frame)->ip, IVM_FRAME_HEADER_INIT_SIZE))
 
 struct ivm_vmstate_t_tag;
 struct ivm_runtime_t_tag;

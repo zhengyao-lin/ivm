@@ -1,8 +1,8 @@
 #include "pub/const.h"
-#include "pub/mem.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
 
+#include "std/mem.h"
 #include "std/string.h"
 #include "std/list.h"
 #include "std/ref.h"
@@ -28,7 +28,7 @@
 ias_gen_env_t *
 ias_gen_env_new(ias_gen_block_list_t *block_list)
 {
-	ias_gen_env_t *ret = MEM_ALLOC(sizeof(*ret),
+	ias_gen_env_t *ret = STD_ALLOC(sizeof(*ret),
 								   ias_gen_env_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("generator environment"));
@@ -66,7 +66,7 @@ ias_gen_env_free(ias_gen_env_t *env)
 		_ias_gen_env_cleanJumpTable(env);
 		ias_gen_label_list_free(env->jmp_table);
 
-		MEM_FREE(env);
+		STD_FREE(env);
 	}
 
 	return;
@@ -79,7 +79,7 @@ ias_gen_label_new(const ivm_char_t *name,
 				  ias_gen_pos_t pos,
 				  ivm_size_t addr)
 {
-	ias_gen_label_t *ret = MEM_ALLOC(sizeof(*ret),
+	ias_gen_label_t *ret = STD_ALLOC(sizeof(*ret),
 									 ias_gen_label_t *);
 	ias_gen_label_ref_t tmp;
 
@@ -105,7 +105,7 @@ ias_gen_label_free(ias_gen_label_t *label)
 {
 	if (label) {
 		ias_gen_label_ref_list_free(label->refs);
-		MEM_FREE(label);
+		STD_FREE(label);
 	}
 
 	return;
@@ -295,7 +295,7 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 				case 'S':
 					tmp_str = ivm_parser_parseStr(arg.val, arg.len);
 					tmp_ret = ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw(env->str_pool, tmp_str));
-					MEM_FREE(tmp_str);
+					STD_FREE(tmp_str);
 					return tmp_ret;
 				default: UNMATCHED();
 			}

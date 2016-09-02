@@ -676,7 +676,7 @@ IVM_INLINE
 ilang_gen_trans_unit_t *
 ilang_gen_trans_unit_new(const ivm_char_t *file)
 {
-	ilang_gen_trans_unit_t *ret = MEM_ALLOC(sizeof(*ret),
+	ilang_gen_trans_unit_t *ret = STD_ALLOC(sizeof(*ret),
 											ilang_gen_trans_unit_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("translate unit"));
@@ -713,7 +713,7 @@ ilang_gen_trans_unit_free(ilang_gen_trans_unit_t *unit)
 
 	if (unit) {
 		ivm_heap_free(unit->heap);
-		MEM_FREE(unit->file);
+		STD_FREE(unit->file);
 
 		IVM_PTLIST_EACHPTR(unit->ptlist_log, piter, ivm_ptlist_t *) {
 			ivm_ptlist_free(IVM_PTLIST_ITER_GET(piter));
@@ -726,7 +726,7 @@ ilang_gen_trans_unit_free(ilang_gen_trans_unit_t *unit)
 		ivm_ptlist_free(unit->ptlist_log);
 		ivm_ptlist_free(unit->list_log);
 
-		MEM_FREE(unit);
+		STD_FREE(unit);
 	}
 
 	return;

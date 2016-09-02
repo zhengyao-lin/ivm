@@ -15,7 +15,7 @@ set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wpedantic -Wno-unused-value")
 
 # avoid warnings on MinGW
-if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+if(NOT WIN32)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib\\\"")
 else()
@@ -68,7 +68,6 @@ include_directories(${IVM_PUB_HEAD_DIR})
 # subdirs
 add_subdirectory(vm)
 add_subdirectory(std)
-add_subdirectory(mem)
 add_subdirectory(util)
 
 # search for apps
@@ -80,7 +79,7 @@ endforeach(dir ${app_list})
 
 # test exe
 add_executable(testbed test.c)
-target_link_libraries(testbed ivm-vm ivm-mem ivm-util)
+target_link_libraries(testbed ivm-vm ivm-util)
 
 add_library(testmod SHARED testmod.c)
 target_link_libraries(testmod ivm-vm)

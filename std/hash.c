@@ -1,7 +1,7 @@
 #include "pub/com.h"
-#include "pub/mem.h"
 #include "pub/err.h"
 
+#include "mem.h"
 #include "hash.h"
 
 ivm_c_hash_table_t *
@@ -9,14 +9,14 @@ ivm_c_hash_table_new(ivm_size_t tsize,
 					 ivm_hash_table_comparer_t cmp,
 					 ivm_hash_function_t hash)
 {
-	ivm_c_hash_table_t *ret = MEM_ALLOC(sizeof(*ret),
+	ivm_c_hash_table_t *ret = STD_ALLOC(sizeof(*ret),
 									  ivm_c_hash_table_t *);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("hash table"));
 	IVM_ASSERT(tsize > 1, IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR("hash table init size", tsize));
 
 	ret->tsize = tsize;
-	ret->table = MEM_ALLOC_INIT(sizeof(*ret->table) * tsize,
+	ret->table = STD_ALLOC_INIT(sizeof(*ret->table) * tsize,
 								ivm_ptpair_t *);
 
 	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("hash table data"));
@@ -34,8 +34,8 @@ void
 ivm_c_hash_table_free(ivm_c_hash_table_t *table)
 {
 	if (table) {
-		MEM_FREE(table->table);
-		MEM_FREE(table);
+		STD_FREE(table->table);
+		STD_FREE(table);
 	}
 
 	return;
@@ -52,7 +52,7 @@ ivm_c_hash_table_expand(ivm_c_hash_table_t *table) /* includes rehashing */
 	ivm_ptpair_t *otable = table->table;
 	ivm_size_t i;
 
-	table->table = MEM_ALLOC_INIT(sizeof(*table->table) * dsize,
+	table->table = STD_ALLOC_INIT(sizeof(*table->table) * dsize,
 								  ivm_ptpair_t *);
 
 	IVM_ASSERT(table->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded hash table data"));
@@ -64,7 +64,7 @@ ivm_c_hash_table_expand(ivm_c_hash_table_t *table) /* includes rehashing */
 			ivm_c_hash_table_insert(table, otable[i].k, otable[i].v);
 	}
 
-	MEM_FREE(otable);
+	STD_FREE(otable);
 
 	return;
 }

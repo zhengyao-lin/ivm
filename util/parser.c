@@ -3,12 +3,12 @@
 #include <string.h>
 #include <math.h>
 
-#include "pub/mem.h"
 #include "pub/com.h"
 #include "pub/type.h"
 #include "pub/err.h"
 #include "pub/vm.h"
 
+#include "std/mem.h"
 #include "std/list.h"
 #include "std/string.h"
 
@@ -155,7 +155,7 @@ ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len)
 {
-	ivm_char_t *buf = MEM_ALLOC(sizeof(*buf) * (len + 1), ivm_char_t *);
+	ivm_char_t *buf = STD_ALLOC(sizeof(*buf) * (len + 1), ivm_char_t *);
 
 	IVM_ASSERT(buf, IVM_ERROR_MSG_FAILED_ALLOC_NEW("parsed string"));
 
