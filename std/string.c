@@ -63,6 +63,7 @@ ivm_strdup_heap(const ivm_char_t *src,
 	if (src) {
 		size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
 		ret = ivm_heap_alloc(heap, size);
+		
 		STD_MEMCPY(ret, src, size);
 	}
 

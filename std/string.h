@@ -52,11 +52,11 @@ ivm_strdup_heap(const ivm_char_t *src,
 				ivm_heap_t *heap);
 
 typedef struct {
-	ivm_uint_t len;
-
 	ivm_uint_t is_const: 1;
 	ivm_uint_t is_ascii: 1;
-	ivm_uint_t wlen: sizeof(ivm_uint_t) * 8 - 2; // length of wide char str(display length)
+	ivm_uint_t ulen: sizeof(ivm_uint_t) * 8 - 2; // length of utf-8 decoded length
+
+	ivm_uint_t len;
 
 	ivm_char_t cont[];
 } IVM_NOALIGN ivm_string_t;
@@ -75,10 +75,11 @@ ivm_string_initHead(ivm_string_t *str,
 					ivm_bool_t is_const,
 					ivm_size_t len)
 {
-	str->len = len;
 	str->is_const = is_const;
 	str->is_ascii = IVM_FALSE;
-	str->wlen = 0;
+	str->ulen = 0;
+
+	str->len = len;
 	
 	return;
 }
@@ -95,19 +96,24 @@ ivm_string_copyNonConst(const ivm_string_t *str,
 
 IVM_INLINE
 ivm_size_t
-ivm_string_realLength(const ivm_string_t *str)
+ivm_string_utf8Length(const ivm_string_t *str)
 {
 	ivm_string_t *head = (ivm_string_t *)str;
+	ivm_size_t len;
 
-	if (str->is_ascii) {
+	if (str->is_ascii ||
+		str->ulen == -1) {
 		return str->len;
-	} else if (str->wlen) {
-		return str->wlen;
+	} else if (str->ulen) {
+		return str->ulen;
 	}
 
 	// gen cache
-	head->is_ascii = ivm_enc_isAllAscii(str->cont);
-	return head->wlen = ivm_enc_utf8_strlen(str->cont);
+	head->is_ascii = ivm_enc_isAllAscii_n(str->cont, str->len);
+	head->ulen = len = ivm_enc_utf8_strlen_n(str->cont, str->len);
+
+	if (len == -1) return str->len;
+	return len;
 }
 
 #define ivm_string_size(str) \
@@ -124,11 +130,9 @@ ivm_bool_t
 ivm_string_compare(const ivm_string_t *a,
 				   const ivm_string_t *b)
 {
-	return (a == b)
-		   || ((ivm_string_length(a) == ivm_string_length(b))
-				&& (!STD_MEMCMP(ivm_string_trimHead(a),
-								 ivm_string_trimHead(b),
-								 ivm_string_length(a))));
+	return (a == b) ||
+		   ((a->len == b->len) &&
+		   	(!STD_MEMCMP(a->cont, b->cont, a->len)));
 }
 
 IVM_INLINE
