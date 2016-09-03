@@ -182,51 +182,6 @@ OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", 0))
 OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", 0))
 OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0))
 
-#if 0
-
-OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(0, LT,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 < 0;
-))
-
-OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(0, LE,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 <= 0;
-	NEXT_INSTR();
-))
-
-OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(0, GT,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 > 0;
-	NEXT_INSTR();
-))
-
-OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(0, GE,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 >= 0;
-	NEXT_INSTR();
-))
-
-OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(
-	{
-		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
-			_TMP_CMP_REG = IVM_FALSE;
-			NEXT_INSTR();
-		}
-	}, EQ,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 == 0;
-	NEXT_INSTR();
-))
-
-OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(
-	{
-		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {
-			_TMP_CMP_REG = IVM_TRUE;
-			NEXT_INSTR();
-		}
-	}, NE,
-	_TMP_CMP_REG = (ivm_ptr_t)_TMP_OBJ1 != 0;
-	NEXT_INSTR();
-))
-
-#endif
-
 OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
 	_CONTEXT = ivm_runtime_appendContextNode(_RUNTIME, _STATE);
 	NEXT_INSTR();
@@ -234,6 +189,11 @@ OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
 
 OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(EXPAND_LOC, "expand_loc", I, 0, {
+	ivm_context_expandSlotTable(_CONTEXT, _STATE, IARG());
 	NEXT_INSTR();
 })
 

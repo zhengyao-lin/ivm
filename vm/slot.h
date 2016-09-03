@@ -163,6 +163,11 @@ ivm_slot_table_copyShared(ivm_slot_table_t *table,
 	return table;
 }
 
+void
+ivm_slot_table_expandTo(ivm_slot_table_t *table,
+						struct ivm_vmstate_t_tag *state,
+						ivm_size_t to);
+
 #define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
 #define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))
 #define IVM_SLOT_TABLE_ITER_SET(iter, key, val) ((iter)->k = (key), (iter)->v = (val))

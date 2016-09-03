@@ -34,12 +34,10 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 		init = IVM_DEFAULT_SLOT_TABLE_SIZE;
 	}
 
-#if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	if (init >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
 		init <<= 1; // lower load ratio
 		SET_BIT_TRUE(table->mark.sub.is_hash);
 	}
-#endif
 
 	table->size = init;
 	ivm_slot_table_updateUID(table, state);
@@ -83,6 +81,18 @@ ivm_slot_table_new_c(ivm_vmstate_t *state,
 	ivm_slot_table_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	_ivm_slot_table_init(ret, state, prealloc, 0);
+
+	return ret;
+}
+
+ivm_slot_table_t *
+ivm_slot_table_newAt_c(ivm_vmstate_t *state,
+					   ivm_size_t prealloc,
+					   ivm_int_t gen)
+{
+	ivm_slot_table_t *ret = ivm_vmstate_allocAt(state, sizeof(*ret), gen);
+
+	_ivm_slot_table_init(ret, state, prealloc, gen);
 
 	return ret;
 }
@@ -153,7 +163,7 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 
 ivm_bool_t
 _ivm_slot_table_expand(ivm_slot_table_t *table,
-					   ivm_vmstate_t *state) /* includes rehashing */
+					   ivm_vmstate_t *state)
 {
 	ivm_size_t osize = table->size,
 			   dsize = osize << 1; /* dest size */
@@ -167,27 +177,21 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		ivm_slot_table_getGen(table)
 	);
 
-	// IVM_TRACE("slot table expanding!\n");
-
 	STD_INIT(table->tabl,
 			 sizeof(*table->tabl)
 			 * dsize);
 	table->size = dsize;
 
-#if IVM_USE_HASH_TABLE_AS_SLOT_TABLE
 	if (!table->mark.sub.is_hash &&
 		dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
-		SET_BIT_TRUE(table->mark.sub.is_hash);
-		// dsize <<= 1;
+		table->mark.sub.is_hash = IVM_TRUE;
 		ret = IVM_TRUE;
 	}
-#endif
 
 	if (table->mark.sub.is_hash) {
 		for (i = otable, end = i + osize;
 			 i != end; i++) {
-			if (i->k != IVM_NULL) {
-				// IVM_TRACE("find slot: %s\n" ivm_string_trimHead(otable[i].k));
+			if (i->k) {
 				ivm_slot_table_setSlot(table, state, i->k, i->v);
 			}
 		}
@@ -196,6 +200,50 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 	}
 
 	return ret;
+}
+
+void
+ivm_slot_table_expandTo(ivm_slot_table_t *table,
+						ivm_vmstate_t *state,
+						ivm_size_t to)
+{
+	ivm_size_t osize = table->size,
+			   dsize; /* dest size */
+	ivm_slot_t *otable = table->tabl;
+	ivm_slot_t *i, *end;
+
+	if (to < osize) return;
+
+	dsize = to << 1;
+
+	ivm_slot_table_updateUID(table, state);
+	table->tabl = ivm_vmstate_allocAt(
+		state, sizeof(*table->tabl) * dsize,
+		ivm_slot_table_getGen(table)
+	);
+
+	STD_INIT(table->tabl,
+			 sizeof(*table->tabl)
+			 * dsize);
+	table->size = dsize;
+
+	if (!table->mark.sub.is_hash &&
+		dsize >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
+		table->mark.sub.is_hash = IVM_TRUE;
+	}
+
+	if (table->mark.sub.is_hash) {
+		for (i = otable, end = i + osize;
+			 i != end; i++) {
+			if (i->k) {
+				ivm_slot_table_setSlot(table, state, i->k, i->v);
+			}
+		}
+	} else {
+		STD_MEMCPY(table->tabl, otable, sizeof(*table->tabl) * osize);
+	}
+
+	return;
 }
 
 void

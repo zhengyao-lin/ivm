@@ -1,3 +1,5 @@
+#include "pub/const.h"
+
 #include "util/opt.h"
 
 #include "priv.h"
@@ -10,12 +12,12 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_fn_expr_t *func = IVM_AS(expr, ilang_gen_fn_expr_t);
 	ivm_exec_t *exec, *exec_backup;
 	ivm_size_t exec_id;
-	ilang_gen_param_t *tmp_param;
+	ilang_gen_param_t *tmp_param1, *tmp_param2;
 	ilang_gen_param_list_t *params;
-	ilang_gen_param_list_iterator_t piter;
+	ilang_gen_param_list_iterator_t piter, chk_iter;
 	ivm_char_t *tmp_str;
 	ivm_bool_t has_varg = IVM_FALSE;
-	ivm_int_t arg_count;
+	ivm_int_t cur_param, param_count;
 	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
@@ -34,23 +36,40 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	 */
 	params = func->params;
 	if (params) {
-		arg_count = 0;
-		ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
-			arg_count++;
+		param_count = ilang_gen_param_list_size(params);
+		cur_param = 0;
 
-			tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
-			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param->name.val, tmp_param->name.len, &err);
+		if (param_count >= IVM_DEFAULT_SLOT_TABLE_SIZE) {
+			ivm_exec_addInstr_l(exec, GET_LINE(expr), EXPAND_LOC, param_count);
+		}
+
+		ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
+			cur_param++;
+
+			tmp_param1 = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
+
+			ILANG_GEN_PARAM_LIST_EACHPTR_R(params, chk_iter) {
+				tmp_param2 = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(chk_iter);
+
+				if (tmp_param1 != tmp_param2 &&
+					!IVM_STRNCMP(tmp_param1->name.val, tmp_param1->name.len,
+								 tmp_param2->name.val, tmp_param2->name.len)) {
+					GEN_ERR_DUP_PARAM_NAME(expr, tmp_param2->name.val, tmp_param2->name.len);
+				}
+			}
+
+			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param1->name.val, tmp_param1->name.len, &err);
 			
 			if (!tmp_str) {
 				GEN_ERR_FAILED_PARSE_STRING(expr, err);
 			}
 
-			if (tmp_param->is_varg) {
+			if (tmp_param1->is_varg) {
 				if (has_varg) {
 					GEN_ERR_MULTIPLE_VARG(expr);
 				}
 				has_varg = IVM_TRUE;
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), NEW_VARG, ilang_gen_param_list_size(params) - arg_count);
+				ivm_exec_addInstr_l(exec, GET_LINE(expr), NEW_VARG, param_count - cur_param);
 			}
 
 			if (tmp_str) {

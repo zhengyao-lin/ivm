@@ -87,6 +87,21 @@ ivm_context_searchAndSetExistSlot(ivm_context_t *ctx,
 								  const ivm_string_t *key,
 								  ivm_object_t *val);
 
+IVM_INLINE
+void
+ivm_context_expandSlotTable(ivm_context_t *ctx,
+							struct ivm_vmstate_t_tag *state,
+							ivm_size_t size)
+{
+	if (ctx->slots) {
+		ivm_slot_table_expandTo(ctx->slots, state, size);
+	} else {
+		ctx->slots = ivm_slot_table_newAt_c(state, size, ctx->mark.gen);
+	}
+
+	return;
+}
+
 typedef ivm_ptpool_t ivm_context_pool_t;
 
 #define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_context_t)))
