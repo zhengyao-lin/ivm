@@ -16,6 +16,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	ivm_bool_t has_varg = IVM_FALSE;
 	ivm_int_t arg_count;
+	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
@@ -38,8 +39,12 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 			arg_count++;
 
 			tmp_param = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
-			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param->name.val, tmp_param->name.len);
+			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param->name.val, tmp_param->name.len, &err);
 			
+			if (!tmp_str) {
+				GEN_ERR_FAILED_PARSE_STRING(expr, err);
+			}
+
 			if (tmp_param->is_varg) {
 				if (has_varg) {
 					GEN_ERR_MULTIPLE_VARG(expr);

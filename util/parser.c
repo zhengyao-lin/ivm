@@ -16,6 +16,34 @@
 
 IVM_INLINE
 ivm_bool_t
+_is_hex(ivm_char_t c)
+{
+	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_oct(ivm_char_t c)
+{
+	return c >= '0' && c <= '7';
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_dec(ivm_char_t c)
+{
+	return c >= '0' && c <= '9';
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_digit(ivm_char_t c)
+{
+	return c >= '0' && c <= '9';
+}
+
+IVM_INLINE
+ivm_bool_t
 _is_legal(ivm_char_t c, ivm_uint_t rdx)
 {
 	if (rdx <= 10) {
@@ -23,21 +51,21 @@ _is_legal(ivm_char_t c, ivm_uint_t rdx)
 	}
 
 	/* hex */
-	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+	return _is_hex(c);
 }
 
 IVM_INLINE
 ivm_int_t
-_to_digit(ivm_char_t c, ivm_uint_t rdx)
+_hex_to_digit(ivm_char_t c)
 {
 	if (c >= '0' && c <= '9') {
 		return c - '0';
 	}
 
 	if (c >= 'a' && c <= 'f') 
-		return c - 'a';
+		return c - 'a' + 10;
 
-	return c - 'A';
+	return c - 'A' + 10;
 }
 
 ivm_double_t
@@ -94,11 +122,11 @@ ivm_parser_parseNum(const ivm_char_t *src,
 
 		if (_is_legal(*src, radix)) {
 			if (dec_pos) {
-				ret += (ivm_double_t)_to_digit(*src, radix) / pow(radix, dec_pos);
+				ret += (ivm_double_t)_hex_to_digit(*src) / pow(radix, dec_pos);
 				dec_pos++;
 			} else {
 				ret *= radix;
-				ret += _to_digit(*src, radix);
+				ret += _hex_to_digit(*src);
 			}
 		} else {
 			// PARSER_ERR_P((ivm_ptr_t)src - (ivm_ptr_t)beg,
@@ -118,10 +146,20 @@ ivm_parser_parseNum(const ivm_char_t *src,
 ivm_size_t
 ivm_parser_parseStr_c(ivm_char_t *buf,
 					  const ivm_char_t *str,
-					  ivm_size_t len)
+					  ivm_size_t len,
+					  const ivm_char_t **err)
 {
-	ivm_char_t *i;
+	ivm_char_t *i, tmp;
+	ivm_int_t num_count, size;
 	const ivm_char_t *end;
+	ivm_uint32_t c;
+	ivm_char_t ubuf[6];
+
+#define PARSE_ERR(msg) \
+	if (err) {         \
+		*err = (msg);  \
+		return -1;     \
+	}
 
 	for (i = buf, end = str + len;
 		 str != end; str++) {
@@ -129,7 +167,7 @@ ivm_parser_parseStr_c(ivm_char_t *buf,
 			str + 1 != end) {
 			str++;
 #define DEF_ESC(c, t) case c: *i++ = (t); continue;
-			switch (*str) {
+			switch (tmp = *str) {
 				DEF_ESC('a', '\a')
 				DEF_ESC('b', '\b')
 				DEF_ESC('f', '\f')
@@ -139,6 +177,79 @@ ivm_parser_parseStr_c(ivm_char_t *buf,
 				DEF_ESC('v', '\v')
 				DEF_ESC('\\', '\\')
 				DEF_ESC('"', '"')
+				DEF_ESC('\'', '\'')
+
+			#define READ_NUM_C(type, rdx, max) \
+				c = 0;                                      \
+				num_count = 0;                              \
+				while (_is_##type(tmp = *str)) {            \
+					c = c * (rdx) + _hex_to_digit(tmp);     \
+					if (++num_count >= (max) ||             \
+						str + 1 == end ||                   \
+						!_is_##type(*(str + 1))) break;     \
+					str++;                                  \
+				}
+
+			#define READ_NUM(type, rdx, max) \
+                READ_NUM_C(type, (rdx), (max));             \
+				if (num_count) {                            \
+					*i++ = c;                               \
+					continue;                               \
+				}
+
+				case 'X':
+				case 'x':
+					if (str + 1 == end ||
+						!_is_hex(*(str + 1))) {
+						PARSE_ERR("wrong hex escape");
+					}
+
+					str++;
+
+					READ_NUM(hex, 16, 2);
+
+				case 'D':
+				case 'd':
+					if (str + 1 == end ||
+						!_is_dec(*(str + 1))) {
+						PARSE_ERR("wrong decimal escape");
+					}
+					str++;
+
+					READ_NUM(dec, 10, 3);
+
+				case 'U':
+				case 'u':
+					if (str + 1 == end ||
+						!_is_hex(*(str + 1))) {
+						PARSE_ERR("wrong Unicode escape");
+					}
+					str++;
+
+					READ_NUM_C(hex, 16, 8);
+
+					if (num_count) {
+						size = ivm_enc_utf8_encode_c(c, ubuf);
+						if (size > 0) {
+							STD_MEMCPY(i, ubuf, sizeof(*ubuf) * size);
+							i += size;
+						} else {
+							PARSE_ERR("illegal Unicode character");
+						}
+						continue;
+					}
+
+				case 'O':
+				case 'o':
+					if (str + 1 == end ||
+						!_is_oct(*(str + 1))) {
+						PARSE_ERR("wrong octal escape");
+					}
+					str++;
+
+				default: READ_NUM(oct, 8, 3);
+			#undef READ_NUM
+			#undef READ_NUM_C
 			}
 #undef DES_ESC
 		}
@@ -153,13 +264,16 @@ ivm_parser_parseStr_c(ivm_char_t *buf,
 
 ivm_char_t *
 ivm_parser_parseStr(const ivm_char_t *str,
-					ivm_size_t len)
+					ivm_size_t len,
+					const ivm_char_t **err)
 {
 	ivm_char_t *buf = STD_ALLOC(sizeof(*buf) * (len + 1), ivm_char_t *);
 
 	IVM_ASSERT(buf, IVM_ERROR_MSG_FAILED_ALLOC_NEW("parsed string"));
 
-	ivm_parser_parseStr_c(buf, str, len);
+	if (ivm_parser_parseStr_c(buf, str, len, err) == -1) {
+		return IVM_NULL;
+	}
 
 	return buf;
 }
@@ -167,11 +281,14 @@ ivm_parser_parseStr(const ivm_char_t *str,
 ivm_char_t *
 ivm_parser_parseStr_heap(ivm_heap_t *heap,
 						 const ivm_char_t *str,
-						 ivm_size_t len)
+						 ivm_size_t len,
+						 const ivm_char_t **err)
 {
 	ivm_char_t *buf = ivm_heap_alloc(heap, sizeof(*buf) * (len + 1));
 
-	ivm_parser_parseStr_c(buf, str, len);
+	if (ivm_parser_parseStr_c(buf, str, len, err) == -1) {
+		return IVM_NULL;
+	}
 
 	return buf;
 }

@@ -8,12 +8,18 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_id_expr_t *id_expr = IVM_AS(expr, ilang_gen_id_expr_t);
 	ivm_char_t *tmp_str;
 	ilang_gen_value_t ret = NORET();
+	const ivm_char_t *err;
 
 	tmp_str = ivm_parser_parseStr_heap(
 		env->heap,
 		id_expr->val.val,
-		id_expr->val.len
+		id_expr->val.len,
+		&err
 	);
+
+	if (!tmp_str) {
+		GEN_ERR_FAILED_PARSE_STRING(expr, err);
+	}
 
 #define ID_GEN(name, extra, set_instr, get_instr) \
 	if (sizeof(name) == sizeof("")                                     \
@@ -56,7 +62,8 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_token_value_list_iterator_t iter;
 	ilang_gen_token_value_t *tmp_token;
 	ivm_size_t buf_size = ilang_gen_token_value_list_size(import_expr->mod),
-			   offset = 0, i, count = buf_size;
+			   offset = 0, i, count = buf_size, tmp_ofs;
+	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "import expression", flag);
 
@@ -72,11 +79,19 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 	{
 		ILANG_GEN_TOKEN_VALUE_LIST_EACHPTR_R(import_expr->mod, iter) {
 			tmp_token = ILANG_GEN_TOKEN_VALUE_LIST_ITER_GET_PTR(iter);
-			offset += ivm_parser_parseStr_c(
+			tmp_ofs = ivm_parser_parseStr_c(
 				buf + offset,
 				tmp_token->val,
-				tmp_token->len
+				tmp_token->len,
+				&err
 			);
+
+			if (tmp_ofs == -1) {
+				GEN_ERR_FAILED_PARSE_STRING(expr, err);
+			}
+
+			offset += tmp_ofs;
+
 			buf[offset - 1] = IVM_FILE_SEPARATOR; /* replace '\0' with the file separator */
 		}
 	}
@@ -106,7 +121,9 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 
 			ILANG_GEN_TOKEN_VALUE_LIST_EACHPTR_R(import_expr->mod, iter) {
 				tmp_token = ILANG_GEN_TOKEN_VALUE_LIST_ITER_GET_PTR(iter);
-				ivm_parser_parseStr_c(buf, tmp_token->val, tmp_token->len);
+				if (ivm_parser_parseStr_c(buf, tmp_token->val, tmp_token->len, &err) == -1) {
+					GEN_ERR_FAILED_PARSE_STRING(expr, err);
+				}
 				
 				if (!i) {
 					// first
@@ -143,6 +160,7 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_table_entry_list_t *list;
 	ilang_gen_table_entry_list_iterator_t eiter;
 	ivm_char_t *tmp_str;
+	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
 
@@ -171,8 +189,13 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 			tmp_str = ivm_parser_parseStr_heap(
 				env->heap,
 				tmp_entry.name.val,
-				tmp_entry.name.len
+				tmp_entry.name.len,
+				&err
 			);
+
+			if (!tmp_str) {
+				GEN_ERR_FAILED_PARSE_STRING(expr, err);
+			}
 
 			if (!IVM_STRCMP(tmp_str, "proto")) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);

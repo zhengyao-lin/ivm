@@ -34,6 +34,7 @@ typedef double					ivm_double_t;
 typedef wchar_t					ivm_wchar_t;
 typedef char					ivm_char_t;
 typedef unsigned char			ivm_uchar_t;
+typedef signed char				ivm_schar_t;
 
 #define IVM_NULL				((void *)0)
 #define IVM_FALSE				0

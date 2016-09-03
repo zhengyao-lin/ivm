@@ -55,12 +55,18 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_value_t ret = NORET();
 	ivm_bool_t is_proto;
 	ilang_gen_value_t tmp_ret;
+	const ivm_char_t *err;
 
 	tmp_str = ivm_parser_parseStr_heap(
 		env->heap,
 		slot_expr->slot.val,
-		slot_expr->slot.len
+		slot_expr->slot.len,
+		&err
 	);
+
+	if (!tmp_str) {
+		GEN_ERR_FAILED_PARSE_STRING(expr, err);
+	}
 
 	is_proto = !IVM_STRCMP(tmp_str, "proto");
 

@@ -24,6 +24,7 @@
 #define GEN_ERR_MSG_UNDEFINED_BLOCK(label, len)							"undefined block '%.*s'", (int)(len), (label)
 #define GEN_ERR_MSG_REDEF_LABEL(label, len)								"redefinition of label '%.*s'", (int)(len), (label)
 #define GEN_ERR_MSG_FLOAT_TO_INT_OVERFLOW(val, len)						"integer overflow when casting float '%.*s' to int", (int)(len), (val)
+#define GEN_ERR_MSG_FAILED_PARSE_STRING(msg)							"failed parsing string: %s", (msg)
 
 ias_gen_env_t *
 ias_gen_env_new(ias_gen_block_list_t *block_list)
@@ -258,6 +259,7 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 	ivm_opcode_arg_t tmp_ret;
 	ivm_long_t tmp_int;
 	ivm_bool_t overflow = IVM_FALSE;
+	const ivm_char_t *err = IVM_NULL;
 
 #define SET_FAILED() \
 	if (failed) *failed = IVM_TRUE;
@@ -293,9 +295,16 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 		case 'S':
 			switch (param) {
 				case 'S':
-					tmp_str = ivm_parser_parseStr(arg.val, arg.len);
-					tmp_ret = ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw(env->str_pool, tmp_str));
+					tmp_str = ivm_parser_parseStr(arg.val, arg.len, &err);
+					
+					if (tmp_str) {
+						tmp_ret = ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw(env->str_pool, tmp_str));
+					} else {
+						GEN_ERR(arg.pos, GEN_ERR_MSG_FAILED_PARSE_STRING(err));
+					}
+
 					STD_FREE(tmp_str);
+					
 					return tmp_ret;
 				default: UNMATCHED();
 			}

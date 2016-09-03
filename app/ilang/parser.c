@@ -192,6 +192,8 @@ enum state_t {
 	ST_INIT = 0,
 	ST_UNEXP,
 
+	ST_TRY_NEWL,
+
 	ST_TRY_GT,
 	ST_TRY_LT,
 	ST_TRY_NOT,
@@ -273,7 +275,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=|", ST_TRY_OR },
 			
 			{ "=\n", ST_INIT, T_NEWL },
-			{ "=\r", ST_INIT, T_NEWL },
+			{ "=\r", ST_TRY_NEWL },
 
 			{ "=\"", ST_IN_STR, .ign = IVM_TRUE },
 			{ "=`", ST_IN_STR_ID, .ign = IVM_TRUE },
@@ -288,6 +290,13 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* UNEXP */
 		{
 			{ ".", ST_INIT, .ign = IVM_TRUE }
+		},
+
+		/* TRY_NEWL */
+		{
+			/* check \r\n */
+			{ "=\n", ST_INIT, T_NEWL, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_NEWL },
 		},
 
 		/* TRY_GT */

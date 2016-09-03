@@ -81,6 +81,7 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_string_expr_t *str_expr = IVM_AS(expr, ilang_gen_string_expr_t);
 	ivm_char_t *tmp_str;
+	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "string expression", flag);
 
@@ -88,8 +89,13 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 		tmp_str = ivm_parser_parseStr_heap(
 			env->heap,
 			str_expr->val.val,
-			str_expr->val.len
+			str_expr->val.len,
+			&err
 		);
+
+		if (!tmp_str) {
+			GEN_ERR_FAILED_PARSE_STRING(expr, err);
+		}
 
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, tmp_str);
 	}

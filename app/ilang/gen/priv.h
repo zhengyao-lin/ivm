@@ -40,6 +40,7 @@
 #define GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP						"using break/cont outside a loop"
 #define GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG						"ignore break/cont argument"
 #define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list"
+#define GEN_ERR_MSG_FAILED_PARSE_STRING(msg)						"failed to parse string literal: %s", (msg)
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -59,5 +60,8 @@
 
 #define GEN_ERR_MULTIPLE_VARG(expr) \
 	GEN_ERR((expr)->pos, GEN_ERR_MSG_MULTIPLE_VARG);
+
+#define GEN_ERR_FAILED_PARSE_STRING(expr, msg) \
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING(msg));
 
 #endif
