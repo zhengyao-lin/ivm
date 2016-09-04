@@ -32,6 +32,19 @@ typedef struct {
 typedef ivm_list_t ilang_gen_addr_list_t;
 typedef IVM_LIST_ITER_TYPE(ivm_size_t) ilang_gen_addr_list_iterator_t;
 
+typedef struct{
+	ivm_size_t continue_addr;
+	ilang_gen_addr_list_t *break_ref;
+	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
+	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
+} ilang_gen_addr_set_t;
+
+#define ilang_gen_addr_set_build(...) \
+	((ilang_gen_addr_set_t) { __VA_ARGS__ })
+
+#define ilang_gen_addr_set_init(...) \
+	((ilang_gen_addr_set_t) { .continue_addr = -1 })
+
 typedef struct {
 	const ivm_char_t *file;
 
@@ -40,10 +53,7 @@ typedef struct {
 	ivm_exec_t *cur_exec;
 	jmp_buf err_handle;
 
-	ivm_size_t continue_addr;
-	ilang_gen_addr_list_t *break_ref;
-	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
-	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
+	ilang_gen_addr_set_t addr;
 
 	ivm_ptlist_t *list_log;
 	ivm_heap_t *heap;
@@ -651,23 +661,24 @@ enum {
 	ILANG_GEN_INTR_CONT,
 	ILANG_GEN_INTR_BREAK,
 	ILANG_GEN_INTR_RAISE,
-	ILANG_GEN_INTR_YIELD
+	ILANG_GEN_INTR_YIELD,
+	ILANG_GEN_INTR_RESUME
 };
 
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ivm_int_t sig;
 	ilang_gen_expr_t *val;
-	ilang_gen_expr_t *to;
+	ilang_gen_expr_t *with;
 } ilang_gen_intr_expr_t;
 
 COMMON_EXPR(intr_expr, "intr expression", {
 	ret->sig = sig;
 	ret->val = val;
-	ret->to = to;
+	ret->with = with;
 }, ivm_int_t sig,
    ilang_gen_expr_t *val,
-   ilang_gen_expr_t *to);
+   ilang_gen_expr_t *with);
 
 /* assign expr */
 typedef struct {

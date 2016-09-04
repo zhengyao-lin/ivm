@@ -20,12 +20,16 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ivm_int_t cur_param, param_count;
 	const ivm_char_t *err;
 
+	ilang_gen_addr_set_t addr_backup = env->addr;
+
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
 	exec = ivm_exec_new(env->str_pool);
 	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 	exec_backup = env->cur_exec;
 	env->cur_exec = exec;
+
+	env->addr = ilang_gen_addr_set_init();
 
 	// ivm_exec_setSourcePos(exec, env->file);
 
@@ -89,6 +93,8 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	env->cur_exec = exec_backup;
 	ivm_opt_optExec(exec);
 
+	env->addr = addr_backup;
+
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_FUNC, exec_id);
 	}
@@ -116,35 +122,54 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			}
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RETURN);
+
 			break;
 
 		case ILANG_GEN_INTR_CONT:
-			if (env->continue_addr != -1) {
+			if (env->addr.continue_addr != -1) {
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, env->continue_addr - cur);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, env->addr.continue_addr - cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
+
 			break;
 
 		case ILANG_GEN_INTR_BREAK:
-			if (env->break_ref) {
+			if (env->addr.break_ref) {
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
-				ilang_gen_addr_list_push(env->break_ref, cur);
+				ilang_gen_addr_list_push(env->addr.break_ref, cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
+
 			break;
 	
 		case ILANG_GEN_INTR_RAISE:
-			IVM_ASSERT(intr->val, "impossible");
 			intr->val->eval(intr->val, FLAG(0), env);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RAISE);
+
+			break;
+
+		case ILANG_GEN_INTR_RESUME:
+			if (intr->with) {
+				intr->with->eval(intr->with, FLAG(0), env);
+			} else {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+			}
+
+			intr->val->eval(intr->val, FLAG(0), env);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RESUME);
+
+			if (flag.is_top_level) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+			}
+
 			break;
 
 		case ILANG_GEN_INTR_YIELD:
@@ -154,16 +179,12 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			}
 			
-			if (intr->to) {
-				intr->to->eval(intr->to, FLAG(0), env);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), YIELD_TO);
-			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), YIELD);
-			}
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), YIELD);
 			
 			if (flag.is_top_level) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 			}
+
 			break;
 
 		default:

@@ -36,7 +36,7 @@ call(fn: {
 		print("never printed")
 	}
 
-	yield to group: {
+	resume group: {
 		fork: {
 			loc a = 1
 			loc b = 1
@@ -75,25 +75,23 @@ print("end")
 g1 = group: {
 	print("g3")
 	try: {
-		yield to g2 // g2 is locked
+		resume g2 // g2 is locked
 		print("never printed 2")
 	}
 }
 
 g2 = group: {
 	print("g2")
-	yield to g1
+	resume g1
 }
 
-yield to g2
+resume g2
 
-g3 = group: {
+g3 = group: {}
 
-}
+resume g3
 
-yield to g3
-
-print(yield "not executed" to g3)
+print(resume g3 with "not executed")
 
 // -> "str: 1"
 // -> "str: 2"

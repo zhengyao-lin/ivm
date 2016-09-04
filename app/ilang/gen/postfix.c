@@ -15,6 +15,8 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	ivm_int_t pa_argno;
 	ivm_int_t pa_arg_count = 0;
 
+	ilang_gen_addr_set_t addr_backup = env->addr;
+
 	ivm_exec_t *exec, *exec_backup;
 	ivm_size_t exec_id;
 
@@ -36,6 +38,8 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 		exec_backup = env->cur_exec;
 		env->cur_exec = exec;
+
+		env->addr = ilang_gen_addr_set_init();
 
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PA_ARG, pa_arg_count);
 	}
@@ -77,6 +81,9 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	if (pa_arg_count) {
 		env->cur_exec = exec_backup;
 		ivm_opt_optExec(exec);
+
+		env->addr = addr_backup;
+
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_FUNC, exec_id);
 	}
 

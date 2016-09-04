@@ -11,10 +11,14 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 	ivm_exec_t *exec, *exec_backup;
 	ivm_size_t addr, exec_id;
 
+	ilang_gen_addr_set_t addr_backup = env->addr;
+
 	exec = ivm_exec_new(env->str_pool);
 	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 	exec_backup = env->cur_exec;
 	env->cur_exec = exec;
+
+	env->addr = ilang_gen_addr_set_init();
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(unary_expr), REMOVE_LOC);
 
@@ -39,6 +43,8 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 
 	env->cur_exec = exec_backup;
 	ivm_opt_optExec(exec);
+
+	env->addr = addr_backup;
 
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(unary_expr), NEW_FUNC, exec_id);

@@ -14,11 +14,9 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_value_t cond_ret;
 	ilang_gen_addr_list_iterator_t iter;
 
-	ilang_gen_addr_list_t
-			   *begin_ref,
-			   *end_ref,
-			   *begin_ref_back,
-			   *end_ref_back;
+	ilang_gen_addr_list_t *begin_ref, *end_ref;
+
+	ilang_gen_addr_set_t addr_backup;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "if expression", flag);
 
@@ -51,12 +49,11 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	last_br = if_expr->last;
 	elifs = if_expr->elifs;
 
-	begin_ref_back = env->begin_ref;
-	end_ref_back = env->end_ref;
+	addr_backup = env->addr;
 
 	/*************** main branch ***************/
-	end_ref = env->end_ref = ilang_gen_addr_list_new(env);
-	begin_ref = env->begin_ref = ilang_gen_addr_list_new(env);
+	end_ref = env->addr.end_ref = ilang_gen_addr_list_new(env);
+	begin_ref = env->addr.begin_ref = ilang_gen_addr_list_new(env);
 
 	cond_ret = main_br.cond->eval(
 		main_br.cond,
@@ -201,8 +198,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 		);
 	}
 
-	env->begin_ref = begin_ref_back;
-	env->end_ref = end_ref_back;
+	env->addr = addr_backup;
 
 	return NORET();
 }
@@ -214,42 +210,34 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_while_expr_t *while_expr = IVM_AS(expr, ilang_gen_while_expr_t);
 	ivm_size_t start_addr, main_jmp, cur, tmp_addr;
-	ivm_size_t cont_addr_back;
-	ivm_list_t *break_ref_back, *break_ref;
 	ilang_gen_value_t cond_ret;
 
 	ilang_gen_addr_list_iterator_t riter;
 	ilang_gen_addr_list_iterator_t iter;
-	ilang_gen_addr_list_t
-			   *begin_ref,
-			   *end_ref,
-			   *begin_ref_back,
-			   *end_ref_back;
+	ilang_gen_addr_list_t *break_ref, *begin_ref, *end_ref;
+
+	ilang_gen_addr_set_t addr_backup;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "while expression", flag);
 
 	/*
-		start:
+		start: backup_stack
 			[cond]
 			jump_false end
 			[body]
 			jump start
-		end:
+		end: restore_stack
 	 */
 	
 	// backup
-	cont_addr_back = env->continue_addr;
-	break_ref_back = env->break_ref;
-
-	begin_ref_back = env->begin_ref;
-	end_ref_back = env->end_ref;
+	addr_backup = env->addr;
 
 	// reset break/continue/end/begin ref list
-	env->continue_addr = start_addr = ivm_exec_cur(env->cur_exec);
-	break_ref = env->break_ref = ilang_gen_addr_list_new(env);
+	start_addr = env->addr.continue_addr = ivm_exec_cur(env->cur_exec);
+	break_ref = env->addr.break_ref = ilang_gen_addr_list_new(env);
 
-	end_ref = env->end_ref = ilang_gen_addr_list_new(env);
-	begin_ref = env->begin_ref = ilang_gen_addr_list_new(env);
+	end_ref = env->addr.end_ref = ilang_gen_addr_list_new(env);
+	begin_ref = env->addr.begin_ref = ilang_gen_addr_list_new(env);
 
 	// condition
 	cond_ret = while_expr->cond->eval(
@@ -307,14 +295,7 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 	}
 
-	// ivm_list_free(break_ref);
-	env->continue_addr = cont_addr_back;
-	env->break_ref = break_ref_back;
-
-	// ivm_list_free(begin_ref);
-	// ivm_list_free(end_ref);
-	env->begin_ref = begin_ref_back;
-	env->end_ref = end_ref_back;
+	env->addr = addr_backup;
 
 	return NORET();
 }
@@ -325,7 +306,12 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_env_t *env)
 {
 	ilang_gen_for_expr_t *for_expr = IVM_AS(expr, ilang_gen_for_expr_t);
-	ivm_size_t addr1;
+
+	ilang_gen_addr_set_t addr_backup = env->addr;
+	ilang_gen_addr_list_iterator_t iter;
+	ilang_gen_addr_list_t *break_ref;
+
+	ivm_size_t tmp_addr, cur;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "for expression", flag);
 
@@ -334,7 +320,7 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 		get_slot_n "iter"
 		invoke_base
 
-		addr1:
+cont >	addr1:
 			iter_next addr2(end loop label)
 			invoke_base 0
 			rprot_cac
@@ -343,14 +329,18 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 			<body>
 
 			jump addr1
-		addr2: pop
+break >	addr2: pop
 	 */
+	
+	env->addr.break_ref = break_ref = ilang_gen_addr_list_new(env);
 
 	for_expr->iteree->eval(for_expr->iteree, FLAG(0), env);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, "iter");
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 0);
 
-	addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ITER_NEXT, 0);
+	env->addr.continue_addr = ivm_exec_cur(env->cur_exec);
+
+	tmp_addr = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ITER_NEXT, 0);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 0);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_CAC);
 
@@ -359,14 +349,24 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 
 	for_expr->body->eval(for_expr->body, FLAG(.is_top_level = IVM_TRUE), env);
 
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, addr1 - ivm_exec_cur(env->cur_exec));
-	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, tmp_addr - ivm_exec_cur(env->cur_exec));
+
+	cur = ivm_exec_cur(env->cur_exec);
+	ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
+
+	// solve all the breaks
+	ILANG_GEN_ADDR_LIST_EACHPTR(break_ref, iter) {
+		tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
+		ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
+	}
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_N, 2);
 
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 	}
+
+	env->addr = addr_backup;
 
 	return NORET();
 }

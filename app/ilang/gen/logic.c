@@ -37,8 +37,8 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	lhe = logic_expr->lhe;
 	rhe = logic_expr->rhe;
 
-	end_ref_back = env->end_ref;
-	begin_ref_back = env->begin_ref;
+	end_ref_back = env->addr.end_ref;
+	begin_ref_back = env->addr.begin_ref;
 
 	if (flag.has_branch) { // branch version
 		// the parent expr has branch struture
@@ -47,7 +47,7 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ret.use_branch = IVM_TRUE;
 		
 		// rewrite begin ref
-		env->begin_ref = begin_ref = ilang_gen_addr_list_new(env);
+		env->addr.begin_ref = begin_ref = ilang_gen_addr_list_new(env);
 
 		// lhe
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
@@ -55,7 +55,7 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		if (!tmp_ret.use_branch) {
 			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_FALSE, 0);
 
-			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
+			ilang_gen_addr_list_push(env->addr.end_ref, addr1); // add end ref
 		}
 
 		// all begin ref redirected to rhe gen
@@ -70,20 +70,20 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		// ivm_list_free(begin_ref);
 
 		// replace the current begin ref with the original one(parent expr)
-		env->begin_ref = begin_ref_back;
+		env->addr.begin_ref = begin_ref_back;
 
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
 			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_FALSE, 0);
 
-			ilang_gen_addr_list_push(env->end_ref, addr1); // add end ref
+			ilang_gen_addr_list_push(env->addr.end_ref, addr1); // add end ref
 		}
 
 		// the two expression all true
 		// jump to branch body
 		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP, 0);
-		ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
+		ilang_gen_addr_list_push(env->addr.begin_ref, addr1); // add begin ref
 	} else {
 		// value version
 
@@ -102,8 +102,8 @@ _ilang_gen_logic_and_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		}
 	}
 
-	env->end_ref = end_ref_back;
-	env->begin_ref = begin_ref_back;
+	env->addr.end_ref = end_ref_back;
+	env->addr.begin_ref = begin_ref_back;
 
 	return ret;
 }
@@ -145,8 +145,8 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 	lhe = logic_expr->lhe;
 	rhe = logic_expr->rhe;
 
-	end_ref_back = env->end_ref;
-	begin_ref_back = env->begin_ref;
+	end_ref_back = env->addr.end_ref;
+	begin_ref_back = env->addr.begin_ref;
 
 	if (flag.has_branch) { // branch version
 		// the parent expr has branch struture
@@ -155,7 +155,7 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		ret.use_branch = IVM_TRUE;
 		
 		// rewrite end ref
-		env->end_ref = end_ref = ilang_gen_addr_list_new(env);
+		env->addr.end_ref = end_ref = ilang_gen_addr_list_new(env);
 
 		// lhe
 		tmp_ret = lhe->eval(lhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
@@ -163,7 +163,7 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		if (!tmp_ret.use_branch) {
 			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_TRUE, 0);
 
-			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
+			ilang_gen_addr_list_push(env->addr.begin_ref, addr1); // add begin ref
 		}
 
 		// all end ref redirected to rhe gen
@@ -179,20 +179,20 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		// ivm_list_free(end_ref);
 
 		// replace the current end ref with the original one(parent expr)
-		env->end_ref = end_ref_back;
+		env->addr.end_ref = end_ref_back;
 
 		tmp_ret = rhe->eval(rhe, FLAG(.if_use_cond_reg = IVM_TRUE, .has_branch = IVM_TRUE), env);
 
 		if (!tmp_ret.use_branch) {
 			addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP_TRUE, 0);
 
-			ilang_gen_addr_list_push(env->begin_ref, addr1); // add begin ref
+			ilang_gen_addr_list_push(env->addr.begin_ref, addr1); // add begin ref
 		}
 
 		// the two expression all false
 		// jump to branch body
 		addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(logic_expr), JUMP, 0);
-		ilang_gen_addr_list_push(env->end_ref, addr1); // add begin ref
+		ilang_gen_addr_list_push(env->addr.end_ref, addr1); // add begin ref
 	} else {
 		// value version
 
@@ -211,8 +211,8 @@ _ilang_gen_logic_or_expr_eval(ilang_gen_logic_expr_t *logic_expr,
 		}
 	}
 
-	env->end_ref = end_ref_back;
-	env->begin_ref = begin_ref_back;
+	env->addr.end_ref = end_ref_back;
+	env->addr.begin_ref = begin_ref_back;
 
 	return ret;
 }

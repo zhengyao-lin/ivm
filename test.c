@@ -623,6 +623,10 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
+	IVM_TRACE("%ld\n", sizeof(ivm_frame_t));
+
+	return 0;
+
 	// test_obj.mark.copy = 0x1;
 	//test_obj.mark.sub.gen = 0x1;
 

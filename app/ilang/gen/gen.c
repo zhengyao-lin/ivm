@@ -18,10 +18,7 @@ ilang_gen_env_init(ilang_gen_env_t *env,
 		.unit = unit,
 		.cur_exec = cur_exec,
 
-		.continue_addr = -1,
-		.break_ref = IVM_NULL,
-		.end_ref = IVM_NULL,
-		.begin_ref = IVM_NULL,
+		.addr = ilang_gen_addr_set_init(),
 
 		.list_log = ivm_ptlist_new(),
 		.heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE)

@@ -41,6 +41,9 @@ enum token_id_t {
 	T_BREAK,
 	T_RAISE,
 	T_YIELD,
+	T_RESUME,
+
+	T_WITH,
 	T_TO,
 
 	T_FORK,
@@ -127,6 +130,9 @@ token_name_table[] = {
 	"keyword `break`",
 	"keyword `raise`",
 	"keyword `yield`",
+	"keyword `resume`",
+
+	"keyword `with`",
 	"keyword `to`",
 
 	"keyword `fork`",
@@ -459,6 +465,9 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("break", T_BREAK)
 		KEYWORD("raise", T_RAISE)
 		KEYWORD("yield", T_YIELD)
+		KEYWORD("resume", T_RESUME)
+
+		KEYWORD("with", T_WITH)
 		KEYWORD("to", T_TO)
 
 		KEYWORD("fork", T_FORK)
@@ -1073,8 +1082,119 @@ RULE(oop)
 }
 
 /*
+	block_param
+		: '|' nllo param_list_opt nllo '|'
+ */
+RULE(param_list_opt);
+RULE(block_param)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_BIOR) R(nllo) R(param_list_opt) R(nllo) T(T_BIOR)
+		{
+			_RETVAL.param_list = RULE_RET_AT(1).u.param_list;
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	block_param_opt
+		: block_param
+		| %empty
+ */
+RULE(block_param_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(block_param)
+		{
+			_RETVAL.param_list = RULE_RET_AT(0).u.param_list;
+		})
+
+		SUB_RULE({
+			_RETVAL.param_list = ilang_gen_param_list_new(_ENV->unit);
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	block
+		: '{' nllo block_param_opt nllo expr_list nllo '}'
+		| 'to' nllo block_param_opt nllo prefix_expr
+ */
+RULE(block)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_LBRAC) R(nllo)
+				 R(block_param_opt) R(nllo)
+				 R(expr_list_opt) R(nllo)
+				 T(T_RBRAC)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.expr = ilang_gen_fn_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.param_list,
+				ilang_gen_expr_block_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token),
+					RULE_RET_AT(3).u.expr_list
+				)
+			);
+		})
+
+		SUB_RULE(T(T_TO) R(nllo)
+				 R(block_param_opt) R(nllo)
+				 R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.expr = ilang_gen_fn_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.param_list,
+				RULE_RET_AT(3).u.expr
+			);
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	block_opt
+		: block
+		| %empty
+ */
+RULE(block_opt)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(block)
+		{
+			_RETVAL.expr = RULE_RET_AT(1).u.expr;
+		})
+
+		SUB_RULE({
+			_RETVAL.expr = IVM_NULL;
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	postfix_expr_sub
-		: '(' nllo arg_list_opt nllo ')' postfix_expr_sub
+		: '(' nllo arg_list_opt nllo ')' block_opt postfix_expr_sub
+		| block postfix_expr_sub
 		| '[' nllo arg_list_opt nllo ']' postfix_expr_sub
 		| '.' id postfix_expr_sub
 		| '.' oop postfix_expr_sub
@@ -1084,18 +1204,24 @@ RULE(oop)
 RULE(postfix_expr_sub)
 {
 	struct token_t *tmp_token, *id;
-	ilang_gen_expr_t *tmp_expr = IVM_NULL;
+	ilang_gen_expr_t *tmp_expr = IVM_NULL, *tmp_block;
 	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
 	ivm_int_t oop;
 
 	SUB_RULE_SET(
 		SUB_RULE(T(T_LPAREN) R(nllo)
 				 R(arg_list_opt)
-				 R(nllo) T(T_RPAREN) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("call expr"))
+				 R(nllo) T(T_RPAREN)
+				 R(block_opt) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("call expr"))
 		{
 			tmp_expr_list = RULE_RET_AT(1).u.expr_list;
 			tmp_token = TOKEN_AT(0);
-			tmp_expr = RULE_RET_AT(3).u.expr;
+			tmp_expr = RULE_RET_AT(4).u.expr;
+			tmp_block = RULE_RET_AT(3).u.expr;
+
+			if (tmp_block) {
+				ilang_gen_expr_list_push(tmp_expr_list, tmp_block);
+			}
 
 			if (tmp_expr) {
 				_RETVAL.expr = tmp_expr;
@@ -1111,6 +1237,32 @@ RULE(postfix_expr_sub)
 				_RETVAL.expr = ilang_gen_call_expr_new(
 					_ENV->unit,
 					TOKEN_POS(tmp_token), IVM_NULL, tmp_expr_list
+				);
+			}
+		})
+
+		SUB_RULE(R(block) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("block call expr"))
+		{
+			tmp_expr_list = ilang_gen_expr_list_new(_ENV->unit);
+			tmp_block = RULE_RET_AT(0).u.expr;
+			tmp_expr = RULE_RET_AT(1).u.expr;
+
+			ilang_gen_expr_list_push(tmp_expr_list, tmp_block);
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_call_expr_new(
+					_ENV->unit,
+					tmp_block->pos, IVM_NULL, tmp_expr_list
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_call_expr_new(
+					_ENV->unit,
+					tmp_block->pos, IVM_NULL, tmp_expr_list
 				);
 			}
 		})
@@ -1998,7 +2150,9 @@ RULE(raise_expr)
 
 /*
 	yield_expr:
-		: 'yield' prefix_expr
+		: 'resume' prefix_expr 'with' prefix_expr
+		| 'resume' prefix_expr
+		| 'yield' prefix_expr
 		| 'yield'
  */
 RULE(yield_expr)
@@ -2006,15 +2160,26 @@ RULE(yield_expr)
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_YIELD) R(prefix_expr) T(T_TO) R(prefix_expr)
+		SUB_RULE(T(T_RESUME) R(prefix_expr) T(T_WITH) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_intr_expr_new(
 				_ENV->unit,
-				TOKEN_POS(tmp_token), ILANG_GEN_INTR_YIELD,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_RESUME,
 				RULE_RET_AT(0).u.expr, RULE_RET_AT(1).u.expr
 			);
 		})
+
+		SUB_RULE(T(T_RESUME) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_intr_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token), ILANG_GEN_INTR_RESUME,
+				RULE_RET_AT(0).u.expr, IVM_NULL
+			);
+		})
+		
 		SUB_RULE(T(T_YIELD) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
@@ -2024,15 +2189,7 @@ RULE(yield_expr)
 				RULE_RET_AT(0).u.expr, IVM_NULL
 			);
 		})
-		SUB_RULE(T(T_YIELD) T(T_TO) R(prefix_expr)
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_intr_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token), ILANG_GEN_INTR_YIELD,
-				IVM_NULL, RULE_RET_AT(0).u.expr
-			);
-		})
+
 		SUB_RULE(T(T_YIELD)
 		{
 			tmp_token = TOKEN_AT(0);

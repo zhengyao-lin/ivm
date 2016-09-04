@@ -93,6 +93,26 @@ gid = group: {
 yield a to gid
 */
 
+[].proto.each = fn f: {
+	for loc e in base: f(e)
+}
+
+[].proto.gen = fn count: {
+	r = []
+	i = 1
+
+	while i <= count: {
+		r.push(i)
+		i = i + 1
+	}
+
+	r
+}
+
+[].gen(10000).each to |x| print(x)
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -270,7 +290,7 @@ __test = fn: {
 		print(a)
 	}
 
-	yield yield 10 to gid
+	yield resume gid with 10
 
 	i = 0
 	f = none
@@ -392,9 +412,9 @@ __test = fn: {
 	///////////////////////////////////////
 
 	fork: {
-		yield to gid = group: {
+		resume gid = group: {
 			print("another group")
-			try: yield to 0
+			try: resume 0
 			catch err: printe(err)
 		}
 		print("not next?")
@@ -402,7 +422,7 @@ __test = fn: {
 
 	yield
 	print(gid)
-	print(yield "hey" to gid)
+	print(resume gid with "hey")
 
 	print(!"hi")
 

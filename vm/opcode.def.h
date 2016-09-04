@@ -854,13 +854,8 @@ OPCODE_GEN(YIELD, "yield", N, 0, {
 	YIELD();
 })
 
-/*
-	yield_to
-	-------------------------
-	|  gid  | obj(optional) |
-	-------------------------
- */
-OPCODE_GEN(YIELD_TO, "yield_to", N, -1, {
+
+OPCODE_GEN(RESUME, "resume", N, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ2 = STACK_POP();
