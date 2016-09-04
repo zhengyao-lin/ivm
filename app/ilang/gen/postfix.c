@@ -1,3 +1,5 @@
+#include "util/opt.h"
+
 #include "priv.h"
 
 ilang_gen_value_t
@@ -10,14 +12,47 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_expr_list_iterator_t aiter;
 	ilang_gen_expr_t *tmp_arg;
 	ilang_gen_value_t tmp_ret;
+	ivm_int_t pa_argno;
+	ivm_int_t pa_arg_count = 0;
+
+	ivm_exec_t *exec, *exec_backup;
+	ivm_size_t exec_id;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "call expression", flag);
 
 	args = call_expr->args;
+
+	{
+		ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
+			tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
+			if (tmp_arg->is_missing)
+				pa_arg_count++;
+		}
+	}
+
+	// partial applied function
+	if (pa_arg_count) {
+		exec = ivm_exec_new(env->str_pool);
+		exec_id = ivm_exec_unit_registerExec(env->unit, exec);
+		exec_backup = env->cur_exec;
+		env->cur_exec = exec;
+
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PA_ARG, pa_arg_count);
+	}
+
+	pa_argno = 0;
 	// generate in a reverse order(original order in ast)
-	ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
-		tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
-		tmp_arg->eval(tmp_arg, FLAG(0), env);
+	{
+		ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
+			tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
+
+			if (tmp_arg->is_missing) {
+				tmp_arg->eval(tmp_arg, FLAG(.is_arg = IVM_TRUE, .pa_argno = pa_argno), env);
+				pa_argno++;
+			} else{
+				tmp_arg->eval(tmp_arg, FLAG(.is_arg = IVM_TRUE), env);
+			}
+		}
 	}
 
 	tmp_ret = call_expr->callee->eval(
@@ -36,6 +71,13 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 			env->cur_exec, GET_LINE(expr), INVOKE,
 			ilang_gen_expr_list_size(args)
 		);
+	}
+
+	// restore env
+	if (pa_arg_count) {
+		env->cur_exec = exec_backup;
+		ivm_opt_optExec(exec);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_FUNC, exec_id);
 	}
 
 	if (flag.is_top_level) {

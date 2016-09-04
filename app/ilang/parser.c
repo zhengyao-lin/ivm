@@ -25,6 +25,7 @@ enum token_id_t {
 	T_STR,
 
 	/* keywords */
+	T_MISSING,
 	T_FN,
 	T_IF,
 	T_ELIF,
@@ -58,6 +59,7 @@ enum token_id_t {
 	T_ELLIP,	// ...
 	T_DOT,		// .
 	T_AT,		// @
+	T_QM,		// ?
 
 	T_LBRAC,	// {
 	T_RBRAC,	// }
@@ -109,6 +111,7 @@ token_name_table[] = {
 	"float",
 	"string",
 	
+	"partial applied mark",
 	"keyword `fn`",
 	"keyword `if`",
 	"keyword `elif`",
@@ -142,6 +145,7 @@ token_name_table[] = {
 	"ellipsis",
 	"dot",
 	"at",
+	"question mark",
 
 	"left brace",
 	"right brace",
@@ -262,8 +266,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=%", ST_INIT, T_MOD },
 
 			{ "=^", ST_INIT, T_BEOR },
-
 			{ "=@", ST_INIT, T_AT },
+			{ "=?", ST_INIT, T_QM },
 
 			{ "=!", ST_TRY_NOT },
 
@@ -438,6 +442,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		enum token_id_t id;
 	} keywords[] = {
 #define KEYWORD(name, id) { (name), sizeof(name) - 1, (id) },
+		KEYWORD("_", T_MISSING)
+
 		KEYWORD("fn", T_FN)
 		KEYWORD("if", T_IF)
 		KEYWORD("elif", T_ELIF)
@@ -842,6 +848,13 @@ RULE(primary_expr)
 				_ENV->unit,
 				TOKEN_POS(tmp_token), TOKEN_VAL(tmp_token)
 			);
+		})
+
+		SUB_RULE(T(T_MISSING) DBB(PRINT_MATCH_TOKEN("partial applied expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_pa_expr_new(_ENV->unit, TOKEN_POS(tmp_token), 0);
+			_RETVAL.expr->is_missing = IVM_TRUE;
 		})
 
 		SUB_RULE(T(T_IMPORT) R(nllo) R(mod_name) DBB(PRINT_MATCH_TOKEN("import expr"))

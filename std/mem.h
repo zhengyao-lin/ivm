@@ -32,8 +32,9 @@ _std_alloc_init_c(ivm_size_t size)
 #define STD_REALLOC(origin, size, type)	((type)realloc((origin), (size)))
 #define STD_FREE(p)						free(p)
 
-#define STD_INIT(p, size)				(memset((p), 0x0, (size)))
+#define STD_INIT(p, size)				memset((p), 0x0, (size))
 #define STD_MEMCPY(dest, src, size)		memcpy((dest), (src), (size))
+#define STD_MEMMOVE(dest, src, size)	memmove((dest), (src), (size))
 #define STD_MEMCMP(a, b, size)			memcmp((a), (b), (size))
 
 IVM_COM_END

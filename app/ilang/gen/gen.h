@@ -106,6 +106,8 @@ typedef struct {
 	ivm_bool_t is_callee; // return base if possible
 	ivm_bool_t is_slot_expr;
 	ivm_bool_t has_branch; // whether the parent expr has branch structure(if/while)
+	ivm_bool_t is_arg;
+	ivm_int_t pa_argno;
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
@@ -133,9 +135,10 @@ typedef struct {
 typedef ivm_bool_t (*ilang_gen_checker_t)(struct ilang_gen_expr_t_tag *expr, ilang_gen_check_flag_t flag);
 
 #define ILANG_GEN_EXPR_HEADER \
-	ilang_gen_pos_t pos; \
-	ilang_gen_eval_t eval; \
-	ilang_gen_checker_t check;
+	ilang_gen_pos_t pos;        \
+	ilang_gen_eval_t eval;      \
+	ilang_gen_checker_t check;  \
+	ivm_bool_t is_missing;
 
 typedef struct ilang_gen_expr_t_tag {
 	ILANG_GEN_EXPR_HEADER
@@ -152,6 +155,7 @@ ilang_gen_expr_init(ilang_gen_expr_t *expr,
 	expr->pos = pos;
 	expr->eval = eval;
 	expr->check = check;
+	expr->is_missing = IVM_FALSE;
 	return;
 }
 
@@ -258,6 +262,14 @@ typedef struct {
 COMMON_EXPR(string_expr, "string expression", {
 	ret->val = val;
 }, ilang_gen_token_value_t val);
+
+/* pa expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+} ilang_gen_pa_expr_t;
+
+COMMON_EXPR(pa_expr, "partial applied expression", {
+}, ivm_int_t dummy);
 
 /* id expr */
 typedef struct {

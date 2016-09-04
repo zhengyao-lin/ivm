@@ -8,6 +8,8 @@
 #define _FRAME_STACK (tmp_frame_st)
 #define _INSTR (tmp_ip)
 
+#define _BP (tmp_bp)
+
 #define _DBG_RUNTIME_DEFAULT \
 	.ip = tmp_ip,                                         \
 	.bp = ivm_vmstack_offset(_STACK, tmp_bp),             \
@@ -187,6 +189,27 @@
 	#define STACK_BEFORE(i) (*(tmp_sp - 1 - (i)))
 
 	#define STACK_CUT(i) (tmp_sp -= (i))
+
+	/*
+		       from
+		         |        sp
+		-------------------
+		|  a  |  b  |  c  |
+		-------------------
+
+                    sp
+		-------------
+		|  b  |  c  |
+		-------------
+	 */
+	#define STACK_TRIM_HEAD(count) \
+		((tmp_sp -= (count)), \
+		 STD_MEMMOVE(tmp_bp, tmp_bp + (count), sizeof(*tmp_sp) * AVAIL_STACK))
+
+	// move from tmp_bp
+	#define STACK_MOVE(count) \
+		((tmp_sp += (count)), \
+		 STD_MEMMOVE(tmp_bp + (count), tmp_bp, sizeof(*tmp_sp) * AVAIL_STACK))
 
 #elif IVM_STACK_CACHE_N_TOS == 1
 

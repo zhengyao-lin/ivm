@@ -459,6 +459,27 @@ OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, 1, {
 
 #endif
 
+OPCODE_GEN(SET_PA_ARG, "set_pa_arg", I, 0, {
+	_TMP_ARGC = IARG();
+
+	if (AVAIL_STACK >= _TMP_ARGC) {
+		// too many arguments => trim the head
+		_TMP_ARGC = AVAIL_STACK - _TMP_ARGC;
+		STACK_TRIM_HEAD(_TMP_ARGC);
+	} else {
+		// too little argument => fill in none
+		STACK_ENSURE(_TMP_ARGC);
+
+		_TMP_ARGC = _TMP_ARGC - AVAIL_STACK;
+		STACK_MOVE(_TMP_ARGC);
+
+		_TMP_OBJ1 = IVM_NONE(_STATE);
+		STACK_FILLIN(_BP, _TMP_OBJ1, _TMP_ARGC);
+	}
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	if (AVAIL_STACK >= 1) {
 		ivm_context_setSlot_cc(
@@ -538,13 +559,18 @@ OPCODE_GEN(POP_N, "pop_n", I, -1, {
 })
 
 OPCODE_GEN(DUP_N, "dup_n", I, 1, {
-	ivm_size_t i = IARG();
+	_TMP_ARGC = IARG();
 
-	CHECK_STACK(i + 1);
+	CHECK_STACK(_TMP_ARGC + 1);
 
-	_TMP_OBJ1 = STACK_BEFORE(i);
+	_TMP_OBJ1 = STACK_BEFORE(_TMP_ARGC);
 	STACK_PUSH(_TMP_OBJ1);
 
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(DUP_ABS, "dup_abs", I, 1, {
+	STACK_PUSH(*(_BP + IARG()));
 	NEXT_INSTR();
 })
 
