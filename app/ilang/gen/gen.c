@@ -76,11 +76,18 @@ ilang_gen_expr_block_eval(ilang_gen_expr_t *expr,
 
 ivm_exec_unit_t *
 ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
+							 ivm_string_pool_t *str_pool,
 							 ivm_size_t offset)
 {
-	ivm_string_pool_t *str_pool = ivm_string_pool_new(IVM_TRUE);
-	ivm_exec_unit_t *ret = ivm_exec_unit_new(0, ivm_exec_list_new());
-	ivm_exec_t *top_level = ivm_exec_new(str_pool);
+	ivm_exec_unit_t *ret;
+	ivm_exec_t *top_level;
+
+	if (!str_pool) {
+		str_pool = ivm_string_pool_new(IVM_TRUE);
+	}
+
+	ret = ivm_exec_unit_new(0, ivm_exec_list_new());
+	top_level = ivm_exec_new(str_pool);
 
 	ivm_exec_unit_setOffset(ret, offset);
 	ivm_exec_unit_setSourcePos(ret, ivm_source_pos_new(unit->file));

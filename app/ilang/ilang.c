@@ -74,7 +74,10 @@ IVM_NATIVE_FUNC(eval)
 
 	if (!unit) goto FAILED;
 
-	exec_unit = ilang_gen_generateExecUnit_c(unit, ivm_vmstate_getLinkOffset(NAT_STATE()));
+	exec_unit = ilang_gen_generateExecUnit_c(
+		unit, ivm_vmstate_getFuncStringPool(NAT_STATE()),
+		ivm_vmstate_getLinkOffset(NAT_STATE())
+	);
 
 	if (!exec_unit) goto FAILED;
 	// ivm_dbg_printExecUnit(exec_unit, stderr);
@@ -116,7 +119,8 @@ IVM_NATIVE_FUNC(typeof)
 IVM_PRIVATE
 IVM_INLINE
 ivm_exec_unit_t *
-_parse_source(const ivm_char_t *path)
+_parse_source(ivm_vmstate_t *state,
+			  const ivm_char_t *path)
 {
 	ivm_file_t *file;
 	ivm_char_t *src = IVM_NULL;
@@ -136,7 +140,9 @@ _parse_source(const ivm_char_t *path)
 
 	if (!t_unit) goto FAILED;
 
-	ret = ilang_gen_generateExecUnit_c(t_unit, 0);
+	ret = ilang_gen_generateExecUnit_c(
+		t_unit, ivm_vmstate_getFuncStringPool(state), 0
+	);
 
 FAILED:
 	STD_FREE(src);
@@ -155,7 +161,7 @@ ilang_mod_loadSource(const ivm_char_t *path,
 					 ivm_context_t *context)
 {
 	ivm_char_t *tmp_err = IVM_NULL;
-	ivm_exec_unit_t *unit = _parse_source(path);
+	ivm_exec_unit_t *unit = _parse_source(state, path);
 	ivm_object_t *ret = IVM_NULL;
 	ivm_function_t *root;
 	ivm_context_t *dest;

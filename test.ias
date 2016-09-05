@@ -274,7 +274,7 @@ root {
 	new_func g1_c2
 	group_to
 
-	yield_to
+	resume
 }
 
 end {

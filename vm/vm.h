@@ -420,6 +420,17 @@ ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
 #define ivm_vmstate_getFuncID(state, func) (ivm_func_list_find(&(state)->func_list, (func)))
 #define ivm_vmstate_getLinkOffset(state) (ivm_func_list_size(&(state)->func_list))
 
+IVM_INLINE
+ivm_string_pool_t *
+ivm_vmstate_getFuncStringPool(ivm_vmstate_t *state)
+{
+	if (ivm_func_list_size(&state->func_list)) {
+		return ivm_function_getStringPool(ivm_vmstate_getFunc(state, 0));
+	}
+
+	return IVM_NULL;
+}
+
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
 
 #if 0

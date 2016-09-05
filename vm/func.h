@@ -107,6 +107,8 @@ ivm_function_free(ivm_function_t *func,
 #define ivm_function_callNative(func, state, coro, context, arg) \
 	((func)->u.native((state), (coro), (context), (arg)))
 
+#define ivm_function_getStringPool(func) ivm_exec_pool(&(func)->u.body)
+
 /*
 IVM_INLINE
 ivm_int_t
@@ -179,13 +181,14 @@ ivm_size_t
 ivm_func_list_register(ivm_func_list_t *list,
 					   ivm_function_t *func)
 {
+/*
 	ivm_func_list_iterator_t fiter;
 
 	IVM_FUNC_LIST_EACHPTR(list, fiter) {
 		if (IVM_FUNC_LIST_ITER_GET(fiter) == func)
 			return IVM_FUNC_LIST_ITER_INDEX(list, fiter);
 	}
-
+*/
 	return ivm_ptlist_push(list, func);
 }
 

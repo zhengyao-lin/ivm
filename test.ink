@@ -93,15 +93,6 @@ gid = group: {
 yield a to gid
 */
 
-fib = fn n: {
-	if n < 2: ret 1
-	ret fib(n - 1) + fib(n - 2)
-}
-
-print(fib(30))
-
-ret
-
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -163,11 +154,11 @@ __test = fn: {
 
 	print("123456".len())
 
-	// eval("print(\"from eval\")")
-	// print(eval("a"))
-	// print(eval("fn...,...:0"))
+	eval("print(\"from eval\")")
+	print(eval("a"))
+	print(eval("fn...,...:0"))
 
-	// print(eval("a = fn n: n < 2 && 1 || a(n - 1) + a(n - 2)")(10))
+	print(eval("a = fn n: n < 2 && 1 || a(n - 1) + a(n - 2)")(10))
 
 	f1 = fn: {
 		(fn: {
@@ -175,7 +166,7 @@ __test = fn: {
 		})()
 	}
 
-	// eval("(fn:fn:f1())()()")
+	eval("(fn:fn:f1())()()")
 
 	printl = fn list: {
 		loc size = list.size()
