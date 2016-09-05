@@ -31,8 +31,9 @@ while 1: {
 	try: i = a.next()
 	catch err:
 		break
-	if !(i % 1000):
+	if !(i % 1000): {
 		print(i)
+	}
 }
 
 // -> "num: 0"

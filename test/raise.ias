@@ -9,6 +9,8 @@ err_func1 {
 }
 
 protected {
+	push_block
+
 	rprot_set CATCH // try {
 
 	new_func err_func1
@@ -26,6 +28,7 @@ CATCH:				// catch (err) {
 	jump FINAL		// }
 
 FINAL:				// final {
+	pop_block
 }
 
 root {

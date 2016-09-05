@@ -884,17 +884,34 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 
 OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	CHECK_STACK(1);
+	STACK_SET(1); // pop all elem but one
 
 	_TMP_OBJ1 = STACK_TOP(); // iter
+
+	ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
+
+	// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
+
 	STACK_PUSH(_TMP_OBJ1);
 
 	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
 	RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
 	STACK_PUSH(_TMP_OBJ2); // get iter.next
 
-	// set raise protection
-	ivm_runtime_pushCatch(_RUNTIME, ADDR_ARG());
+	NEXT_INSTR();
+})
 
+OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
+	SAVE_STACK();
+	ivm_runtime_pushBlock(_RUNTIME, AVAIL_STACK);
+	UPDATE_STACK();
+	NEXT_INSTR();
+})
+
+OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
+	SAVE_STACK();
+	ivm_runtime_popBlock(_RUNTIME);
+	UPDATE_STACK();
 	NEXT_INSTR();
 })
 
@@ -902,18 +919,19 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	raise protection set/cancel
  */
 OPCODE_GEN(RPROT_SET, "rprot_set", A, 0, {
-	ivm_runtime_pushCatch(_RUNTIME, ADDR_ARG());
+	ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
-	ivm_runtime_popCatch(_RUNTIME);
+	ivm_runtime_setCurCatch(_RUNTIME, IVM_NULL);
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(RAISE, "raise", N, -1, {
 	CHECK_STACK(1);
-	RAISE(STACK_POP());
+	_TMP_OBJ1 = STACK_POP();
+	RAISE(_TMP_OBJ1);
 })
 
 OPCODE_GEN(RETURN, "return", N, -1, {

@@ -338,10 +338,11 @@ END_EXEC:
 ACTION_RAISE:
 			ivm_vmstate_setException(state, _TMP_OBJ1);
 ACTION_EXCEPTION:
-
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(EXCEPTION, _TMP_OBJ1));
 
-			do {
+			SAVE_STACK();
+
+			while (!(tmp_ip = ivm_runtime_popCatch(_RUNTIME))) {
 				ivm_runtime_dump(tmp_runtime, state);
 				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
 				if (tmp_frame) {
@@ -354,15 +355,12 @@ ACTION_EXCEPTION:
 					_TMP_OBJ1 = IVM_NULL;
 					goto END;
 				}
-			} while (!ivm_frame_hasCatch(tmp_frame));
+			}
 			// find a frame with raise protection
 
-			ivm_vmstate_popException(state);
-
-			// tmp_frame != NULL
-			tmp_ip = ivm_runtime_popCatch(_RUNTIME);
-
 			UPDATE_STACK();
+
+			ivm_vmstate_popException(state);
 			// push raised object
 			STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(state));
 			

@@ -93,23 +93,12 @@ gid = group: {
 yield a to gid
 */
 
-[].proto.each = fn f: {
-	for loc e in base: f(e)
+fib = fn n: {
+	if n < 2: ret 1
+	ret fib(n - 1) + fib(n - 2)
 }
 
-[].proto.gen = fn count: {
-	r = []
-	i = 1
-
-	while i <= count: {
-		r.push(i)
-		i = i + 1
-	}
-
-	r
-}
-
-[].gen(10000).each to |x| print(x)
+print(fib(30))
 
 ret
 

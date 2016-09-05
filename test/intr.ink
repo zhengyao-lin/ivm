@@ -1,0 +1,47 @@
+
+a = [ "yes!", "yeah!!", 1 ]
+
+print(a[{
+	try: {
+		try:
+			a[
+				for i in [1, 2, 3, 4, 5, {}]: {
+					if i == 3:
+						cont
+					if i == 5:
+						break
+				}
+			]
+		catch:
+			print("inner")
+		print("here")
+	} final: 0
+}])
+
+loc wrong = fn: 1 + {}
+
+try: try: try: try: try: try: try: try: try: {
+	loc i = 0
+	while i < 100000: {
+		if i == 10000:
+			{} + {}
+		i = i + 1
+	}
+}
+catch err: (print("first"), {} + 1)
+catch err: (print("second"), 1 + {})
+catch err: print("third")
+
+print(a[
+	a[(while 0: cont, 2)]
+])
+
+ret
+
+// -> "str: inner"
+// -> "str: here"
+// -> "str: yes!"
+// -> "str: first"
+// -> "str: second"
+// -> "str: third"
+// -> "str: yeah!!"

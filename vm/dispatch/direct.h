@@ -106,27 +106,27 @@
 #define INVOKE() goto ACTION_INVOKE
 
 #define RAISE(obj) \
-	_TMP_CATCH = ivm_runtime_popCatch(_RUNTIME);         \
-	SAVE_RUNTIME(tmp_ip);                                \
+	_TMP_CATCH = ivm_runtime_popCurCatch(_RUNTIME);      \
 	_TMP_OBJ1 = (obj);                                   \
 	if (_TMP_CATCH) {                                    \
 		STACK_PUSH(_TMP_OBJ1);                           \
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \
 		/* no raise protection -> fall back */           \
+		SAVE_RUNTIME(tmp_ip);                            \
 		goto ACTION_RAISE;                               \
 	}
 
 /* exception detected */
 #define EXCEPTION() \
-	_TMP_CATCH = ivm_runtime_popCatch(_RUNTIME);         \
-	SAVE_RUNTIME(tmp_ip);                                \
+	_TMP_CATCH = ivm_runtime_popCurCatch(_RUNTIME);      \
 	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);        \
 	if (_TMP_CATCH) {                                    \
 		STACK_PUSH(_TMP_OBJ1);                           \
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \
 		/* no raise protection -> fall back */           \
+		SAVE_RUNTIME(tmp_ip);                            \
 		goto ACTION_EXCEPTION;                           \
 	}
 
@@ -210,6 +210,9 @@
 	#define STACK_MOVE(count) \
 		((tmp_sp += (count)), \
 		 STD_MEMMOVE(tmp_bp + (count), tmp_bp, sizeof(*tmp_sp) * AVAIL_STACK))
+
+	#define STACK_SET(count) \
+		(tmp_sp = tmp_bp + (count))
 
 #elif IVM_STACK_CACHE_N_TOS == 1
 

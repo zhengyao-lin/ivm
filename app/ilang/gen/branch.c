@@ -221,16 +221,22 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "while expression", flag);
 
 	/*
-		start: backup_stack
+		push_block
+
+		start:
 			[cond]
 			jump_false end
 			[body]
 			jump start
-		end: restore_stack
+		end:
+
+		pop_block
 	 */
 	
 	// backup
 	addr_backup = env->addr;
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
 
 	// reset break/continue/end/begin ref list
 	start_addr = env->addr.continue_addr = ivm_exec_cur(env->cur_exec);
@@ -269,7 +275,7 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 	);
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP,
-					  start_addr - ivm_exec_cur(env->cur_exec));
+						start_addr - ivm_exec_cur(env->cur_exec));
 
 	cur = ivm_exec_cur(env->cur_exec);
 
@@ -289,6 +295,8 @@ ilang_gen_while_expr_eval(ilang_gen_expr_t *expr,
 		tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(riter);
 		ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 	}
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
 
 	if (!flag.is_top_level) {
 		// return null in default
@@ -316,6 +324,8 @@ ilang_gen_for_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "for expression", flag);
 
 	/*
+		push_block
+
 		<gen iteree>
 		get_slot_n "iter"
 		invoke_base
@@ -329,10 +339,14 @@ cont >	addr1:
 			<body>
 
 			jump addr1
-break >	addr2: pop
+break >	addr2:
+		
+		pop_block
 	 */
 	
 	env->addr.break_ref = break_ref = ilang_gen_addr_list_new(env);
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
 
 	for_expr->iteree->eval(for_expr->iteree, FLAG(0), env);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, "iter");
@@ -360,7 +374,7 @@ break >	addr2: pop
 		ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
 	}
 
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_N, 2);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
 
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
@@ -384,6 +398,8 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "try expression", flag);
 
 	/*
+		push_block
+
 		try:
 			rprot_set catch
 			[try body]
@@ -393,9 +409,12 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 			[catch body]
 			jump final
 		final:
+			pop_block
 			[final body]
 	 */
 	
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
+
 	/* try body */
 	addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_SET, 0);
 	try_expr->try_body->eval(try_expr->try_body, FLAG(.is_top_level = IVM_TRUE), env);
@@ -429,6 +448,9 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 
 	/* final body */
 	ivm_exec_setArgAt(env->cur_exec, addr2, ivm_exec_cur(env->cur_exec) - addr2);
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
+
 	if (try_expr->final_body) {
 		try_expr->final_body->eval(try_expr->final_body, FLAG(.is_top_level = flag.is_top_level), env);
 	} else if (!flag.is_top_level) {

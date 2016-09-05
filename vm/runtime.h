@@ -2,8 +2,9 @@
 #define _IVM_VM_RUNTIME_H_
 
 #include "pub/com.h"
-#include "std/mem.h"
 #include "pub/type.h"
+
+#include "std/mem.h"
 
 #include "exec.h"
 #include "func.h"
@@ -73,33 +74,53 @@ ivm_runtime_dump(ivm_runtime_t *runtime,
 				 struct ivm_vmstate_t_tag *state)
 {
 	ivm_context_free(runtime->ctx, state);
-	if (runtime->nested_cat) {
-		ivm_instr_stack_free(runtime->cat.astack);
-	}
+	STD_FREE(runtime->blocks);
 
 	return;
 }
 
+#define ivm_runtime_hasBlock(runtime) \
+	ivm_frame_hasBlock(runtime)
+
 IVM_INLINE
-ivm_bool_t
-ivm_runtime_hasCatch(ivm_runtime_t *runtime)
+void
+ivm_runtime_pushBlock(ivm_runtime_t *runtime,
+					  ivm_size_t sp)
 {
-	return ivm_frame_hasCatch(IVM_AS(runtime, ivm_frame_t));
+	ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), sp);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_runtime_popBlock(ivm_runtime_t *runtime)
+{
+	ivm_frame_popBlock(IVM_AS(runtime, ivm_frame_t), &runtime->sp);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_runtime_setCurCatch(ivm_runtime_t *runtime,
+						  ivm_instr_t *catc)
+{
+	ivm_frame_setCurCatch(IVM_AS(runtime, ivm_frame_t), catc);
+	return;
+}
+
+IVM_INLINE
+ivm_instr_t *
+ivm_runtime_popCurCatch(ivm_runtime_t *runtime)
+{
+	return ivm_frame_popCurCatch(IVM_AS(runtime, ivm_frame_t));
 }
 
 IVM_INLINE
 ivm_instr_t *
 ivm_runtime_popCatch(ivm_runtime_t *runtime)
 {
-	return ivm_frame_popCatch(IVM_AS(runtime, ivm_frame_t));
-}
-
-IVM_INLINE
-void
-ivm_runtime_pushCatch(ivm_runtime_t *runtime, ivm_instr_t *cat)
-{
-	ivm_frame_pushCatch(IVM_AS(runtime, ivm_frame_t), cat);
-	return;
+	return ivm_frame_popCatch(IVM_AS(runtime, ivm_frame_t),
+							  &runtime->sp);
 }
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;

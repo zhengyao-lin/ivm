@@ -36,6 +36,9 @@ ivm_object_clone(ivm_object_t *obj,
 	ivm_object_t *ret = ivm_vmstate_alloc(state, size);
 
 	STD_MEMCPY(ret, obj, size);
+
+	IVM_OBJECT_SET(ret, GEN, 0);
+	IVM_OBJECT_SET(ret, WB, 0);
 	ret->slots = ivm_slot_table_copyShared(ret->slots, state);
 
 	if (type->clone) {

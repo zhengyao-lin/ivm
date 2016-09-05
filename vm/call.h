@@ -13,16 +13,23 @@
 
 IVM_COM_HEADER
 
+typedef struct {
+	ivm_instr_t *catc;
+	ivm_size_t sp; // count of element on the stack
+} ivm_block_t;
+
+#define ivm_block_getCatch(block) ((block)->catc)
+#define ivm_block_getSp(block) ((block)->sp)
+
 /* part needed to init every call */
 #define IVM_FRAME_HEADER_INIT \
 	ivm_instr_t *ip;                       \
-	union {                                \
-		ivm_instr_t *addr; /* catch */     \
-		ivm_instr_stack_t *astack;         \
-	} cat;                                 \
+	ivm_block_t *blocks;                   \
 	ivm_uint_t offset;                     \
-	ivm_bool_t no_reg;                     \
-	ivm_bool_t nested_cat;
+	ivm_uint_t no_reg: 1;                  \
+	ivm_uint_t nested_cat: 1;              \
+	ivm_uint_t cur_block: 15;              \
+	ivm_uint_t block_alloc: 15;
 
 #define IVM_FRAME_HEADER \
 	struct ivm_context_t_tag *ctx;   \
@@ -59,17 +66,79 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
 IVM_INLINE
-ivm_bool_t
-ivm_frame_hasCatch(ivm_frame_t *frame)
+struct ivm_object_t_tag ** /* new bp */
+ivm_frame_pushBlock(ivm_frame_t *frame,
+					ivm_size_t sp /* AVAIL_STACK */)
 {
-	return frame->cat.addr != IVM_NULL;
+	if (frame->cur_block >=
+		frame->block_alloc) {
+		frame->block_alloc += 2;
+		frame->blocks =
+		STD_REALLOC(frame->blocks,
+					sizeof(*frame->blocks) * frame->block_alloc,
+					ivm_block_t *);
+	}
+
+	frame->blocks[frame->cur_block++] = ((ivm_block_t) {
+		IVM_NULL, sp
+	});
+
+	return frame->bp += sp;
 }
 
-ivm_instr_t *
-ivm_frame_popCatch(ivm_frame_t *frame);
+IVM_INLINE
+ivm_block_t *
+ivm_frame_popBlock(ivm_frame_t *frame,
+				   struct ivm_object_t_tag ***sp_p)
+{
+	ivm_block_t *ret;
 
+	if (frame->cur_block) {
+		ret = frame->blocks + --frame->cur_block;
+
+		*sp_p = frame->bp;
+		frame->bp -= ret->sp;
+
+		return ret;
+	}
+
+	return IVM_NULL;
+}
+
+IVM_INLINE
 void
-ivm_frame_pushCatch(ivm_frame_t *frame, ivm_instr_t *cat);
+ivm_frame_setCurCatch(ivm_frame_t *frame,
+					  ivm_instr_t *catc)
+{
+	if (frame->cur_block) {
+		frame->blocks[frame->cur_block - 1].catc = catc;
+	}
+
+	return;
+}
+
+IVM_INLINE
+ivm_instr_t *
+ivm_frame_popCurCatch(ivm_frame_t *frame)
+{
+	ivm_block_t *cur;
+	ivm_instr_t *catc;
+
+	if (frame->cur_block) {
+		cur = frame->blocks + (frame->cur_block - 1);
+		catc = cur->catc;
+		cur->catc = IVM_NULL;
+		return catc;
+	}
+
+	return IVM_NULL;
+}
+
+#define ivm_frame_hasBlock(frame) ((frame)->cur_block != 0)
+
+ivm_instr_t *
+ivm_frame_popCatch(ivm_frame_t *frame,
+				   struct ivm_object_t_tag ***sp_p);
 
 typedef struct ivm_frame_stack_t_tag {
 	ivm_uint_t alloc;
