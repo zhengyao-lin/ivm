@@ -107,13 +107,13 @@
 
 #define RAISE(obj) \
 	_TMP_CATCH = ivm_runtime_popCurCatch(_RUNTIME);      \
+	SAVE_RUNTIME(tmp_ip);                                \
 	_TMP_OBJ1 = (obj);                                   \
 	if (_TMP_CATCH) {                                    \
 		STACK_PUSH(_TMP_OBJ1);                           \
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \
 		/* no raise protection -> fall back */           \
-		SAVE_RUNTIME(tmp_ip);                            \
 		goto ACTION_RAISE;                               \
 	}
 
@@ -126,7 +126,6 @@
 		GOTO_SET_INSTR(_TMP_CATCH);                      \
 	} else {                                             \
 		/* no raise protection -> fall back */           \
-		SAVE_RUNTIME(tmp_ip);                            \
 		goto ACTION_EXCEPTION;                           \
 	}
 

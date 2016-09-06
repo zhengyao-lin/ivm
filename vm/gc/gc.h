@@ -149,35 +149,40 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 						   ivm_traverser_arg_t *arg);
 
 IVM_INLINE
-ivm_bool_t /* true for not trav */
+ivm_object_t * /* null for trav */
 ivm_collector_quickCheck(ivm_object_t *obj,
-						 ivm_traverser_arg_t *arg,
-						 ivm_object_t **addr)
+						 ivm_traverser_arg_t *arg)
 {
-	ivm_object_t *copy;
+	// older generation -> skip
+	if (IVM_OBJECT_GET(obj, GEN) &&
+		!arg->gen) {
+		return obj;
+	}
 
+	if (IVM_OBJECT_GET(obj, COPY)) {
+		return IVM_OBJECT_GET(obj, COPY);
+	}
 
-	if (obj) {
-		// older generation -> skip
-		if (IVM_OBJECT_GET(obj, GEN) > arg->gen) {
-			*addr = obj;
-			return IVM_TRUE;
-		}
+	return IVM_NULL;
+}
 
-		copy = IVM_OBJECT_GET(obj, COPY);
-		if (copy) {
-			*addr = copy;
-			return IVM_TRUE;
-		}
-	} else {
-		*addr = IVM_NULL;
+IVM_INLINE
+ivm_bool_t /* false for trav */
+ivm_collector_quickCheck_p(ivm_object_t *obj,
+						   ivm_traverser_arg_t *arg,
+						   ivm_object_t **addr)
+{
+	// older generation -> skip
+	if (IVM_OBJECT_GET(obj, GEN) &&
+		!arg->gen) {
+		*addr = obj;
 		return IVM_TRUE;
 	}
 
-	/*if (ivm_heap_isIn(arg->heap, obj)) {
-		*addr = obj;
+	if (IVM_OBJECT_GET(obj, COPY)) {
+		*addr = IVM_OBJECT_GET(obj, COPY);
 		return IVM_TRUE;
-	}*/
+	}
 
 	return IVM_FALSE;
 }
@@ -187,9 +192,13 @@ ivm_object_t *
 ivm_collector_copyObject(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg)
 {
-	ivm_object_t *ret = IVM_NULL;
-	if (ivm_collector_quickCheck(obj, arg, &ret))
-		return ret;
+	ivm_object_t *ret;
+
+	if (!obj) return IVM_NULL;
+	
+	ret = ivm_collector_quickCheck(obj, arg);
+	if (ret) return ret;
+	
 	return ivm_collector_copyObject_c(obj, arg);
 }
 
@@ -199,8 +208,9 @@ ivm_collector_copyObject_p(ivm_object_t *obj,
 						   ivm_traverser_arg_t *arg,
 						   ivm_object_t **addr)
 {
-	if (ivm_collector_quickCheck(obj, arg, addr)) return;
-	*addr = ivm_collector_copyObject_c(obj, arg);
+	if (!obj) *addr = IVM_NULL;
+	else if (!ivm_collector_quickCheck_p(obj, arg, addr))
+		*addr = ivm_collector_copyObject_c(obj, arg);
 	return;
 }
 

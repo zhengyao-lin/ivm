@@ -134,17 +134,11 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 	ivm_slot_table_t *ret = IVM_NULL;
 	ivm_slot_table_iterator_t siter;
 	ivm_object_t **oops, **end;
-	ivm_int_t gen;
 	ivm_int_t count;
 
 	if (table) {
-		gen = ivm_slot_table_getGen(table);
-
-		if (gen > arg->gen) {
-			return table;
-		}
-
-		gen++;
+		if (ivm_slot_table_getGen(table) &&
+			!arg->gen) return table;
 
 		// IVM_TRACE("gen %d\n", arg->gen);
 
@@ -159,8 +153,7 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 
 	ret = ivm_slot_table_copy(table, arg->state, arg->heap);
 
-	if (gen < 2)
-		ivm_slot_table_setGen(ret, gen);
+	ivm_slot_table_setGen(ret, 1);
 	ivm_slot_table_setWB(table, 0);
 	ivm_slot_table_setCopy(table, ret);
 	// ivm_slot_table_updateUID(table, arg->state);
@@ -235,13 +228,11 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 {
 	ivm_object_t *ret;
 	ivm_traverser_t trav;
-	ivm_int_t gen = IVM_OBJECT_GET(obj, GEN) + 1;
 
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
 	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
-	if (gen < 2)
-		IVM_OBJECT_SET(ret, GEN, gen);
+	IVM_OBJECT_SET(ret, GEN, 1);
 	IVM_OBJECT_SET(ret, WB, 0);
 	IVM_OBJECT_SET(obj, COPY, ret);
 
