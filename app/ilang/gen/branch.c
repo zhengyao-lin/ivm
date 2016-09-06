@@ -403,13 +403,16 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 		try:
 			rprot_set catch
 			[try body]
+			try_final
 			rprot_cac
+			pop_block
 			jump final
 		catch:
+			pop or set_arg
+			pop_block
 			[catch body]
 			jump final
 		final:
-			pop_block
 			[final body]
 	 */
 	
@@ -418,8 +421,11 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	/* try body */
 	addr1 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_SET, 0);
 	try_expr->try_body->eval(try_expr->try_body, FLAG(.is_top_level = IVM_TRUE), env);
+
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RPROT_CAC);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
 	addr2 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
+	// addr2 = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), FINAL, 0);
 
 	/* catch body */
 	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
@@ -440,6 +446,9 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	} else {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	}
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
+
 	if (try_expr->catch_body.body) {
 		try_expr->catch_body.body->eval(try_expr->catch_body.body, FLAG(.is_top_level = IVM_TRUE), env);
 	}
@@ -449,7 +458,7 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	/* final body */
 	ivm_exec_setArgAt(env->cur_exec, addr2, ivm_exec_cur(env->cur_exec) - addr2);
 
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
+	// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
 
 	if (try_expr->final_body) {
 		try_expr->final_body->eval(try_expr->final_body, FLAG(.is_top_level = flag.is_top_level), env);

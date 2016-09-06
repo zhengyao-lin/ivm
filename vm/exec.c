@@ -236,7 +236,7 @@ ivm_exec_decache(ivm_exec_t *exec,
 			ivm_instr_opcode(instr),
 			ivm_opcode_arg_fromInt(tmp)
 		);
-	} else if (ivm_opcode_table_isJump(ivm_instr_opcode(instr))) {
+	} else if (arg == 'A') {
 		tmp_instr = ivm_opcode_arg_toPointer(ivm_instr_arg(instr));
 		return ivm_instr_build(
 			ivm_instr_opcode(instr),
@@ -309,8 +309,6 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 		if (i++ == root) {
 			ret = func;
 		}
-
-		// ivm_exec_preproc(exec, state);
 	}
 
 	return ret;

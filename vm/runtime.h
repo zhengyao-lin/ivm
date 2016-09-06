@@ -117,10 +117,19 @@ ivm_runtime_popCurCatch(ivm_runtime_t *runtime)
 
 IVM_INLINE
 ivm_instr_t *
-ivm_runtime_popCatch(ivm_runtime_t *runtime)
+ivm_runtime_popToCatch(ivm_runtime_t *runtime)
 {
-	return ivm_frame_popCatch(IVM_AS(runtime, ivm_frame_t),
-							  &runtime->sp);
+	return ivm_frame_popToCatch(IVM_AS(runtime, ivm_frame_t),
+								&runtime->sp);
+}
+
+IVM_INLINE
+void
+ivm_runtime_popAllCatch(ivm_runtime_t *runtime)
+{
+	ivm_frame_popAllCatch(IVM_AS(runtime, ivm_frame_t),
+						  &runtime->sp);
+	return;
 }
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;

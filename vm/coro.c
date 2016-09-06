@@ -342,7 +342,7 @@ ACTION_EXCEPTION:
 
 			SAVE_STACK();
 
-			while (!(tmp_ip = ivm_runtime_popCatch(_RUNTIME))) {
+			while (!(tmp_ip = ivm_runtime_popToCatch(_RUNTIME))) {
 				ivm_runtime_dump(tmp_runtime, state);
 				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
 				if (tmp_frame) {

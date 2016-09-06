@@ -130,7 +130,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, env->addr.continue_addr - cur);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, env->addr.continue_addr - cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
@@ -142,7 +142,7 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 				if (intr->val) {
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, 0);
 				ilang_gen_addr_list_push(env->addr.break_ref, cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);

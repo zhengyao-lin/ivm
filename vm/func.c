@@ -19,13 +19,15 @@ _ivm_function_init(ivm_function_t *func,
 				   ivm_vmstate_t *state,
 				   ivm_exec_t *body)
 {
-	func->is_native = IVM_FALSE;
 	if (body) {
 		ivm_exec_copy(body, &func->u.body);
 		ivm_exec_preproc(&func->u.body, state);
 	} else {
 		STD_INIT(&func->u.body, sizeof(func->u.body));
 	}
+
+	func->ref = 0;
+	func->is_native = IVM_FALSE;
 
 	return;
 }
@@ -36,8 +38,9 @@ _ivm_function_initNative(ivm_function_t *func,
 						 ivm_vmstate_t *state,
 						 ivm_native_function_t native)
 {
-	func->is_native = IVM_TRUE;
 	func->u.native = native;
+	func->ref = 0;
+	func->is_native = IVM_TRUE;
 
 	return;
 }
@@ -72,7 +75,7 @@ void
 ivm_function_free(ivm_function_t *func,
 				  ivm_vmstate_t *state)
 {
-	if (func) {
+	if (func && !--func->ref) {
 		if (!func->is_native) {
 			ivm_exec_dump(&func->u.body);
 		}
@@ -85,7 +88,7 @@ ivm_function_free(ivm_function_t *func,
 ivm_object_t *
 ivm_function_object_new(ivm_vmstate_t *state,
 						ivm_context_t *scope,
-						const ivm_function_t *func)
+						ivm_function_t *func)
 {
 	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
@@ -93,6 +96,7 @@ ivm_function_object_new(ivm_vmstate_t *state,
 
 	ret->scope = ivm_context_addRef(scope);
 	ret->val = func;
+
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
 
 	return IVM_AS_OBJ(ret);
@@ -102,10 +106,9 @@ void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)
 {	
-	ivm_context_free(
-		IVM_AS(obj, ivm_function_object_t)->scope,
-		state
-	);
+	// ivm_function_object_t *func = IVM_AS(obj, ivm_function_object_t);
+
+	ivm_context_free(IVM_AS(obj, ivm_function_object_t)->scope, state);
 
 	return;
 }

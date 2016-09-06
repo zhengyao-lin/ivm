@@ -90,17 +90,6 @@ ivm_instr_setCache(ivm_instr_t *instr, ivm_uid_t id, ivm_ptr_t data)
 
 #undef OPCODE_GEN
 
-typedef ivm_ptlist_t ivm_instr_stack_t;
-
-#define ivm_instr_stack_new() ivm_ptlist_new_c(IVM_DEFAULT_INSTR_STACK_BUFFER_SIZE)
-#define ivm_instr_stack_free(stack) ivm_ptlist_free(stack) 
-
-#define ivm_instr_stack_push(stack, instr) \
-	ivm_ptlist_push((stack), (instr))
-
-#define ivm_instr_stack_pop(stack) \
-	ivm_ptlist_pop(stack)
-
 IVM_COM_END
 
 #endif

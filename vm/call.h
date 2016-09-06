@@ -136,9 +136,15 @@ ivm_frame_popCurCatch(ivm_frame_t *frame)
 
 #define ivm_frame_hasBlock(frame) ((frame)->cur_block != 0)
 
+/* pop all block until find a catch */
 ivm_instr_t *
-ivm_frame_popCatch(ivm_frame_t *frame,
-				   struct ivm_object_t_tag ***sp_p);
+ivm_frame_popToCatch(ivm_frame_t *frame,
+					 struct ivm_object_t_tag ***sp_p);
+
+/* pop all block with catch */
+void
+ivm_frame_popAllCatch(ivm_frame_t *frame,
+					  struct ivm_object_t_tag ***sp_p);
 
 typedef struct ivm_frame_stack_t_tag {
 	ivm_uint_t alloc;

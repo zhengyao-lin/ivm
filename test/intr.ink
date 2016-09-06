@@ -1,4 +1,23 @@
 
+list = [1, 2, 3, 4]
+iter = list.iter()
+a = 0
+
+for i in list: {
+	print(i)
+	list[
+		try:
+			try:
+				try:
+					cont
+				final: print("no!!!")]
+}
+
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
+// -> "num: 4"
+
 a = [ "yes!", "yeah!!", 1 ]
 
 print(a[{

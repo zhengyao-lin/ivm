@@ -13,7 +13,7 @@ try: {
 	try: 1 + {}
 	catch: print("inner")
 	print("mid")
-	i + {}
+	1 + {}
 }
 catch: print("outer")
 

@@ -8,8 +8,8 @@
 #include "instr.h"
 
 ivm_instr_t *
-ivm_frame_popCatch(ivm_frame_t *frame,
-				   ivm_object_t ***sp_p)
+ivm_frame_popToCatch(ivm_frame_t *frame,
+					 ivm_object_t ***sp_p)
 {
 	ivm_instr_t *catc;
 
@@ -19,6 +19,17 @@ ivm_frame_popCatch(ivm_frame_t *frame,
 	} while (ivm_frame_popBlock(frame, sp_p));
 
 	return IVM_NULL;
+}
+
+void
+ivm_frame_popAllCatch(ivm_frame_t *frame,
+					  ivm_object_t ***sp_p)
+{
+	do {
+		if (!ivm_frame_popCurCatch(frame)) return;
+	} while (ivm_frame_popBlock(frame, sp_p));
+
+	return;
 }
 
 void

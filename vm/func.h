@@ -74,20 +74,16 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_parameter_t) ivm_param_list_iterator_t;
 #define IVM_PARAM_LIST_ITER_GET(iter) (*(iter))
 #define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_parameter_t)
 
-enum {
-	IVM_INTSIG_NONE			= 0,
-	IVM_INTSIG_RETN			= 1 << 0,
-	IVM_INTSIG_BREAK		= 1 << 1,
-	IVM_INTSIG_CONTINUE		= 1 << 2
-};
+typedef ivm_ptlist_t ivm_func_list_t;
 
 typedef struct ivm_function_t_tag {
-	ivm_bool_t is_native;
 	union {
 		ivm_exec_t body;
 		ivm_native_function_t native;
 	} u;
-	// ivm_signal_mask_t intsig;
+
+	ivm_uint_t ref;
+	ivm_bool_t is_native;
 } ivm_function_t;
 
 ivm_function_t *
@@ -109,6 +105,14 @@ ivm_function_free(ivm_function_t *func,
 
 #define ivm_function_getStringPool(func) ivm_exec_pool(&(func)->u.body)
 
+IVM_INLINE
+ivm_function_t *
+ivm_function_addRef(ivm_function_t *func)
+{
+	func->ref++;
+	return func;
+}
+
 /*
 IVM_INLINE
 ivm_int_t
@@ -122,13 +126,13 @@ ivm_function_getMaxStack(const ivm_function_t *func)
 typedef struct {
 	IVM_OBJECT_HEADER
 	ivm_context_t *scope;
-	const ivm_function_t *val;
+	ivm_function_t *val;
 } ivm_function_object_t;
 
 ivm_object_t *
 ivm_function_object_new(struct ivm_vmstate_t_tag *state,
 						ivm_context_t *scope,
-						const ivm_function_t *func);
+						ivm_function_t *func);
 
 IVM_INLINE
 ivm_object_t *
@@ -162,7 +166,7 @@ typedef ivm_ptpool_t ivm_function_pool_t;
 #define ivm_function_pool_dumpAll ivm_ptpool_dumpAll
 
 typedef ivm_size_t ivm_func_id_t;
-typedef ivm_ptlist_t ivm_func_list_t;
+// typedef ivm_func_list_t -> above ivm_function_t
 typedef IVM_PTLIST_ITER_TYPE(ivm_function_t *) ivm_func_list_iterator_t;
 
 #define ivm_func_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_FUNC_LIST_BUFFER_SIZE))
@@ -189,7 +193,7 @@ ivm_func_list_register(ivm_func_list_t *list,
 			return IVM_FUNC_LIST_ITER_INDEX(list, fiter);
 	}
 */
-	return ivm_ptlist_push(list, func);
+	return ivm_ptlist_push(list, ivm_function_addRef(func));
 }
 
 IVM_INLINE
