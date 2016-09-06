@@ -75,6 +75,15 @@ add_subdirectory(vm)
 add_subdirectory(std)
 add_subdirectory(util)
 
+# search for mods
+file(GLOB mod_list "mod/*")
+foreach(dir ${mod_list})
+	add_subdirectory(${dir})
+	message(STATUS "Find module ${dir}")
+endforeach(dir ${mod_list})
+
+file(MAKE_DIRECTORY "${LIBRARY_OUTPUT_PATH}/ivm/mod")
+
 # search for apps
 file(GLOB app_list "app/*")
 foreach(dir ${app_list})

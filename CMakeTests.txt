@@ -60,7 +60,7 @@ foreach(ias_file ${ias_test_list})
 		string(SUBSTRING "${output}" 0 64 output)
 		set(output "${output}...")
 	endif()
-	message(STATUS "Find ias test ${ias_file}\npass result: ${output}\n")
+	message(STATUS "Find ias test ${ias_file}") # \npass result: ${output}\n
 
 	add_ias_test(${ias_file} "${result}")
 endforeach(ias_file)
@@ -94,9 +94,7 @@ foreach(ink_file ${ink_test_list})
 		string(SUBSTRING "${output}" 0 64 output)
 		set(output "${output}...")
 	endif()
-	message(STATUS "Find ink test ${ink_file}\npass result: ${output}\n")
+	message(STATUS "Find ink test ${ink_file}") # \npass result: ${output}\n
 
 	add_ink_test(${ink_file} "${result}")
 endforeach(ink_file)
-
-# add_ias_test("test/op1.ias" "hey (.|..|...)!\n")

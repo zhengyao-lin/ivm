@@ -1,3 +1,5 @@
+# usage: add_lib/exe/mod_batch({name} "file1" "file2" "*.c" ...)
+
 macro(add_lib_batch lib_name linkage)
 	file(GLOB c_list ${ARGN})
 	add_library(${lib_name} ${linkage} ${c_list})
@@ -8,4 +10,12 @@ macro(add_exe_batch exe_name)
 	file(GLOB c_list ${ARGN})
 	add_executable(${exe_name} ${c_list})
 	install(TARGETS ${exe_name} DESTINATION bin)
+endmacro()
+
+macro(add_mod_batch mod_name)
+	file(GLOB c_list ${ARGN})
+	add_library(${mod_name} SHARED ${c_list})
+	set(CMAKE_SHARED_LIBRARY_PREFIX "")
+	set(LIBRARY_OUTPUT_PATH "${LIBRARY_OUTPUT_PATH}/ivm/mod")
+	install(TARGETS ${mod_name} DESTINATION ivm/mod)
 endmacro()
