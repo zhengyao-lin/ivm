@@ -32,18 +32,21 @@ IVM_NATIVE_FUNC(_list_push)
 
 IVM_NATIVE_FUNC(_list_slice)
 {
-	ivm_number_t start, end = IVM_NUMBER_MAX + 1, step = 1;
+	ivm_number_t start, end, step = 1;
 	ivm_long_t size;
 	ivm_object_t **lst;
 	ivm_list_object_t *list;
 	ivm_object_t *ret;
 
 	CHECK_BASE(IVM_LIST_OBJECT_T);
+
+	list = NAT_BASE_C(ivm_list_object_t);
+	end = ivm_list_object_getSize(list);
+
 	MATCH_ARG("n*nn", &start, &end, &step);
 
 	RTM_ASSERT(step <= -1 || step >= 1, ERR_MSG_ILLEGAL_STEP);
 
-	list = NAT_BASE_C(ivm_list_object_t);
 	start = ivm_list_object_realIndex(list, start);
 	end = ivm_list_object_realIndex(list, end);
 	step = (ivm_long_t)step;

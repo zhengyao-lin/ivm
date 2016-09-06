@@ -47,7 +47,7 @@ typedef ivm_int_t				ivm_type_tag_t;
 
 typedef ivm_double_t			ivm_number_t;
 
-#define IVM_NUMBER_MAX			DBL_MAX
+#define IVM_NUMBER_MAX			(DBL_MAX + DBL_MAX)
 
 typedef ivm_size_t				ivm_function_id_t;
 

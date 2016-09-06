@@ -295,11 +295,28 @@ ivm_slot_table_setExistSlot_cc(ivm_slot_table_t *table,
 }
 
 IVM_INLINE
+ivm_bool_t
+ivm_slot_table_hasOop(ivm_slot_table_t *table)
+{
+	ivm_object_t **i, **end;
+	ivm_uint_t count = table->mark.sub.oop_count;
+
+	if (count) {
+		for (i = table->oops, end = i + count;
+			 i != end; i++) {
+			if (*i) return IVM_TRUE;
+		}
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
 void
 ivm_slot_table_setOop(ivm_slot_table_t *table,
-					 ivm_vmstate_t *state,
-					 ivm_int_t op,
-					 ivm_object_t *func)
+					  ivm_vmstate_t *state,
+					  ivm_int_t op,
+					  ivm_object_t *func)
 {
 	ivm_int_t osize, size;
 	ivm_object_t **oops;
@@ -328,7 +345,7 @@ ivm_slot_table_setOop(ivm_slot_table_t *table,
 IVM_INLINE
 ivm_object_t *
 ivm_slot_table_getOop(ivm_slot_table_t *table,
-					 ivm_int_t op)
+					  ivm_int_t op)
 {
 	if (!table || op >= table->mark.sub.oop_count) {
 		return IVM_NULL;

@@ -83,6 +83,7 @@ ivm_object_new_t(struct ivm_vmstate_t_tag *state,
 	ret->slots = slots;
 	if (slots) {
 		ivm_slot_table_setLinked(slots);
+		ret->mark.sub.oop = ivm_slot_table_hasOop(slots);
 	}
 
 	return ret;
