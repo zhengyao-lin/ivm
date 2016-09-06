@@ -83,12 +83,11 @@ ivm_runtime_dump(ivm_runtime_t *runtime,
 	ivm_frame_hasBlock(runtime)
 
 IVM_INLINE
-void
+struct ivm_object_t_tag ** /* new_bp */
 ivm_runtime_pushBlock(ivm_runtime_t *runtime,
 					  ivm_size_t sp)
 {
-	ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), sp);
-	return;
+	return ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), sp);
 }
 
 IVM_INLINE

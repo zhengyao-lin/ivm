@@ -211,6 +211,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	IVM_REG ivm_uniop_proc_t tmp_uni_proc;
 	IVM_REG ivm_binop_proc_t tmp_bin_proc;
 	IVM_REG ivm_ptr_t tmp_cmp_reg = 0;
+	// IVM_REG ivm_block_t tmp_block = IVM_NULL;
 
 	IVM_REG const ivm_string_t *tmp_str;
 	// IVM_REG ivm_context_t *tmp_ctx;

@@ -18,6 +18,8 @@ typedef struct {
 	ivm_size_t sp; // count of element on the stack
 } ivm_block_t;
 
+#define ivm_block_setCatch(block, val) ((block)->catc = (val))
+
 #define ivm_block_getCatch(block) ((block)->catc)
 #define ivm_block_getSp(block) ((block)->sp)
 
@@ -66,7 +68,7 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
 IVM_INLINE
-struct ivm_object_t_tag ** /* new bp */
+struct ivm_object_t_tag ** /* new_bp */
 ivm_frame_pushBlock(ivm_frame_t *frame,
 					ivm_size_t sp /* AVAIL_STACK */)
 {
@@ -110,10 +112,7 @@ void
 ivm_frame_setCurCatch(ivm_frame_t *frame,
 					  ivm_instr_t *catc)
 {
-	if (frame->cur_block) {
-		frame->blocks[frame->cur_block - 1].catc = catc;
-	}
-
+	frame->blocks[frame->cur_block - 1].catc = catc;
 	return;
 }
 

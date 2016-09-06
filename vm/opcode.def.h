@@ -932,15 +932,14 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	SAVE_STACK();
-	ivm_runtime_pushBlock(_RUNTIME, AVAIL_STACK);
-	UPDATE_STACK();
+	UPDATE_BP(ivm_runtime_pushBlock(_RUNTIME, AVAIL_STACK));
 	NEXT_INSTR();
 })
 
 OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
 	SAVE_STACK();
 	ivm_runtime_popBlock(_RUNTIME);
-	UPDATE_STACK();
+	UPDATE_STACK_C();
 	NEXT_INSTR();
 })
 

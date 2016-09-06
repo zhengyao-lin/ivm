@@ -1,33 +1,4 @@
-[].proto.each = fn f:
-	for loc e in base:
-		f(e)
-
-[].proto.apply = fn f: (
-	loc r = [],
-	for loc e in base: r.push(f(e)),
-	r
-)
-
-[].proto.sum = fn: {
-	if !base.size(): none
-	else: {
-		loc s = base[0]
-		for loc e in base.slice(1):
-			s = s + e
-		s
-	}
-}
-
-[].proto.cat = fn mid: {
-	if !base.size(): none
-	else: {
-		mid = mid || ""
-		loc s = base[0]
-		for loc e in base.slice(1):
-			s = s + mid + e
-		s
-	}
-}
+import ulist
 
 a = [0, 0, 0]
 

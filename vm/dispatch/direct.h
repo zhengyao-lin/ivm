@@ -346,6 +346,12 @@
 	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
+#define UPDATE_BP(val) (tmp_bp = (val))
+
+#define UPDATE_STACK_C() \
+	(tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP), \
+	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
+
 #define INVOKE_STACK() (tmp_bp = tmp_sp)
 #define RETURN_STACK() \
 	(tmp_sp = tmp_bp, tmp_bp = IVM_RUNTIME_GET(tmp_runtime, BP))
@@ -357,6 +363,7 @@
 #define _TMP_UNI_PROC (tmp_uni_proc)
 #define _TMP_BIN_PROC (tmp_bin_proc)
 #define _TMP_CMP_REG (tmp_cmp_reg)
+#define _TMP_BLOCK (tmp_block)
 #define _TMP_STR (tmp_str)
 #define _TMP_FUNC (tmp_func)
 #define _TMP_ARGC (tmp_argc)

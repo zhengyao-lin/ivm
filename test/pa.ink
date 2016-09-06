@@ -1,3 +1,5 @@
+import ulist
+
 loc f = fn args...: {
 	for loc i in args:
 		print(typeof(i))
@@ -25,14 +27,7 @@ pa(1, "hi", [], "hey", fn: 0)
 // -> "str: numeric"
 // -> "str: string"
 
-[].proto.apply = fn f: {
-	r = []
-	for loc e in base:
-		r.push(f(e))
-	r
-}
-
-[].proto.gen = fn count: {
+gen = fn count: {
 	r = []
 	i = 1
 
@@ -46,7 +41,7 @@ pa(1, "hi", [], "hey", fn: 0)
 
 loc power2 = fn a: a * a
 
-for i in [].gen(50).apply(power2(_)):
+for i in gen(50).apply(power2(_)):
 	print(i)
 
 // -> "num: 1"
