@@ -32,7 +32,7 @@ file(GLOB ink_test_list "test/*.ink")
 set(res_regx "[ \t]*->[ \t]*\"(.*)\"[ \t]*")
 
 foreach(ias_file ${ias_test_list})
-	file(STRINGS ${ias_file} ias_lines ENCODING UTF-8)
+	file(STRINGS ${ias_file} ias_lines)
 
 	set(result "")
 
