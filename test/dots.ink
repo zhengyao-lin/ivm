@@ -199,10 +199,6 @@ loc Arena = fn h, w: {
 	}
 }
 
-print(math.cos(math.rad(30)))
-print(math.sin(math.rad(30)))
-print(math.tan(math.rad(30)))
-
 loc v1 = Vel(4, 30)
 loc v2 = Vel(3, 120)
 
@@ -361,9 +357,6 @@ test5()
 
 ret
 
-// -> "num: 0.8660254037844387"
-// -> "num: 0.49999999999999994"
-// -> "num: 0.5773502691896257"
 // -> "str: vel: 4m/s, 30deg"
 // -> "str: vel: 2.9999999999999996m/s, 120deg"
 // -> "str: vel: 5m/s, 66.86989764584402deg"

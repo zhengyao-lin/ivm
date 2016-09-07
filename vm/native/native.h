@@ -8,6 +8,7 @@
 #include "nlistobj.h"
 #include "nstrobj.h"
 #include "nfunc.h"
+#include "nnum.h"
 
 /* 0 for success, other return stand for the position of the wrong argument */
 ivm_int_t
