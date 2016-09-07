@@ -166,6 +166,7 @@ ivm_collector_quickCheck(ivm_object_t *obj,
 	return IVM_NULL;
 }
 
+/* obj == *addr */
 IVM_INLINE
 ivm_bool_t /* false for trav */
 ivm_collector_quickCheck_p(ivm_object_t *obj,
@@ -175,7 +176,6 @@ ivm_collector_quickCheck_p(ivm_object_t *obj,
 	// older generation -> skip
 	if (IVM_OBJECT_GET(obj, GEN) &&
 		!arg->gen) {
-		*addr = obj;
 		return IVM_TRUE;
 	}
 
@@ -208,8 +208,7 @@ ivm_collector_copyObject_p(ivm_object_t *obj,
 						   ivm_traverser_arg_t *arg,
 						   ivm_object_t **addr)
 {
-	if (!obj) *addr = IVM_NULL;
-	else if (!ivm_collector_quickCheck_p(obj, arg, addr))
+	if (obj && !ivm_collector_quickCheck_p(obj, arg, addr))
 		*addr = ivm_collector_copyObject_c(obj, arg);
 	return;
 }

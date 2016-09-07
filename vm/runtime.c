@@ -33,7 +33,7 @@ ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 	return;
 }
 
-void
+ivm_instr_t *
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_vmstate_t *state,
 				   const ivm_exec_t *exec,
@@ -44,10 +44,9 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 
 	IVM_FRAME_INIT_HEADER(runtime);
 
-	runtime->ip = ivm_exec_instrPtrStart(exec);
 	runtime->offset = ivm_exec_offset(exec);
 
-	return;
+	return runtime->ip = ivm_exec_instrPtrStart(exec);
 }
 
 ivm_context_t *

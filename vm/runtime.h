@@ -62,7 +62,7 @@ void
 ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 						 struct ivm_vmstate_t_tag *state,
 						 ivm_context_t *ctx);
-void
+ivm_instr_t *
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_exec_t *exec,

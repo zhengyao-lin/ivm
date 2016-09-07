@@ -650,17 +650,6 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	CHECK_STACK(_TMP_ARGC + 1);
 	_TMP_OBJ1 = STACK_POP();
 
-	// IVM_TRACE("hi\n");
-	// IVM_TRACE("%p\n", _TMP_OBJ1);
-
-	// IVM_TRACE("invoke! %p\n", _TMP_OBJ1);
-	// 
-	
-	// if (!IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T)) {
-	// 	STACK_PUSH(ivm_numeric_new(_STATE, 10016));
-	//	NEXT_INSTR();
-	// }
-
 	_TMP_ARGV = STACK_CUR();
 	STACK_CUT(_TMP_ARGC);
 
@@ -676,19 +665,23 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		}
 	}
 
-	//RTM_ASSERT(IVM_IS_TYPE(_TMP_OBJ1, IVM_FUNCTION_OBJECT_T),
-	//		   IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-	
 	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 
 	SAVE_RUNTIME(_INSTR + 1);
 
-	if (ivm_function_invoke(
-			_TMP_FUNC, _STATE,
-			ivm_function_object_getScope(
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _RUNTIME, _FRAME_STACK
-		)) {
+	_INSTR = ivm_function_invoke(
+		_TMP_FUNC, _STATE,
+		ivm_function_object_getScope(
+			IVM_AS(_TMP_OBJ1, ivm_function_object_t)
+		), _RUNTIME, _FRAME_STACK
+	);
+
+	if (_INSTR) {
+		INVOKE_STACK();
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+		STACK_INC_C(_TMP_ARGC);
+		INVOKE();
+	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
 		INVOKE_STACK();
@@ -708,11 +701,6 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		}
 
 		RETURN();
-	} else {
-		INVOKE_STACK();
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC_C(_TMP_ARGC);
-		INVOKE();
 	}
 })
 
@@ -743,12 +731,19 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 
 	SAVE_RUNTIME(_INSTR + 1);
 
-	if (ivm_function_invokeBase(
-			_TMP_FUNC, _STATE,
-			ivm_function_object_getScope(
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
-		)) {
+	_INSTR = ivm_function_invokeBase(
+		_TMP_FUNC, _STATE,
+		ivm_function_object_getScope(
+			IVM_AS(_TMP_OBJ1, ivm_function_object_t)
+		), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
+	);
+
+	if (_INSTR) {
+		INVOKE_STACK();
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+		STACK_INC_C(_TMP_ARGC);
+		INVOKE();
+	} else {
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
 		INVOKE_STACK();
@@ -768,11 +763,6 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 		}
 
 		RETURN();
-	} else {
-		INVOKE_STACK();
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC_C(_TMP_ARGC);
-		INVOKE();
 	}
 })
 

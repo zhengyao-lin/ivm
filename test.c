@@ -170,7 +170,7 @@ int test_call()
 	int i;
 	ivm_vmstate_t *state;
 	ivm_function_t *top, *empty;
-	ivm_exec_t *exec1;
+	ivm_exec_t *exec1, *exec2;
 	ivm_string_pool_t *str_pool;
 	ivm_coro_t *coro;
 	ivm_context_t *ctx;
@@ -214,6 +214,7 @@ int test_call()
 	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
 
 	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
+	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);
 
 	top = ivm_function_new(state, IVM_NULL);
 	empty = ivm_function_new(state, IVM_NULL);
@@ -260,6 +261,7 @@ int test_call()
 	/********************** code ***********************/
 
 	ivm_function_setExec(top, state, exec1);
+	ivm_function_setExec(empty, state, exec2);
 
 	ivm_coro_setRoot(coro, state,
 					 IVM_AS(ivm_function_object_new(state, IVM_NULL, top),
@@ -282,6 +284,7 @@ int test_call()
 	ivm_context_free(ctx, state);
 	ivm_vmstate_free(state);
 	ivm_exec_free(exec1);
+	ivm_exec_free(exec2);
 
 	return 0;
 }

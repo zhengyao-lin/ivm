@@ -162,20 +162,17 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_function_object_t *root)
 {
 	const ivm_function_t *tmp_func = ivm_function_object_getFunc(root);
-	ivm_bool_t ret;
 
 	IVM_ASSERT(!ivm_coro_isAlive(coro), IVM_ERROR_MSG_RESET_CORO_ROOT);
 
 	// IVM_TRACE("init: %d\n", ivm_function_getMaxStack(tmp_func));
 	// ivm_vmstack_inc_c(&coro->stack, coro, ivm_function_getMaxStack(tmp_func));
 
-	ret = ivm_function_createRuntime(
+	IVM_ASSERT(ivm_function_createRuntime( /*  start ip not null*/
 		tmp_func, state,
 		ivm_function_object_getScope(root),
 		coro
-	);
-
-	IVM_ASSERT(!ret, IVM_ERROR_MSG_CORO_NATIVE_ROOT);
+	), IVM_ERROR_MSG_CORO_NATIVE_ROOT);
 
 	coro->alive = IVM_TRUE;
 
@@ -193,12 +190,12 @@ ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
 {
-	ivm_frame_t *tmp_frame;
-	ivm_runtime_t *tmp_runtime;
+	register ivm_frame_t *tmp_frame;
+	register ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
 	ivm_frame_stack_t *tmp_frame_st;
 
-	ivm_context_t *tmp_context;
+	register ivm_context_t *tmp_context;
 
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -296,33 +293,32 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 		UPDATE_STACK();
 
 		while (1) {
-ACTION_INVOKE:
 			tmp_ip = IVM_RUNTIME_GET(tmp_runtime, IP);
+			
+ACTION_INVOKE:
 ACTION_RAISE_NEXT:
 			tmp_context = IVM_RUNTIME_GET(tmp_runtime, CONTEXT);
 
-			if (tmp_ip) {
-
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 			
-				/* for single line debug */
-				// IVM_PER_INSTR_DBG(DBG_RUNTIME());
+			/* for single line debug */
+			// IVM_PER_INSTR_DBG(DBG_RUNTIME());
 
-				/* jump to the first opcode */
-				goto *(ivm_instr_entry(tmp_ip));
+			/* jump to the first opcode */
+			goto *(ivm_instr_entry(tmp_ip));
 
-				#define OPCODE_GEN(o, name, arg, st_inc, ...) \
-					OPCODE_##o:                               \
-						IVM_PER_INSTR_DBG(DBG_RUNTIME());     \
-						__VA_ARGS__
+			#define OPCODE_GEN(o, name, arg, st_inc, ...) \
+				OPCODE_##o:                               \
+					IVM_PER_INSTR_DBG(DBG_RUNTIME());     \
+					__VA_ARGS__
 
-					#include "opcode.def.h"
-				#undef OPCODE_GEN
+				#include "opcode.def.h"
+			#undef OPCODE_GEN
 
 #else
-				#error require a dispatch method
+			#error require a dispatch method
 #endif
-			}
+
 #if 0
 END_EXEC:
 

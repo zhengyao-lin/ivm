@@ -16,17 +16,16 @@ IVM_COM_HEADER
 #define INVOKE_HANDLER(e1, e2) \
 	if (func->is_native) {                                          \
 		ivm_runtime_invokeNative(runtime, state, ctx);              \
-		return IVM_TRUE;                                            \
+		return IVM_NULL;                                            \
 	}                                                               \
                                                                     \
 	e1;                                                             \
-	ivm_runtime_invoke(runtime, state, &func->u.body, ctx);         \
 	e2;                                                             \
                                                                     \
-	return IVM_FALSE;
+	return ivm_runtime_invoke(runtime, state, &func->u.body, ctx);
 
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
@@ -40,7 +39,7 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 
 // no new local context
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 _ivm_function_invoke_r(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
@@ -51,7 +50,7 @@ _ivm_function_invoke_r(const ivm_function_t *func,
 
 // with base
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
@@ -73,7 +72,7 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 #undef INVOKE_HANDLER
 
 IVM_INLINE
-ivm_bool_t
+ivm_instr_t *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   ivm_vmstate_t *state,
 						   ivm_context_t *ctx,
@@ -84,11 +83,12 @@ ivm_function_createRuntime(const ivm_function_t *func,
 
 	IVM_RUNTIME_SET(runtime, SP, sp);
 	IVM_RUNTIME_SET(runtime, BP, sp);
+
 	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 ivm_function_invoke(const ivm_function_t *func,
 					ivm_vmstate_t *state,
 					ivm_context_t *ctx,
@@ -100,7 +100,7 @@ ivm_function_invoke(const ivm_function_t *func,
 }
 
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 ivm_function_invokeBase(const ivm_function_t *func,
 						ivm_vmstate_t *state,
 						ivm_context_t *ctx,
@@ -113,7 +113,7 @@ ivm_function_invokeBase(const ivm_function_t *func,
 }
 
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 ivm_function_invoke_r(const ivm_function_t *func,
 					  ivm_vmstate_t *state,
 					  ivm_coro_t *coro,
@@ -127,7 +127,7 @@ ivm_function_invoke_r(const ivm_function_t *func,
 }
 
 IVM_INLINE
-ivm_bool_t // is native
+ivm_instr_t *
 ivm_function_object_invoke(ivm_function_object_t *obj,
 						   ivm_vmstate_t *state,
 						   ivm_coro_t *coro)
