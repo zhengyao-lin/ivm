@@ -9,8 +9,7 @@ ivm_ptpool_t *
 ivm_ptpool_new(ivm_size_t ecount,
 			   ivm_size_t esize)
 {
-	ivm_ptpool_t *ret = STD_ALLOC(sizeof(*ret),
-								  ivm_ptpool_t *);
+	ivm_ptpool_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptpool"));
 

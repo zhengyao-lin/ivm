@@ -6,8 +6,7 @@
 ivm_ptlist_t *
 ivm_ptlist_new_c(ivm_size_t buf_size)
 {
-	ivm_ptlist_t *ret = STD_ALLOC(sizeof(*ret),
-								  ivm_ptlist_t *);
+	ivm_ptlist_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist"));
 
@@ -17,9 +16,7 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 	= buf_size;
 
 	ret->cur = 0;
-	ret->lst = STD_ALLOC(sizeof(*ret->lst)
-						 * buf_size,
-						 void **);
+	ret->lst = STD_ALLOC(sizeof(*ret->lst) * buf_size);
 
 	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
 
@@ -45,9 +42,7 @@ ivm_ptlist_init_c(ivm_ptlist_t *ptlist,
 	= buf_size;
 
 	ptlist->cur = 0;
-	ptlist->lst = STD_ALLOC(sizeof(*ptlist->lst)
-							* buf_size,
-							void **);
+	ptlist->lst = STD_ALLOC(sizeof(*ptlist->lst) * buf_size);
 
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
 
@@ -59,10 +54,11 @@ ivm_ptlist_init_c(ivm_ptlist_t *ptlist,
 void
 ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 {
-	ptlist->lst = STD_REALLOC(ptlist->lst,
-							  sizeof(*ptlist->lst)
-							  * (ptlist->alloc = ptlist->cur),
-							  void **);
+	ptlist->lst = STD_REALLOC(
+		ptlist->lst,
+		sizeof(*ptlist->lst) * (ptlist->alloc = ptlist->cur)
+	);
+
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted pointer list"));
 
 	return;
@@ -87,8 +83,7 @@ ivm_ptlist_indexOf_c(ivm_ptlist_t *ptlist, void *ptr,
 ivm_list_t *
 ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 {
-	ivm_list_t *ret = STD_ALLOC(sizeof(*ret),
-								ivm_list_t *);
+	ivm_list_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list"));
 
@@ -97,8 +92,7 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 	ret->esize = esize;
 	ret->alloc = buf_size;
 	ret->cur = 0;
-	ret->lst = STD_ALLOC(esize * buf_size,
-						 ivm_byte_t *);
+	ret->lst = STD_ALLOC(esize * buf_size);
 
 	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
 
@@ -115,8 +109,7 @@ ivm_list_init_c(ivm_list_t *list,
 	list->esize = esize;
 	list->alloc = buf_size;
 	list->cur = 0;
-	list->lst = STD_ALLOC(esize * buf_size,
-						  ivm_byte_t *);
+	list->lst = STD_ALLOC(esize * buf_size);
 
 	IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
 

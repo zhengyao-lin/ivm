@@ -41,8 +41,8 @@ _ivm_frame_stack_expand(ivm_frame_stack_t *stack)
 	stack->alloc <<= 1;
 	stack->frames = STD_REALLOC(stack->frames,
 								sizeof(ivm_frame_t)
-								* stack->alloc,
-								ivm_frame_t *);
+								* stack->alloc);
+	
 	IVM_ASSERT(stack->frames,
 			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded frame stack buffer"));
 

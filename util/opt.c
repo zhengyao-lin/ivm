@@ -21,8 +21,7 @@ _ivm_opt_il_new(ivm_string_pool_t *pool,
 				ivm_size_t size,
 				ivm_bool_t cached)
 {
-	ivm_opt_il_t *ret = STD_ALLOC_INIT(sizeof(*ret),
-									   ivm_opt_il_t *);
+	ivm_opt_il_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("opt il"));
 

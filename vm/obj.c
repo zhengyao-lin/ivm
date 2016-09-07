@@ -15,8 +15,7 @@
 ivm_type_t *
 ivm_type_new(ivm_type_t type)
 {
-	ivm_type_t *ret = STD_ALLOC(sizeof(*ret),
-								ivm_type_t *);
+	ivm_type_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
 

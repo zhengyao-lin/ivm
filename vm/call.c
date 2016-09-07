@@ -37,9 +37,7 @@ ivm_frame_stack_init(ivm_frame_stack_t *stack)
 {
 	stack->alloc = IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE;
 	stack->top = 0;
-	stack->frames = STD_ALLOC(sizeof(ivm_frame_t)
-							  * IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE,
-							  ivm_frame_t *);
+	stack->frames = STD_ALLOC(sizeof(ivm_frame_t) * IVM_DEFAULT_FRAME_STACK_BUFFER_SIZE);
 
 	IVM_ASSERT(stack->frames, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame stack buffer"));
 
@@ -49,8 +47,7 @@ ivm_frame_stack_init(ivm_frame_stack_t *stack)
 ivm_frame_stack_t *
 ivm_frame_stack_new()
 {
-	ivm_frame_stack_t *ret = STD_ALLOC(sizeof(ivm_frame_stack_t),
-									   ivm_frame_stack_t *);
+	ivm_frame_stack_t *ret = STD_ALLOC(sizeof(ivm_frame_stack_t));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame stack"));
 

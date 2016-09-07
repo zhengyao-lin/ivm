@@ -76,9 +76,7 @@ ivm_frame_pushBlock(ivm_frame_t *frame,
 		frame->block_alloc) {
 		frame->block_alloc += 2;
 		frame->blocks =
-		STD_REALLOC(frame->blocks,
-					sizeof(*frame->blocks) * frame->block_alloc,
-					ivm_block_t *);
+		STD_REALLOC(frame->blocks, sizeof(*frame->blocks) * frame->block_alloc);
 	}
 
 	frame->blocks[frame->cur_block++] = ((ivm_block_t) {

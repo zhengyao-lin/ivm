@@ -15,8 +15,7 @@ ivm_vmstack_init(ivm_vmstack_t *stack)
 	stack->edge = (
 		(stack->bottom = STD_ALLOC(
 			sizeof(*stack->bottom)
-			* IVM_DEFAULT_VMSTACK_BUFFER_SIZE,
-			ivm_object_t **
+			* IVM_DEFAULT_VMSTACK_BUFFER_SIZE
 		)) + IVM_DEFAULT_VMSTACK_BUFFER_SIZE
 	);
 
@@ -28,8 +27,7 @@ ivm_vmstack_init(ivm_vmstack_t *stack)
 ivm_vmstack_t *
 ivm_vmstack_new()
 {
-	ivm_vmstack_t *ret = STD_ALLOC(sizeof(*ret),
-								   ivm_vmstack_t *);
+	ivm_vmstack_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
 
@@ -69,12 +67,7 @@ ivm_vmstack_inc(ivm_vmstack_t *stack,
 
 	stack->size <<= 1;
 	ost = stack->bottom;
-	nst = STD_REALLOC(
-		ost,
-		sizeof(*ost)
-		* stack->size,
-		ivm_object_t **
-	);
+	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
 	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
 
@@ -101,12 +94,7 @@ ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 
 	stack->size <<= 1;
 	ost = stack->bottom;
-	nst = STD_REALLOC(
-		ost,
-		sizeof(*ost)
-		* stack->size,
-		ivm_object_t **
-	);
+	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
 	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
 
@@ -147,12 +135,7 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 	}
 
 	ost = stack->bottom;
-	nst = STD_REALLOC(
-		ost,
-		sizeof(*ost)
-		* stack->size,
-		ivm_object_t **
-	);
+	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
 	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
 

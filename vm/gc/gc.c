@@ -20,8 +20,7 @@
 ivm_collector_t *
 ivm_collector_new()
 {
-	ivm_collector_t *ret = STD_ALLOC(sizeof(*ret),
-									 ivm_collector_t *);
+	ivm_collector_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
 

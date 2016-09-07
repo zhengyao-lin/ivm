@@ -28,7 +28,7 @@ ivm_file_new(const ivm_char_t *path,
 	ivm_file_raw_t fp = IVM_FOPEN(path, mode);
 	if (!fp) return IVM_NULL;
 
-	ret = STD_ALLOC(sizeof(*ret), ivm_file_t *);
+	ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("file"));
 
@@ -71,8 +71,7 @@ ivm_file_readAll(ivm_file_t *file)
 	ivm_file_raw_t fp = file->fp;
 	ivm_size_t cur = IVM_FTELL(fp);
 	ivm_size_t len = _ivm_file_length(file);
-	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1),
-								ivm_char_t *);
+	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
 	FGOTO(fp, HEAD);
 	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {

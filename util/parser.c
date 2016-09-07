@@ -267,7 +267,7 @@ ivm_parser_parseStr(const ivm_char_t *str,
 					ivm_size_t len,
 					const ivm_char_t **err)
 {
-	ivm_char_t *buf = STD_ALLOC(sizeof(*buf) * (len + 1), ivm_char_t *);
+	ivm_char_t *buf = STD_ALLOC(sizeof(*buf) * (len + 1));
 
 	IVM_ASSERT(buf, IVM_ERROR_MSG_FAILED_ALLOC_NEW("parsed string"));
 

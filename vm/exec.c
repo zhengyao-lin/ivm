@@ -14,8 +14,7 @@
 ivm_source_pos_t *
 ivm_source_pos_new(const ivm_char_t *file)
 {
-	ivm_source_pos_t *ret = STD_ALLOC(sizeof(*ret),
-									  ivm_source_pos_t *);
+	ivm_source_pos_t *ret = STD_ALLOC(sizeof(*ret));
 
 	ivm_ref_init(ret);
 	ret->file = IVM_STRDUP(file);
@@ -51,9 +50,7 @@ _ivm_exec_init(ivm_exec_t *exec,
 	// exec->fin_stack = 0;
 	exec->alloc = IVM_DEFAULT_EXEC_BUFFER_SIZE;
 	exec->next = 0;
-	exec->instrs = STD_ALLOC(sizeof(*exec->instrs)
-							* IVM_DEFAULT_EXEC_BUFFER_SIZE,
-							ivm_instr_t *);
+	exec->instrs = STD_ALLOC(sizeof(*exec->instrs) * IVM_DEFAULT_EXEC_BUFFER_SIZE);
 
 	IVM_ASSERT(exec->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
 
@@ -65,7 +62,7 @@ _ivm_exec_init(ivm_exec_t *exec,
 ivm_exec_t *
 ivm_exec_new(ivm_string_pool_t *pool)
 {
-	ivm_exec_t *ret = STD_ALLOC(sizeof(*ret), ivm_exec_t *);
+	ivm_exec_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
 
@@ -114,7 +111,7 @@ ivm_exec_copy(ivm_exec_t *exec,
 	}
 
 	size = sizeof(*exec->instrs) * exec->alloc;
-	dest->instrs = STD_ALLOC(size, ivm_instr_t *);
+	dest->instrs = STD_ALLOC(size);
 	STD_MEMCPY(dest->instrs, exec->instrs, size);
 
 	return;
@@ -125,10 +122,7 @@ void
 _ivm_exec_expand(ivm_exec_t *exec)
 {
 	exec->alloc <<= 1;
-	exec->instrs = STD_REALLOC(exec->instrs,
-								sizeof(*exec->instrs)
-								* exec->alloc,
-								ivm_instr_t *);
+	exec->instrs = STD_REALLOC(exec->instrs, sizeof(*exec->instrs) * exec->alloc);
 
 	IVM_ASSERT(exec->instrs,
 			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded instruction list in executable"));
@@ -254,7 +248,7 @@ ivm_exec_unit_t *
 ivm_exec_unit_new(ivm_size_t root,
 				  ivm_exec_list_t *execs)
 {
-	ivm_exec_unit_t *ret = STD_ALLOC(sizeof(*ret), ivm_exec_unit_t *);
+	ivm_exec_unit_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable unit"));
 

@@ -9,8 +9,7 @@
 ivm_heap_t *
 ivm_heap_new(ivm_size_t bsize)
 {
-	ivm_heap_t *ret = STD_ALLOC(sizeof(*ret),
-								ivm_heap_t *);
+	ivm_heap_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap"));
 
@@ -18,13 +17,12 @@ ivm_heap_new(ivm_size_t bsize)
 	ret->bsize = bsize;
 
 	ret->btop = 0;
-	ret->blocks = STD_ALLOC(sizeof(*ret->blocks) * 2,
-							ivm_byte_t **);
+	ret->blocks = STD_ALLOC(sizeof(*ret->blocks) * 2);
 	
 	IVM_ASSERT(ret->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
 
-	ret->bcurp = ret->blocks[0] = STD_ALLOC(bsize, ivm_byte_t *);
-	ret->blocks[1] = STD_ALLOC(bsize, ivm_byte_t *);
+	ret->bcurp = ret->blocks[0] = STD_ALLOC(bsize);
+	ret->blocks[1] = STD_ALLOC(bsize);
 
 	IVM_ASSERT(ret->bcurp && ret->blocks[1], IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
 
@@ -55,13 +53,12 @@ ivm_heap_init(ivm_heap_t *heap,
 	heap->bsize = bsize;
 
 	heap->btop = 0;
-	heap->blocks = STD_ALLOC(sizeof(*heap->blocks) * 2,
-							 ivm_byte_t **);
+	heap->blocks = STD_ALLOC(sizeof(*heap->blocks) * 2);
 	
 	IVM_ASSERT(heap->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
 
-	heap->bcurp = heap->blocks[0] = STD_ALLOC(bsize, ivm_byte_t *);
-	heap->blocks[1] = STD_ALLOC(bsize, ivm_byte_t *);
+	heap->bcurp = heap->blocks[0] = STD_ALLOC(bsize);
+	heap->blocks[1] = STD_ALLOC(bsize);
 
 	IVM_ASSERT(heap->bcurp && heap->blocks[1], IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
 
@@ -108,10 +105,10 @@ ivm_heap_compact(ivm_heap_t *heap)
 	}
 
 	heap->bcount = heap->btop + 1;
-	heap->blocks = STD_REALLOC(heap->blocks,
-							   sizeof(*heap->blocks)
-							   * heap->bcount,
-							   ivm_byte_t **);
+	heap->blocks = STD_REALLOC(
+		heap->blocks,
+		sizeof(*heap->blocks) * heap->bcount
+	);
 
 	return;
 }
@@ -126,18 +123,18 @@ _ivm_heap_addLargeBlock(ivm_heap_t *heap, ivm_size_t size)
 	if (++heap->btop < heap->bcount) {
 		heap->blocks[heap->btop]
 		= cur_block
-		= STD_REALLOC(heap->blocks[heap->btop], size, ivm_byte_t *);
+		= STD_REALLOC(heap->blocks[heap->btop], size);
 	} else {
 		heap->btop = heap->bcount++;
 
-		heap->blocks = STD_REALLOC(heap->blocks,
-								   sizeof(*heap->blocks)
-								   * heap->bcount,
-								   ivm_byte_t **);
+		heap->blocks = STD_REALLOC(
+			heap->blocks,
+			sizeof(*heap->blocks) * heap->bcount
+		);
 
 		cur_block
 		= heap->blocks[heap->btop]
-		= STD_ALLOC(size, ivm_byte_t *);
+		= STD_ALLOC(size);
 	}
 
 	heap->bcurp
@@ -158,14 +155,14 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t size)
 		} else {
 			heap->btop = heap->bcount++;
 
-			heap->blocks = STD_REALLOC(heap->blocks,
-									   sizeof(*heap->blocks)
-									   * heap->bcount,
-									   ivm_byte_t **);
+			heap->blocks = STD_REALLOC(
+				heap->blocks,
+				sizeof(*heap->blocks) * heap->bcount
+			);
 
 			cur_block
 			= heap->blocks[heap->btop]
-			= STD_ALLOC(heap->bsize, ivm_byte_t *);
+			= STD_ALLOC(heap->bsize);
 		}
 
 		heap->bcurp = cur_block + size;

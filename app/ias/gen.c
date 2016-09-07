@@ -29,8 +29,7 @@
 ias_gen_env_t *
 ias_gen_env_new(ias_gen_block_list_t *block_list)
 {
-	ias_gen_env_t *ret = STD_ALLOC(sizeof(*ret),
-								   ias_gen_env_t *);
+	ias_gen_env_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("generator environment"));
 
@@ -80,8 +79,7 @@ ias_gen_label_new(const ivm_char_t *name,
 				  ias_gen_pos_t pos,
 				  ivm_size_t addr)
 {
-	ias_gen_label_t *ret = STD_ALLOC(sizeof(*ret),
-									 ias_gen_label_t *);
+	ias_gen_label_t *ret = STD_ALLOC(sizeof(*ret));
 	ias_gen_label_ref_t tmp;
 
 	ret->has_def = is_def;

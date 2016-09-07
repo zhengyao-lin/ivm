@@ -69,10 +69,7 @@ IVM_INLINE
 void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
-	ptlist->lst = STD_REALLOC(ptlist->lst,
-							  sizeof(*ptlist->lst)
-							  * (ptlist->alloc <<= 1),
-							  void **);
+	ptlist->lst = STD_REALLOC(ptlist->lst, sizeof(*ptlist->lst) * (ptlist->alloc <<= 1));
 	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
 
 	return;
@@ -169,10 +166,10 @@ ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
 {
 	if (size > ptlist->alloc) {
 		ptlist->alloc = size;
-		ptlist->lst = STD_REALLOC(ptlist->lst,
-								  sizeof(*ptlist->lst)
-								  * ptlist->alloc,
-								  void **);
+		ptlist->lst = STD_REALLOC(
+			ptlist->lst,
+			sizeof(*ptlist->lst) * ptlist->alloc
+		);
 		IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
 	}
 
@@ -234,9 +231,7 @@ void
 _ivm_list_expand(ivm_list_t *list)
 {
 	list->alloc <<= 1;
-	list->lst = STD_REALLOC(list->lst,
-							list->esize * list->alloc,
-							ivm_byte_t *);
+	list->lst = STD_REALLOC(list->lst, list->esize * list->alloc);
 	return;
 }
 

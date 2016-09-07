@@ -12,8 +12,7 @@
 ivm_runtime_t *
 ivm_runtime_new(ivm_vmstate_t *state)
 {
-	ivm_runtime_t *ret = STD_ALLOC_INIT(sizeof(*ret),
-										ivm_runtime_t *);
+	ivm_runtime_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("runtime"));
 

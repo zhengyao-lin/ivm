@@ -40,8 +40,7 @@ ivm_type_t static_type_list[] = {
 ivm_vmstate_t *
 ivm_vmstate_new()
 {
-	ivm_vmstate_t *ret = STD_ALLOC(sizeof(*ret),
-								   ivm_vmstate_t *);
+	ivm_vmstate_t *ret = STD_ALLOC(sizeof(*ret));
 	ivm_type_t *tmp_type, *end;
 	ivm_cgroup_t *tmp_group;
 	ivm_int_t i;

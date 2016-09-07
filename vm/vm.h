@@ -258,7 +258,7 @@ ivm_vmstate_allocWild(ivm_vmstate_t *state,
 	void *ret;
 
 	ivm_vmstate_addWildSize(state, size);
-	ret = STD_ALLOC(size, void *);
+	ret = STD_ALLOC(size);
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
@@ -273,7 +273,7 @@ ivm_vmstate_reallocWild(ivm_vmstate_t *state,
 	void *ret;
 
 	ivm_vmstate_addWildSize(state, size);
-	ret = STD_REALLOC(orig, size, void *);
+	ret = STD_REALLOC(orig, size);
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
@@ -294,7 +294,7 @@ ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
 
 	ivm_vmstate_addWildSize(state, size);
 	*is_wild = IVM_TRUE;
-	ret = STD_ALLOC(size, void *);
+	ret = STD_ALLOC(size);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
@@ -366,14 +366,14 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 #else
 
 #define ivm_vmstate_allocFunc(state) \
-	(STD_ALLOC(sizeof(ivm_function_t), ivm_function_t *))
+	(STD_ALLOC(sizeof(ivm_function_t)))
 #define ivm_vmstate_dumpFunc(state, func) \
 	(STD_FREE(func))
 
 #endif
 
 #define ivm_vmstate_allocFrame(state) \
-	(STD_ALLOC(sizeof(ivm_frame_t), ivm_frame_t *))
+	(STD_ALLOC(sizeof(ivm_frame_t)))
 #define ivm_vmstate_dumpFrame(state, fr) \
 	(STD_FREE(fr))
 
@@ -388,7 +388,7 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 #else
 
 #define ivm_vmstate_allocCoro(state) \
-	(STD_ALLOC(sizeof(ivm_coro_t), ivm_coro_t *))
+	(STD_ALLOC(sizeof(ivm_coro_t)))
 #define ivm_vmstate_dumpCoro(state, cr) \
 	(STD_FREE(cr))
 

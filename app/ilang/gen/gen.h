@@ -699,8 +699,7 @@ IVM_INLINE
 ilang_gen_trans_unit_t *
 ilang_gen_trans_unit_new(const ivm_char_t *file)
 {
-	ilang_gen_trans_unit_t *ret = STD_ALLOC(sizeof(*ret),
-											ilang_gen_trans_unit_t *);
+	ilang_gen_trans_unit_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("translate unit"));
 

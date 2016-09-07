@@ -90,7 +90,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
 			 ivm_context_t *context)
 {
-	ivm_object_t *mod = ivm_object_new_c(state, 17);
+	ivm_object_t *mod = ivm_object_new_c(state, 21);
 
 	#define DEF_FUNC(name) \
 		ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _math_##name))

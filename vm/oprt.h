@@ -150,9 +150,7 @@ void
 _ivm_binop_table_incTo(ivm_binop_table_t *table,
 					   ivm_size_t size) /* size >= table->size */
 {
-	table->lst = STD_REALLOC(table->lst,
-							 sizeof(ivm_binop_proc_t) * size,
-							 ivm_binop_proc_t *);
+	table->lst = STD_REALLOC(table->lst, sizeof(ivm_binop_proc_t) * size);
 	
 	STD_INIT(table->lst + table->size,
 			 sizeof(ivm_binop_proc_t) * (size - table->size));

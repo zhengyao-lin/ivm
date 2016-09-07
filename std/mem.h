@@ -27,9 +27,9 @@ _std_alloc_init_c(ivm_size_t size)
 	return calloc(1, size);
 }
 
-#define STD_ALLOC(size, type)			((type)_std_alloc_c(size))
-#define STD_ALLOC_INIT(size, type)		((type)_std_alloc_init_c(size))
-#define STD_REALLOC(origin, size, type)	((type)realloc((origin), (size)))
+#define STD_ALLOC(size)					malloc(size) // _std_alloc_c(size)
+#define STD_ALLOC_INIT(size)			calloc(1, (size)) // _std_alloc_init_c(size)
+#define STD_REALLOC(origin, size)		realloc((origin), (size))
 #define STD_FREE(p)						free(p)
 
 #define STD_INIT(p, size)				memset((p), 0x0, (size))

@@ -13,8 +13,7 @@ ivm_char_t *
 IVM_STRNDUP(const ivm_char_t *str,
 			ivm_size_t len)
 {
-	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1),
-								ivm_char_t *);
+	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string"));
 
@@ -28,7 +27,7 @@ ivm_char_t *
 ivm_strdup(const ivm_char_t *src)
 {
 	ivm_size_t size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
-	ivm_char_t *ret = STD_ALLOC(size, ivm_char_t *);
+	ivm_char_t *ret = STD_ALLOC(size);
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new string"));
 
@@ -115,8 +114,7 @@ ivm_string_compareToRaw_n(const ivm_string_t *a,
 ivm_string_pool_t *
 ivm_string_pool_new(ivm_bool_t is_fixed)
 {
-	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret),
-									   ivm_string_pool_t *);
+	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
 
@@ -125,9 +123,8 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 	
 	ret->is_fixed = is_fixed;
 	ret->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
-	ret->table = STD_ALLOC_INIT(sizeof(*ret->table)
-								* IVM_DEFAULT_STRING_POOL_BUFFER_SIZE,
-								const ivm_string_t **);
+	ret->table
+	= STD_ALLOC_INIT(sizeof(*ret->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
 
 	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
 
@@ -157,9 +154,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 
 	if (pool->is_fixed) {
 		pool->size <<= 1;
-		pool->table = STD_REALLOC(pool->table,
-								  sizeof(*pool->table) * pool->size,
-								  const ivm_string_t **);
+		pool->table = STD_REALLOC(pool->table, sizeof(*pool->table) * pool->size);
 
 		IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
 
@@ -169,8 +164,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		otable = pool->table;
 
 		pool->size <<= 1;
-		pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size,
-									 const ivm_string_t **);
+		pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size);
 
 		for (i = otable, end = otable + osize;
 			 i != end; i++) {
