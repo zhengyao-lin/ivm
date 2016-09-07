@@ -12,7 +12,15 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wpedantic -Wno-unused-value")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
+
+if(NOT CMAKE_C_COMPILER MATCHES "icc")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-value")
+endif()
+
+if(CMAKE_C_COMPILER MATCHES "clang")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-gnu-label-as-value")
+endif()
 
 # avoid warnings on MinGW
 if(NOT WIN32)
@@ -22,17 +30,13 @@ else()
 	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}\\\"")
 endif()
 
-if(CMAKE_C_COMPILER MATCHES "clang")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-gnu-label-as-value")
-endif()
-
 # set flags for different versions
 if(VERSION STREQUAL "release")
 	
 	# real releasing mode
 	message(STATUS "Compile in release mode")
 	set(CMAKE_BUILD_TYPE Release)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 elseif(VERSION STREQUAL "prerelease")
 	

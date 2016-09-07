@@ -102,7 +102,7 @@ ivm_string_utf8Length(const ivm_string_t *str)
 	ivm_size_t len;
 
 	if (str->is_ascii ||
-		str->ulen == -1) {
+		str->ulen == (ivm_uint_t)-1) {
 		return str->len;
 	} else if (str->ulen) {
 		return str->ulen;

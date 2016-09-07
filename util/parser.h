@@ -434,15 +434,15 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	goto RULE_FAILED_END; \
 	RULE_FAILED: \
 		__VA_ARGS__; \
-		return IVM_FALSE;\
-	RULE_FAILED_END: ;
+		return IVM_FALSE; \
+	RULE_FAILED_END: IVM_FATAL("impossible") return IVM_FALSE;
 
 #define MATCHED(...) \
 	goto RULE_MATCHED_END; \
 	RULE_MATCHED: \
 		__VA_ARGS__; \
 		return IVM_TRUE; \
-	RULE_MATCHED_END: ;
+	RULE_MATCHED_END: IVM_FATAL("impossible") return IVM_FALSE;
 
 #define RULE_START(name, env, ret, tokens, suc) \
 	ivm_size_t __i__ = 0; \

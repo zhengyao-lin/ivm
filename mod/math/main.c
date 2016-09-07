@@ -76,7 +76,7 @@ VAL1F(sinh)
 VAL1F(cosh)
 VAL1F(tanh)
 
-VAL1F(abs)
+VAL1F_C(abs, fabs)
 
 VAL1F_E(log, { MATH_ASSERT_POS_VAL("log") })
 VAL1F_E(log10, { MATH_ASSERT_POS_VAL("log10") })
@@ -90,7 +90,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
 			 ivm_context_t *context)
 {
-	ivm_object_t *mod = ivm_object_new_c(state, 15);
+	ivm_object_t *mod = ivm_object_new_c(state, 17);
 
 	#define DEF_FUNC(name) \
 		ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _math_##name))
