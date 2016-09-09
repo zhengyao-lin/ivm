@@ -8,6 +8,10 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
+#ifdef __FAST_MATH__
+	#error math module will not work correctly with GCC -ffast-math option open
+#endif
+
 #define C_PI 3.14159265358979323846
 
 #define C_NAN (((union { ivm_sint64_t i; ivm_double_t d; }){ .i = ~0 }).d)

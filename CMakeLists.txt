@@ -36,13 +36,13 @@ if(VERSION STREQUAL "release")
 	# real releasing mode
 	message(STATUS "Compile in release mode")
 	set(CMAKE_BUILD_TYPE Release)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 elseif(VERSION STREQUAL "prerelease")
 	
-	# prereleasing mode, used for performance test
+	# prereleasing mode
 	message(STATUS "Compile in prerelease mode")
-	set(CMAKE_BUILD_TYPE Release)
+	# set(CMAKE_BUILD_TYPE Release)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -DIVM_DEBUG=1")
 
 elseif((VERSION STREQUAL "debug") OR (NOT DEFINED VERSION))
