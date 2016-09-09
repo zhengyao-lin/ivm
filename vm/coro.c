@@ -222,6 +222,8 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	IVM_REG ivm_cgid_t tmp_cgid;
 	IVM_REG ivm_bool_t tmp_bool;
 
+	IVM_REG ivm_bool_t use_reg = IVM_FALSE;
+
 	/*****************************
 	* stack cache(support only 1 or 2 TOS cache)
 	* 

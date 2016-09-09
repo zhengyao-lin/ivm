@@ -59,7 +59,7 @@ ivm_frame_stack_push(ivm_frame_stack_t *stack,
 	}
 
 	STD_MEMCPY(stack->frames + stack->top++, runtime,
-			 IVM_FRAME_HEADER_SIZE);
+			   IVM_FRAME_HEADER_SIZE);
 
 	return;
 }
@@ -74,7 +74,7 @@ ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 	if (stack->top) {
 		runtime->sp = runtime->bp;
 		STD_MEMCPY(runtime, (ret = stack->frames + --stack->top),
-				 IVM_FRAME_HEADER_SIZE);
+				   IVM_FRAME_HEADER_SIZE);
 	}
 
 	return ret;

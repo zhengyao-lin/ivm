@@ -19,35 +19,6 @@ ivm_runtime_new(ivm_vmstate_t *state)
 	return ret;
 }
 
-void
-ivm_runtime_invokeNative(ivm_runtime_t *runtime,
-						 ivm_vmstate_t *state,
-						 ivm_context_t *ctx)
-{
-	runtime->ctx = ivm_context_addRef(ctx);
-	runtime->bp = runtime->sp;
-
-	IVM_FRAME_INIT_HEADER(runtime);
-
-	return;
-}
-
-ivm_instr_t *
-ivm_runtime_invoke(ivm_runtime_t *runtime,
-				   ivm_vmstate_t *state,
-				   const ivm_exec_t *exec,
-				   ivm_context_t *ctx)
-{
-	runtime->ctx = ivm_context_addRef(ctx);
-	runtime->bp = runtime->sp;
-
-	IVM_FRAME_INIT_HEADER(runtime);
-
-	runtime->offset = ivm_exec_offset(exec);
-
-	return runtime->ip = ivm_exec_instrPtrStart(exec);
-}
-
 ivm_context_t *
 ivm_runtime_appendContextNode(ivm_runtime_t *runtime,
 							  ivm_vmstate_t *state)

@@ -17,6 +17,7 @@ struct ivm_frame_t_tag;
 struct ivm_coro_t_tag;
 struct ivm_runtime_t_tag;
 struct ivm_traverser_arg_t_tag;
+struct ivm_frame_stack_t_tag;
 
 typedef struct {
 	ivm_object_t *base;
@@ -244,6 +245,43 @@ ivm_func_list_empty(ivm_func_list_t *list,
 
 	return;
 }
+
+void
+ivm_function_setExec(ivm_function_t *func,
+					 struct ivm_vmstate_t_tag *state,
+					 ivm_exec_t *body);
+
+ivm_instr_t *
+ivm_function_createRuntime(const ivm_function_t *func,
+						   struct ivm_vmstate_t_tag *state,
+						   ivm_context_t *ctx,
+						   struct ivm_coro_t_tag *coro);
+
+ivm_instr_t *
+ivm_function_invoke(const ivm_function_t *func,
+					struct ivm_vmstate_t_tag *state,
+					ivm_context_t *ctx,
+					struct ivm_runtime_t_tag *runtime,
+					struct ivm_frame_stack_t_tag *frame_st);
+
+ivm_instr_t *
+ivm_function_invokeBase(const ivm_function_t *func,
+						struct ivm_vmstate_t_tag *state,
+						ivm_context_t *ctx,
+						struct ivm_runtime_t_tag *runtime,
+						struct ivm_frame_stack_t_tag *frame_st,
+						ivm_object_t *base);
+
+ivm_instr_t *
+ivm_function_invoke_r(const ivm_function_t *func,
+					  struct ivm_vmstate_t_tag *state,
+					  struct ivm_coro_t_tag *coro,
+					  ivm_context_t *ctx);
+
+ivm_instr_t *
+ivm_function_object_invoke(ivm_function_object_t *obj,
+						   struct ivm_vmstate_t_tag *state,
+						   struct ivm_coro_t_tag *coro);
 
 IVM_COM_END
 

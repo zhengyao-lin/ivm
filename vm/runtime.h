@@ -58,6 +58,7 @@ ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 	(STD_FREE(runtime))
 
 /* rewrite the environment */
+/*
 void
 ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 						 struct ivm_vmstate_t_tag *state,
@@ -67,6 +68,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   struct ivm_vmstate_t_tag *state,
 				   const ivm_exec_t *exec,
 				   ivm_context_t *ctx);
+*/
 
 IVM_INLINE
 void

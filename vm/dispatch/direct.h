@@ -371,6 +371,7 @@
 #define _TMP_CATCH (tmp_catch)
 #define _TMP_CGID (tmp_cgid)
 #define _TMP_BOOL (tmp_bool)
+#define _USE_REG (use_reg)
 
 #define SET_JUMP_BACK(i) \
 	(tmp_jump_back = (i), tmp_has_jump = IVM_TRUE)

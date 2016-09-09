@@ -19,9 +19,9 @@ typedef struct ivm_context_t_tag {
 	struct ivm_context_t_tag *prev;
 	ivm_slot_table_t *slots;
 	struct {
-		ivm_uint_t gen: 1;
-		ivm_uint_t wb: 1;
-		ivm_uint_t ref: 30;
+		ivm_uint_t ref;
+		ivm_bool_t gen;
+		ivm_bool_t wb;
 	} mark;
 } ivm_context_t;
 

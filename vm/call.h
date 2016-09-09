@@ -25,17 +25,15 @@ typedef struct {
 
 /* part needed to init every call */
 #define IVM_FRAME_HEADER_INIT \
-	ivm_instr_t *ip;                       \
 	ivm_block_t *blocks;                   \
-	ivm_uint_t offset;                     \
-	ivm_uint_t no_reg: 1;                  \
-	ivm_uint_t nested_cat: 1;              \
-	ivm_uint_t cur_block: 15;              \
-	ivm_uint_t block_alloc: 15;
+	ivm_uint16_t cur_block;                \
+	ivm_uint16_t block_alloc;              \
+	ivm_uint_t offset;
 
 #define IVM_FRAME_HEADER \
 	struct ivm_context_t_tag *ctx;   \
 	struct ivm_object_t_tag **bp;    \
+	ivm_instr_t *ip;                 \
 	/* init part */                  \
 	IVM_FRAME_HEADER_INIT
 
@@ -46,7 +44,7 @@ typedef struct {
 	(sizeof(struct { IVM_FRAME_HEADER_INIT }))
 
 #define IVM_FRAME_INIT_HEADER(frame) \
-	(STD_INIT(&(frame)->ip, IVM_FRAME_HEADER_INIT_SIZE))
+	(STD_INIT(&(frame)->blocks, IVM_FRAME_HEADER_INIT_SIZE))
 
 struct ivm_vmstate_t_tag;
 struct ivm_runtime_t_tag;
@@ -59,10 +57,8 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
-#define IVM_FRAME_GET_NO_REG(frame) ((frame)->no_reg)
 
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
-#define IVM_FRAME_SET_NO_REG(frame, val) ((frame)->no_reg = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))

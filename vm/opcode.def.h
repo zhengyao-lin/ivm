@@ -481,19 +481,11 @@ OPCODE_GEN(SET_PA_ARG, "set_pa_arg", I, 0, {
 })
 
 OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
-	if (AVAIL_STACK >= 1) {
-		ivm_context_setSlot_cc(
-			_CONTEXT,
-			_STATE, SARG(), STACK_POP(),
-			_INSTR
-		);
-	} else {
-		ivm_context_setSlot_cc(
-			_CONTEXT,
-			_STATE, SARG(), IVM_NONE(_STATE),
-			_INSTR
-		);
-	}
+	ivm_context_setSlot_cc(
+		_CONTEXT,
+		_STATE, SARG(), AVAIL_STACK ? STACK_POP() : IVM_NONE(_STATE),
+		_INSTR
+	);
 
 	NEXT_INSTR();
 })
@@ -977,28 +969,28 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
 #if 1
 
 OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
-	if (IVM_RUNTIME_GET(_RUNTIME, NO_REG)) {
-		IVM_RUNTIME_SET(_RUNTIME, NO_REG, IVM_FALSE);
-		GOTO_INSTR(JUMP_TRUE);
-	}
-
-	if (_TMP_CMP_REG) {
-		GOTO_SET_INSTR(ADDR_ARG());
+	if (_USE_REG) {
+		_USE_REG = IVM_FALSE;
+		if (_TMP_CMP_REG) {
+			GOTO_SET_INSTR(ADDR_ARG());
+		} else {
+			NEXT_INSTR();
+		}
 	} else {
-		NEXT_INSTR();
+		GOTO_INSTR(JUMP_TRUE);
 	}
 })
 
 OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", A, 0, {
-	if (IVM_RUNTIME_GET(_RUNTIME, NO_REG)) {
-		IVM_RUNTIME_SET(_RUNTIME, NO_REG, IVM_FALSE);
-		GOTO_INSTR(JUMP_FALSE);
-	}
-
-	if (!_TMP_CMP_REG) {
-		GOTO_SET_INSTR(ADDR_ARG());
+	if (_USE_REG) {
+		_USE_REG = IVM_FALSE;
+		if (!_TMP_CMP_REG) {
+			GOTO_SET_INSTR(ADDR_ARG());
+		} else {
+			NEXT_INSTR();
+		}
 	} else {
-		NEXT_INSTR();
+		GOTO_INSTR(JUMP_FALSE);
 	}
 })
 
