@@ -28,6 +28,7 @@ IVM_COM_HEADER
 				sizeof(ivm_sint64_t) / 2 * 8 -                 \
 				_IVM_MARK_HEADER_BITS;                         \
 			/* ivm_uint_t oop: IVM_OOP_COUNT; */               \
+			/* need or not to check oop */                     \
 			ivm_uint_t oop: 1;                                 \
 			ivm_uint_t locked: 1;                              \
 			ivm_uint_t wb: 1;                                  \

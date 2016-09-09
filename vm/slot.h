@@ -63,7 +63,7 @@ typedef struct ivm_slot_table_t_tag {
 			ivm_uint_t oop_count: 6; // max 64
 			ivm_uint_t is_hash: 1;
 			ivm_uint_t is_linked: 1; // assert(is_linked & is_shared != 1)
-			ivm_uint_t is_shared: 1; // shared by multiple objects, need COW
+			ivm_uint_t is_shared: 1; // shared by multiple objects, need to copy on write
 			ivm_uint_t wb: 1;
 			ivm_uint_t gen: 1;
 		} sub;
@@ -121,11 +121,18 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 					struct ivm_vmstate_t_tag *state,
 					struct ivm_heap_t_tag *heap);
 
+/* merge tb to tas */
+void
+ivm_slot_table_merge(ivm_slot_table_t *ta,
+					 struct ivm_vmstate_t_tag *state,
+					 ivm_slot_table_t *tb,
+					 ivm_bool_t overw);
+
 typedef ivm_slot_t *ivm_slot_table_iterator_t;
 
 ivm_slot_table_t *
-_ivm_slot_table_copy_state(ivm_slot_table_t *table,
-						   struct ivm_vmstate_t_tag *state);
+ivm_slot_table_copy_state(ivm_slot_table_t *table,
+						  struct ivm_vmstate_t_tag *state);
 
 #define ivm_slot_table_isLinked(table) ((table)->mark.sub.is_linked)
 #define ivm_slot_table_setLinked(table) ((table)->mark.sub.is_linked = IVM_TRUE)
@@ -138,10 +145,7 @@ ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
 {
 	// IVM_TRACE("COW!!\n");
 	if (table && ivm_slot_table_isShared(table)) {
-		table = _ivm_slot_table_copy_state(table, state);
-		table->mark.sub.is_shared = IVM_FALSE;
-
-		return table;
+		return ivm_slot_table_copy_state(table, state);
 	}
 
 	return table;
@@ -153,20 +157,26 @@ ivm_slot_table_copyShared(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state)
 {
 	if (table) {
-		if (!ivm_slot_table_isLinked(table)) {
-			table->mark.sub.is_shared = IVM_TRUE;
-		} else {
-			return ivm_slot_table_copyOnWrite(table, state);
+		if (ivm_slot_table_isLinked(table)) {
+			return ivm_slot_table_copy_state(table, state);
 		}
+
+		table->mark.sub.is_shared = IVM_TRUE;
+		return table;
 	}
 	
-	return table;
+	return IVM_NULL;
 }
 
 void
 ivm_slot_table_expandTo(ivm_slot_table_t *table,
 						struct ivm_vmstate_t_tag *state,
 						ivm_size_t to);
+
+void
+_ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
+							struct ivm_vmstate_t_tag *state,
+							ivm_size_t size);
 
 #define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
 #define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))

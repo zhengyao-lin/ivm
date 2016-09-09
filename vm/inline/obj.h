@@ -83,7 +83,7 @@ ivm_object_new_t(struct ivm_vmstate_t_tag *state,
 	ret->slots = slots;
 	if (slots) {
 		ivm_slot_table_setLinked(slots);
-		ret->mark.sub.oop = ivm_slot_table_hasOop(slots);
+		ret->mark.sub.oop = IVM_TRUE; // ivm_slot_table_hasOop(slots);
 	}
 
 	return ret;
@@ -157,6 +157,27 @@ ivm_object_getOop(ivm_object_t *obj,
 	} while (obj);
 
 	return IVM_NULL;
+}
+
+IVM_INLINE
+void
+ivm_object_merge(ivm_object_t *obj,
+				 ivm_vmstate_t *state,
+				 ivm_object_t *mergee,
+				 ivm_bool_t overw)
+{
+	if (obj->slots) {
+		if (mergee->slots) {
+			ivm_slot_table_copyOnWrite(obj->slots, state);
+			ivm_slot_table_merge(obj->slots, state, mergee->slots, overw);
+			obj->mark.sub.oop |= mergee->mark.sub.oop;
+		}
+	} else if (mergee->slots) {
+		obj->slots = ivm_slot_table_copy_state(mergee->slots, state);
+		obj->mark.sub.oop = mergee->mark.sub.oop;
+	}
+
+	return;
 }
 
 IVM_COM_END

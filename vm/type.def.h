@@ -6,6 +6,8 @@ TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t), {
 	ivm_object_t *tmp = ivm_object_new(_STATE);
 	ivm_type_setProto(_TYPE, tmp);
 
+	ivm_object_setSlot_r(tmp, _STATE, "merge", IVM_NATIVE_WRAP(_STATE, _object_merge));
+
 }, .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t), {

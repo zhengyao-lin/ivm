@@ -9,6 +9,7 @@
 #include "nstrobj.h"
 #include "nfunc.h"
 #include "nnum.h"
+#include "nobj.h"
 
 /* 0 for success, other return stand for the position of the wrong argument */
 ivm_int_t

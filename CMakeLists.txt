@@ -36,7 +36,7 @@ if(VERSION STREQUAL "release")
 	# real releasing mode
 	message(STATUS "Compile in release mode")
 	set(CMAKE_BUILD_TYPE Release)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast")
 
 elseif(VERSION STREQUAL "prerelease")
 	

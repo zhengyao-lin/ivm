@@ -15,8 +15,6 @@
 #include "slot.h"
 #include "obj.h"
 
-#define SET_BIT_FALSE IVM_BIT_SET_FALSE
-#define SET_BIT_TRUE IVM_BIT_SET_TRUE
 
 IVM_PRIVATE
 IVM_INLINE
@@ -36,7 +34,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 
 	if (init >= IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD) {
 		init <<= 1; // lower load ratio
-		SET_BIT_TRUE(table->mark.sub.is_hash);
+		table->mark.sub.is_hash = IVM_TRUE;
 	}
 
 	table->size = init;
@@ -129,8 +127,8 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 }
 
 ivm_slot_table_t *
-_ivm_slot_table_copy_state(ivm_slot_table_t *table,
-						   ivm_vmstate_t *state)
+ivm_slot_table_copy_state(ivm_slot_table_t *table,
+						  ivm_vmstate_t *state)
 {
 	ivm_slot_table_t *ret;
 
@@ -139,6 +137,8 @@ _ivm_slot_table_copy_state(ivm_slot_table_t *table,
 	ivm_slot_table_setWB(ret, 0);
 	ivm_slot_table_setGen(ret, 0);
 	ivm_slot_table_setCopy(ret, IVM_NULL);
+	ret->mark.sub.is_linked = IVM_FALSE;
+	ret->mark.sub.is_shared = IVM_FALSE;
 
 	ivm_slot_table_updateUID(ret, state);
 	ret->tabl = ivm_vmstate_alloc(state,
@@ -212,7 +212,7 @@ ivm_slot_table_expandTo(ivm_slot_table_t *table,
 	ivm_slot_t *otable = table->tabl;
 	ivm_slot_t *i, *end;
 
-	if (to < osize) return;
+	if (to <= osize) return;
 
 	dsize = to << 1;
 
@@ -247,6 +247,31 @@ ivm_slot_table_expandTo(ivm_slot_table_t *table,
 }
 
 void
+_ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
+							struct ivm_vmstate_t_tag *state,
+							ivm_size_t size)
+{
+	ivm_object_t **oops;
+	ivm_int_t osize;
+
+	if (size <= table->mark.sub.oop_count) return;
+
+	osize = table->mark.sub.oop_count;
+	table->mark.sub.oop_count = size;
+
+	oops = table->oops;
+	table->oops = ivm_vmstate_allocAt(
+		state, sizeof(*table->oops) * size,
+		ivm_slot_table_getGen(table)
+	);
+
+	STD_MEMCPY(table->oops, oops, sizeof(*table->oops) * osize);
+	STD_INIT(table->oops + osize, sizeof(*table->oops) * (size - osize));
+
+	return;
+}
+
+void
 ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
 						 ivm_vmstate_t *state,
 						 const ivm_char_t *rkey,
@@ -258,5 +283,45 @@ ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
 
 	ivm_slot_table_setSlot(table, state, key, obj);
 	
+	return;
+}
+
+#define IS_EMPTY_SLOT(slot) (!(slot)->k)
+
+void
+ivm_slot_table_merge(ivm_slot_table_t *ta,
+					 ivm_vmstate_t *state,
+					 ivm_slot_table_t *tb,
+					 ivm_bool_t overw)
+{
+	ivm_slot_t *slot, *end;
+	ivm_object_t **i, **j, **oop_end;
+	ivm_size_t count;
+
+	ivm_slot_table_expandTo(ta, state, ta->size + tb->size);
+
+	for (slot = tb->tabl, end = slot + tb->size;
+		 slot != end; slot++) {
+		if (!IS_EMPTY_SLOT(slot)) {
+			if (overw) {
+				ivm_slot_table_setSlot(ta, state, slot->k, slot->v);
+			} else {
+				ivm_slot_table_setEmptySlot(ta, state, slot->k, slot->v);
+			}
+		}
+	}
+
+	count = tb->mark.sub.oop_count;
+
+	_ivm_slot_table_expandOopTo(ta, state, count);
+
+	for (i = ta->oops, j = tb->oops,
+		 oop_end = j + count;
+		 j != oop_end; i++, j++) {
+		if (*j && (overw || !*i)) {
+			*i = *j;
+		}
+	}
+
 	return;
 }
