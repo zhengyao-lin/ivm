@@ -26,7 +26,7 @@
                                                                                                \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (_TMP_OBJ2) {                                                                       \
+		if (IVM_UNLIKELY(_TMP_OBJ2)) {                                                         \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
 			SET_IARG(0);                                                                       \
@@ -57,7 +57,7 @@
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = (assign);                                                                  \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (_TMP_OBJ4) {                                                                       \
+		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
 			if (_TMP_OBJ3) {                                                                   \
 				STACK_PUSH(_TMP_OBJ3);                                                         \
@@ -96,7 +96,7 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (_TMP_OBJ4) {                                                                       \
+		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ4);                                                             \
@@ -127,7 +127,7 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (_TMP_OBJ4) {                                                                       \
+		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ4);                                                             \

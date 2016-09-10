@@ -188,7 +188,7 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 	ivm_bool_t add_block = IVM_FALSE;
 	void *ret = ivm_heap_alloc_c((state)->heaps, size, &add_block);
 
-	if (add_block) {
+	if (IVM_UNLIKELY(add_block)) {
 		ivm_vmstate_openGCFlag(state);
 	}
 
@@ -203,7 +203,7 @@ ivm_vmstate_addCopy(ivm_vmstate_t *state,
 	ivm_bool_t add_block = IVM_FALSE;
 	void *ret = ivm_heap_addCopy_c((state)->heaps, ptr, size, &add_block);
 
-	if (add_block) {
+	if (IVM_UNLIKELY(add_block)) {
 		ivm_vmstate_openGCFlag(state);
 	}
 
@@ -217,7 +217,7 @@ ivm_vmstate_allocAt(ivm_vmstate_t *state, ivm_size_t size, ivm_int_t heap)
 	ivm_bool_t add_block = IVM_FALSE;
 	void *ret = ivm_heap_alloc_c((state)->heaps + heap, size, &add_block);
 
-	if (add_block) {
+	if (IVM_UNLIKELY(add_block)) {
 		ivm_vmstate_openGCFlag(state);
 	}
 
@@ -241,7 +241,10 @@ void
 ivm_vmstate_addWildSize(ivm_vmstate_t *state,
 						ivm_size_t size)
 {
-	if ((state->wild_size += size) > IVM_DEFAULT_GC_WILD_THRESHOLD) {
+	if (IVM_UNLIKELY(
+			(state->wild_size += size) >
+			IVM_DEFAULT_GC_WILD_THRESHOLD
+		)) {
 		state->wild_size = 0;
 		ivm_collector_setGen(state->gc, 1);
 		ivm_vmstate_openGCFlag(state);
@@ -306,7 +309,7 @@ const ivm_string_t *
 ivm_vmstate_constantize(ivm_vmstate_t *state,
 						const ivm_string_t *str)
 {
-	if (!ivm_string_isConst(str)) {
+	if (IVM_UNLIKELY(!ivm_string_isConst(str))) {
 		return (const ivm_string_t *)
 		ivm_string_pool_register(state->const_pool, str);
 	}

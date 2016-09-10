@@ -688,7 +688,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
-		if (!_TMP_OBJ1) {
+		if (IVM_UNLIKELY(!_TMP_OBJ1)) {
 			EXCEPTION();
 		}
 
@@ -969,7 +969,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
 #if 1
 
 OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
-	if (_USE_REG) {
+	if (IVM_LIKELY(_USE_REG)) {
 		_USE_REG = IVM_FALSE;
 		if (_TMP_CMP_REG) {
 			GOTO_SET_INSTR(ADDR_ARG());
@@ -982,7 +982,7 @@ OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
 })
 
 OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", A, 0, {
-	if (_USE_REG) {
+	if (IVM_LIKELY(_USE_REG)) {
 		_USE_REG = IVM_FALSE;
 		if (!_TMP_CMP_REG) {
 			GOTO_SET_INSTR(ADDR_ARG());

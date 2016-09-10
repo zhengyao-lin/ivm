@@ -82,7 +82,7 @@ ivm_coro_printException(ivm_coro_t *coro,
 	return IVM_NULL;
 
 #define IVM_CORO_NATIVE_ASSERT(coro, state, cond, ...) \
-	if (!(cond)) {                                            \
+	if (IVM_UNLIKELY(!(cond))) {                              \
 		IVM_CORO_NATIVE_FATAL((coro), (state), __VA_ARGS__);  \
 	}
 

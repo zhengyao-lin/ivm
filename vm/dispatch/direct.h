@@ -51,17 +51,17 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (ivm_vmstate_checkGC(state)) {         \
-		SAVE_STACK();                         \
-		ivm_vmstate_doGC(state);              \
-	}                                         \
+	if (IVM_UNLIKELY(ivm_vmstate_checkGC(state))) {   \
+		SAVE_STACK();                                 \
+		ivm_vmstate_doGC(state);                      \
+	}                                                 \
 	goto *(ivm_instr_entry(tmp_ip));
 
 #define NEXT_INSTR() \
-	if (ivm_vmstate_checkGC(state)) {         \
-		SAVE_STACK();                         \
-		ivm_vmstate_doGC(state);              \
-	}                                         \
+	if (IVM_UNLIKELY(ivm_vmstate_checkGC(state))) {   \
+		SAVE_STACK();                                 \
+		ivm_vmstate_doGC(state);                      \
+	}                                                 \
 	goto *(ivm_instr_entry(++tmp_ip));
 
 #define NEXT_N_INSTR(n) \
@@ -87,7 +87,7 @@
 	))
 
 #define RTM_ASSERT(cond, ...) \
-	if (!(cond)) {                \
+	if (IVM_UNLIKELY(!(cond))) {  \
 		RTM_FATAL(__VA_ARGS__);   \
 	}
 
@@ -142,7 +142,7 @@
 
 #define STACK_PUSH_NOCACHE(obj) \
 	(*tmp_sp = (obj),                       \
-	 (++tmp_sp == tmp_st_end                \
+	 (IVM_UNLIKELY(++tmp_sp == tmp_st_end)  \
 	  ? SAVE_STACK_NOPUSH(),                \
 	    ivm_vmstack_inc_c(_STACK, _CORO),   \
 	    UPDATE_STACK()                      \
@@ -169,7 +169,7 @@
 #define STACK_INC_C(i) (tmp_sp += (i))
 
 #define STACK_ENSURE(i) \
-	((tmp_sp + (i) >= tmp_st_end                 \
+	((IVM_UNLIKELY(tmp_sp + (i) >= tmp_st_end)   \
 	  ? SAVE_STACK_NOPUSH(),                     \
 	    ivm_vmstack_ensure(_STACK, _CORO, (i)),  \
 	    UPDATE_STACK()                           \
@@ -179,11 +179,11 @@
 
 	#define STC_PUSHBACK() 0
 
-	#define STACK_TOP() (STACK_TOP_NOCACHE())
+	#define STACK_TOP() STACK_TOP_NOCACHE()
 
-	#define STACK_POP() (STACK_POP_NOCACHE())
+	#define STACK_POP() STACK_POP_NOCACHE()
 
-	#define STACK_PUSH(obj) (STACK_PUSH_NOCACHE(obj))
+	#define STACK_PUSH(obj) STACK_PUSH_NOCACHE(obj)
 
 	#define STACK_BEFORE(i) (*(tmp_sp - 1 - (i)))
 
@@ -371,14 +371,5 @@
 #define _TMP_CGID (tmp_cgid)
 #define _TMP_BOOL (tmp_bool)
 #define _USE_REG (use_reg)
-
-#define SET_JUMP_BACK(i) \
-	(tmp_jump_back = (i), tmp_has_jump = IVM_TRUE)
-
-#define CHECK_JUMP_BACK() \
-	if (tmp_has_jump) {               \
-		tmp_has_jump = IVM_FALSE;     \
-		goto *tmp_jump_back;          \
-	}
 
 #endif

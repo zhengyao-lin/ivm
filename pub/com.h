@@ -17,6 +17,14 @@
 #define IVM_PTR_DIFF(a, b, t) (((ivm_ptr_t)a - (ivm_ptr_t)b) / (ivm_long_t)sizeof(t))
 #define IVM_PTR_SIZE sizeof(void *)
 
+#if __GNUC__ >= 3 && 0
+	#define IVM_LIKELY(x) __builtin_expect(!!(x), 1)
+	#define IVM_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+	#define IVM_LIKELY(x) (x)
+	#define IVM_UNLIKELY(x) (x)
+#endif
+
 #ifdef __cplusplus
 	#define IVM_COM_HEADER extern "C" {
 	#define IVM_COM_END }

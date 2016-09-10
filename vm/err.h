@@ -17,13 +17,13 @@ IVM_COM_HEADER
 #ifdef IVM_DEBUG
 
 	#define IVM_ASSERT(cond, ...) \
-		if (!(cond)) { \
+		if (IVM_UNLIKELY(!(cond))) { \
 			IVM_ERROR(__VA_ARGS__); \
 			IVM_ABORT(); \
 		}
 
 	#define IVM_ASSERT_S(cond) \
-		if (!(cond)) { \
+		if (IVM_UNLIKELY(!(cond))) { \
 			fprintf(IVM_STDERR, "at %s: line %d: assertion failed: %s\n", \
 					__FILE__, __LINE__, #cond); \
 			IVM_ABORT(); \

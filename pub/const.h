@@ -57,7 +57,7 @@
 
 /* GC config */
 #define IVM_DEFAULT_MAX_STD_LIMIT (2 << 30)
-#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 19)
+#define IVM_DEFAULT_INIT_HEAP_SIZE (2 << 20)
 #define IVM_DEFAULT_HEAP_MAX_COMPACT_BC 2
 #define IVM_DEFAULT_GC_MAX_LIVE_RATIO 30 // only when live ratio is under 15%
 #define IVM_DEFAULT_GC_BC_RESTORE_RATIO 30

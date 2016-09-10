@@ -149,7 +149,7 @@ ivm_object_getOop(ivm_object_t *obj,
 
 	/* HACK: costs too much time */
 	do {
-		if (ivm_object_hasOop(obj)) {
+		if (IVM_UNLIKELY(ivm_object_hasOop(obj))) {
 			tmp = ivm_slot_table_getOop(obj->slots, op);
 			if (tmp) return tmp;
 		}
