@@ -102,7 +102,7 @@
 			   IVM_ERROR_MSG_CORO_GROUP_NOT_EXIST(_TMP_CGID));
 
 #define YIELD() goto ACTION_YIELD
-#define RETURN() goto ACTION_RETURN
+#define RETURN() tmp_sp = tmp_bp; goto ACTION_RETURN
 #define INVOKE() goto ACTION_INVOKE
 
 #define RAISE(obj) \
@@ -316,13 +316,13 @@
 		_end
 
 #else
-	#error unsupported stack cache number
+	#error unsupported stack cache count
 #endif
 
 #if IVM_STACK_CACHE_N_TOS != 0
-	#define AVAIL_STACK ((((ivm_ptr_t)tmp_sp - (ivm_ptr_t)tmp_bp) / sizeof(ivm_object_t *)) + cst)
+	#define AVAIL_STACK (IVM_PTR_DIFF(tmp_sp, tmp_bp, ivm_object_t *) + cst)
 #else
-	#define AVAIL_STACK (((ivm_ptr_t)tmp_sp - (ivm_ptr_t)tmp_bp) / sizeof(ivm_object_t *))
+	#define AVAIL_STACK IVM_PTR_DIFF(tmp_sp, tmp_bp, ivm_object_t *)
 #endif
 
 #define CHECK_STACK(req) \
@@ -353,8 +353,7 @@
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
 #define INVOKE_STACK() (tmp_bp = tmp_sp)
-#define RETURN_STACK() \
-	(tmp_sp = tmp_bp, tmp_bp = IVM_RUNTIME_GET(tmp_runtime, BP))
+#define RETURN_STACK(val) (tmp_bp = tmp_sp = (val))
 
 #define _TMP_OBJ1 (tmp_obj1)
 #define _TMP_OBJ2 (tmp_obj2)

@@ -77,7 +77,6 @@ ivm_runtime_dump(ivm_runtime_t *runtime,
 {
 	ivm_context_free(runtime->ctx, state);
 	STD_FREE(runtime->blocks);
-
 	return;
 }
 

@@ -65,19 +65,18 @@ ivm_frame_stack_push(ivm_frame_stack_t *stack,
 }
 
 IVM_INLINE
-ivm_frame_t *
+ivm_object_t ** /* new bp */
 ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 					ivm_runtime_t *runtime)
 {
-	ivm_frame_t *ret = IVM_NULL;
-
 	if (stack->top) {
-		runtime->sp = runtime->bp;
-		STD_MEMCPY(runtime, (ret = stack->frames + --stack->top),
+		STD_MEMCPY(runtime, stack->frames + --stack->top,
 				   IVM_FRAME_HEADER_SIZE);
+
+		return runtime->sp = runtime->bp;
 	}
 
-	return ret;
+	return IVM_NULL;
 }
 
 IVM_COM_END

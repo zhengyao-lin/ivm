@@ -190,15 +190,15 @@ ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
 {
-	register ivm_frame_t *tmp_frame;
+	register ivm_instr_t *tmp_ip;
+	register ivm_object_t **tmp_bp, **tmp_sp;
+
+	// register ivm_frame_t *tmp_frame;
 	register ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
 	ivm_frame_stack_t *tmp_frame_st;
 
 	register ivm_context_t *tmp_context;
-
-	register ivm_instr_t *tmp_ip;
-	register ivm_object_t **tmp_bp, **tmp_sp;
 	IVM_REG ivm_object_t **tmp_st_end;
 
 	IVM_REG ivm_object_t *tmp_obj1 = IVM_NULL;
@@ -258,7 +258,6 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	IVM_REG ivm_int_t cst = 0; /* cache state */
 #endif
 
-#if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	static void *opcode_entry[] = {
 		#define OPCODE_GEN(o, name, arg, ...) &&OPCODE_##o,
 			#include "opcode.def.h"
@@ -268,7 +267,6 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	if (get_opcode_entry) {
 		return (ivm_object_t *)opcode_entry;
 	}
-#endif
 
 	if (root) {
 		/* root of sleeping coro cannot be reset */
@@ -343,8 +341,8 @@ ACTION_EXCEPTION:
 
 			while (!(tmp_ip = ivm_runtime_popToCatch(_RUNTIME))) {
 				ivm_runtime_dump(tmp_runtime, state);
-				tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
-				if (tmp_frame) {
+				tmp_bp = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
+				if (tmp_bp) {
 					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 						_TMP_OBJ1 = IVM_NULL;
 						goto END;
@@ -370,13 +368,12 @@ ACTION_RETURN:
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
 
 			ivm_runtime_dump(tmp_runtime, state);
-
-			tmp_frame = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
-			if (tmp_frame) {
+			tmp_bp = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
+			
+			if (tmp_bp) {
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
-				UPDATE_STACK();
 				STACK_PUSH(_TMP_OBJ1);
 			} else {
 				/* no more callee to restore, end coro */
