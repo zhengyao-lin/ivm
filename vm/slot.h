@@ -33,15 +33,6 @@ _ivm_slot_setValue(ivm_slot_t *slot,
 	return;
 }
 
-/* update slot table uid after this */
-IVM_INLINE
-void
-_ivm_slot_deleteKey(ivm_slot_t *slot)
-{
-	slot->k = IVM_NULL;
-	return;
-}
-
 IVM_INLINE
 struct ivm_object_t_tag *
 ivm_slot_getValue(ivm_slot_t *slot,

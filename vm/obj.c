@@ -117,12 +117,8 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 					 ivm_object_t *value)
 {
 	ivm_slot_table_t *slots;
-	const ivm_string_t *key;
 
 	// IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("set"));
-
-	key = (const ivm_string_t *)
-		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
 
 	slots = obj->slots;
 
@@ -135,7 +131,7 @@ ivm_object_setSlot_r(ivm_object_t *obj,
 		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
 	}
 
-	ivm_slot_table_setSlot(slots, state, key, value);
+	ivm_slot_table_setSlot_r(slots, state, rkey, value);
 
 	return;
 }
@@ -259,8 +255,7 @@ ivm_object_getSlot_r(ivm_object_t *obj,
 
 	// IVM_ASSERT(obj, IVM_ERROR_MSG_OP_SLOT_OF_UNDEFINED("get"));
 
-	key = (const ivm_string_t *)
-		  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
+	key = ivm_vmstate_constantize_r(state, rkey);
 
 	slots = obj->slots;
 

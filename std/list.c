@@ -49,6 +49,25 @@ ivm_ptlist_init_c(ivm_ptlist_t *ptlist,
 	return;
 }
 
+void
+ivm_ptlist_init_t(ivm_ptlist_t *ptlist,
+				  void **lst,
+				  ivm_size_t size)
+{
+	ivm_size_t alloc = sizeof(*ptlist->lst) * size;
+
+	ptlist->alloc = size;
+
+	ptlist->cur = size;
+	ptlist->lst = STD_ALLOC(alloc);
+
+	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
+
+	STD_MEMCPY(ptlist->lst, lst, alloc);
+
+	return;
+}
+
 #define VALUE_AT(ptlist, i) ((ptlist)->lst[i])
 
 void

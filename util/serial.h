@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_SERIAL_H_
-#define _IVM_VM_SERIAL_H_
+#ifndef _IVM_UTIL_SERIAL_H_
+#define _IVM_UTIL_SERIAL_H_
 
 #include "pub/com.h"
 #include "pub/const.h"
@@ -65,6 +65,14 @@ ivm_serial_parseCacheFile(ivm_file_t *file)
 
 	return ret;
 }
+
+ivm_object_t *
+ivm_serial_mod_loadCache(const ivm_char_t *path,
+						 ivm_char_t **err,
+						 ivm_bool_t *is_const,
+						 ivm_vmstate_t *state,
+						 ivm_coro_t *coro,
+						 ivm_context_t *context);
 
 IVM_COM_END
 

@@ -14,8 +14,6 @@
 #include "std/sys.h"
 #include "std/list.h"
 
-#include "vm/serial.h"
-
 #include "mod.h"
 #include "dll.h"
 
@@ -71,15 +69,6 @@ ivm_mod_suffix_list_t _mod_suffix_list;
 
 IVM_PRIVATE
 ivm_size_t _mod_suffix_max_len = 0;
-
-IVM_PRIVATE
-ivm_object_t *
-_ivm_mod_loadCache(const ivm_char_t *path,
-				   ivm_char_t **err,
-				   ivm_bool_t *is_const,
-				   ivm_vmstate_t *state,
-				   ivm_coro_t *coro,
-				   ivm_context_t *context);
 
 IVM_PRIVATE
 ivm_object_t *
@@ -209,7 +198,6 @@ ivm_mod_init()
 	ivm_mod_suffix_list_init(&_mod_suffix_list);
 
 	ivm_mod_addModSuffix(IVM_DLL_SUFFIX, _ivm_mod_loadNative);
-	ivm_mod_addModSuffix(IVM_CACHE_FILE_SUFFIX, _ivm_mod_loadCache);
 
 	_ivm_mod_initModPath();
 
@@ -261,13 +249,6 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 	ivm_size_t len1, len2;
 	ivm_int_t i;
 	ivm_mod_suffix_t tmp_suf;
-
-/*
-	SUF(".ivc",						IVC)
-	SUF(IVM_DLL_SUFFIX,				DLL)
-	SUF("/init.ivc",				IVC)
-	SUF("/init" IVM_DLL_SUFFIX,		DLL)
- */
 
 	struct {
 		const ivm_char_t *suf;
@@ -393,63 +374,6 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 	ivm_dll_list_push(&_dll_list, &handler);
 
 	ret = init(state, coro, context);
-
-END:
-
-	*err = tmp_err;
-
-	return ret;
-}
-
-IVM_PRIVATE
-ivm_object_t *
-_ivm_mod_loadCache(const ivm_char_t *path,
-				   ivm_char_t **err,
-				   ivm_bool_t *is_const,
-				   ivm_vmstate_t *state,
-				   ivm_coro_t *coro,
-				   ivm_context_t *context)
-{
-	ivm_char_t *tmp_err = IVM_NULL;
-	ivm_object_t *ret = IVM_NULL;
-	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
-	ivm_exec_unit_t *unit = IVM_NULL;
-	ivm_function_t *root;
-	ivm_context_t *dest;
-
-	*is_const = IVM_TRUE;
-
-	if (!cache) {
-		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
-		goto END;
-	}
-
-	unit = ivm_serial_parseCacheFile(cache);
-
-	ivm_file_free(cache);
-	
-	if (!unit) {
-		tmp_err = IVM_ERROR_MSG_FAILED_PARSE_CACHE;
-		goto END;
-	}
-
-	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
-	root = ivm_exec_unit_mergeToVM(unit, state);
-
-	ivm_exec_unit_free(unit);
-
-	if (!root) {
-		tmp_err = IVM_ERROR_MSG_CACHE_NO_ROOT;
-		goto END;
-	}
-
-	ivm_function_invoke_r(root, state, coro, IVM_NULL);
-	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
-	ivm_coro_resume(coro, state, IVM_NULL);
-
-	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
-
-	ivm_context_free(dest, state);
 
 END:
 

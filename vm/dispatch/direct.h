@@ -346,7 +346,8 @@
 	 tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP),     \
 	 tmp_sp = IVM_RUNTIME_GET(_RUNTIME, SP))
 
-#define UPDATE_BP(val) (tmp_bp = (val))
+#define SET_BP(val) (tmp_bp = (val))
+#define UPDATE_BP() (tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP))
 
 #define UPDATE_STACK_C() \
 	(tmp_bp = IVM_RUNTIME_GET(_RUNTIME, BP), \

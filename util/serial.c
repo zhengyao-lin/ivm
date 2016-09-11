@@ -2,10 +2,13 @@
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "std/mem.h"
 #include "std/string.h"
 #include "std/io.h"
+
+#include "vm/mod/mod.h"
 
 #include "serial.h"
 
@@ -20,11 +23,8 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 	};
 	ivm_instr_t *i, *end;
 	ivm_serial_instr_t *tmp;
-	ivm_instr_t tmp_instr;
-	ivm_bool_t cached = ivm_exec_cached(exec);
 
-	// IVM_ASSERT(!ivm_exec_cached(exec),
-	//		   IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC);
+	IVM_ASSERT(!ivm_exec_cached(exec), IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC);
 
 	tmp = ret.instrs = STD_ALLOC(sizeof(*ret.instrs) * ret.size);
 
@@ -33,18 +33,10 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 	for (i = ivm_exec_instrPtrStart(exec),
 		 end = i + ret.size;
 		 i != end; i++, tmp++) {
-		if (cached) {
-			tmp_instr = ivm_exec_decache(exec, state, i);
-			*tmp = (ivm_serial_instr_t) {
-				.opc = ivm_instr_opcode(&tmp_instr),
-				.arg = ivm_instr_arg(&tmp_instr)
-			};
-		} else {
-			*tmp = (ivm_serial_instr_t) {
-				.opc = ivm_instr_opcode(i),
-				.arg = ivm_instr_arg(i)
-			};
-		}
+		*tmp = (ivm_serial_instr_t) {
+			.opc = ivm_instr_opcode(i),
+			.arg = ivm_instr_arg(i)
+		};
 	}
 
 	return ret;
@@ -226,7 +218,7 @@ _ivm_serial_stringPoolToFile(ivm_string_pool_t *pool,
 
 	ret += ivm_file_write(file, &size, sizeof(size), 1);
 
-	for (i = ivm_string_pool_table(pool),
+	for (i = ivm_string_pool_core(pool),
 		 end = i + size, size = 0;
 		 i != end && *i; i++, size++) {
 		ret += ivm_file_write(file, (void *)*i, ivm_string_size(*i), 1);
@@ -240,20 +232,23 @@ _ivm_serial_stringPoolToFile(ivm_string_pool_t *pool,
 ivm_string_pool_t *
 _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 {
-	ivm_string_pool_t *ret;
+	ivm_heap_t *heap = IVM_NULL;
 	ivm_uint64_t size;
-	ivm_size_t tmp_len;
+	ivm_size_t tmp_len, fsize;
 	const ivm_string_t **table, **i, **end;
 	ivm_string_t tmp_head;
 	ivm_string_t *tmp_str;
 
 	if (!ivm_file_read(file, &size, sizeof(size), 1))
 		return IVM_NULL;
+
+	fsize = ivm_file_length(file);
 	
 	// IVM_ASSERT(tmp, IVM_ERROR_MSG_FILE_FORMAT_ERR);
 	// IVM_TRACE("pool size: %ld\n", size);
 
-	ret = ivm_string_pool_new(IVM_TRUE);
+	heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
+	// ret = ivm_string_pool_new(IVM_TRUE);
 
 	table = STD_ALLOC(sizeof(*table) * size);
 
@@ -269,8 +264,10 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 		/* read header */
 		if (!ivm_file_read(file, &tmp_head, sizeof(tmp_head), 1)) goto CLEAN;
 
-		tmp_str = ivm_string_pool_alloc_s(ret, ivm_string_size(&tmp_head));
-		if (!tmp_str) goto CLEAN;
+		if (ivm_string_size(&tmp_head) < fsize)
+			tmp_str = ivm_heap_alloc(heap, ivm_string_size(&tmp_head));
+		else goto CLEAN; // illegal size
+
 		*tmp_str = tmp_head; /* copy header */
 		tmp_len = ivm_string_length(tmp_str) + 1;
 
@@ -283,21 +280,17 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 		*i = tmp_str;
 	}
 
-	ivm_string_pool_setSize(ret, size);
-	ivm_string_pool_setTable(ret, table);
-
 goto CLEAN_END;
-CLEAN:;
+CLEAN:
 
-	ivm_ref_inc(ret);
-	ivm_string_pool_free(ret);
+	ivm_heap_free(heap);
 	STD_FREE(table);
 
 	return IVM_NULL;
 
 CLEAN_END:
 
-	return ret;
+	return ivm_string_pool_new_t(table, size, heap);
 }
 
 /*
@@ -544,6 +537,62 @@ CLEAN:;
 	ivm_serial_exec_unit_free(ret);
 	return IVM_NULL;
 CLEAN_END:
+
+	return ret;
+}
+
+ivm_object_t *
+ivm_serial_mod_loadCache(const ivm_char_t *path,
+						 ivm_char_t **err,
+						 ivm_bool_t *is_const,
+						 ivm_vmstate_t *state,
+						 ivm_coro_t *coro,
+						 ivm_context_t *context)
+{
+	ivm_char_t *tmp_err = IVM_NULL;
+	ivm_object_t *ret = IVM_NULL;
+	ivm_file_t *cache = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+	ivm_exec_unit_t *unit = IVM_NULL;
+	ivm_function_t *root;
+	ivm_context_t *dest;
+
+	*is_const = IVM_TRUE;
+
+	if (!cache) {
+		tmp_err = IVM_ERROR_MSG_FAILED_OPEN_FILE;
+		goto END;
+	}
+
+	unit = ivm_serial_parseCacheFile(cache);
+
+	ivm_file_free(cache);
+	
+	if (!unit) {
+		tmp_err = IVM_ERROR_MSG_FAILED_PARSE_CACHE;
+		goto END;
+	}
+
+	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
+	root = ivm_exec_unit_mergeToVM(unit, state);
+
+	ivm_exec_unit_free(unit);
+
+	if (!root) {
+		tmp_err = IVM_ERROR_MSG_CACHE_NO_ROOT;
+		goto END;
+	}
+
+	ivm_function_invoke_r(root, state, coro, IVM_NULL);
+	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
+	ivm_coro_resume(coro, state, IVM_NULL);
+
+	ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
+
+	ivm_context_free(dest, state);
+
+END:
+
+	*err = tmp_err;
 
 	return ret;
 }

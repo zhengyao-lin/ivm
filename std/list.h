@@ -47,6 +47,11 @@ ivm_ptlist_free(ivm_ptlist_t *ptlist);
 void
 ivm_ptlist_init_c(ivm_ptlist_t *ptlist, ivm_size_t buf_size);
 
+void
+ivm_ptlist_init_t(ivm_ptlist_t *ptlist,
+				  void **lst,
+				  ivm_size_t size);
+
 IVM_INLINE
 void
 ivm_ptlist_dump(ivm_ptlist_t *ptlist)
@@ -64,6 +69,8 @@ ivm_ptlist_dump(ivm_ptlist_t *ptlist)
 #define ivm_ptlist_at(ptlist, i) ((ptlist)->lst[i])
 #define ivm_ptlist_ptrAt(ptlist, i) ((ptlist)->lst + (i))
 #define ivm_ptlist_set(ptlist, i, val) ((ptlist)->lst[i] = (val))
+
+#define ivm_ptlist_core(ptlist) ((ptlist)->lst)
 
 IVM_INLINE
 void

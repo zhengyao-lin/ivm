@@ -192,7 +192,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		for (i = otable, end = i + osize;
 			 i != end; i++) {
 			if (i->k) {
-				ivm_slot_table_setSlot(table, state, i->k, i->v);
+				_ivm_slot_table_rehash(table, state, i->k, i->v);
 			}
 		}
 	} else {
@@ -236,7 +236,7 @@ ivm_slot_table_expandTo(ivm_slot_table_t *table,
 		for (i = otable, end = i + osize;
 			 i != end; i++) {
 			if (i->k) {
-				ivm_slot_table_setSlot(table, state, i->k, i->v);
+				_ivm_slot_table_rehash(table, state, i->k, i->v);
 			}
 		}
 	} else {

@@ -112,7 +112,7 @@ ivm_string_compareToRaw_n(const ivm_string_t *a,
 }
 
 ivm_string_pool_t *
-ivm_string_pool_new(ivm_bool_t is_fixed)
+ivm_string_pool_new()
 {
 	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret));
 
@@ -121,7 +121,7 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 	ivm_ref_init(ret);
 	ret->heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
 	
-	ret->is_fixed = is_fixed;
+	ivm_string_list_init(&ret->lst);
 	ret->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
 	ret->table
 	= STD_ALLOC_INIT(sizeof(*ret->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
@@ -131,11 +131,48 @@ ivm_string_pool_new(ivm_bool_t is_fixed)
 	return ret;
 }
 
+IVM_PRIVATE
+const ivm_string_t *
+_ivm_string_pool_rehash(ivm_string_pool_t *pool,
+						const ivm_string_t *str,
+						ivm_string_id_t id);
+
+ivm_string_pool_t *
+ivm_string_pool_new_t(const ivm_string_t **lst,
+					  ivm_size_t count,
+					  ivm_heap_t *heap)
+{
+	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret));
+	ivm_string_id_t id;
+	ivm_string_list_iterator_t iter;
+
+	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
+
+	ivm_ref_init(ret);
+	ret->heap = heap;
+	
+	ivm_string_list_init_t(&ret->lst, lst, count);
+	ret->size = count << 2;
+	ret->table
+	= STD_ALLOC_INIT(sizeof(*ret->table) * ret->size);
+
+	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+
+	id = 0;
+	IVM_STRING_LIST_EACHPTR(&ret->lst, iter) {
+		_ivm_string_pool_rehash(ret, IVM_STRING_LIST_ITER_GET(iter), id);
+		id++;
+	}
+
+	return ret;
+}
+
 void
 ivm_string_pool_free(ivm_string_pool_t *pool)
 {
 	if (pool && !ivm_ref_dec(pool)) {
 		ivm_heap_free(pool->heap);
+		ivm_string_list_dump(&pool->lst);
 		STD_FREE(pool->table);
 		STD_FREE(pool);
 	}
@@ -147,86 +184,71 @@ IVM_PRIVATE
 ivm_size_t /* next empty index */
 _ivm_string_pool_expand(ivm_string_pool_t *pool)
 {
-	ivm_size_t osize = pool->size;
 	ivm_size_t ret = 0;
-	const ivm_string_t **otable;
-	const ivm_string_t **i, **end;
+	ivm_string_pos_t *otable;
+	ivm_string_list_iterator_t iter;
+	ivm_string_id_t id;
 
-	if (pool->is_fixed) {
-		pool->size <<= 1;
-		pool->table = STD_REALLOC(pool->table, sizeof(*pool->table) * pool->size);
+	otable = pool->table;
 
-		IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+	pool->size <<= 1;
+	pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size);
 
-		STD_INIT(pool->table + (ret = osize),
-				 sizeof(ivm_string_t *) * (pool->size - osize));
-	} else {
-		otable = pool->table;
-
-		pool->size <<= 1;
-		pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size);
-
-		for (i = otable, end = otable + osize;
-			 i != end; i++) {
-			ivm_string_pool_register(pool, *i);
-		}
-
-		STD_FREE(otable);
+	id = 0;
+	IVM_STRING_LIST_EACHPTR(&pool->lst, iter) {
+		_ivm_string_pool_rehash(pool, IVM_STRING_LIST_ITER_GET(iter), id);
+		id++;
 	}
+
+	STD_FREE(otable);
 
 	return ret;
 }
 
-#define HASH(hashee, cmp, copy) \
-	{                                                                               \
-		ivm_hash_val_t hash;                                                        \
-		const ivm_string_t **i, **end, **tmp;                                       \
-		ivm_ptr_t ret;                                                              \
-	                                                                                \
-		if (pool->is_fixed) {                                                       \
-			end = pool->table + pool->size;                                         \
-			for (ret = 0, i = pool->table; i != end;                                \
-				 i++, ret++) {                                                      \
-				if (!*i) {                                                          \
-					*i = copy;                                                      \
-					return ret;                                                     \
-				} else if (cmp) {                                                   \
-					return ret;                                                     \
-				}                                                                   \
-			}                                                                       \
-	                                                                                \
-			ret = _ivm_string_pool_expand(pool);                                    \
-			pool->table[ret]                                                        \
-			= copy;                                                                 \
-		} else {                                                                    \
-			hash = ivm_hash_fromString(hashee);                                     \
-	                                                                                \
-			while (1) {                                                             \
-				end = pool->table + pool->size;                                     \
-				tmp = pool->table + hash % pool->size;                              \
-                                                                                    \
-				for (i = tmp; i != end; i++) {                                      \
-					if (!*i) {                                                      \
-						return (ivm_ptr_t)(*i = copy);                              \
-					} else if (cmp) {                                               \
-						return (ivm_ptr_t)*i;                                       \
-					}                                                               \
-				}                                                                   \
-	                                                                                \
-				for (i = pool->table;                                               \
-					 i != tmp; i++) {                                               \
-					if (!*i) {                                                      \
-						return (ivm_ptr_t)(*i = copy);                              \
-					} else if (cmp) {                                               \
-						return (ivm_ptr_t)*i;                                       \
-					}                                                               \
-				}                                                                   \
-	                                                                                \
-				_ivm_string_pool_expand(pool);                                      \
-			}                                                                       \
-		}                                                                           \
-	                                                                                \
-		return ret;                                                                 \
+#define CHECK(cmp, copy) \
+	if (!i->k) {                                                    \
+		i->k = (copy);                                              \
+		i->v = ivm_string_list_push(&pool->lst, i->k);              \
+		return i->k;                                                \
+	} else if (cmp) {                                               \
+		return i->k;                                                \
+	}
+
+#define CHECK_I(cmp, copy) \
+	if (!i->k) {                                                    \
+		i->k = (copy);                                              \
+		return i->v = ivm_string_list_push(&pool->lst, i->k);       \
+	} else if (cmp) {                                               \
+		return i->v;                                                \
+	}
+
+#define SET_RAW(val, id) \
+	if (!i->k) {                                                    \
+		i->v = id;                                                  \
+		return i->k = (val);                                        \
+	}
+
+#define HASH(hashee, each) \
+	{                                                                           \
+		ivm_hash_val_t hash;                                                    \
+		ivm_string_pos_t *i, *end, *tmp;                                        \
+		hash = ivm_hash_fromString(hashee);                                     \
+	                                                                            \
+		while (1) {                                                             \
+			end = pool->table + pool->size;                                     \
+			tmp = pool->table + hash % pool->size;                              \
+	                                                                            \
+			for (i = tmp; i != end; i++) {                                      \
+				each;                                                           \
+			}                                                                   \
+	                                                                            \
+			for (i = pool->table;                                               \
+				 i != tmp; i++) {                                               \
+				each;                                                           \
+			}                                                                   \
+	                                                                            \
+			_ivm_string_pool_expand(pool);                                      \
+		}                                                                       \
 	} int dummy()
 
 IVM_PRIVATE
@@ -266,23 +288,30 @@ _ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
-ivm_ptr_t
+const ivm_string_t *
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str)
 HASH(ivm_string_trimHead(str),
-	 ivm_string_compare(*i, str),
-	 _ivm_string_copy_heap(str, pool->heap));
+	 CHECK(ivm_string_compare(i->k, str),
+		   _ivm_string_copy_heap(str, pool->heap)));
 
-ivm_ptr_t
-ivm_string_pool_register_nc(ivm_string_pool_t *pool,
-							const ivm_string_t *str)
-HASH(ivm_string_trimHead(str),
-	 ivm_string_compare(*i, str), str);
-
-ivm_ptr_t
+const ivm_string_t *
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)
-HASH(str, !ivm_string_compareToRaw(*i, str),
-	 _ivm_string_new_heap(IVM_TRUE, str, pool->heap));
+HASH(str, CHECK(!ivm_string_compareToRaw(i->k, str),
+				_ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
+
+ivm_string_id_t
+ivm_string_pool_registerRaw_i(ivm_string_pool_t *pool,
+							  const ivm_char_t *str)
+HASH(str, CHECK_I(!ivm_string_compareToRaw(i->k, str),
+				  _ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
+
+IVM_PRIVATE
+const ivm_string_t *
+_ivm_string_pool_rehash(ivm_string_pool_t *pool,
+						const ivm_string_t *str,
+						ivm_string_id_t id)
+HASH(ivm_string_trimHead(str), SET_RAW(str, id));
 
 #undef HASH

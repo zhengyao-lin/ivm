@@ -71,7 +71,7 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_addInstr_l(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN_L(__VA_ARGS__, (exec))))
 
-#define ivm_exec_registerString(exec, str) (ivm_string_pool_registerRaw((exec)->pool, (str)))
+#define ivm_exec_registerString(exec, str) (ivm_string_pool_registerRaw_i((exec)->pool, (str)))
 #define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
 
 #define ivm_exec_length(exec) ((exec)->next)
@@ -127,11 +127,6 @@ ivm_exec_setSourcePos(ivm_exec_t *exec,
 void
 ivm_exec_preproc(ivm_exec_t *exec,
 				 struct ivm_vmstate_t_tag *state);
-
-ivm_instr_t
-ivm_exec_decache(ivm_exec_t *exec,
-				 struct ivm_vmstate_t_tag *state,
-				 ivm_instr_t *instr);
 
 typedef ivm_ptpool_t ivm_exec_pool_t;
 

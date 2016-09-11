@@ -296,7 +296,7 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 					tmp_str = ivm_parser_parseStr(arg.val, arg.len, &err);
 					
 					if (tmp_str) {
-						tmp_ret = ivm_opcode_arg_fromInt(ivm_string_pool_registerRaw(env->str_pool, tmp_str));
+						tmp_ret = ivm_opcode_arg_fromInt(ivm_exec_registerString(exec, tmp_str));
 					} else {
 						GEN_ERR(arg.pos, GEN_ERR_MSG_FAILED_PARSE_STRING(err));
 					}

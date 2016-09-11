@@ -289,8 +289,6 @@ int test_call()
 	return 0;
 }
 
-#define STR(str, pool) (ivm_string_pool_store((pool), (str)))
-
 int test_vm()
 {
 	int i;
@@ -337,9 +335,9 @@ int test_vm()
 	proto = ivm_vmstate_getTypeProto(state, IVM_OBJECT_T);
 
 	for (i = 0; i < sizeof(chartab) / sizeof(chartab[0]); i++) {
-		ivm_object_setSlot(proto, state, STR(chartab[i], str_pool), obj3);
+		ivm_object_setSlot_r(proto, state, chartab[i], obj3);
 	}
-	ivm_object_setSlot(proto, state, STR("proto_func", str_pool), obj3);
+	ivm_object_setSlot_r(proto, state, "proto_func", obj3);
 
 	ivm_object_printSlots(proto);
 
@@ -354,11 +352,11 @@ int test_vm()
 	
 	ctx = ivm_context_new(state, IVM_NULL);
 
-	ivm_object_setSlot(obj1, state, STR("a", str_pool), obj2);
-	ivm_object_setSlot(obj1, state, STR("call_func", str_pool), obj3);
-	ivm_object_setSlot(obj2, state, STR("b", str_pool), obj1);
-	ivm_object_setSlot(obj2, state, STR("c", str_pool), obj1);
-	ivm_object_setSlot(obj2, state, STR("d", str_pool), obj1);
+	ivm_object_setSlot_r(obj1, state, "a", obj2);
+	ivm_object_setSlot_r(obj1, state, "call_func", obj3);
+	ivm_object_setSlot_r(obj2, state, "b", obj1);
+	ivm_object_setSlot_r(obj2, state, "c", obj1);
+	ivm_object_setSlot_r(obj2, state, "d", obj1);
 
 	ivm_context_linkToObject(ctx, state, obj1);
 	ctx = ivm_context_new(state, ctx);

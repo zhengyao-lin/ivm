@@ -50,9 +50,8 @@ ivm_file_free(ivm_file_t *file)
 
 #define FGOTO(fp, pos) (IVM_FSEEK((fp), IVM_FSEEK_##pos, 0))
 
-IVM_PRIVATE
 ivm_size_t
-_ivm_file_length(ivm_file_t *file)
+ivm_file_length(ivm_file_t *file)
 {
 	ivm_file_raw_t fp = file->fp;
 	ivm_size_t cur = IVM_FTELL(fp);
@@ -70,7 +69,7 @@ ivm_file_readAll(ivm_file_t *file)
 {
 	ivm_file_raw_t fp = file->fp;
 	ivm_size_t cur = IVM_FTELL(fp);
-	ivm_size_t len = _ivm_file_length(file);
+	ivm_size_t len = ivm_file_length(file);
 	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
 	FGOTO(fp, HEAD);

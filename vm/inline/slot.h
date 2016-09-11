@@ -12,7 +12,7 @@ ivm_bool_t /* return: type change? */
 _ivm_slot_table_expand(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state);
 
-#define SET_SLOT(e0, e1, e2) \
+#define SET_SLOT(check, set_cc) \
 	{                                                                            \
 		ivm_hash_val_t hash;                                                     \
 		ivm_size_t osize;                                                        \
@@ -20,7 +20,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		register ivm_slot_t *i, *tmp, *end;                                      \
                                                                                  \
 		IVM_WBSLOT(state, table, obj);                                           \
-		e0;                                                                      \
+		check;                                                                   \
                                                                                  \
         if (table->mark.sub.is_hash) {                                           \
 		TO_HASH_TABLE:                                                           \
@@ -36,12 +36,12 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 						if (obj) {                                               \
 							i->k = ivm_vmstate_constantize(state, key);          \
 							i->v = obj;                                          \
-							e1;                                                  \
+							set_cc;                                              \
 						}                                                        \
 						return;                                                  \
 					} else if (ivm_string_compare(i->k, key)) {                  \
 						i->v = obj;                                              \
-						e1;                                                      \
+						set_cc;                                                  \
 						return;                                                  \
 					}                                                            \
 				}                                                                \
@@ -53,12 +53,12 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 						if (obj) {                                               \
 							i->k = ivm_vmstate_constantize(state, key);          \
 							i->v = obj;                                          \
-							e1;                                                  \
+							set_cc;                                              \
 						}                                                        \
 						return;                                                  \
 					} else if (ivm_string_compare(i->k, key)) {                  \
 						i->v = obj;                                              \
-						e1;                                                      \
+						set_cc;                                                  \
 						return;                                                  \
 					}                                                            \
 				}                                                                \
@@ -75,12 +75,12 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					if (obj) {                                                   \
 						i->k = ivm_vmstate_constantize(state, key);              \
 						i->v = obj;                                              \
-						e1;                                                      \
+						set_cc;                                                  \
 					}                                                            \
 					return;                                                      \
 				} else if (ivm_string_compare(i->k, key)) {                      \
 					i->v = obj;                                                  \
-					e1;                                                          \
+					set_cc;                                                      \
 					return;                                                      \
 				}                                                                \
 			}                                                                    \
@@ -89,10 +89,10 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 			if (_ivm_slot_table_expand(table, state)) {                          \
 				goto TO_HASH_TABLE;                                              \
 			}                                                                    \
-			tmp = table->tabl + osize;                                           \
-			tmp->k = ivm_vmstate_constantize(state, key);                        \
-			tmp->v = obj;                                                        \
-			e2;                                                                  \
+			i = table->tabl + osize;                                             \
+			i->k = ivm_vmstate_constantize(state, key);                          \
+			i->v = obj;                                                          \
+			set_cc;                                                              \
 		}                                                                        \
                                                                                  \
 		return;                                                                  \
@@ -105,7 +105,7 @@ ivm_slot_table_setSlot(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state,
 					   const ivm_string_t *key,
 					   ivm_object_t *obj)
-SET_SLOT(0, 0, 0);
+SET_SLOT(0, 0);
 
 void
 ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
@@ -129,16 +129,15 @@ SET_SLOT(
 		ivm_slot_table_setCacheSlot(state, instr, obj);
 		return;
 	},
-	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i),
-	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)tmp)
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i)
 );
 
-#define GET_SLOT(e0, e1, e2) \
+#define GET_SLOT(check, set_cc) \
 	{                                                                                   \
 		ivm_hash_val_t hash;                                                            \
 		register ivm_slot_t *i, *tmp, *end;                                             \
                                                                                         \
-		e0;                                                                             \
+		check;                                                                          \
                                                                                         \
 		if (table->mark.sub.is_hash) {                                                  \
 			hash = ivm_string_hash(key) % table->size;                                  \
@@ -151,7 +150,7 @@ SET_SLOT(
 					return IVM_NULL;                                                    \
 				} else if (ivm_string_compare(i->k, key)) {                             \
 					if (!i->v) return IVM_NULL;                                         \
-					e1;                                                                 \
+					set_cc;                                                             \
 					return i;                                                           \
 				}                                                                       \
 			}                                                                           \
@@ -161,20 +160,20 @@ SET_SLOT(
 					return IVM_NULL;                                                    \
 				} else if (ivm_string_compare(i->k, key)) {                             \
 					if (!i->v) return IVM_NULL;                                         \
-					e1;                                                                 \
+					set_cc;                                                             \
 					return i;                                                           \
 				}                                                                       \
 			}                                                                           \
 		} else {                                                                        \
-			for (tmp = table->tabl,                                                     \
+			for (i = table->tabl,                                                       \
 				 end = table->tabl + table->size;                                       \
-				 tmp != end; tmp++) {                                                   \
-				if (!tmp->k) {                                                          \
+				 i != end; i++) {                                                       \
+				if (!i->k) {                                                            \
 					return IVM_NULL;                                                    \
-				} else if (ivm_string_compare(tmp->k, key)) {                           \
-					if (!tmp->v) return IVM_NULL;                                       \
-					e2;                                                                 \
-					return tmp;                                                         \
+				} else if (ivm_string_compare(i->k, key)) {                             \
+					if (!i->v) return IVM_NULL;                                         \
+					set_cc;                                                             \
+					return i;                                                           \
 				}                                                                       \
 			}                                                                           \
 		}                                                                               \
@@ -187,7 +186,7 @@ ivm_slot_t *
 ivm_slot_table_getSlot(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state,
 					   const ivm_string_t *key)
-GET_SLOT(0, 0, 0);
+GET_SLOT(0, 0);
 
 #if 0
 IVM_INLINE
@@ -246,8 +245,7 @@ GET_SLOT(
 		tmp = ivm_slot_table_getCacheSlot(state, instr);
 		return tmp->v ? tmp : IVM_NULL;
 	},
-	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i),
-	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)tmp)
+	ivm_instr_setCache(instr, table->uid, (ivm_ptr_t)i)
 );
 
 #define SET_EMPTY_SLOT() \
@@ -324,6 +322,39 @@ ivm_slot_table_setEmptySlot(ivm_slot_table_t *table,
 							const ivm_string_t *key,
 							ivm_object_t *obj)
 SET_EMPTY_SLOT();
+
+IVM_INLINE
+void
+_ivm_slot_table_rehash(ivm_slot_table_t *table,
+					   ivm_vmstate_t *state,
+					   const ivm_string_t *key,
+					   ivm_object_t *obj)
+{
+	register ivm_slot_t *i, *tmp, *end;
+
+	IVM_ASSERT(table->mark.sub.is_hash, "impossible");
+	tmp = table->tabl + ivm_string_hash(key) % table->size;
+	end = table->tabl + table->size;
+
+	for (i = tmp; i != end; i++) {
+		if (IS_EMPTY_SLOT(i)) {
+			i->k = key;
+			i->v = obj;
+			return;
+		}
+	}
+
+	for (i = table->tabl; i != tmp; i++) {
+		if (IS_EMPTY_SLOT(i)) {
+			i->k = key;
+			i->v = obj;
+			return;
+		}
+	}
+
+	IVM_FATAL("impossible");
+	return;
+}
 
 #undef SET_SLOT
 #undef GET_SLOT

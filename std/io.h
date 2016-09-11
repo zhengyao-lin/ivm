@@ -108,6 +108,9 @@ ivm_file_writeAt(ivm_file_t *file,
 	return ret;
 }
 
+ivm_size_t
+ivm_file_length(ivm_file_t *file);
+
 IVM_INLINE
 ivm_size_t
 ivm_file_read(ivm_file_t *file,

@@ -14,7 +14,8 @@
 #include "vm/mod/mod.h"
 #include "vm/dbg.h"
 #include "vm/env.h"
-#include "vm/serial.h"
+
+#include "util/serial.h"
 
 #include "gen/gen.h"
 #include "parser.h"
@@ -208,6 +209,7 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 	ivm_mod_addModSuffix(".ink", ilang_mod_loadSource);
+	ivm_mod_addModSuffix(".ivc", ivm_serial_mod_loadCache);
 
 	ivm_char_t *src = IVM_NULL;
 	ilang_gen_trans_unit_t *unit = IVM_NULL;

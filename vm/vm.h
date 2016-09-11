@@ -310,11 +310,18 @@ ivm_vmstate_constantize(ivm_vmstate_t *state,
 						const ivm_string_t *str)
 {
 	if (IVM_UNLIKELY(!ivm_string_isConst(str))) {
-		return (const ivm_string_t *)
-		ivm_string_pool_register(state->const_pool, str);
+		return ivm_string_pool_register(state->const_pool, str);
 	}
 
 	return str;
+}
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_constantize_r(ivm_vmstate_t *state,
+						  const ivm_char_t *str)
+{
+	return ivm_string_pool_registerRaw(state->const_pool, str);
 }
 
 IVM_INLINE

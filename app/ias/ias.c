@@ -10,8 +10,8 @@
 #include "std/io.h"
 
 #include "vm/env.h"
-#include "vm/serial.h"
 
+#include "util/serial.h"
 #include "util/perf.h"
 #include "util/console.h"
 
