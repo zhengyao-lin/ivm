@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <math.h>
 
 #include "pub/type.h"
@@ -89,12 +91,23 @@ VAL1F(exp)
 VAL2F(pow)
 VAL1F_E(sqrt, { MATH_ASSERT_NON_NEG_VAL("sqrt") })
 
+IVM_NATIVE_FUNC(_math_random)
+{
+	ivm_number_t min = 0, max = 1;
+	ivm_int_t num;
+
+	MATCH_ARG("*nn", &min, &max);
+	srand((num = rand()) + time(IVM_NULL));
+	
+	return ivm_numeric_new(NAT_STATE(), ((ivm_number_t)num / RAND_MAX) * max + min);
+}
+
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
 			 ivm_context_t *context)
 {
-	ivm_object_t *mod = ivm_object_new_c(state, 21);
+	ivm_object_t *mod = ivm_object_new_c(state, 22);
 
 	#define DEF_FUNC(name) \
 		ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _math_##name))
@@ -114,6 +127,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	DEF_FUNC(log); DEF_FUNC(log10); DEF_FUNC(exp);
 
 	DEF_FUNC(pow); DEF_FUNC(sqrt);
+
+	srand(time(IVM_NULL));
+	DEF_FUNC(random);
 
 	DEF_CONST("pi", C_PI);
 	DEF_CONST("inf", C_INF);
