@@ -23,6 +23,7 @@
 #define RAD_TO_DEG(r) ((r) / C_PI * 180)
 
 #define MATH_ERR_MSG_VAL1_DOMAIN_ERROR(func, val, domain)		"%s(x) function domain error(" domain ", %f given)", (func), (val)
+#define MATH_ERR_MSG_RANDOM_MIN_MAX_ERROR						"the min argument is greater than the max in random()"
 
 #define MATH_ASSERT_ABS_VAL_LESS_THAN_ONE(func) \
 	RTM_ASSERT(val <= 1.0 && val >= -1.0, MATH_ERR_MSG_VAL1_DOMAIN_ERROR(func, val, "|x| <= 1"))
@@ -93,13 +94,12 @@ VAL1F_E(sqrt, { MATH_ASSERT_NON_NEG_VAL("sqrt") })
 
 IVM_NATIVE_FUNC(_math_random)
 {
-	ivm_number_t min = 0, max = 1;
-	ivm_int_t num;
+	ivm_number_t min = 0, max = 2;
 
 	MATCH_ARG("*nn", &min, &max);
-	srand((num = rand()) + time(IVM_NULL));
+	RTM_ASSERT(max >= min, MATH_ERR_MSG_RANDOM_MIN_MAX_ERROR);
 	
-	return ivm_numeric_new(NAT_STATE(), ((ivm_number_t)num / RAND_MAX) * max + min);
+	return ivm_numeric_new(NAT_STATE(), min + ((ivm_number_t)rand() / RAND_MAX) * (max - min));
 }
 
 ivm_object_t *

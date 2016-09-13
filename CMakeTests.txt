@@ -29,7 +29,7 @@ file(GLOB ink_test_list "test/*.ink")
 
 # string(REGEX REPLACE ".ias$" ".res" res_list ${test_list})
 
-set(res_regx "[ \t]*->[ \t]*\"(.*)\"[ \t]*")
+set(res_regx "[ \\t]*->[ \\t]*\"(.*)\"[ \\t]*")
 
 foreach(ias_file ${ias_test_list})
 	file(STRINGS ${ias_file} ias_lines)
@@ -40,6 +40,7 @@ foreach(ias_file ${ias_test_list})
 		# support two types of comment(// or /**/)
 		# search for comments containing string "-> \"regex\""
 		# ignore spaces and tabs
+		# message(STATUS "(//${res_regx}$)|(/\\*${res_regx}\\*/)")
 		if(line MATCHES "(//${res_regx}$)|(/\\*${res_regx}\\*/)")
 			if(NOT result STREQUAL "")
 				set(result "${result}\n")
@@ -94,7 +95,7 @@ foreach(ink_file ${ink_test_list})
 		string(SUBSTRING "${output}" 0 64 output)
 		set(output "${output}...")
 	endif()
-	message(STATUS "Find ink test ${ink_file}") # \npass result: ${output}\n
+	message(STATUS "Find ink test ${ink_file}\npass result: ${output}\n") # \npass result: ${output}\n
 
 	add_ink_test(${ink_file} "${result}")
 endforeach(ink_file)
