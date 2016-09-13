@@ -56,3 +56,21 @@ IVM_NATIVE_FUNC(_string_len)
 
 	return ivm_numeric_new(NAT_STATE(), ivm_string_utf8Length(str));
 }
+
+IVM_NATIVE_FUNC(_string_char)
+{
+	ivm_number_t idx = 0;
+	ivm_size_t len, i;
+	const ivm_string_t *str;
+
+	CHECK_BASE(IVM_STRING_OBJECT_T);
+	MATCH_ARG("*n", &idx);
+
+	str = ivm_string_object_getValue(NAT_BASE());
+	len = ivm_string_length(str);
+	i = (ivm_size_t)idx;
+
+	RTM_ASSERT(i < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(i, len));
+
+	return ivm_numeric_new(NAT_STATE(), ivm_string_charAt(str, i));
+}

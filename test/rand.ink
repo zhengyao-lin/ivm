@@ -1,5 +1,4 @@
 import math
-import ulist
 
 i = 0
 wrong = 0

@@ -122,6 +122,9 @@ ivm_string_utf8Length(const ivm_string_t *str)
 #define ivm_string_trimHead(str) \
 	((str)->cont)
 
+#define ivm_string_charAt(str, i) \
+	((str)->cont[i])
+
 ivm_hash_val_t
 ivm_string_hash(const ivm_string_t *str);
 
