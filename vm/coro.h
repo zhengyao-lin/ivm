@@ -52,9 +52,9 @@ ivm_coro_free(ivm_coro_t *coro,
 #define ivm_coro_stackTop(coro) (ivm_vmstack_size(&coro->stack))
 
 ivm_object_t *
-ivm_coro_newException_s(ivm_coro_t *coro,
-						struct ivm_vmstate_t_tag *state,
-						const ivm_char_t *msg);
+ivm_coro_newStringException(ivm_coro_t *coro,
+							struct ivm_vmstate_t_tag *state,
+							const ivm_char_t *msg);
 
 void
 ivm_coro_printException(ivm_coro_t *coro,
@@ -72,7 +72,7 @@ ivm_coro_printException(ivm_coro_t *coro,
 		IVM_ARRLEN(__rtm_assert_buf__),       \
 		__VA_ARGS__                           \
 	);                                        \
-	exc = ivm_coro_newException_s(            \
+	exc = ivm_coro_newStringException(        \
 		(coro), (state), __rtm_assert_buf__   \
 	);                                        \
 	ivm_vmstate_setException((state), exc);
@@ -144,6 +144,9 @@ ivm_coro_getRuntimeLocal(ivm_coro_t *coro)
 
 	return IVM_NULL;
 }
+
+ivm_long_t
+ivm_coro_where(ivm_coro_t *coro, ivm_size_t trback /* trace back */);
 
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;

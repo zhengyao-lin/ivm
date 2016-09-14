@@ -82,7 +82,7 @@
 		IVM_ARRLEN(__rtm_assert_buf__),       \
 		__VA_ARGS__                           \
 	);                                        \
-	RAISE(ivm_coro_newException_s(            \
+	RAISE(ivm_coro_newStringException(        \
 		_CORO, _STATE, __rtm_assert_buf__     \
 	))
 

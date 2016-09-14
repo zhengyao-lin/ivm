@@ -48,12 +48,35 @@ ivm_coro_free(ivm_coro_t *coro,
 	return;
 }
 
+IVM_INLINE
 ivm_object_t *
-ivm_coro_newException_s(ivm_coro_t *coro,
-						ivm_vmstate_t *state,
-						const ivm_char_t *msg)
+_ivm_coro_newException_c(ivm_vmstate_t *state,
+						 const ivm_char_t *file,
+						 ivm_long_t line,
+						 ivm_object_t *msg)
 {
 	ivm_object_t *ret = ivm_object_new(state);
+
+	ivm_object_setSlot(ret, state,
+		IVM_VMSTATE_CONST(state, C_FILE),
+		ivm_string_object_new(state, IVM_CSTR(state, file))
+	);
+
+	ivm_object_setSlot(ret, state,
+		IVM_VMSTATE_CONST(state, C_LINE),
+		ivm_numeric_new(state, line)
+	);
+
+	ivm_object_setSlot(ret, state, IVM_VMSTATE_CONST(state, C_MSG), msg);
+
+	return ret;
+}
+
+ivm_object_t *
+ivm_coro_newStringException(ivm_coro_t *coro,
+							ivm_vmstate_t *state,
+							const ivm_char_t *msg)
+{
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_instr_t *tmp_ip;
 	ivm_long_t line = -1;
@@ -61,24 +84,14 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 
 	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
 
-	ivm_object_setSlot(ret, state,
-		IVM_VMSTATE_CONST(state, C_MSG),
-		ivm_string_object_new(state, IVM_CSTR(state, msg))
-	);
-
 	if (tmp_ip) {
 		tmp_file = ivm_source_pos_getFile(ivm_instr_pos(tmp_ip));
 		line = ivm_instr_lineno(tmp_ip);
 	}
 
-	ivm_object_setSlot(ret, state,
-		IVM_VMSTATE_CONST(state, C_FILE),
-		ivm_string_object_new(state, IVM_CSTR(state, tmp_file))
-	);
-
-	ivm_object_setSlot(ret, state,
-		IVM_VMSTATE_CONST(state, C_LINE),
-		ivm_numeric_new(state, line)
+	return _ivm_coro_newException_c(
+		state, tmp_file, line,
+		ivm_string_object_new(state, IVM_CSTR(state, msg))
 	);
 
 #if 0
@@ -105,8 +118,6 @@ ivm_coro_newException_s(ivm_coro_t *coro,
 		PRINT_POS();
 	}
 #endif
-
-	return ret;
 }
 
 void
@@ -154,6 +165,13 @@ ivm_coro_printException(ivm_coro_t *coro,
 	IVM_TRACE("\n");
 
 	return;
+}
+
+ivm_long_t
+ivm_coro_where(ivm_coro_t *coro,
+			   ivm_size_t trback)
+{
+
 }
 
 void
