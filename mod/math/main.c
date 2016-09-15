@@ -94,7 +94,7 @@ VAL1F_E(sqrt, { MATH_ASSERT_NON_NEG_VAL("sqrt") })
 
 IVM_NATIVE_FUNC(_math_random)
 {
-	ivm_number_t min = 0, max = 2;
+	ivm_number_t min = 0, max = 1;
 
 	MATCH_ARG("*nn", &min, &max);
 	RTM_ASSERT(max >= min, MATH_ERR_MSG_RANDOM_MIN_MAX_ERROR);

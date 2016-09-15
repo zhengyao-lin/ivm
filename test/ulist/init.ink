@@ -42,18 +42,25 @@
 		val
 	}
 
-	lp.print = fn: {
+	lp.to_str = fn: {
 		loc r = []
 
 		for loc e in base: {
 			loc t = typeof(e)
 			if t == "numeric" || t == "string":
 				r.push(e)
+			elif t == "list":
+				r.push(e.to_str())
 			else:
 				r.push("<" + t + ">")
 		}
 
-		print("[ " + r.cat(", ") + " ]")
+		if r.size(): "[ " + r.cat(", ") + " ]"
+		else: "[]"
+	}
+
+	lp.print = fn: {
+		print(base.to_str())
 	}
 
 	lp.zip = fn arr: {

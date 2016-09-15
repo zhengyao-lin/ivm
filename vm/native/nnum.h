@@ -16,6 +16,8 @@ IVM_NATIVE_FUNC(_numeric_isinf);
 IVM_NATIVE_FUNC(_numeric_isposinf);
 IVM_NATIVE_FUNC(_numeric_isneginf);
 
+IVM_NATIVE_FUNC(_numeric_char);
+
 IVM_COM_END
 
 #endif

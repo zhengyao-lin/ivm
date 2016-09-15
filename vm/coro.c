@@ -167,13 +167,6 @@ ivm_coro_printException(ivm_coro_t *coro,
 	return;
 }
 
-ivm_long_t
-ivm_coro_where(ivm_coro_t *coro,
-			   ivm_size_t trback)
-{
-
-}
-
 void
 ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_vmstate_t *state,

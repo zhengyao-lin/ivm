@@ -57,7 +57,7 @@ IVM_NATIVE_FUNC(_string_len)
 	return ivm_numeric_new(NAT_STATE(), ivm_string_utf8Length(str));
 }
 
-IVM_NATIVE_FUNC(_string_char)
+IVM_NATIVE_FUNC(_string_ord)
 {
 	ivm_number_t idx = 0;
 	ivm_size_t len, i;

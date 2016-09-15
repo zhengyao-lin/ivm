@@ -68,3 +68,15 @@ IVM_NATIVE_FUNC(_numeric_isneginf)
 	CHECK_BASE(IVM_NUMERIC_T);
 	return ivm_numeric_new(NAT_STATE(), _isneginf(ivm_numeric_getValue(NAT_BASE())));
 }
+
+IVM_NATIVE_FUNC(_numeric_char)
+{
+	ivm_char_t c[2];
+
+	CHECK_BASE(IVM_NUMERIC_T);
+
+	c[0] = (ivm_char_t)ivm_numeric_getValue(NAT_BASE());
+	c[1] = '\0';
+
+	return ivm_string_object_new_r(NAT_STATE(), c);
+}

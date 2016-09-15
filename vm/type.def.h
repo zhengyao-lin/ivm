@@ -25,6 +25,8 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t), {
 	ivm_object_setSlot_r(tmp, _STATE, "isposinf", IVM_NATIVE_WRAP(_STATE, _numeric_isposinf));
 	ivm_object_setSlot_r(tmp, _STATE, "isneginf", IVM_NATIVE_WRAP(_STATE, _numeric_isneginf));
 
+	ivm_object_setSlot_r(tmp, _STATE, "char", IVM_NATIVE_WRAP(_STATE, _numeric_char));
+
 }, .to_bool = ivm_numeric_isTrue)
 
 TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
@@ -34,7 +36,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
-	ivm_object_setSlot_r(tmp, _STATE, "char", IVM_NATIVE_WRAP(_STATE, _string_char));
+	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
 
 }, .trav = ivm_string_object_traverser,
    .const_bool = IVM_TRUE)

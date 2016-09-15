@@ -8,7 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_string_len);
-IVM_NATIVE_FUNC(_string_char);
+IVM_NATIVE_FUNC(_string_ord);
 
 IVM_COM_END
 
