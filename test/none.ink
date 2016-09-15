@@ -19,9 +19,6 @@ catch: print("failed to get add op of none")
 try: a.+ = 1
 catch: print("failed to set add op of none")
 
-try: a = clone a
-catch: print("cannot clone none")
-
 print(a == none)
 print(not_defined == a)
 print(!a)
@@ -43,7 +40,6 @@ f()
 // -> "str: failed to set proto of none"
 // -> "str: failed to get add op of none"
 // -> "str: failed to set add op of none"
-// -> "str: cannot clone none"
 // 
 // -> "num: 1"
 // -> "num: 1"

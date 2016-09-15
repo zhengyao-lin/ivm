@@ -95,7 +95,7 @@
 	}
 
 	lp.reverse = fn: {
-		loc r = clone base
+		loc r = base.clone()
 		loc size = r.size()
 		loc e = size / 2
 		loc i = 0

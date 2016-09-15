@@ -1,6 +1,6 @@
 
 a = [1, 2, 3]
-b = clone a
+b = a.clone()
 
 a[2] = "no!!"
 
@@ -17,7 +17,7 @@ gen = fn: {
 }
 
 f1 = gen()
-f2 = clone f1
+f2 = f1.clone()
 
 del f1
 

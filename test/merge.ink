@@ -17,7 +17,7 @@ a - 1
 a = { val: "no overw" }
 b = { val: "overw" }
 
-print((clone a).merge(b).val)
+print(a.clone().merge(b).val)
 print(a.val)
 print(a.merge(b, 1).val)
 

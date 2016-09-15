@@ -115,9 +115,9 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 				case IVM_UNIOP_ID(POS):
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POS);
 					break;
-				case IVM_UNIOP_ID(CLONE):
+				/* case IVM_UNIOP_ID(CLONE):
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), CLONE);
-					break;
+					break; */
 				default:
 					IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_UNARY_OP(unary_expr->type));
 			}

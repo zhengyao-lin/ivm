@@ -4,7 +4,21 @@
 #define IVM_PRIVATE static
 #define IVM_PUBLIC extern
 
-#define IVM_INLINE inline __attribute__((always_inline))
+#ifdef __GNUC__
+	#if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1))
+		#define IVM_INLINE __inline__ __attribute__((always_inline))
+	#else
+		#define IVM_INLINE __inline__
+	#endif
+#elif defined(_MSC_VER)
+	#define IVM_INLINE __forceinline
+#elif (defined(__BORLANDC__) || defined(__WATCOMC__))
+	#define IVM_INLINE __inline
+#else
+	#define IVM_INLINE
+#endif
+
+// #define IVM_INLINE inline __attribute__((always_inline))
 #define IVM_NOALIGN __attribute__((packed))
 
 #define IVM_STRICT strict

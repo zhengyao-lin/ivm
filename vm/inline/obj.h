@@ -61,7 +61,7 @@ ivm_object_new(ivm_vmstate_t *state)
 
 IVM_INLINE
 ivm_object_t *
-ivm_object_new_c(struct ivm_vmstate_t_tag *state,
+ivm_object_new_c(ivm_vmstate_t *state,
 				 ivm_size_t prealloc)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
@@ -74,7 +74,7 @@ ivm_object_new_c(struct ivm_vmstate_t_tag *state,
 
 IVM_INLINE
 ivm_object_t *
-ivm_object_new_t(struct ivm_vmstate_t_tag *state,
+ivm_object_new_t(ivm_vmstate_t *state,
 				 ivm_slot_table_t *slots)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
@@ -87,6 +87,16 @@ ivm_object_new_t(struct ivm_vmstate_t_tag *state,
 	}
 
 	return ret;
+}
+
+IVM_INLINE
+void
+ivm_object_initSlots(ivm_object_t *obj,
+					 ivm_vmstate_t *state,
+					 ivm_size_t prealloc)
+{
+	obj->slots = ivm_slot_table_new_c(state, prealloc);
+	return;
 }
 
 IVM_INLINE

@@ -30,7 +30,7 @@ d2 = 123
 d3 = 1024
 
 local = loc
-a = clone local
+a = local.clone()
 
 local.what = "yes"
 

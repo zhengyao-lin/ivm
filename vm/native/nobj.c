@@ -25,3 +25,9 @@ IVM_NATIVE_FUNC(_object_merge)
 
 	return base;
 }
+
+IVM_NATIVE_FUNC(_object_clone)
+{
+	CHECK_BASE_EXIST();
+	return ivm_object_clone(NAT_BASE(), NAT_STATE());
+}

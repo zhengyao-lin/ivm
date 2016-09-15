@@ -49,7 +49,6 @@ enum token_id_t {
 	T_FORK,
 	T_GROUP,
 
-	T_CLONE,
 	T_DEL,
 	T_REF,
 	T_DEREF,
@@ -138,7 +137,6 @@ token_name_table[] = {
 	"keyword `fork`",
 	"keyword `group`",
 
-	"operator `clone`",
 	"operator `del`",
 	"operator `ref`",
 	"operator `deref`",
@@ -473,7 +471,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("fork", T_FORK)
 		KEYWORD("group", T_GROUP)
 
-		KEYWORD("clone", T_CLONE)
 		KEYWORD("del", T_DEL)
 		KEYWORD("ref", T_REF)
 		KEYWORD("deref", T_DEREF)
@@ -1410,7 +1407,11 @@ RULE(postfix_expr)
 	unary_expr
 		: postfix_expr
 		| '!' unary_expr
-		| 'clone' unary_expr
+		| '-' unary_expr
+		| '+' unary_expr
+		| 'del' unary_expr
+		| 'ref' unary_expr
+		| 'deref' unary_expr
  */
 RULE(unary_expr)
 {
@@ -1433,7 +1434,7 @@ RULE(unary_expr)
 		UNARY_EXPR(T_NOT, "not expr", IVM_UNIOP_ID(NOT))
 		UNARY_EXPR(T_SUB, "neg expr", IVM_UNIOP_ID(NEG))
 		UNARY_EXPR(T_ADD, "pos expr", IVM_UNIOP_ID(POS))
-		UNARY_EXPR(T_CLONE, "clone expr", IVM_UNIOP_ID(CLONE))
+		// UNARY_EXPR(T_CLONE, "clone expr", IVM_UNIOP_ID(CLONE))
 		UNARY_EXPR(T_DEL, "del expr", IVM_UNIOP_ID(DEL))
 
 		UNARY_EXPR(T_REF, "ref expr", ILANG_GEN_UNIOP_REF)

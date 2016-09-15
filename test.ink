@@ -93,6 +93,15 @@ gid = group: {
 yield a to gid
 */
 
+fib = fn n: {
+	if n < 2: ret 1
+	ret fib(n - 1) + fib(n - 2)
+}
+
+print(fib(30))
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -102,6 +111,13 @@ printe = fn e: {
 }
 
 __test = fn: {
+	loc.merge(import test.exc)
+
+	try: (fn: {
+		raise Exception("cannot find myself!")
+	})()
+	catch err: printe(err)
+
 	import test.sort
 	
 	test.sort.printl(test.sort.bubble([5, 4, 3, 2, 1]))
@@ -205,7 +221,7 @@ __test = fn: {
 	print = pb
 
 	a = { val: 10, msg: "yes" }
-	b = clone a
+	b = a.clone()
 	i = 0
 
 	while i < 10000: {
@@ -234,7 +250,7 @@ __test = fn: {
 	print("hi")
 
 	b = fn: (
-		n = clone 10,
+		n = 10.clone(),
 		n.speak = fn a: print(a),
 		n
 	)
@@ -545,7 +561,7 @@ __test = fn: {
 		b: 2
 	}
 
-	b = clone a
+	b = a.clone()
 
 	b.b = "no!!"
 

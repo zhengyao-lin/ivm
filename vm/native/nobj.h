@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_object_merge);
+IVM_NATIVE_FUNC(_object_clone);
 
 IVM_COM_END
 

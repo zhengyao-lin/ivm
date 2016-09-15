@@ -99,16 +99,6 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(CLONE, "clone", N, 1, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_TOP();
-	NOT_NONE_OP(_TMP_OBJ1, "clone");
-
-	STACK_OVERRIDE(ivm_object_clone(_TMP_OBJ1, _STATE));
-	NEXT_INSTR();
-})
-
 /* unary operations */
 OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", {
 	STACK_PUSH(ivm_numeric_new(_STATE, !ivm_object_toBool(_TMP_OBJ1, _STATE)));
