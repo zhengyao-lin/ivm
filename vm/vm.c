@@ -38,7 +38,7 @@ ivm_type_t static_type_list[] = {
 	(ivm_type_setProto(ivm_vmstate_getType((state), (tag)), (obj)))
 
 ivm_vmstate_t *
-ivm_vmstate_new()
+ivm_vmstate_new(ivm_string_pool_t *const_pool)
 {
 	ivm_vmstate_t *ret = STD_ALLOC(sizeof(*ret));
 	ivm_type_t *tmp_type, *end;
@@ -63,12 +63,11 @@ ivm_vmstate_new()
 	ret->ct_pool = ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
 	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
 
-	ret->const_pool
-	= ivm_string_pool_new(IVM_FALSE);
-	ivm_ref_inc(ret->const_pool);
+	ret->const_pool = const_pool;
+	ivm_ref_inc(const_pool);
 
 #define CONST_GEN(name, str) \
-	ret->const_str_##name = (const ivm_string_t *)ivm_string_pool_registerRaw(ret->const_pool, (str));
+	ret->const_str_##name = (const ivm_string_t *)ivm_string_pool_registerRaw(const_pool, (str));
 	#include "vm.const.h"
 #undef CONST_GEN
 

@@ -73,8 +73,8 @@ int test_fib()
 	ivm_context_t *ctx;
 	ivm_size_t addr1, addr2;
 
-	str_pool = ivm_string_pool_new(IVM_TRUE);
-	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
+	str_pool = ivm_string_pool_new();
+	state = ivm_vmstate_new(str_pool); ivm_vmstate_lockGCFlag(state);
 
 	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
 	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);
@@ -210,8 +210,8 @@ int test_call()
 						"vvvvv", "wwwww", "xxxxx", "yyyyy",
 						"zzzzz" };
 
-	str_pool = ivm_string_pool_new(IVM_TRUE);
-	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state);
+	str_pool = ivm_string_pool_new();
+	state = ivm_vmstate_new(str_pool); ivm_vmstate_lockGCFlag(state);
 
 	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
 	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);
@@ -321,11 +321,11 @@ int test_vm()
 						"vvv", "www", "xxx", "yyy",
 						"zzz" };
 
-	state = ivm_vmstate_new(); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
+	str_pool = ivm_string_pool_new();
+	state = ivm_vmstate_new(str_pool); ivm_vmstate_lockGCFlag(state); /* block gc for a while */
 	obj1 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(test)));
 	obj2 = ivm_numeric_new(state, 110);
 	obj3 = ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, IVM_GET_NATIVE_FUNC(call_func)));
-	str_pool = ivm_string_pool_new(IVM_TRUE);
 
 	exec1 = ivm_exec_new(str_pool); ivm_ref_inc(exec1);
 	exec2 = ivm_exec_new(str_pool); ivm_ref_inc(exec2);

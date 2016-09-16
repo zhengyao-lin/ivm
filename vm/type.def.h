@@ -16,7 +16,7 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t), {
 	ivm_object_t *tmp = ivm_numeric_new(_STATE, IVM_NUM(0));
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
-	ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+	ivm_object_initSlots(tmp, _STATE, 8);
 
 	ivm_object_setSlot_r(tmp, _STATE, "ceil", IVM_NATIVE_WRAP(_STATE, _numeric_ceil));
 	ivm_object_setSlot_r(tmp, _STATE, "floor", IVM_NATIVE_WRAP(_STATE, _numeric_floor));
@@ -36,7 +36,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t), {
 	ivm_object_t *tmp = ivm_string_object_new(_STATE, IVM_VMSTATE_CONST(_STATE, C_EMPTY));
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
-	ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
@@ -49,7 +49,7 @@ TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t), {
 	ivm_object_t *tmp = ivm_list_object_new(_STATE, 0);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
-	ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _list_size));
 	ivm_object_setSlot_r(tmp, _STATE, "push", IVM_NATIVE_WRAP(_STATE, _list_push));
@@ -77,7 +77,7 @@ TYPE_GEN(IVM_LIST_OBJECT_ITER_T, list_iter, sizeof(ivm_list_object_iter_t), {
 	ivm_object_t *tmp = ivm_list_object_iter_new(_STATE, 0);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
-	ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), IVM_NATIVE_WRAP(_STATE, _list_iter_next));
 

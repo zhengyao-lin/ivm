@@ -276,9 +276,16 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 ivm_vmstate_t *
 ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 {
-	ivm_vmstate_t *state = ivm_vmstate_new();
-	ivm_function_t *root = ivm_exec_unit_mergeToVM(unit, state);
+	ivm_string_pool_t *pool;
+	ivm_vmstate_t *state;
+	ivm_function_t *root;
 	ivm_char_t *str;
+
+	IVM_ASSERT(ivm_exec_list_size(unit->execs), IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT);
+
+	pool = ivm_exec_pool(ivm_exec_list_at(unit->execs, 0));
+	state = ivm_vmstate_new(pool);
+	root = ivm_exec_unit_mergeToVM(unit, state);
 
 	if (unit->pos) {
 		ivm_vmstate_setPath(state, str = ivm_sys_getBasePath(ivm_source_pos_getFile(unit->pos)));

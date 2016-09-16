@@ -83,7 +83,7 @@ ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
 	ivm_exec_t *top_level;
 
 	if (!str_pool) {
-		str_pool = ivm_string_pool_new(IVM_TRUE);
+		str_pool = ivm_string_pool_new();
 	}
 
 	ret = ivm_exec_unit_new(0, ivm_exec_list_new());

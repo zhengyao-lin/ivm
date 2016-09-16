@@ -33,7 +33,7 @@ ias_gen_env_new(ias_gen_block_list_t *block_list)
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("generator environment"));
 
-	ret->str_pool = ivm_string_pool_new(IVM_TRUE);
+	ret->str_pool = ivm_string_pool_new();
 	ivm_ref_inc(ret->str_pool);
 	ret->block_list = block_list;
 	ret->jmp_table = ias_gen_label_list_new();

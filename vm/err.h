@@ -96,6 +96,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_UNPACK_NON_LIST(type)						"cannot unpack the object of type <%s>", (type)
 #define IVM_ERROR_MSG_ITER_END									"iteration has done"
 #define IVM_ERROR_MSG_NON_ITERABLE								"non-iterable object used for iteration"
+#define IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT						"merging empty exec unit"
 
 IVM_COM_END
 

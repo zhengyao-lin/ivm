@@ -72,7 +72,7 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_CSTR(state, str) ((const ivm_string_t *)ivm_string_pool_registerRaw((state)->const_pool, (str)))
 
 ivm_vmstate_t *
-ivm_vmstate_new();
+ivm_vmstate_new(ivm_string_pool_t *const_pool);
 
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
