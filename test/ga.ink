@@ -186,6 +186,9 @@ while i < 100: {
 	ga_choose(ga_getSurvProb())
 	ga_reprod()
 	i = i + 1
+
+	// [ loc s, loc fitness ] = ga_best()
+	// print(listToStr(s) + " -> " + fitness)
 }
 
 [ loc s, loc fitness ] = ga_best()

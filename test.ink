@@ -93,15 +93,6 @@ gid = group: {
 yield a to gid
 */
 
-fib = fn n: {
-	if n < 2: ret 1
-	ret fib(n - 1) + fib(n - 2)
-}
-
-print(fib(30))
-
-ret
-
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
