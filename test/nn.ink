@@ -1,7 +1,7 @@
 import math
 import ulist
 
-loc sigmoid = fn x: 1 / (1 + math.exp(-x))
+loc activate = fn x: 1 / (1 + math.exp(-x))
 
 loc rand_mat = fn n, m, min, max: {
 	loc r = [ none ] * n
@@ -83,6 +83,24 @@ loc vec_mul = fn v1, v2: {
 	r
 }
 
+loc num_sub_vec = fn n, v: {
+	loc r = []
+
+	for loc e in v:
+		r.push(n - e)
+
+	r
+}
+
+loc vec_mul_each = fn v1, v2: {
+	loc r = []
+
+	for [ loc e1, loc e2 ] in v1.zip(v2):
+		r.push(e1 * e2)
+
+	r
+}
+
 loc vec_self_add = fn v1, v2: {
 	loc i = 0
 	loc size = v1.size()
@@ -117,7 +135,7 @@ loc apply_layer = fn inps, params: { // inps is 1-dim, params is a 2-dim matrix
 	for loc ws in params: {
 		loc z = apply_node(inps, ws)
 		zs.push(z)
-		as.push(sigmoid(z))
+		as.push(activate(z))
 	}
 
 	[ zs, as ]
@@ -137,18 +155,28 @@ loc apply_net = fn inps, params: { // inps is 1-dim, params is a 3-dim matrix
 	[ out, all_a ]
 }
 
-loc error_layer = fn delta, params: { // get the delta for the previous layer, delta is 1-dim, params is 2-dim
-	loc pt = transpose(params)
+loc error_out = fn as, expect: {
+	// error = (as - expect) * as * (1 - as)
+	ret vec_sub(expect, as)
+	// vec_mul_each(vec_sub(as, expect), vec_mul_each(as, num_sub_vec(1, as)))
+}
 
-	// pt.print()
+loc error_layer = fn as, delta, params: {
+	// get the delta for the previous layer,
+	// delta is 1-dim,
+	// params is 2-dim(the weights between the previous layer and the current layer)
+	loc pt = transpose(params)
 
 	loc r = []
 
 	for loc node in pt: {
-		// print("here")
-		// delta.print()
 		r.push(dot_mul(node, delta))
 	}
+
+	ret r
+
+	r = vec_mul_each(r, vec_mul_each(as, num_sub_vec(1, as)))
+	// print("r: " + as.to_str())
 
 	r
 }
@@ -157,44 +185,53 @@ loc shape = fn mat: {
 	print(mat.size() + " x " + mat[0].size())
 }
 
-loc bp = fn out, expect, params, all_a, big_d: {
-	loc delta = bias(vec_sub(out, expect))
-	loc r
-	// loc big_d = []
+loc get_deltas = fn out, expect, params, all_a: {
+	loc delta = error_out(out, expect)
 
-	// init big_d all zeros
-	// for loc layer in params:
-	//	big_d.push(similar_fill(layer, 0))
-	loc tmp = fn i: {
+	loc tmp = fn i, trunc: {
 		loc a = big_d[i]
-		loc b = vec_mul(delta.slice(1), all_a[i])
+
+		// print("delta: " + delta.to_str())
+
+		loc b = vec_mul(delta, all_a[i])
 
 		// delta.slice(1).print()
 
-		shape(a)
-		shape(b)
+		// shape(a)
+		// shape(b)
+		/*
 		print("b")
 		delta.print()
 		b.print()
 		all_a[i].print()
+		*/
 		// print("delta")
 		// delta.print()
+		// print("as: " + all_a[i].to_str())
+		// print("grads: " + b.to_str())
 
 		mat_self_add(a, b)
 	}
 
 	loc i = params.size() - 1
+	loc r = []
 
-	tmp(i)
+	// tmp(i, 0)
+
+	r[i] = delta
 
 	while i > 0: {
-		delta = delta.slice(1)
-		delta = error_layer(delta, params[i])
+		delta = error_layer(all_a[i], delta, params[i])
 
 		i = i - 1
 
-		tmp(i)
+		delta = delta.slice(1)
+		r[i] = delta
+
+		// tmp(i, 1)
 	}
+
+	r
 	// mat_self_add(big_d[i], vec_mul(delta, all_a[i - 1]))
 }
 
@@ -208,8 +245,8 @@ loc init_nn = fn arch: { // arch = [ dim, [ hidden, dim ], dim ]
 	loc i = 0
 
 	while i < dim: {
-		print(dims[i + 1] + " x " + (dims[i] + 1))
-		params[i] = rand_mat(dims[i + 1], dims[i] + 1, -1, 1)
+		// print(dims[i + 1] + " x " + (dims[i] + 1))
+		params[i] = rand_mat(dims[i + 1], dims[i] + 1, -10, 10)
 		i = i + 1
 	}
 
@@ -225,117 +262,287 @@ loc gen_d = fn params: {
 
 	big_d
 }
-ret
-/*
-[ params, dims ] = init_nn([ 4, [ 2, 5 ], 2 ])
 
-params[0].print()
-print(apply_node([ 1, 2, 3 ], [ 0.1, 0.2, 0.3 ]))
-apply_layer([ 1, 2, 3, 4 ], params[0]).print()
-apply_net([ 0, 1, 0, 1 ], params).print()
+loc normalize = fn train_ex, idx: {
+	loc min = [ 0 ] * train_ex[0][idx].size()
+	loc max = train_ex[0][idx].clone()
 
-loc m = rand_mat(3, 4)
+	for loc ex in train_ex: {
+		loc i = 0
+		loc size = ex[idx].size()
 
-m.print()
-transpose(m).print()
+		while i < size: {
+			if ex[idx][i] < min[i]:
+				min[i] = ex[idx][i]
 
-vec_mul([ 1, 2, 3 ], [ 2, 3 ]).print()
+			if ex[idx][i] > max[i]:
+				max[i] = ex[idx][i]
 
-similar_fill([ [ 1, 2, 3 ], [ 2, 4 ] ]).print()
-*/
+			i = i + 1
+		}
+	}
 
-print(sigmoid(0.2))
+	// min.print()
+	// max.print()
 
-[ params, dims ] = init_nn([ 1, [ 1, 2 ], 1 ])
+	loc r = []
 
-loc big_d = gen_d(params)
+	for loc ex in train_ex: {
+		loc i = 0
+		loc size = ex[idx].size()
 
-print("params")
-for loc p in params:
-	p.print()
-print("params")
-
-[ out, all_a ] = apply_net([ 1 ], params)
-
-all_a.print()
-
-bp(out, [ 0 ], params, all_a, big_d)
-
-big_d.print()
-
-ret
-
-print("################## bp #################")
-
-alpha = 0.2
-time = 0
-
-[ params, dims ] = init_nn([ 1, [ 3, 5 ], 1 ])
-
-// > 15?
-train_ex = []
-
-loc gen_train = fn: {
-	loc i = 0
-
-	while i < 100: {
-		loc num = math.random(0, 30)
-		train_ex.push([ [ num ], [ num > 15 ] ])
-		i = i + 1
+		while i < size: {
+			ex[idx][i] = (ex[idx][i] - min[i]) / (max[i] - min[i])
+			i = i + 1
+		}
 	}
 }
 
-gen_train()
+loc deriv_activate = fn n: {
+	n = activate(n)
+	n * (1 - n)
+}
 
-while time < 100: {
-	loc big_d = gen_d(params)
+loc update_params = fn all_a, params, deltas, alpha: {
+	loc lay = 0
+	loc lcount = params.size()
+	loc delta_sum = 0
 
-	for [ loc inp, loc expect ] in train_ex: {
-		[ out, all_a ] = apply_net(inp, params)
-		bp(out, expect, params, all_a, big_d)
+	while lay < lcount: {
+		loc i = 0 // the current node in the current layer
+		loc size = params[lay].size()
+
+		while i < size: {
+			loc j = 0
+			loc pn_size = params[lay][i].size() // previous node count
+
+			while j < pn_size: {
+				print(lay + ": " + j + " -> " + i)
+				print("   delta: " + deltas[lay][i])
+				print("   deriv: " + deriv_activate(all_a[lay + 1][i + 1]))
+				print("   self out: " + all_a[lay + 1][i + 1])
+				print("   output: " + all_a[lay][j])
+
+				loc delta = alpha * deltas[lay][i] * deriv_activate(all_a[lay + 1][i + 1]) * all_a[lay][j]
+
+				delta_sum = delta_sum + math.abs(delta)
+
+				params[lay][i][j] = params[lay][i][j] + delta
+
+				j = j + 1
+			}
+
+			i = i + 1
+		}
+
+		lay = lay + 1
 	}
 
-	// regression
-	loc i = 0
-	loc err = 0
+	//print("delta sum: " + delta_sum)
+}
 
-	for loc layer in params: {
-		loc j = 0
-		for loc node in layer: {
-			loc k = 0
-			loc size = node.size()
-			while k < size: {
-				// print(i + ", " + j + ", " + k)
-				err = err + big_d[i][j][k]
-				node[k] = node[k] - alpha / train_ex.size() * big_d[i][j][k]
-				k = k + 1
-			}
-			j = j + 1
+ret
+
+loc test1 = fn: {
+	loc train_time = 1
+	loc i = 0
+	loc train_ex = [ // xor
+		[ [ 0, 0 ], [ 1 ] ],
+		[ [ 1, 0 ], [ 0 ] ],
+		[ [ 0, 1 ], [ 0 ] ],
+		[ [ 1, 1 ], [ 0 ] ]
+	]
+
+	[ params, dims ] = init_nn([ 2, [ 2, 2 ], 1 ])
+
+	while i < train_time: {
+		for [ loc inp, loc expect ] in train_ex: {
+			[ out, all_a ] = apply_net(inp, params)
+			deltas = get_deltas(out, expect, params, all_a)
+			update_params(all_a, params, deltas, 0.1)
+
+			ret
 		}
 		i = i + 1
 	}
 
-	print(err)
+	loc norm = fn out: {
+		loc r = []
+
+		for loc o in out:
+			r.push(o > 0.5)
+
+		r
+	}
+
+	[ out, all_a ] = apply_net([ 1, 1 ], params)
+	norm(out).print()
+
+	[ out, all_a ] = apply_net([ 1, 0 ], params)
+	norm(out).print()
+
+	[ out, all_a ] = apply_net([ 0, 1 ], params)
+	norm(out).print()
+
+	[ out, all_a ] = apply_net([ 0, 0 ], params)
+	norm(out).print()
+}
+
+test1()
+
+ret
+
+loc test1 = fn: {
+	loc train_time = 1000
+	loc i = 0
+	loc train_ex = [
+		[ [ 0, 0, 0 ], [ 1, 1, 1 ] ],
+		[ [ 1, 0, 0 ], [ 0, 1, 1 ] ],
+		[ [ 0, 1, 0 ], [ 1, 0, 1 ] ],
+		[ [ 0, 0, 1 ], [ 1, 1, 0 ] ],
+		[ [ 1, 1, 0 ], [ 0, 0, 1 ] ],
+		[ [ 0, 1, 1 ], [ 1, 0, 0 ] ],
+		[ [ 1, 0, 1 ], [ 0, 1, 0 ] ],
+		[ [ 1, 1, 1 ], [ 0, 0, 0 ] ]
+	]
+
+	[ params, dims ] = init_nn([ 3, [ 1, 4 ], 3 ])
+
+	while i < train_time: {
+		for [ loc inp, loc expect ] in train_ex: {
+			[ out, all_a ] = apply_net(inp, params)
+			deltas = get_deltas(out, expect, params, all_a)
+			update_params(all_a, params, deltas, 0.1)
+		}
+		i = i + 1
+	}
+
+	loc norm = fn out: {
+		loc r = []
+
+		for loc o in out:
+			r.push(o > 0.5)
+
+		r
+	}
+
+	[ out, all_a ] = apply_net([ 1, 1, 0 ], params)
+	norm(out).print()
+
+	[ out, all_a ] = apply_net([ 1, 0, 0 ], params)
+	norm(out).print()
+
+	[ out, all_a ] = apply_net([ 0, 0, 0 ], params)
+	norm(out).print()
+}
+
+// test1()
+// ret
+
+loc alpha = 0.1
+loc train_time = 100
+
+[ params, dims ] = init_nn([ 1, [ 2, 3 ], 1 ])
+
+train_ex = []
+test_ex = []
+
+tmp = (fn: {
+	loc i = 0
+	loc r = []
+
+	while i < 1000: {
+		loc num = math.random(0, 100)
+		r.push([ [ num ], [ num * num ] ])
+
+		i = i + 1
+	}
+
+	r
+})()
+
+normalize(tmp, 0)
+normalize(tmp, 1)
+
+train_ex = tmp.slice(0, 50)
+test_ex = tmp.slice(50)
+
+loc time = 0
+
+while time < train_time: {
+	for [ loc inp, loc expect ] in train_ex: {
+		// print("#####################")
+		// each train data
+
+		// print("params: " + params.to_str())
+
+		// print("big d: " + big_d.to_str())
+		// print("input: " + inp.to_str())
+		// print("expect: " + expect.to_str())
+
+		[ out, all_a ] = apply_net(inp, params)
+
+		// print("output: " + out.to_str())
+
+		// print("all a: " + all_a.to_str())
+
+		deltas = get_deltas(out, expect, params, all_a, big_d)
+
+		// print("deltas: " + deltas.to_str())
+
+		// print("params prev: " + params.to_str())
+
+		update_params(all_a, params, deltas, alpha)
+
+		// print("params after: " + params.to_str())
+
+		//ret
+	}
+
+	//ret
 
 	time = time + 1
 }
+
+// for loc lay in params:
+// 	print(lay.to_str())
+
+// ret
+
+/*
+print("end training")
+
+[ out, all_a ] = apply_net([ 1 ], params)
+out.print()
+
+[ out, all_a ] = apply_net([ 0 ], params)
+out.print()
+
+ret
+*/
 
 print("end training")
 
 loc i = 0
 loc wrong = 0
-loc test_t = 10000
+loc test_t = test_ex.size()
 
-while i < test_t: {
-	loc num = math.random(0, 30)
-	[ out, all_a ] = apply_net([ num ], params)
+for loc t in test_ex: {
+	[ out, all_a ] = apply_net(t[0], params)
 
-	if out[0] > 0.5 != num > 15: {
-		print(num + " -> " + out[0])
+	loc delta = math.abs(out[0] - t[1][0])
+
+	// print(delta)
+
+	if delta > 0.3: {
+		print("delta: " + delta)
+		// print("correct: " + t[1][0] + ", predict: " + out[0])
 		wrong = wrong + 1
 	}
 
 	i = i + 1
 }
 
-print(wrong / test_t * 100 + "%")
+print("error rate: " + wrong / test_t * 100 + "%")
+
+ret
