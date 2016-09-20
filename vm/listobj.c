@@ -245,12 +245,17 @@ ivm_list_object_multiply(ivm_list_object_t *list,
 	ivm_size_t osize = list->size, esize;
 	ivm_object_t **lst, **cur;
 
+	if (!times) {
+		list->size = 0;
+		return;
+	}
+
 	_ivm_list_object_expandTo(list, state, osize * times);
 
 	cur = lst = list->lst;
 	esize = sizeof(*lst) * osize;
 
-	while (times--) {
+	while (--times) {
 		STD_MEMCPY(cur += osize, lst, esize);
 	}
 
