@@ -3,9 +3,11 @@ import math
 
 loc.merge(import matrix)
 
+loc sigmoid = fn x: (1 / (1 + math.exp(-x)))
+
 loc nn = fn arch, alpha, activate: { // arch = [ dim, [ hidden, dim ], dim ]
 	alpha = alpha || 0.1
-	activate = activate || (fn x: (1 / (1 + math.exp(-x))))
+	activate = activate || sigmoid
 
 	// print(activate(-1.060))
 
@@ -207,7 +209,7 @@ loc test_gate = fn f: {
 	loc err = 10000
 	loc thres = 100
 
-	tests = [
+	loc tests = [
 		[ [ 0, 0 ], [ f(0, 0) ] ],
 		[ [ 0, 1 ], [ f(0, 1) ] ],
 		[ [ 1, 0 ], [ f(1, 0) ] ],
@@ -235,11 +237,98 @@ loc test_gate = fn f: {
 		norm(net.predict([ 0, 1 ])[-1]),
 		norm(net.predict([ 1, 0 ])[-1]),
 		norm(net.predict([ 1, 1 ])[-1])
-	].print() // -> "str: \\[ \\[ 0 \\], \\[ 1 \\], \\[ 1 \\], \\[ 1 \\] \\]"
+	].print()
+}
+
+loc test_bin2bool = fn f: {
+	loc min = 0
+	loc max = 100
+
+	loc dnorm = fn a: {
+		(a - min) / (max - min)
+	}
+
+	loc denorm = fn a: {
+		a * (max - min) + min
+	}
+
+	loc alpha = 0.2
+	loc net = nn([ 2, [ 1, 3 ], 1 ], alpha)
+	loc tests = []
+	loc err = 10000
+	loc thres = 100
+	loc tcount = 2000
+	loc max_iter = 300
+
+	for loc i in range(tcount): {
+		loc a = math.random(min, max)
+		loc b = math.random(min, max)
+		tests.push([ [ dnorm(a), dnorm(b) ], [ f(a, b) ] ])
+	}
+
+	loc i = 0
+	loc ave_err = 1000
+
+	print("training")
+
+	while ave_err > 0.2 && i < max_iter: {
+		loc ave_err = 0
+
+		for loc t in tests: {
+			ave_err = ave_err + net.train(t[0], t[1])
+		}
+
+		ave_err = ave_err / tcount
+
+		// print("average error: " + ave_err)
+
+		if i > thres: {
+			// print("raise alpha")
+			net.set_alpha(alpha = alpha * 1.3)
+			thres = thres * 1.5
+		}
+		
+		i = i + 1
+	}
+
+	// net.params.print()
+
+	tests = []
+
+	for loc i in range(tcount): {
+		loc a = math.random(min, max + 30)
+		loc b = math.random(min, max + 30)
+		tests.push([ [ dnorm(a), dnorm(b) ], [ f(a, b) ] ])
+	}
+
+	loc wrong = 0
+
+	for loc t in tests: {
+		loc res = net.predict(t[0])[-1][0]
+
+		// print(denorm(t[0][0]) + ", " + denorm(t[0][1]) + " -> " + res + ", real: " + t[1][0])
+
+		if norm(res) != t[1][0]: {
+			wrong = wrong + 1
+			// print("wrong: " + denorm(t[0][0]) + ", " + denorm(t[0][1]) + " -> predict: " + res + ", real: " + t[1][0])
+		}
+	}
+
+	loc perc = wrong / tcount * 100
+
+	if perc < 5:
+		print("predict success")
+
+	print("error rate: " + perc + "%")
 }
 
 // test_not()
-// test_gate to | a, b | a | b
 test_gate to | a, b | a | b
+test_bin2bool to | a, b | math.abs(math.abs(a) - math.abs(b)) < 50
 
 ret
+
+// -> "str: \\[ \\[ 0 \\], \\[ 1 \\], \\[ 1 \\], \\[ 1 \\] \\]"
+// -> "str: training"
+// -> "str: predict success"
+// -> "str: error rate: .*%"
