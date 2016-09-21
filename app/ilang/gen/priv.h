@@ -16,6 +16,8 @@
 #define CHECK_SE() ((ilang_gen_check_flag_t) { .has_side_effect = IVM_TRUE })
 #define RETVAL ilang_gen_value_build
 #define NORET() ((ilang_gen_value_t) { 0 })
+#define INC_SP() (++env->sp)
+#define DEC_SP() (--env->sp)
 
 #define GET_LINE(expr) ((expr)->pos.line)
 

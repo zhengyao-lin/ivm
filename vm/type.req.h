@@ -10,5 +10,6 @@
 #include "strobj.h"
 #include "func.h"
 #include "listobj.h"
+#include "range.h"
 
 #endif

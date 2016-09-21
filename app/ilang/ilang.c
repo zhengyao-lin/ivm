@@ -117,6 +117,19 @@ IVM_NATIVE_FUNC(typeof)
 	return ivm_string_object_new_r(NAT_STATE(), IVM_OBJECT_GET(obj, TYPE_NAME));
 }
 
+IVM_NATIVE_FUNC(range)
+{
+	ivm_number_t from = 0, to, step = 1;
+
+	if (NAT_ARGC() == 1) {
+		MATCH_ARG("n", &to);
+	} else {
+		MATCH_ARG("nn*n", &from, &to, &step);
+	} 
+
+	return ivm_range_new(NAT_STATE(), from, to, step);
+}
+
 IVM_PRIVATE
 IVM_INLINE
 ivm_exec_unit_t *
@@ -361,6 +374,7 @@ int main(int argc, const char **argv)
 		ivm_context_setSlot_r(ctx, state, "eval", IVM_NATIVE_WRAP(state, eval));
 		ivm_context_setSlot_r(ctx, state, "import", IVM_NATIVE_WRAP(state, import));
 		ivm_context_setSlot_r(ctx, state, "typeof", IVM_NATIVE_WRAP(state, typeof));
+		ivm_context_setSlot_r(ctx, state, "range", IVM_NATIVE_WRAP(state, range));
 
 		ivm_context_setSlot_r(ctx, state, "none", IVM_NONE(state));
 

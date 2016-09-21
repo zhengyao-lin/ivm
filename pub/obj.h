@@ -5,5 +5,7 @@
 #include "../vm/num.h"
 #include "../vm/strobj.h"
 #include "../vm/func.h"
+#include "../vm/listobj.h"
+#include "../vm/range.h"
 
 #endif

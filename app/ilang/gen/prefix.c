@@ -18,9 +18,12 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	ivm_bool_t has_varg = IVM_FALSE;
 	ivm_int_t cur_param, param_count;
+	ivm_size_t sp_back;
 	const ivm_char_t *err;
 
 	ilang_gen_addr_set_t addr_backup = env->addr;
+	sp_back = env->sp;
+	env->sp = 0;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
@@ -39,6 +42,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 			2. last argument, bottom of the stack
 	 */
 	params = func->params;
+
 	if (params) {
 		param_count = ilang_gen_param_list_size(params);
 		cur_param = 0;
@@ -94,6 +98,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ivm_opt_optExec(exec);
 
 	env->addr = addr_backup;
+	env->sp = sp_back;
 
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_FUNC, exec_id);
@@ -205,11 +210,18 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
 
 	assign->rhe->eval(assign->rhe, FLAG(0), env);
+	INC_SP();
 	if (!flag.is_top_level) {
+		INC_SP();
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
 	}
 	// ilang_gen_leftval_eval(assign->lhe, expr, env);
 	assign->lhe->eval(assign->lhe, FLAG(.is_left_val = IVM_TRUE), env);
+
+	DEC_SP();
+	if (!flag.is_top_level) {
+		DEC_SP();
+	}
 
 	return NORET();
 }

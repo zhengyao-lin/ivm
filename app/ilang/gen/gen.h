@@ -37,6 +37,7 @@ typedef struct{
 	ilang_gen_addr_list_t *break_ref;
 	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
 	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
+
 } ilang_gen_addr_set_t;
 
 #define ilang_gen_addr_set_build(...) \
@@ -54,6 +55,7 @@ typedef struct {
 	jmp_buf err_handle;
 
 	ilang_gen_addr_set_t addr;
+	ivm_size_t sp;
 
 	ivm_ptlist_t *list_log;
 	ivm_heap_t *heap;

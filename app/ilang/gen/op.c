@@ -10,8 +10,11 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 {
 	ivm_exec_t *exec, *exec_backup;
 	ivm_size_t addr, exec_id;
+	ivm_size_t sp_back;
 
 	ilang_gen_addr_set_t addr_backup = env->addr;
+	sp_back = env->sp;
+	env->sp = 0;
 
 	exec = ivm_exec_new(env->str_pool);
 	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
@@ -45,6 +48,7 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 	ivm_opt_optExec(exec);
 
 	env->addr = addr_backup;
+	env->sp = sp_back;
 
 	if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(unary_expr), NEW_FUNC, exec_id);
@@ -145,7 +149,9 @@ ilang_gen_binary_expr_eval(ilang_gen_expr_t *expr,
 	op2 = binary_expr->op2;
 
 	op1->eval(op1, FLAG(0), env);
+	INC_SP();
 	op2->eval(op2, FLAG(0), env);
+	DEC_SP();
 
 #define BR(op) \
 	case IVM_BINOP_ID(op):                                        \
@@ -191,7 +197,9 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	op2 = cmp_expr->op2;
 
 	op1->eval(op1, FLAG(0), env);
+	INC_SP();
 	op2->eval(op2, FLAG(0), env);
+	DEC_SP();
 
 #if 0
 #define BR(op) \
@@ -238,7 +246,7 @@ ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_index_expr_t *index_expr = IVM_AS(expr, ilang_gen_index_expr_t);
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_expr;
-	ivm_size_t count;
+	ivm_size_t count, sp_back;
 
 	index_expr->op->eval(index_expr->op, FLAG(0), env);
 
@@ -255,14 +263,19 @@ ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
 		
 		case 1:
 			tmp_expr = ilang_gen_expr_list_at(index_expr->idx, 0);
+			INC_SP();
 			tmp_expr->eval(tmp_expr, FLAG(0), env);
+			DEC_SP();
 			break;
 
 		default: {
+			sp_back = env->sp;
 			ILANG_GEN_EXPR_LIST_EACHPTR_R(index_expr->idx, eiter) {
-				tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+				tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);\
+				INC_SP();
 				tmp_expr->eval(tmp_expr, FLAG(0), env);
 			}
+			env->sp = sp_back;
 
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, count);
 		}

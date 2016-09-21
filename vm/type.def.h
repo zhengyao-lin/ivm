@@ -72,6 +72,26 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t), {
    .trav = ivm_function_object_traverser,
    .const_bool = IVM_TRUE)
 
+TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t), {
+	
+	ivm_object_t *tmp = ivm_range_new(_STATE, 0, 0, 1);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_ITER), IVM_NATIVE_WRAP(_STATE, _range_iter));
+
+}, .const_bool = IVM_TRUE)
+
+TYPE_GEN(IVM_RANGE_ITER_T, range_iter, sizeof(ivm_range_iter_t), {
+	
+	ivm_object_t *tmp = ivm_range_iter_new(_STATE, 0, 0, 1);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), IVM_NATIVE_WRAP(_STATE, _range_iter_next));
+
+}, .const_bool = IVM_TRUE)
+
 TYPE_GEN(IVM_LIST_OBJECT_ITER_T, list_iter, sizeof(ivm_list_object_iter_t), {
 	
 	ivm_object_t *tmp = ivm_list_object_iter_new(_STATE, 0);
