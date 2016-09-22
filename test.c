@@ -628,9 +628,10 @@ int main(int argc, const char **argv)
 #if 0
 
 	const ivm_char_t *err;
-	ivm_file_t *fp = ivm_file_new("date.log", IVM_FMODE_READ_BINARY);
+	ivm_file_t *fp = ivm_file_new("test.bmp", IVM_FMODE_READ_BINARY);
+	ivm_file_t *out = ivm_file_new("out.bmp", IVM_FMODE_WRITE_BINARY);
 
-	if (!fp) {
+	if (!fp || !out) {
 		IVM_TRACE("cannot open file\n");
 		return 1;
 	}		
@@ -641,7 +642,10 @@ int main(int argc, const char **argv)
 		IVM_TRACE("%s\n", err);
 	}
 
+	ivm_image_bmp_format(img, out);
+
 	ivm_file_free(fp);
+	ivm_file_free(out);
 	ivm_image_free(img);
 
 	ivm_env_clean();
