@@ -1,5 +1,5 @@
 /*
-	This file is edited from the original version of fpconv by Andreas Samoljuk
+	The 'ivm_conv_dtoa' and its related functions are based on the original version of fpconv by Andreas Samoljuk
 
 	The MIT License
 

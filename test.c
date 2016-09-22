@@ -10,6 +10,7 @@
 #include "std/hash.h"
 #include "std/heap.h"
 #include "std/conv.h"
+#include "std/bmp.h"
 
 #include "vm/vm.h"
 #include "vm/dbg.h"
@@ -623,6 +624,31 @@ strhash(const char *key)
 int main(int argc, const char **argv)
 {
 	ivm_env_init();
+
+#if 0
+
+	const ivm_char_t *err;
+	ivm_file_t *fp = ivm_file_new("date.log", IVM_FMODE_READ_BINARY);
+
+	if (!fp) {
+		IVM_TRACE("cannot open file\n");
+		return 1;
+	}		
+
+	ivm_image_t *img = ivm_image_bmp_parse(fp, &err);
+
+	if (!img) {
+		IVM_TRACE("%s\n", err);
+	}
+
+	ivm_file_free(fp);
+	ivm_image_free(img);
+
+	ivm_env_clean();
+
+	return 0;
+
+#endif
 
 	// IVM_TRACE("%ld\n", sizeof(ivm_frame_t));
 	// return 0;

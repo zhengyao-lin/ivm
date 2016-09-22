@@ -15,7 +15,7 @@
 #elif (defined(__BORLANDC__) || defined(__WATCOMC__))
 	#define IVM_INLINE __inline
 #else
-	#define IVM_INLINE
+	#define IVM_INLINE inline
 #endif
 
 // #define IVM_INLINE inline __attribute__((always_inline))
