@@ -280,7 +280,7 @@ loc test_bin2bool = fn f: {
 
 		ave_err = ave_err / tcount
 
-		print("average error: " + ave_err)
+		// print("average error: " + ave_err)
 
 		alpha = alpha * 0.9
 
