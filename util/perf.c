@@ -9,6 +9,7 @@
 #if IVM_USE_PERF_PROFILE
 
 extern clock_t ivm_perf_gc_time;
+extern clock_t ivm_perf_gc_max;
 extern ivm_size_t ivm_perf_gc_count;
 
 clock_t ivm_perf_program_start;
@@ -52,6 +53,10 @@ ivm_perf_printElapsed()
 	IVM_TRACE("gc: %ld ticks(%fs)\n",
 			  ivm_perf_gc_time,
 			  (double)ivm_perf_gc_time / CLOCKS_PER_SEC);
+
+	IVM_TRACE("gc max: %ld ticks(%fs)\n",
+			  ivm_perf_gc_max,
+			  (double)ivm_perf_gc_max / CLOCKS_PER_SEC);
 
 	IVM_TRACE("gc per program: %.4f%%\n",
 			  (double)ivm_perf_gc_time / prog * 100);

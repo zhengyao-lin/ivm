@@ -128,7 +128,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	DEF_FUNC(pow); DEF_FUNC(sqrt);
 
-	srand(time(IVM_NULL));
+	// srand(time(IVM_NULL));
 	DEF_FUNC(random);
 
 	DEF_CONST("pi", C_PI);

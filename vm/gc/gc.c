@@ -471,6 +471,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 #if IVM_USE_PERF_PROFILE
 
 clock_t ivm_perf_gc_time = 0;
+clock_t ivm_perf_gc_max = 0;
 ivm_size_t ivm_perf_gc_count = 0;
 
 #endif
@@ -560,7 +561,12 @@ ivm_collector_collect(ivm_collector_t *collector,
 	ivm_vmstate_closeGCFlag(state);
 
 #if IVM_USE_PERF_PROFILE
-	ivm_perf_gc_time += clock() - time_st;
+	clock_t t = clock() - time_st;
+
+	if (t > ivm_perf_gc_max)
+		ivm_perf_gc_max = t;
+
+	ivm_perf_gc_time += t;
 	ivm_perf_gc_count++;
 #endif
 
