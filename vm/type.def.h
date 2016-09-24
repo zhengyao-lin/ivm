@@ -8,6 +8,15 @@ TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t), {
 
 	ivm_object_setSlot_r(tmp, _STATE, "merge", IVM_NATIVE_WRAP(_STATE, _object_merge));
 	ivm_object_setSlot_r(tmp, _STATE, "clone", IVM_NATIVE_WRAP(_STATE, _object_clone));
+	ivm_object_setSlot_r(tmp, _STATE, "type", IVM_NATIVE_WRAP(_STATE, _object_type));
+
+}, .const_bool = IVM_TRUE)
+
+TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t), {
+
+	ivm_object_t *tmp = ivm_type_object_new(_STATE, _TYPE);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 }, .const_bool = IVM_TRUE)
 
@@ -79,6 +88,7 @@ TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t), {
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_ITER), IVM_NATIVE_WRAP(_STATE, _range_iter));
+	ivm_object_setOop(tmp, _STATE, IVM_OOP_ID(CALL), IVM_NATIVE_WRAP(_STATE, _range_call));
 
 }, .const_bool = IVM_TRUE)
 

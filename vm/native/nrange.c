@@ -20,6 +20,19 @@ IVM_NATIVE_FUNC(_range_iter)
 	return ivm_range_iter_new(NAT_STATE(), range->from, range->to, range->step);
 }
 
+IVM_NATIVE_FUNC(_range_call)
+{
+	ivm_number_t from = 0, to, step = 1;
+
+	if (NAT_ARGC() == 1) {
+		MATCH_ARG("n", &to);
+	} else {
+		MATCH_ARG("nn*n", &from, &to, &step);
+	} 
+
+	return ivm_range_new(NAT_STATE(), from, to, step);
+}
+
 IVM_NATIVE_FUNC(_range_iter_next)
 {
 	ivm_range_iter_t *iter;

@@ -16,7 +16,7 @@ ivm_string_object_new_c(ivm_vmstate_t *state,
 {
 	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_STRING_OBJECT_T));
 
 	ret->val = val;
 
@@ -51,7 +51,7 @@ ivm_string_object_new_r(ivm_vmstate_t *state,
 {
 	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_STRING_OBJECT_T));
 
 	ret->val = ivm_vmstate_allocRawString(state, val);
 
@@ -65,7 +65,7 @@ ivm_string_object_new(ivm_vmstate_t *state,
 {
 	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_STRING_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_STRING_OBJECT_T));
 
 	ret->val = ivm_vmstate_allocString(state, val);
 

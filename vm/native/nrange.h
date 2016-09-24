@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_range_iter);
+IVM_NATIVE_FUNC(_range_call);
 IVM_NATIVE_FUNC(_range_iter_next);
 
 IVM_COM_END

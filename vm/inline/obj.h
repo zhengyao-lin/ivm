@@ -15,15 +15,14 @@ IVM_COM_HEADER
 IVM_INLINE
 void
 ivm_object_init(ivm_object_t *obj,
-				ivm_vmstate_t *state,
-				ivm_type_tag_t type)
+				ivm_type_t *type)
 {
 	// STD_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
 	// obj->proto = ivm_type_getProto(
 	// 	obj->type = ivm_vmstate_getType(state, type)
 	// );
 
-	STD_MEMCPY(obj, ivm_vmstate_getTypeHeader(state, type), sizeof(obj->type) + sizeof(obj->proto));
+	STD_MEMCPY(obj, ivm_type_getHeader(type), sizeof(obj->type) + sizeof(obj->proto));
 	STD_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
 
 	return;
@@ -57,7 +56,7 @@ ivm_object_new(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(ret, state, IVM_OBJECT_T);
+	ivm_object_init(ret, IVM_BTTYPE(state, IVM_OBJECT_T));
 
 	return ret;
 }
@@ -69,7 +68,7 @@ ivm_object_new_c(ivm_vmstate_t *state,
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(ret, state, IVM_OBJECT_T);
+	ivm_object_init(ret, IVM_BTTYPE(state, IVM_OBJECT_T));
 	ret->slots = ivm_slot_table_new_c(state, prealloc);
 
 	return ret;
@@ -82,7 +81,7 @@ ivm_object_new_t(ivm_vmstate_t *state,
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(ret, state, IVM_OBJECT_T);
+	ivm_object_init(ret, IVM_BTTYPE(state, IVM_OBJECT_T));
 	ret->slots = slots;
 	if (slots) {
 		ivm_slot_table_setLinked(slots);
@@ -108,7 +107,7 @@ ivm_none_new(ivm_vmstate_t *state)
 {
 	ivm_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(ret, state, IVM_NONE_T);
+	ivm_object_init(ret, IVM_BTTYPE(state, IVM_NONE_T));
 	ret->mark.sub.locked = IVM_TRUE;
 
 	return ret;

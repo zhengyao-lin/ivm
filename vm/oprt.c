@@ -77,6 +77,16 @@
 		});
 	}
 
+	BINOP_PROC_DEF(ivm_binop_eq)
+	{
+		return (ivm_object_t *)(ivm_ptr_t)(_OP1 == _OP2);
+	}
+
+	BINOP_PROC_DEF(ivm_binop_ne)
+	{
+		return (ivm_object_t *)(ivm_ptr_t)(_OP1 != _OP2);
+	}
+
 	BINOP_PROC_DEF(ivm_binop_constFalse)
 	{
 		return (ivm_object_t *)(ivm_ptr_t)IVM_FALSE;

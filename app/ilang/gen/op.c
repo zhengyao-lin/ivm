@@ -196,10 +196,17 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	op1 = cmp_expr->op1;
 	op2 = cmp_expr->op2;
 
-	op1->eval(op1, FLAG(0), env);
-	INC_SP();
-	op2->eval(op2, FLAG(0), env);
-	DEC_SP();
+	if (cmp_expr->cmp_type != ILANG_GEN_CMP_IS) {
+		op1->eval(op1, FLAG(0), env);
+		INC_SP();
+		op2->eval(op2, FLAG(0), env);
+		DEC_SP();
+	} else {
+		op2->eval(op2, FLAG(0), env);
+		INC_SP();
+		op1->eval(op1, FLAG(0), env);
+		DEC_SP();
+	}
 
 #if 0
 #define BR(op) \
@@ -225,6 +232,12 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 		BR(GE)
 		BR(GT)
 		BR(NE)
+
+		case ILANG_GEN_CMP_IS:
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, "is");
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE, 2);
+			break;
+
 		default:
 			IVM_FATAL(GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(cmp_expr->cmp_type));
 	}

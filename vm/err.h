@@ -97,6 +97,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_ITER_END									"iteration has done"
 #define IVM_ERROR_MSG_NON_ITERABLE								"non-iterable object used for iteration"
 #define IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT						"merging empty exec unit"
+#define IVM_ERROR_MSG_UNEXPECT_IS_OPERAND						"unexpected type of the second operand of 'is' function(expecting none or type)"
 
 IVM_COM_END
 

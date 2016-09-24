@@ -13,7 +13,7 @@ ivm_list_object_new(ivm_vmstate_t *state,
 {
 	ivm_list_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_LIST_OBJECT_T));
 
 	ret->alloc = IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE;
 	ret->size = size;
@@ -42,7 +42,7 @@ ivm_list_object_new_c(ivm_vmstate_t *state,
 
 	ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_LIST_OBJECT_T));
 
 	ret->alloc = ret->size = count;
 	ret->lst = ivm_vmstate_allocWild(
@@ -72,7 +72,7 @@ _ivm_list_object_new_nc(ivm_vmstate_t *state,
 {
 	ivm_list_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_LIST_OBJECT_T));
 
 	ret->alloc = ret->size = size;
 	ret->lst = init;
@@ -309,7 +309,7 @@ ivm_list_object_iter_new(ivm_vmstate_t *state,
 {
 	ivm_list_object_iter_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_LIST_OBJECT_ITER_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_LIST_OBJECT_ITER_T));
 
 	ret->list = list;
 	ret->cur = 0;

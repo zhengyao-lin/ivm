@@ -459,6 +459,7 @@ enum {
 	ILANG_GEN_CMP_GE = 1,
 	ILANG_GEN_CMP_GT = 2,
 	ILANG_GEN_CMP_NE = 3,
+	ILANG_GEN_CMP_IS
 };
 
 typedef struct {

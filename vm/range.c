@@ -12,7 +12,7 @@ ivm_range_new(ivm_vmstate_t *state,
 	ivm_range_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 	ivm_long_t delta, count;
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_RANGE_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_RANGE_T));
 
 	delta = to - from;
 	count = delta / step;
@@ -41,7 +41,7 @@ ivm_range_iter_new(struct ivm_vmstate_t_tag *state,
 {
 	ivm_range_iter_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_RANGE_ITER_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_RANGE_ITER_T));
 
 	ret->cur = cur;
 	ret->end = end;

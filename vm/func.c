@@ -217,7 +217,7 @@ ivm_function_object_new(ivm_vmstate_t *state,
 {
 	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), state, IVM_FUNCTION_OBJECT_T);
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_FUNCTION_OBJECT_T));
 
 	ret->scope = ivm_context_addRef(scope);
 	ret->val = func;

@@ -24,6 +24,7 @@ ivm_type_t static_type_list[] = {
 		.tag = t,                          \
 		.name = #n,                        \
 		.size = s,                         \
+		.is_builtin = IVM_TRUE,            \
 		__VA_ARGS__                        \
 	},
 

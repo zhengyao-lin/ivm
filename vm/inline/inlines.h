@@ -10,6 +10,7 @@
 #include "vm/inline/context.h"
 #include "vm/inline/func.h"
 
+#include "vm/inline/typeobj.h"
 #include "vm/inline/num.h"
 #include "vm/inline/strobj.h"
 

@@ -68,13 +68,21 @@ BINOP_GEN(IVM_NUMERIC_T, LE, IVM_NUMERIC_T, {
 BINOP_GEN_C(IVM_NONE_T, EQ, IVM_NONE_T, ivm_binop_constTrue)
 BINOP_GEN_C(IVM_NONE_T, NE, IVM_NONE_T, ivm_binop_constFalse)
 
-BINOP_GEN(IVM_OBJECT_T, EQ, IVM_OBJECT_T, {
-	return (ivm_object_t *)(ivm_ptr_t)(_OP1 == _OP2);
+BINOP_GEN_C(IVM_OBJECT_T, EQ, IVM_OBJECT_T, ivm_binop_eq)
+BINOP_GEN_C(IVM_OBJECT_T, NE, IVM_OBJECT_T, ivm_binop_ne)
+
+BINOP_GEN(IVM_TYPE_OBJECT_T, EQ, IVM_TYPE_OBJECT_T, {
+	return (ivm_object_t *)(ivm_ptr_t)
+		   (ivm_type_object_getValue(_OP1) == ivm_type_object_getValue(_OP2));
 })
 
-BINOP_GEN(IVM_OBJECT_T, NE, IVM_OBJECT_T, {
-	return (ivm_object_t *)(ivm_ptr_t)(_OP1 != _OP2);
+BINOP_GEN(IVM_TYPE_OBJECT_T, NE, IVM_TYPE_OBJECT_T, {
+	return (ivm_object_t *)(ivm_ptr_t)
+		   (ivm_type_object_getValue(_OP1) != ivm_type_object_getValue(_OP2));
 })
+
+BINOP_GEN_C(IVM_FUNCTION_OBJECT_T, EQ, IVM_FUNCTION_OBJECT_T, ivm_binop_eq)
+BINOP_GEN_C(IVM_FUNCTION_OBJECT_T, NE, IVM_FUNCTION_OBJECT_T, ivm_binop_ne)
 
 BINOP_GEN(IVM_STRING_OBJECT_T, EQ, IVM_STRING_OBJECT_T, {
 	return (ivm_object_t *)(ivm_ptr_t)(!ivm_string_compare_c(ivm_string_object_getValue(_OP1), ivm_string_object_getValue(_OP2)));

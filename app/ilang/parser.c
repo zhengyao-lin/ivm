@@ -53,6 +53,8 @@ enum token_id_t {
 	T_REF,
 	T_DEREF,
 
+	T_IS,
+
 	T_IMPORT,
 
 	T_SEMIC,	// ;
@@ -140,6 +142,8 @@ token_name_table[] = {
 	"operator `del`",
 	"operator `ref`",
 	"operator `deref`",
+
+	"operator `is`",
 
 	"keyword `import`",
 
@@ -474,6 +478,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("del", T_DEL)
 		KEYWORD("ref", T_REF)
 		KEYWORD("deref", T_DEREF)
+
+		KEYWORD("is", T_IS)
 
 		KEYWORD("import", T_IMPORT)
 #undef KEYWORD
@@ -1700,6 +1706,7 @@ RULE(cmp_expr)
 	eq_expr_sub
 		: '==' cmp_expr eq_expr_sub
 		| '!=' cmp_expr eq_expr_sub
+		| 'is' cmp_expr eq_expr_sub
 		| %empty
  */
 RULE(eq_expr_sub)
@@ -1707,6 +1714,7 @@ RULE(eq_expr_sub)
 	SUB_RULE_SET(
 		SUB_RULE(T(T_CEQ) R(nllo) R(cmp_expr) R(eq_expr_sub) SUB1_CMP(EQ))
 		SUB_RULE(T(T_CNE) R(nllo) R(cmp_expr) R(eq_expr_sub) SUB1_CMP(NE))
+		SUB_RULE(T(T_IS) R(nllo) R(cmp_expr) R(eq_expr_sub) SUB1_CMP(IS))
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 

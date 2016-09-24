@@ -12,6 +12,8 @@
 #include "nnum.h"
 #include "nobj.h"
 
+#include "glob.h"
+
 /* 0 for success, other return stand for the position of the wrong argument */
 ivm_int_t
 ivm_native_matchArgument(ivm_function_arg_t arg,
