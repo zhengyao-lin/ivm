@@ -91,21 +91,6 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector,
 	return;
 }
 
-IVM_PRIVATE
-IVM_INLINE
-void
-ivm_collector_triggerAllDestructor(ivm_collector_t *collector,
-								   ivm_vmstate_t *state)
-{
-	ivm_destruct_list_iterator_t iter;
-
-	IVM_DESTRUCT_LIST_EACHPTR(&collector->des_log[0], iter) {
-		ivm_object_destruct(IVM_DESTRUCT_LIST_ITER_GET(iter), state);
-	}
-
-	return;
-}
-
 void
 ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
 {

@@ -12,32 +12,32 @@
 	IVM_CORO_NATIVE_ASSERT(NAT_CORO(), NAT_STATE(), 0, __VA_ARGS__)
 
 #define CHECK_BASE(expect) \
-	RTM_ASSERT(NAT_BASE() && IVM_IS_TYPE(NAT_BASE(), (expect)), \
+	RTM_ASSERT(NAT_BASE() && IVM_IS_TYPE(NAT_BASE(), NAT_STATE(), (expect)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
 #define CHECK_BASE_EXIST() \
 	RTM_ASSERT(NAT_BASE(), IVM_NATIVE_ERROR_MSG_WRONG_BASE("(nil)"))
 
 #define CHECK_ARG_1(type) \
-	RTM_ASSERT(NAT_ARGC() && IVM_IS_TYPE(NAT_ARG_AT(1), (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
+	RTM_ASSERT(NAT_ARGC() && IVM_IS_TYPE(NAT_ARG_AT(1), NAT_STATE(), (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define CHECK_ARG_2(t1, t2) \
-	RTM_ASSERT(NAT_ARGC() >= 2 &&                       \
-			   IVM_IS_TYPE(NAT_ARG_AT(1), (t1)) &&      \
-			   IVM_IS_TYPE(NAT_ARG_AT(2), (t2)),        \
+	RTM_ASSERT(NAT_ARGC() >= 2 &&                                    \
+			   IVM_IS_TYPE(NAT_ARG_AT(1), NAT_STATE(), (t1)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(2), NAT_STATE(), (t2)),        \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define CHECK_ARG_3(t1, t2, t3) \
-	RTM_ASSERT(NAT_ARGC() >= 3 &&                       \
-			   IVM_IS_TYPE(NAT_ARG_AT(1), (t1)) &&      \
-			   IVM_IS_TYPE(NAT_ARG_AT(2), (t2)) &&      \
-			   IVM_IS_TYPE(NAT_ARG_AT(3), (t3),         \
+	RTM_ASSERT(NAT_ARGC() >= 3 &&                                    \
+			   IVM_IS_TYPE(NAT_ARG_AT(1), NAT_STATE(), (t1)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(2), NAT_STATE(), (t2)) &&      \
+			   IVM_IS_TYPE(NAT_ARG_AT(3), NAT_STATE(), (t3),         \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define MATCH_ARG(rule, ...) \
 	{                                                                                   \
 		ivm_int_t __match_ret__                                                         \
-		= ivm_native_matchArgument(NAT_ARG(), (rule), __VA_ARGS__);                     \
+		= ivm_native_matchArgument(NAT_ARG(), NAT_STATE(), (rule), __VA_ARGS__);        \
 		RTM_ASSERT(!__match_ret__, IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(__match_ret__));   \
 	}
 

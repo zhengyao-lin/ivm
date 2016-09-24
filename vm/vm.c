@@ -15,8 +15,6 @@
 #include "oprt.h"
 #include "proto.h"
 
-#define GC(state) ((state)->gc)
-
 #include "type.req.h"
 
 IVM_PRIVATE
@@ -74,7 +72,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ret->wild_size = 0;
 
 	ret->gc_flag = IVM_FALSE;
-	ret->gc = ivm_collector_new(ret);
+	ivm_collector_init(&ret->gc);
 
 	ivm_vmstate_lockGCFlag(ret);
 
@@ -113,7 +111,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	ivm_int_t j;
 
 	if (state) {
-		ivm_collector_free(GC(state), state);
+		ivm_collector_dump(&state->gc, state);
 
 		for (j = 0; j < IVM_ARRLEN(state->heaps); j++) {
 			ivm_heap_dump(state->heaps + j);

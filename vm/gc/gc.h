@@ -124,15 +124,60 @@ typedef struct ivm_traverser_arg_t_tag {
 ivm_collector_t *
 ivm_collector_new();
 
+IVM_INLINE
 void
-ivm_collector_free(ivm_collector_t *collector, struct ivm_vmstate_t_tag *state);
+ivm_collector_triggerAllDestructor(ivm_collector_t *collector,
+								   struct ivm_vmstate_t_tag *state)
+{
+	ivm_destruct_list_iterator_t iter;
+
+	IVM_DESTRUCT_LIST_EACHPTR(&collector->des_log[0], iter) {
+		ivm_object_destruct(IVM_DESTRUCT_LIST_ITER_GET(iter), state);
+	}
+
+	return;
+}
 
 IVM_INLINE
 void
-ivm_collector_reinit(ivm_collector_t *collector)
+ivm_collector_init(ivm_collector_t *col)
 {
-	ivm_destruct_list_empty(&collector->des_log[0]);
-	ivm_destruct_list_empty(&collector->des_log[1]);
+	col->live_ratio = 0;
+	col->skip_time = 0;
+	col->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+	
+	ivm_destruct_list_init(&col->des_log[0]);
+	ivm_destruct_list_init(&col->des_log[1]);
+	
+	ivm_wbobj_list_init(&col->wb_obj);
+	ivm_wbslot_list_init(&col->wb_slot);
+	ivm_wbctx_list_init(&col->wb_ctx);
+	
+	col->gen = 0;
+
+	return;
+}
+
+void
+ivm_collector_free(ivm_collector_t *collector,
+				   struct ivm_vmstate_t_tag *state);
+
+IVM_INLINE
+void
+ivm_collector_dump(ivm_collector_t *collector,
+				   struct ivm_vmstate_t_tag *state)
+{
+	if (collector) {
+		ivm_collector_triggerAllDestructor(collector, state);
+		
+		ivm_destruct_list_dump(&collector->des_log[0]);
+		ivm_destruct_list_dump(&collector->des_log[1]);
+
+		ivm_wbobj_list_dump(&collector->wb_obj);
+		ivm_wbslot_list_dump(&collector->wb_slot);
+		ivm_wbctx_list_dump(&collector->wb_ctx);
+	}
+
 	return;
 }
 

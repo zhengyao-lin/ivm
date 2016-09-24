@@ -37,7 +37,7 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_func_list_t func_list;					// 24
 
 	ivm_string_pool_t *const_pool;				// 8
-	ivm_collector_t *gc;						// 8
+	ivm_collector_t gc;							// 8
 
 	ivm_object_t *except;
 	ivm_object_t *loaded_mod;
@@ -70,6 +70,8 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_CONST(state, name) ((state)->const_str_##name)
 
 #define IVM_CSTR(state, str) ((const ivm_string_t *)ivm_string_pool_registerRaw((state)->const_pool, (str)))
+
+#define IVM_IS_TYPE(obj, state, type) (IVM_TYPE_OF(obj) == (state)->type_list + (type))
 
 ivm_vmstate_t *
 ivm_vmstate_new(ivm_string_pool_t *const_pool);
@@ -116,7 +118,7 @@ IVM_WBOBJ(ivm_vmstate_t *state,
 	if (IVM_OBJECT_GET(parent, GEN) &&
 		!IVM_OBJECT_GET(child, GEN)) {
 		if (!IVM_OBJECT_GET(parent, WB)) {
-			ivm_collector_addWBObj(state->gc, parent);
+			ivm_collector_addWBObj(&state->gc, parent);
 			IVM_OBJECT_SET(parent, WB, 1);
 		}
 		return IVM_TRUE;
@@ -134,7 +136,7 @@ IVM_WBOBJ_SLOT(ivm_vmstate_t *state,
 	if (obj && IVM_OBJECT_GET(obj, GEN) &&
 		!ivm_slot_table_getGen(table)) {
 		if (!IVM_OBJECT_GET(obj, WB)) {
-			ivm_collector_addWBObj(state->gc, obj);
+			ivm_collector_addWBObj(&state->gc, obj);
 			IVM_OBJECT_SET(obj, WB, 1);
 		}
 		return IVM_TRUE;
@@ -154,7 +156,7 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 		!IVM_OBJECT_GET(value, GEN)) {
 		if (!ivm_slot_table_getWB(table)) {
 			// IVM_TRACE("write %p %p(%s)\n", table, value, IVM_OBJECT_GET(value, TYPE_NAME));
-			ivm_collector_addWBSlotTable(state->gc, table);
+			ivm_collector_addWBSlotTable(&state->gc, table);
 			ivm_slot_table_setWB(table, 1);
 		}
 		return IVM_TRUE;
@@ -172,7 +174,7 @@ IVM_WBCTX(ivm_vmstate_t *state,
 	if (ivm_context_getGen(ctx) && value &&
 		!ivm_slot_table_getGen(value)) {
 		if (!ivm_context_getWB(ctx)) {
-			ivm_collector_addWBContext(state->gc, ctx);
+			ivm_collector_addWBContext(&state->gc, ctx);
 			ivm_context_setWB(ctx, 1);
 		}
 		return IVM_TRUE;
@@ -246,7 +248,7 @@ ivm_vmstate_addWildSize(ivm_vmstate_t *state,
 			IVM_DEFAULT_GC_WILD_THRESHOLD
 		)) {
 		state->wild_size = 0;
-		ivm_collector_setGen(state->gc, 1);
+		ivm_collector_setGen(&state->gc, 1);
 		ivm_vmstate_openGCFlag(state);
 	}
 
@@ -441,7 +443,7 @@ ivm_vmstate_getFuncStringPool(ivm_vmstate_t *state)
 	return IVM_NULL;
 }
 
-#define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog((state)->gc, (obj)))
+#define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog(&(state)->gc, (obj)))
 
 #if 0
 
@@ -453,7 +455,7 @@ ivm_vmstate_getFuncStringPool(ivm_vmstate_t *state)
 	ivm_vmstate_isGCFlagOpen(state)
 
 #define ivm_vmstate_doGC(state) \
-	ivm_collector_collect((state)->gc, (state), (state)->heaps); \
+	ivm_collector_collect(&(state)->gc, (state), (state)->heaps); \
 	ivm_vmstate_closeGCFlag(state);
 
 #endif

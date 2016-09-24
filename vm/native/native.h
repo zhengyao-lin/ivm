@@ -15,6 +15,7 @@
 /* 0 for success, other return stand for the position of the wrong argument */
 ivm_int_t
 ivm_native_matchArgument(ivm_function_arg_t arg,
+						 ivm_vmstate_t *state,
 						 const ivm_char_t *rule, ...);
 
 #define IVM_NATIVE_WRAP(state, name) \

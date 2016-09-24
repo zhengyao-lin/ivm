@@ -625,7 +625,7 @@ int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
-#if 0
+#if 1
 
 	const ivm_char_t *err;
 	ivm_file_t *fp = ivm_file_new("test.bmp", IVM_FMODE_READ_BINARY);

@@ -146,15 +146,15 @@ ivm_coro_printException(ivm_coro_t *coro,
 			IVM_VMSTATE_CONST(state, C_LINE)
 		);
 
-		if (msg_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
+		if (msg_obj && IVM_IS_TYPE(msg_obj, state, IVM_STRING_OBJECT_T)) {
 			msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
 		}
 
-		if (file_obj && IVM_IS_TYPE(msg_obj, IVM_STRING_OBJECT_T)) {
+		if (file_obj && IVM_IS_TYPE(msg_obj, state, IVM_STRING_OBJECT_T)) {
 			file = ivm_string_trimHead(ivm_string_object_getValue(file_obj));
 		}
 
-		if (line_obj && IVM_IS_TYPE(line_obj, IVM_NUMERIC_T)) {
+		if (line_obj && IVM_IS_TYPE(line_obj, state, IVM_NUMERIC_T)) {
 			line = ivm_numeric_getValue(line_obj);
 		}
 	} else {

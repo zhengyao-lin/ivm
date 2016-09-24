@@ -160,7 +160,6 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
-#define IVM_IS_TYPE(obj, type) (IVM_TYPE_TAG_OF(obj) == (type))
 
 /* call the operation proc when obj [op] obj(of type) e.g. obj + num */
 #define IVM_OBJECT_GET_BINOP_PROC(op1, op, op2) \
