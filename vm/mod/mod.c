@@ -79,7 +79,7 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 					ivm_coro_t *coro,
 					ivm_context_t *context);
 
-// BUG: need thread lock
+// TODO: need locks
 
 IVM_PRIVATE
 void

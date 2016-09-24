@@ -41,21 +41,21 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 	va_start(args, rule);
 
 #define SUB1(r, type, cvt, val) \
-	case r:                                         \
-		if (ivm_function_arg_has(arg, i)) {         \
-			tmp = ivm_function_arg_at(arg, i);      \
-			if (IVM_IS_TYPE(tmp, state, (type))) {  \
-				*((cvt *)va_arg(args, cvt *))       \
-				= (val);                            \
-			} else {                                \
-				ret = i;                            \
-				goto END;                           \
-			}                                       \
-			i++;                                    \
-		} else {                                    \
-			if (!next_opt) ret = i;                 \
-			goto END;                               \
-		}                                           \
+	case r:                                           \
+		if (ivm_function_arg_has(arg, i)) {           \
+			tmp = ivm_function_arg_at(arg, i);        \
+			if (IVM_IS_BTTYPE(tmp, state, (type))) {  \
+				*((cvt *)va_arg(args, cvt *))         \
+				= (val);                              \
+			} else {                                  \
+				ret = i;                              \
+				goto END;                             \
+			}                                         \
+			i++;                                      \
+		} else {                                      \
+			if (!next_opt) ret = i;                   \
+			goto END;                                 \
+		}                                             \
 		break;
 
 	for (i = 1; *rule; rule++) {

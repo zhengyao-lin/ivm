@@ -18,7 +18,7 @@ IVM_COM_HEADER
 #define _IVM_MARK_HEADER_BITS 4 // (2 + IVM_OOP_COUNT)
 
 #define IVM_OBJECT_HEADER \
-	ivm_type_t *type;                                          \
+	struct ivm_type_t_tag *type;                               \
 	struct ivm_object_t_tag *proto;                            \
 	ivm_slot_table_t *slots;                                   \
 	union {                                                    \
@@ -60,7 +60,12 @@ typedef struct ivm_type_t_tag {
 
 	const ivm_char_t *name;
 	ivm_size_t size;
-	struct ivm_object_t_tag *proto; /* default prototype */
+
+	// ivm_type_t *init_type;
+	// struct ivm_object_t_tag *init_proto; /* default prototype */
+	struct {
+		IVM_OBJECT_HEADER
+	} header;
 
 	ivm_type_tag_t tag;
 
@@ -80,17 +85,15 @@ void
 ivm_type_dump(ivm_type_t *type);
 
 #define ivm_type_setTag(type, t) ((type)->tag = (t))
-#define ivm_type_setProto(type, p) ((type)->proto = (p))
-#define ivm_type_getProto(type) ((type)->proto)
+#define ivm_type_setProto(type, p) ((type)->header.proto = (p))
+#define ivm_type_getProto(type) ((type)->header.proto)
+#define ivm_type_getHeader(type) (&(type)->header)
 
 // #define ivm_type_setBinopTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
 #define ivm_type_getBinopTable(type, op) ((type)->binops + IVM_BINOP_ID(op))
 #define ivm_type_getBinopTable_r(type, i) ((type)->binops + (i))
 
 #define ivm_type_getUniopTable(type) ((type)->uniops)
-
-#define ivm_type_setHeader(type, p) ((type)->header = (p))
-#define ivm_type_getHeader(type) ((type)->header)
 
 typedef void (*ivm_type_init_proc_t)(ivm_type_t *, struct ivm_vmstate_t_tag *);
 
@@ -160,6 +163,7 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
+#define IVM_IS_TYPE(obj, type) (IVM_TYPE_OF(obj) == (type))
 
 /* call the operation proc when obj [op] obj(of type) e.g. obj + num */
 #define IVM_OBJECT_GET_BINOP_PROC(op1, op, op2) \

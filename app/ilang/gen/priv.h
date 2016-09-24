@@ -44,7 +44,7 @@
 #define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list"
 #define GEN_ERR_MSG_FAILED_PARSE_STRING(msg)						"failed to parse string literal: %s", (msg)
 #define GEN_ERR_MSG_DUP_PARAM_NAME(name, len)						"duplicated parameter name '%.*s'", (int)(len), (name)
-#define GEN_ERR_MSG_MISSING_NOT_IN_ARG								"missing mark must be in argument list"
+#define GEN_ERR_MSG_MISSING_NOT_IN_ARG								"partial applied token must be in argument list"
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)

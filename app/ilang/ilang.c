@@ -53,7 +53,7 @@ IVM_NATIVE_FUNC(call)
 
 	func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
 
-	RTM_ASSERT(IVM_IS_TYPE(func, NAT_STATE(), IVM_FUNCTION_OBJECT_T),
+	RTM_ASSERT(IVM_IS_BTTYPE(func, NAT_STATE(), IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(func, TYPE_NAME)));
 
 	ivm_function_object_invoke(func, NAT_STATE(), NAT_CORO());

@@ -18,10 +18,13 @@ ivm_object_init(ivm_object_t *obj,
 				ivm_vmstate_t *state,
 				ivm_type_tag_t type)
 {
+	// STD_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
+	// obj->proto = ivm_type_getProto(
+	// 	obj->type = ivm_vmstate_getType(state, type)
+	// );
+
+	STD_MEMCPY(obj, ivm_vmstate_getTypeHeader(state, type), sizeof(obj->type) + sizeof(obj->proto));
 	STD_INIT(&obj->slots, sizeof(obj->slots) + sizeof(obj->mark));
-	obj->proto = ivm_type_getProto(
-		obj->type = ivm_vmstate_getType(state, type)
-	);
 
 	return;
 }

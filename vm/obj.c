@@ -47,6 +47,11 @@ ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 
 	STD_MEMCPY(type, src, sizeof(*type));
 
+	type->header.type = type;
+	type->header.proto = IVM_NULL;
+	type->header.slots = IVM_NULL;
+	type->header.mark.copy = IVM_NULL;
+
 	for (i = type->binops, end = i + IVM_ARRLEN(type->binops);
 		 i != end; i++) {
 		ivm_binop_table_init(i);
