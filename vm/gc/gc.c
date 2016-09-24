@@ -226,6 +226,10 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 	);
 
 	// IVM_OBJECT_SET(ret, PROTO, ivm_collector_copyObject(IVM_OBJECT_GET(ret, PROTO), arg));
+	
+	// IVM_TRACE("copy!!\n");
+	// ivm_object_t *tmp = ivm_collector_copyObject(ivm_object_getProto(ret), arg);
+	// IVM_TRACE("copied: %p -> %p\n", ivm_object_getProto(ret), tmp);
 	ivm_object_setProto(
 		ret, arg->state,
 		ivm_collector_copyObject(ivm_object_getProto(ret), arg)
@@ -378,9 +382,7 @@ void
 ivm_collector_travType(ivm_type_t *type,
 					   ivm_traverser_arg_t *arg)
 {
-	ivm_type_setProto(type,
-					  ivm_collector_copyObject(ivm_type_getProto(type),
-					  						   arg));
+	ivm_type_setProto(type, ivm_collector_copyObject(ivm_type_getProto(type), arg));
 	return;
 }
 
@@ -396,8 +398,7 @@ ivm_collector_travState(ivm_vmstate_t *state,
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
-		ivm_collector_travType(types,
-							   arg);
+		ivm_collector_travType(types, arg);
 	}
 
 	ivm_vmstate_setException(state,
