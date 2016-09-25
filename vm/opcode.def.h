@@ -864,17 +864,39 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 
 	_TMP_OBJ1 = STACK_TOP(); // iter
 
-	ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
+	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_ITER_T)) {
+		_TMP_OBJ2 = ivm_list_object_iter_next(
+			IVM_AS(_TMP_OBJ1, ivm_list_object_iter_t), _STATE
+		);
 
-	// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
+		if (_TMP_OBJ2) {
+			STACK_PUSH(_TMP_OBJ2);
+			NEXT_N_INSTR(3);
+		} else {
+			GOTO_SET_INSTR(ADDR_ARG());
+		}
+	} else if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_RANGE_ITER_T)) {
+		_TMP_OBJ2 = ivm_range_iter_next(IVM_AS(_TMP_OBJ1, ivm_range_iter_t), _STATE);
 
-	STACK_PUSH(_TMP_OBJ1);
+		if (_TMP_OBJ2) {
+			STACK_PUSH(_TMP_OBJ2);
+			NEXT_N_INSTR(3);
+		} else {
+			GOTO_SET_INSTR(ADDR_ARG());
+		}
+	} else {
+		ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
 
-	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
-	RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
-	STACK_PUSH(_TMP_OBJ2); // get iter.next
+		// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
 
-	NEXT_INSTR();
+		STACK_PUSH(_TMP_OBJ1);
+
+		_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
+		RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
+		STACK_PUSH(_TMP_OBJ2); // get iter.next
+
+		NEXT_INSTR();
+	}
 })
 
 /*

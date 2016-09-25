@@ -35,7 +35,7 @@ ivm_range_new(ivm_vmstate_t *state,
 }
 
 ivm_object_t *
-ivm_range_iter_new(struct ivm_vmstate_t_tag *state,
+ivm_range_iter_new(ivm_vmstate_t *state,
 				   ivm_long_t cur, ivm_long_t end,
 				   ivm_long_t step)
 {
@@ -48,4 +48,18 @@ ivm_range_iter_new(struct ivm_vmstate_t_tag *state,
 	ret->step = step;
 
 	return IVM_AS_OBJ(ret);
+}
+
+ivm_object_t *
+ivm_range_iter_next(ivm_range_iter_t *iter,
+					ivm_vmstate_t *state)
+{
+	ivm_object_t *ret;
+
+	if (iter->cur == iter->end) return IVM_NULL;
+
+	ret = ivm_numeric_new(state, iter->cur);
+	iter->cur += iter->step;
+
+	return ret;
 }

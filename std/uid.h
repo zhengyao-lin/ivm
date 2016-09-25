@@ -6,7 +6,7 @@
 
 IVM_COM_HEADER
 
-typedef ivm_int_t ivm_uid_t;
+typedef ivm_ptr_t ivm_uid_t;
 
 typedef struct {
 	ivm_uid_t cur;

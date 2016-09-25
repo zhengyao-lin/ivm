@@ -401,6 +401,8 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	path_backup = ivm_vmstate_curPath(state);
 
+	// IVM_TRACE("cur path: %s\n", path_backup);
+
 	_ivm_mod_addModPath_n(path_backup);
 	loader = _ivm_mod_search_c(mod, len, buf);
 	_ivm_mod_popModPath_n();
@@ -413,7 +415,6 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	path = ivm_sys_getBasePath(buf);
 	ivm_vmstate_setPath(state, path);
 
-	// IVM_TRACE("========> cur path: %s %s\n", path, buf);
 	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, IVM_NONE(state));
 	
 	ret = loader(buf, &err, &is_const, state, coro, context);

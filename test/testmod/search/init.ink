@@ -1,0 +1,1 @@
+print("search/init.ink")

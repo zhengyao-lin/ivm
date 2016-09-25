@@ -31,12 +31,13 @@ typedef struct ivm_instr_t_tag {
 	void *entry;
 
 	ivm_opcode_arg_t arg;
-	struct ivm_source_pos_t_tag *pos;
 
 	ivm_ptr_t cc_data;
 	ivm_uid_t cc_id;
+
+	struct ivm_source_pos_t_tag *pos;
+
 	ivm_uint_t lineno;
-	
 	ivm_byte_t opc;
 } ivm_instr_t;
 

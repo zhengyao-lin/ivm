@@ -6,12 +6,9 @@
 #include "pub/const.h"
 #include "pub/err.h"
 #include "pub/vm.h"
+#include "pub/obj.h"
 #include "pub/inlines.h"
 
-#include "obj.h"
-#include "num.h"
-#include "strobj.h"
-#include "listobj.h"
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"

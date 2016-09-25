@@ -35,17 +35,12 @@ IVM_NATIVE_FUNC(_range_call)
 
 IVM_NATIVE_FUNC(_range_iter_next)
 {
-	ivm_range_iter_t *iter;
 	ivm_object_t *ret;
 
 	CHECK_BASE(IVM_RANGE_ITER_T);
 
-	iter = IVM_AS(NAT_BASE(), ivm_range_iter_t);
-
-	RTM_ASSERT(iter->cur != iter->end, IVM_ERROR_MSG_ITER_END);
-
-	ret = ivm_numeric_new(NAT_STATE(), iter->cur);
-	iter->cur += iter->step;
+	ret = ivm_range_iter_next(IVM_AS(NAT_BASE(), ivm_range_iter_t), NAT_STATE());
+	RTM_ASSERT(ret, IVM_ERROR_MSG_ITER_END);
 
 	return ret;
 }

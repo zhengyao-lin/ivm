@@ -35,6 +35,10 @@ ivm_range_iter_new(struct ivm_vmstate_t_tag *state,
 				   ivm_long_t cur, ivm_long_t end,
 				   ivm_long_t step);
 
+ivm_object_t *
+ivm_range_iter_next(ivm_range_iter_t *iter,
+					struct ivm_vmstate_t_tag *state);
+
 IVM_COM_END
 
 #endif

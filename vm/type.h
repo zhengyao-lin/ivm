@@ -40,7 +40,7 @@ typedef signed char				ivm_schar_t;
 #define IVM_FALSE				0
 #define IVM_TRUE				!0
 
-typedef ivm_ulong_t				ivm_size_t;
+typedef ivm_uptr_t				ivm_size_t;
 typedef ivm_uint8_t				ivm_byte_t;
 
 typedef ivm_int_t				ivm_type_tag_t;
