@@ -94,10 +94,12 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_MOD_NOT_FOUND(mod)						"module '%s' not found in any specified module search path", (mod)
 #define IVM_ERROR_MSG_MOD_LOAD_ERROR(mod, path, msg)			"error(s) happended loading module '%s'(found at %s): %s", (mod), (path), (msg)
 #define IVM_ERROR_MSG_UNPACK_NON_LIST(type)						"cannot unpack the object of type <%s>", (type)
-#define IVM_ERROR_MSG_ITER_END									"iteration has done"
-#define IVM_ERROR_MSG_NON_ITERABLE								"non-iterable object used for iteration"
-#define IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT						"merging empty exec unit"
-#define IVM_ERROR_MSG_UNEXPECT_IS_OPERAND						"unexpected type of the second operand of 'is' function(expecting none or type)"
+#define IVM_ERROR_MSG_ITER_END									("iteration has done")
+#define IVM_ERROR_MSG_NON_ITERABLE								("non-iterable object used for iteration")
+#define IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT						("merging empty exec unit")
+#define IVM_ERROR_MSG_UNEXPECT_IS_OPERAND						("unexpected type of the second operand of 'is' function(expecting none or type)")
+#define IVM_ERROR_MSG_UNKNOWN_TP_TYPE(name)						"unregistered third-party type '%s'", (name)
+#define IVM_ERROR_MSG_REDEF_TP_TYPE(name)						"third-party type '%s' is redefined", (name)
 
 IVM_COM_END
 

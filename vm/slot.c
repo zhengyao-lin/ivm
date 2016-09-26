@@ -286,6 +286,19 @@ ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
 	return;
 }
 
+ivm_bool_t
+ivm_slot_table_setEmptySlot_r(ivm_slot_table_t *table,
+							  ivm_vmstate_t *state,
+							  const ivm_char_t *rkey,
+							  ivm_object_t *obj)
+{
+	const ivm_string_t *key
+	= (const ivm_string_t *)
+	  ivm_string_pool_registerRaw(IVM_VMSTATE_GET(state, CONST_POOL), rkey);
+
+	return ivm_slot_table_setEmptySlot(table, state, key, obj);
+}
+
 #define IS_EMPTY_SLOT(slot) (!(slot)->k)
 
 void

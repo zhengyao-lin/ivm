@@ -323,6 +323,12 @@ ivm_slot_table_setEmptySlot(ivm_slot_table_t *table,
 							ivm_object_t *obj)
 SET_EMPTY_SLOT();
 
+ivm_bool_t
+ivm_slot_table_setEmptySlot_r(ivm_slot_table_t *table,
+							  ivm_vmstate_t *state,
+							  const ivm_char_t *rkey,
+							  ivm_object_t *obj);
+
 IVM_INLINE
 void
 _ivm_slot_table_rehash(ivm_slot_table_t *table,

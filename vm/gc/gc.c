@@ -409,6 +409,10 @@ ivm_collector_travState(ivm_vmstate_t *state,
 		ivm_collector_copyObject(ivm_vmstate_getLoadedMod(state), arg)
 	);
 
+	ivm_vmstate_setTPType(state,
+		ivm_collector_copyObject(ivm_vmstate_getTPType(state), arg)
+	);
+
 	ivm_vmstate_setNone(state,
 		ivm_collector_copyObject(ivm_vmstate_getNone(state), arg)
 	);

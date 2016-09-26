@@ -304,6 +304,28 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 	return ret;
 }
 
+ivm_bool_t
+ivm_object_setEmptySlot_r(ivm_object_t *obj,
+						  ivm_vmstate_t *state,
+						  const ivm_char_t *rkey,
+						  ivm_object_t *value)
+{
+	ivm_slot_table_t *slots;
+
+	slots = obj->slots;
+
+	if (slots) {
+		if (ivm_slot_table_isShared(slots)) {
+			slots = obj->slots = ivm_slot_table_copyOnWrite(slots, state);
+			IVM_WBOBJ_SLOT(state, obj, slots);
+		}
+	} else {
+		slots = obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
+	}
+
+	return ivm_slot_table_setEmptySlot_r(slots, state, rkey, value);
+}
+
 void
 ivm_object_setOop(ivm_object_t *obj,
 				  ivm_vmstate_t *state,

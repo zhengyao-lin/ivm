@@ -18,7 +18,8 @@ TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t), {
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
-}, .trav = ivm_type_object_traverser,
+}, .des = ivm_type_object_destructor,
+   .trav = ivm_type_object_traverser,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t), {

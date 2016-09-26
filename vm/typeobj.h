@@ -23,6 +23,10 @@ void
 ivm_type_object_traverser(ivm_object_t *obj,
 						  struct ivm_traverser_arg_t_tag *arg);
 
+void
+ivm_type_object_destructor(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state);
+
 IVM_COM_END
 
 #endif

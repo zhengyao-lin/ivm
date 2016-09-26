@@ -60,6 +60,7 @@ typedef struct ivm_type_t_tag {
 
 	const ivm_char_t *name;
 	ivm_size_t size;
+	ivm_ptr_t magic;
 
 	// ivm_type_t *init_type;
 	// struct ivm_object_t_tag *init_proto; /* default prototype */
@@ -92,6 +93,8 @@ ivm_type_dump(ivm_type_t *type);
 
 #define ivm_type_getName(type) ((type)->name)
 
+#define ivm_type_checkMagic(type, val) ((type)->magic == (ivm_ptr_t)(val))
+
 #define ivm_type_isBuiltin(type) ((type)->is_builtin)
 
 // #define ivm_type_setBinopTable(type, op, table) ((type)->binops[IVM_BINOP_ID(op)] = (table))
@@ -99,6 +102,17 @@ ivm_type_dump(ivm_type_t *type);
 #define ivm_type_getBinopTable_r(type, i) ((type)->binops + (i))
 
 #define ivm_type_getUniopTable(type) ((type)->uniops)
+
+/* use in static initialization */
+#define IVM_TPTYPE_BUILD(n, s, mag, ...) \
+	{                                       \
+		.tag = -1,                          \
+		.name = #n,                         \
+		.size = (s),                        \
+		.magic = (mag),                     \
+		.is_builtin = IVM_FALSE,            \
+		__VA_ARGS__                         \
+	}
 
 typedef void (*ivm_type_init_proc_t)(ivm_type_t *, struct ivm_vmstate_t_tag *);
 
@@ -268,6 +282,12 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_instr_t *instr);
+
+ivm_bool_t
+ivm_object_setEmptySlot_r(ivm_object_t *obj,
+						  struct ivm_vmstate_t_tag *state,
+						  const ivm_char_t *rkey,
+						  ivm_object_t *value);
 
 void
 ivm_object_setOop(ivm_object_t *obj,

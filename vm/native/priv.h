@@ -2,17 +2,25 @@
 #define _IVM_VM_NATIVE_PRIV_H_
 
 #include "pub/err.h"
+#include "pub/obj.h"
 
 #include "native.h"
 
 #define RTM_ASSERT(cond, ...) \
 	IVM_CORO_NATIVE_ASSERT(NAT_CORO(), NAT_STATE(), (cond), __VA_ARGS__)
 
+#define RTM_ASSERT_C(coro, state, cond, ...) \
+	IVM_CORO_NATIVE_ASSERT((coro), (state), (cond), __VA_ARGS__)
+
 #define RTM_FATAL(...) \
 	IVM_CORO_NATIVE_ASSERT(NAT_CORO(), NAT_STATE(), 0, __VA_ARGS__)
 
 #define CHECK_BASE(expect) \
 	RTM_ASSERT(NAT_BASE() && IVM_IS_BTTYPE(NAT_BASE(), NAT_STATE(), (expect)), \
+			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
+
+#define CHECK_BASE_TP(magic) \
+	RTM_ASSERT(NAT_BASE() && ivm_type_checkMagic(IVM_TYPE_OF(NAT_BASE()), (magic)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
 #define CHECK_BASE_EXIST() \

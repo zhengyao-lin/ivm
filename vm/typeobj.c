@@ -24,3 +24,11 @@ ivm_type_object_traverser(ivm_object_t *obj,
 
 	return;
 }
+
+void
+ivm_type_object_destructor(ivm_object_t *obj,
+						   ivm_vmstate_t *state)
+{
+	ivm_type_free(IVM_AS(obj, ivm_type_object_t)->val);
+	return;
+}

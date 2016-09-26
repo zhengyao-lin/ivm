@@ -5,6 +5,7 @@
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/err.h"
+#include "pub/obj.h"
 
 #include "std/mem.h"
 #include "std/pool.h"
@@ -13,8 +14,6 @@
 #include "std/uid.h"
 
 #include "gc/gc.h"
-#include "obj.h"
-#include "num.h"
 #include "coro.h"
 #include "context.h"
 
@@ -33,7 +32,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_cgroup_list_t coro_groups;
 
-	// ivm_type_list_t type_list;
+	ivm_type_list_t tp_type_list;
 	ivm_func_list_t func_list;					// 24
 
 	ivm_string_pool_t *const_pool;				// 8
@@ -42,6 +41,8 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_object_t *except;
 	ivm_object_t *loaded_mod;
 	ivm_object_t *obj_none;
+
+	ivm_object_t *tp_type; // third-party type objects
 
 #define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
 	#include "vm.const.h"						// 8
@@ -75,6 +76,26 @@ typedef struct ivm_vmstate_t_tag {
 
 // is builtin type
 #define IVM_IS_BTTYPE(obj, state, type) (IVM_TYPE_OF(obj) == IVM_BTTYPE((state), (type)))
+
+IVM_INLINE
+ivm_type_t *
+IVM_TPTYPE(ivm_vmstate_t *state,
+		   const ivm_char_t *name)
+{
+	ivm_object_t *t = ivm_object_getSlot_r(state->tp_type, state, name);
+
+	if (t && IVM_IS_BTTYPE(t, state, IVM_TYPE_OBJECT_T)) {
+		return ivm_type_object_getValue(t);
+	}
+
+	IVM_FATAL(IVM_ERROR_MSG_UNKNOWN_TP_TYPE(name));
+	return IVM_NULL; /* unreachable */
+}
+
+ivm_type_t *
+ivm_vmstate_registerType(ivm_vmstate_t *state,
+						 const ivm_char_t *name,
+						 ivm_type_t *init);
 
 ivm_vmstate_t *
 ivm_vmstate_new(ivm_string_pool_t *const_pool);
@@ -477,6 +498,9 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 
 #define ivm_vmstate_getLoadedMod(state) ((state)->loaded_mod)
 #define ivm_vmstate_setLoadedMod(state, obj) ((state)->loaded_mod = (obj))
+
+#define ivm_vmstate_getTPType(state) ((state)->tp_type)
+#define ivm_vmstate_setTPType(state, obj) ((state)->tp_type = (obj))
 
 #define ivm_vmstate_getNone(state) ((state)->obj_none)
 #define ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))
