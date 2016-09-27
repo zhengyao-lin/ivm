@@ -288,6 +288,27 @@ _ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
+IVM_PRIVATE
+IVM_INLINE
+ivm_string_t *
+_ivm_string_new_heap_n(ivm_bool_t is_const,
+					   const ivm_char_t *str,
+					   ivm_size_t len,
+					   ivm_heap_t *heap)
+{
+	ivm_string_t *ret = ivm_heap_alloc(heap, IVM_STRING_GET_SIZE(len));
+
+	IVM_ASSERT(IVM_STRING_LEGAL_LEN(len),
+			   IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, IVM_STRING_MAX_LEN));
+
+	ivm_string_initHead(ret, is_const, len);
+
+	STD_MEMCPY(ret->cont, str, sizeof(ivm_char_t) * len);
+	ret->cont[len] = '\0';
+
+	return ret;
+}
+
 const ivm_string_t *
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str)
@@ -306,6 +327,13 @@ ivm_string_pool_registerRaw_i(ivm_string_pool_t *pool,
 							  const ivm_char_t *str)
 HASH(str, CHECK_I(!ivm_string_compareToRaw(i->k, str),
 				  _ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
+
+const ivm_string_t *
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len)
+HASH(str, CHECK(!ivm_string_compareToRaw_n(i->k, str, len),
+				_ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
 
 IVM_PRIVATE
 const ivm_string_t *

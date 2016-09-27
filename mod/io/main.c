@@ -17,6 +17,8 @@
 #define IO_ERROR_MSG_FAILED_TO_OPEN_FILE(file)							"failed to open file '%s'", (file)
 #define IO_ERROR_MSG_UNINIT_FILE_POINTER								"uninitialized file pointer"
 #define IO_ERROR_MSG_FAILED_READ_FILE									"failed to read file"
+#define IO_ERROR_MSG_TOO_LARGE_LENGTH(len, max)							"too large length(length %ld for the file of length %ld)", (ivm_long_t)(len), (ivm_long_t)(max)
+#define IO_ERROR_MSG_FAILED_SET_POS(pos)								"failed to set read position %ld", (ivm_long_t)(pos)
 
 #define CHECK_INIT_FP(fobj) \
 	RTM_ASSERT((fobj)->fp, IO_ERROR_MSG_UNINIT_FILE_POINTER)
@@ -90,6 +92,51 @@ IVM_NATIVE_FUNC(_io_file_read)
 	ivm_char_t *cont;
 	ivm_file_object_t *fobj;
 	ivm_object_t *ret;
+	ivm_number_t arg = -1, save_pos = 1;
+	ivm_long_t flen, len;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	MATCH_ARG("*nn", &arg, &save_pos);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	flen = ivm_file_length(fobj->fp);
+	len = ivm_list_realIndex(flen, arg) + 1;
+
+	// IVM_TRACE("read: %ld in %ld\n", len, flen);
+
+	RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+
+	cont = ivm_file_read_n(fobj->fp, len, save_pos);
+
+	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
+
+	ret = ivm_string_object_new_r(NAT_STATE(), cont);
+	STD_FREE(cont);
+
+	return ret;
+}
+
+IVM_NATIVE_FUNC(_io_file_len)
+{
+	ivm_file_object_t *fobj;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	return ivm_numeric_new(NAT_STATE(), ivm_file_length(fobj->fp));
+}
+
+IVM_NATIVE_FUNC(_io_file_lines)
+{
+	ivm_char_t *cont;
+	ivm_file_object_t *fobj;
+	ivm_list_object_t *ret;
+	ivm_size_t len;
+	const ivm_char_t *i, *end, *head;
 
 	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
 
@@ -99,10 +146,56 @@ IVM_NATIVE_FUNC(_io_file_read)
 	cont = ivm_file_readAll(fobj->fp);
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
-	ret = ivm_string_object_new_r(NAT_STATE(), cont);
+	ret = IVM_AS(ivm_list_object_new(NAT_STATE(), 0), ivm_list_object_t);
+	len = IVM_STRLEN(cont);
+
+	for (head = i = cont, end = i + len;
+		 i != end; i++) {
+		if (*i == '\n') {
+			ivm_list_object_push(
+				ret, NAT_STATE(),
+				ivm_string_object_new_rl(NAT_STATE(), head, IVM_PTR_DIFF(i, head, ivm_char_t))
+			);
+			head = i + 1;
+		}
+	}
+
+	ivm_list_object_push(
+		ret, NAT_STATE(),
+		ivm_string_object_new_rl(NAT_STATE(), head, IVM_PTR_DIFF(i, head, ivm_char_t))
+	);
+
 	STD_FREE(cont);
 
-	return ret;
+	return IVM_AS_OBJ(ret);
+}
+
+IVM_NATIVE_FUNC(_io_file_seek)
+{
+	ivm_file_object_t *fobj;
+	ivm_number_t pos = 0;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	MATCH_ARG("*n", &pos);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	RTM_ASSERT(ivm_file_setPos(fobj->fp, pos), IO_ERROR_MSG_FAILED_SET_POS(pos));
+
+	return IVM_NONE(NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_io_file_cur)
+{
+	ivm_file_object_t *fobj;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	return ivm_numeric_new(NAT_STATE(), ivm_file_curPos(fobj->fp));
 }
 
 IVM_PRIVATE
@@ -121,21 +214,25 @@ ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_context_t *context)
 {
 	ivm_object_t *mod = ivm_object_new(state);
-	ivm_object_t *io_file_proto;
-	ivm_type_t *io_file_type;
+	ivm_object_t *file_proto;
 
-	io_file_type = ivm_vmstate_registerType(state, IO_FILE_TYPE_NAME, &_io_file_type);
-	RTM_ASSERT_C(coro, state, io_file_type, IVM_ERROR_MSG_REDEF_TP_TYPE(IO_FILE_TYPE_NAME));
-	io_file_proto = ivm_file_object_new(state, IVM_NULL);
-	ivm_type_setProto(io_file_type, io_file_proto);
-	ivm_object_setProto(io_file_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
+	/* io.file */
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, IO_FILE_TYPE_NAME, &_io_file_type, {
+		file_proto = ivm_file_object_new(state, IVM_NULL);
+		ivm_type_setProto(_TYPE, file_proto);
+		ivm_object_setProto(file_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 
-	/* io.file proto */
-	ivm_object_setSlot_r(io_file_proto, state, "close", IVM_NATIVE_WRAP(state, _io_file_close));
-	ivm_object_setSlot_r(io_file_proto, state, "read", IVM_NATIVE_WRAP(state, _io_file_read));
+		ivm_object_setSlot_r(file_proto, state, "close", IVM_NATIVE_WRAP(state, _io_file_close));
+		ivm_object_setSlot_r(file_proto, state, "read", IVM_NATIVE_WRAP(state, _io_file_read));
+		ivm_object_setSlot_r(file_proto, state, "len", IVM_NATIVE_WRAP(state, _io_file_len));
+		ivm_object_setSlot_r(file_proto, state, "lines", IVM_NATIVE_WRAP(state, _io_file_lines));
+		ivm_object_setSlot_r(file_proto, state, "seek", IVM_NATIVE_WRAP(state, _io_file_seek));
+		ivm_object_setSlot_r(file_proto, state, "cur", IVM_NATIVE_WRAP(state, _io_file_cur));
+	});
 
 	/* io */
 	ivm_object_setSlot_r(mod, state, "open", IVM_NATIVE_WRAP(state, _io_open));
+	ivm_object_setSlot_r(mod, state, "file", file_proto);
 
 	return mod;
 }

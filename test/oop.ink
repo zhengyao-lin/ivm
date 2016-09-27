@@ -36,6 +36,14 @@ a.[] = fn idx: {
 a[1, 2, 3]
 a[]
 
+a = {
+	(): fn: {
+		print("a is called")
+	}
+}
+
+a()
+
 // -> "num: 5"
 // -> "str: unable to invoke object of type <string>"
 // -> "str: yes!"
@@ -46,3 +54,4 @@ a[]
 // -> "num: 3"
 //
 // -> "str: none"
+// -> "str: a is called"

@@ -635,7 +635,47 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	_TMP_ARGV = STACK_CUR();
 	STACK_CUT(_TMP_ARGC);
 
-	if (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
+	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
+		_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
+
+		SAVE_RUNTIME(_INSTR + 1);
+
+		_INSTR = ivm_function_invoke(
+			_TMP_FUNC, _STATE,
+			ivm_function_object_getScope(
+				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
+			), _RUNTIME, _FRAME_STACK
+		);
+
+		if (_INSTR) {
+			INVOKE_STACK();
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+			STACK_INC_C(_TMP_ARGC);
+			INVOKE();
+		} else {
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
+
+			INVOKE_STACK();
+
+			_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
+			IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
+
+			_TMP_OBJ1 = ivm_function_callNative(
+				_TMP_FUNC, _STATE, _CORO, _CONTEXT,
+				IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
+			);
+
+			UPDATE_BP();
+
+			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
+
+			if (IVM_UNLIKELY(!_TMP_OBJ1)) {
+				EXCEPTION();
+			}
+
+			RETURN();
+		}
+	} else {
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
 		if (_TMP_OBJ2) {
 			STACK_INC_C(_TMP_ARGC);
@@ -645,46 +685,6 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 		} else {
 			RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 		}
-	}
-
-	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-
-	SAVE_RUNTIME(_INSTR + 1);
-
-	_INSTR = ivm_function_invoke(
-		_TMP_FUNC, _STATE,
-		ivm_function_object_getScope(
-			IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-		), _RUNTIME, _FRAME_STACK
-	);
-
-	if (_INSTR) {
-		INVOKE_STACK();
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC_C(_TMP_ARGC);
-		INVOKE();
-	} else {
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
-
-		INVOKE_STACK();
-
-		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
-		IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
-
-		_TMP_OBJ1 = ivm_function_callNative(
-			_TMP_FUNC, _STATE, _CORO, _CONTEXT,
-			IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
-		);
-
-		UPDATE_BP();
-
-		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
-
-		if (IVM_UNLIKELY(!_TMP_OBJ1)) {
-			EXCEPTION();
-		}
-
-		RETURN();
 	}
 })
 
@@ -699,56 +699,55 @@ OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), 
 	_TMP_ARGV = STACK_CUR();
 	STACK_CUT(_TMP_ARGC);
 
-	while (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
-		/* _TMP_OBJ2 is the base */
-		_TMP_OBJ2 = _TMP_OBJ1;
-		_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
-		RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
-	}
+	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
+RETRY:
+		_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
 
-	// IVM_TRACE("%p %p %d\n", _TMP_OBJ1, _TMP_OBJ1->type, IVM_OBJECT_GET(_TMP_OBJ1, GEN));
+		SAVE_RUNTIME(_INSTR + 1);
 
-	// RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE,  IVM_FUNCTION_OBJECT_T),
-	// 		   IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-
-	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-
-	SAVE_RUNTIME(_INSTR + 1);
-
-	_INSTR = ivm_function_invokeBase(
-		_TMP_FUNC, _STATE,
-		ivm_function_object_getScope(
-			IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-		), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
-	);
-
-	if (_INSTR) {
-		INVOKE_STACK();
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-		STACK_INC_C(_TMP_ARGC);
-		INVOKE();
-	} else {
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
-
-		INVOKE_STACK();
-
-		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
-		IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
-
-		_TMP_OBJ1 = ivm_function_callNative(
-			_TMP_FUNC, _STATE, _CORO, _CONTEXT,
-			IVM_FUNCTION_SET_ARG_3(_TMP_OBJ2, _TMP_ARGC, _TMP_ARGV)
+		_INSTR = ivm_function_invokeBase(
+			_TMP_FUNC, _STATE,
+			ivm_function_object_getScope(
+				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
+			), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
 		);
 
-		UPDATE_BP();
+		if (_INSTR) {
+			INVOKE_STACK();
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
+			STACK_INC_C(_TMP_ARGC);
+			INVOKE();
+		} else {
+			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
 
-		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
+			INVOKE_STACK();
 
-		if (!_TMP_OBJ1) {
-			EXCEPTION();
+			_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
+			IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
+
+			_TMP_OBJ1 = ivm_function_callNative(
+				_TMP_FUNC, _STATE, _CORO, _CONTEXT,
+				IVM_FUNCTION_SET_ARG_3(_TMP_OBJ2, _TMP_ARGC, _TMP_ARGV)
+			);
+
+			UPDATE_BP();
+
+			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
+
+			if (!_TMP_OBJ1) {
+				EXCEPTION();
+			}
+
+			RETURN();
 		}
-
-		RETURN();
+	} else {
+		do {
+			/* _TMP_OBJ2 is the base */
+			_TMP_OBJ2 = _TMP_OBJ1;
+			_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
+			RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
+		} while (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T));
+		goto RETRY;
 	}
 })
 

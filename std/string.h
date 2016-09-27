@@ -220,6 +220,11 @@ ivm_string_id_t
 ivm_string_pool_registerRaw_i(ivm_string_pool_t *pool,
 							  const ivm_char_t *str);
 
+const ivm_string_t *
+ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
+							  const ivm_char_t *str,
+							  ivm_size_t len);
+
 typedef ivm_ptlist_t ivm_string_pool_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_string_pool_t *) ivm_string_pool_list_iterator_t;
 

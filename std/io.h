@@ -69,6 +69,11 @@ ivm_file_free(ivm_file_t *file);
 ivm_char_t *
 ivm_file_readAll(ivm_file_t *file);
 
+ivm_char_t *
+ivm_file_read_n(ivm_file_t *file,
+				ivm_size_t len,
+				ivm_bool_t save_pos);
+
 IVM_INLINE
 ivm_size_t
 ivm_file_write(ivm_file_t *file,
@@ -139,6 +144,14 @@ ivm_file_curPos(ivm_file_t *file)
 	}
 
 	return 0;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_file_setPos(ivm_file_t *file,
+				ivm_size_t pos)
+{
+	return !IVM_FSEEK(file->fp, IVM_FSEEK_HEAD, pos);
 }
 
 IVM_COM_END

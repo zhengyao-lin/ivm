@@ -72,13 +72,37 @@ ivm_file_readAll(ivm_file_t *file)
 	ivm_size_t len = ivm_file_length(file);
 	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
-	FGOTO(fp, HEAD);
+	// FGOTO(fp, HEAD);
 	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
 		/* unexpected read len */
 		STD_FREE(ret);
 		return IVM_NULL;
 	}
 	IVM_FSEEK(fp, IVM_FSEEK_HEAD, cur);
+	ret[len] = '\0';
+
+	return ret;
+}
+
+ivm_char_t *
+ivm_file_read_n(ivm_file_t *file,
+				ivm_size_t len,
+				ivm_bool_t save_pos)
+{
+	ivm_file_raw_t fp = file->fp;
+	ivm_size_t cur = IVM_FTELL(fp);
+	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
+
+	// FGOTO(fp, HEAD);
+	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
+		/* unexpected read len */
+		STD_FREE(ret);
+		return IVM_NULL;
+	}
+	
+	if (save_pos)
+		IVM_FSEEK(fp, IVM_FSEEK_HEAD, cur);
+	
 	ret[len] = '\0';
 
 	return ret;

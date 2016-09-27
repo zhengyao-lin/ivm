@@ -93,9 +93,16 @@ IVM_TPTYPE(ivm_vmstate_t *state,
 }
 
 ivm_type_t *
-ivm_vmstate_registerType(ivm_vmstate_t *state,
-						 const ivm_char_t *name,
-						 ivm_type_t *init);
+ivm_vmstate_registerType_c(ivm_vmstate_t *state,
+						   const ivm_char_t *name,
+						   ivm_type_t *init);
+
+#define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, name, init, ...) \
+	{                                                                               \
+		ivm_type_t *_TYPE = ivm_vmstate_registerType_c((state), (name), (init));    \
+		RTM_ASSERT_C((coro), (state), _TYPE, IVM_ERROR_MSG_REDEF_TP_TYPE(name));    \
+		__VA_ARGS__;                                                                \
+	}
 
 ivm_vmstate_t *
 ivm_vmstate_new(ivm_string_pool_t *const_pool);
@@ -366,6 +373,31 @@ ivm_vmstate_allocRawString(ivm_vmstate_t *state,
 
 	ret = ivm_vmstate_alloc(state, size);
 	STD_MEMCPY(ivm_string_trimHead(ret), str, sizeof(*str) * (len + 1));
+	ivm_string_initHead(ret, IVM_FALSE, len);
+
+	return ret;
+}
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_allocRawString_len(ivm_vmstate_t *state,
+							   const ivm_char_t *str,
+							   ivm_size_t len)
+{
+	ivm_char_t *cont;
+	ivm_size_t size = IVM_STRING_GET_SIZE(len);
+	ivm_string_t *ret;
+
+	if (size < IVM_DEFAULT_MAX_CONST_STRING_SIZE) {
+		return (const ivm_string_t *)
+		ivm_string_pool_registerRaw_n(state->const_pool, str, len);
+	}
+
+	ret = ivm_vmstate_alloc(state, size);
+	cont = ivm_string_trimHead(ret);
+	STD_MEMCPY(cont, str, sizeof(*str) * len);
+	cont[len] = '\0';
+
 	ivm_string_initHead(ret, IVM_FALSE, len);
 
 	return ret;

@@ -242,9 +242,9 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 }
 
 ivm_type_t *
-ivm_vmstate_registerType(ivm_vmstate_t *state,
-						 const ivm_char_t *name,
-						 ivm_type_t *init)
+ivm_vmstate_registerType_c(ivm_vmstate_t *state,
+						   const ivm_char_t *name,
+						   ivm_type_t *init)
 {
 	ivm_type_t *copy = ivm_type_new(*init);
 
