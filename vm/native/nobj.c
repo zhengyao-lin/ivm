@@ -12,6 +12,12 @@
 #include "priv.h"
 #include "nobj.h"
 
+IVM_NATIVE_FUNC(_object_cons)
+{
+	CHECK_ARG_1(IVM_OBJECT_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_object_merge)
 {
 	ivm_object_t *base;

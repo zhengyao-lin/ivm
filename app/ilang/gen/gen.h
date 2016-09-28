@@ -196,6 +196,7 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
 }
 
 #define ilang_gen_expr_list_push ivm_ptlist_push
+#define ilang_gen_expr_list_pushFront ivm_ptlist_pushFront
 #define ilang_gen_expr_list_size ivm_ptlist_size
 #define ilang_gen_expr_list_at(list, i) ivm_ptlist_at((list), (i))
 

@@ -7,6 +7,7 @@
 
 IVM_COM_HEADER
 
+IVM_NATIVE_FUNC(_string_cons);
 IVM_NATIVE_FUNC(_string_len);
 IVM_NATIVE_FUNC(_string_ord);
 

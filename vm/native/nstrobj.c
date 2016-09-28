@@ -46,6 +46,12 @@ _get_encode(const ivm_char_t *str,
 
 #endif
 
+IVM_NATIVE_FUNC(_string_cons)
+{
+	CHECK_ARG_1(IVM_STRING_OBJECT_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_string_len)
 {
 	const ivm_string_t *str;

@@ -11,6 +11,12 @@
 
 #define ERR_MSG_ILLEGAL_STEP "the absolute value of the step must be greater or equal than 1"
 
+IVM_NATIVE_FUNC(_list_cons)
+{
+	CHECK_ARG_1(IVM_LIST_OBJECT_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_list_size)
 {
 	CHECK_BASE(IVM_LIST_OBJECT_T);
@@ -81,6 +87,12 @@ IVM_NATIVE_FUNC(_list_iter)
 {
 	CHECK_BASE(IVM_LIST_OBJECT_T);
 	return ivm_list_object_iter_new(NAT_STATE(), IVM_AS(NAT_BASE(), ivm_list_object_t));
+}
+
+IVM_NATIVE_FUNC(_list_iter_cons)
+{
+	CHECK_ARG_1(IVM_LIST_OBJECT_ITER_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(_list_iter_next)

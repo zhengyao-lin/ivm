@@ -96,6 +96,21 @@ ivm_ptlist_push(ivm_ptlist_t *ptlist, void *p)
 }
 
 IVM_INLINE
+ivm_size_t
+ivm_ptlist_pushFront(ivm_ptlist_t *ptlist, void *p)
+{
+	if (ptlist->cur >= ptlist->alloc) {
+		ivm_ptlist_inc(ptlist);
+	}
+
+	STD_MEMMOVE(ptlist->lst + 1, ptlist->lst, sizeof(*ptlist->lst) * ptlist->cur);
+
+	ptlist->lst[0] = p;
+
+	return ptlist->cur++;
+}
+
+IVM_INLINE
 void *
 ivm_ptlist_pop(ivm_ptlist_t *ptlist)
 {

@@ -19,8 +19,8 @@
 	RTM_ASSERT(NAT_BASE() && IVM_IS_BTTYPE(NAT_BASE(), NAT_STATE(), (expect)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
-#define CHECK_BASE_TP(magic) \
-	RTM_ASSERT(NAT_BASE() && ivm_type_checkMagic(IVM_TYPE_OF(NAT_BASE()), (magic)), \
+#define CHECK_BASE_TP(cons) \
+	RTM_ASSERT(NAT_BASE() && ivm_type_checkCons(IVM_TYPE_OF(NAT_BASE()), (cons)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
 #define CHECK_BASE_EXIST() \

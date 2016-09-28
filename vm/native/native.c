@@ -3,6 +3,7 @@
 #include "pub/type.h"
 #include "pub/const.h"
 #include "pub/vm.h"
+#include "pub/inlines.h"
 
 #include "vm/obj.h"
 #include "vm/num.h"
@@ -89,6 +90,17 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 
 END:
 	va_end(args);
+
+	return ret;
+}
+
+ivm_object_t *
+IVM_NATIVE_WRAP_CONS_c(ivm_vmstate_t *state,
+					   ivm_object_t *proto,
+					   ivm_native_function_t func)
+{
+	ivm_object_t *ret = ivm_function_object_newNative(state, func);
+	ivm_object_setProto(ret, state, proto);
 
 	return ret;
 }

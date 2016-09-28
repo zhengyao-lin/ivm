@@ -1182,7 +1182,7 @@ RULE(block_opt)
 	SUB_RULE_SET(
 		SUB_RULE(R(block)
 		{
-			_RETVAL.expr = RULE_RET_AT(1).u.expr;
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 		})
 
 		SUB_RULE({
@@ -1202,7 +1202,7 @@ RULE(block_opt)
 		| '.' id postfix_expr_sub
 		| '.' oop postfix_expr_sub
 		| id postfix_expr_sub
-		| %empty
+		| %empt
  */
 RULE(postfix_expr_sub)
 {
@@ -1223,7 +1223,7 @@ RULE(postfix_expr_sub)
 			tmp_block = RULE_RET_AT(3).u.expr;
 
 			if (tmp_block) {
-				ilang_gen_expr_list_push(tmp_expr_list, tmp_block);
+				ilang_gen_expr_list_pushFront(tmp_expr_list, tmp_block);
 			}
 
 			if (tmp_expr) {

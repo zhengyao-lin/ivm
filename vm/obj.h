@@ -53,6 +53,7 @@ typedef struct ivm_type_t_tag {
 	ivm_uniop_table_t uniops;
 
 	ivm_destructor_t des;
+	ivm_native_function_t cons;
 	ivm_traverser_t trav;
 
 	ivm_bool_converter_t to_bool;
@@ -60,7 +61,6 @@ typedef struct ivm_type_t_tag {
 
 	const ivm_char_t *name;
 	ivm_size_t size;
-	ivm_ptr_t magic;
 
 	// ivm_type_t *init_type;
 	// struct ivm_object_t_tag *init_proto; /* default prototype */
@@ -93,7 +93,8 @@ ivm_type_dump(ivm_type_t *type);
 
 #define ivm_type_getName(type) ((type)->name)
 
-#define ivm_type_checkMagic(type, val) ((type)->magic == (ivm_ptr_t)(val))
+#define ivm_type_getCons(type) ((type)->cons)
+#define ivm_type_checkCons(type, val) ((type)->cons == (val))
 
 #define ivm_type_isBuiltin(type) ((type)->is_builtin)
 
@@ -104,12 +105,12 @@ ivm_type_dump(ivm_type_t *type);
 #define ivm_type_getUniopTable(type) ((type)->uniops)
 
 /* use in static initialization */
-#define IVM_TPTYPE_BUILD(n, s, mag, ...) \
+#define IVM_TPTYPE_BUILD(n, s, c, ...) \
 	{                                       \
 		.tag = -1,                          \
 		.name = #n,                         \
 		.size = (s),                        \
-		.magic = (mag),                     \
+		.cons = (c),                        \
 		.is_builtin = IVM_FALSE,            \
 		__VA_ARGS__                         \
 	}

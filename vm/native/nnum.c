@@ -13,6 +13,12 @@
 #include "priv.h"
 #include "nnum.h"
 
+IVM_NATIVE_FUNC(_numeric_cons)
+{
+	CHECK_ARG_1(IVM_NUMERIC_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_numeric_ceil)
 {
 	CHECK_BASE(IVM_NUMERIC_T);

@@ -34,8 +34,22 @@ IVM_NATIVE_FUNC(_global_is)
 	MATCH_ARG("..", &op1, &op2);
 
 	// 1. op1 == op2 == none
+	// 2. op1.proto == op2.proto
+
+	return ivm_numeric_new(NAT_STATE(),
+		(IVM_IS_NONE(NAT_STATE(), op2) && IVM_IS_NONE(NAT_STATE(), op1)) ||
+		(ivm_object_getProto(op1) == ivm_object_getProto(op2))
+	);
+
+	// 1. op1 == op2 == none
 	// 2. op1.type == op2
 	// 3. op1.type == op2.type
+
+	/*
+	if (ivm_object_getProto(op1)
+		== ivm_object_getProto(op2)) {
+
+	}
 	
 	if (IVM_IS_NONE(NAT_STATE(), op2)) {
 		return ivm_numeric_new(NAT_STATE(), IVM_IS_NONE(NAT_STATE(), op1));
@@ -44,6 +58,7 @@ IVM_NATIVE_FUNC(_global_is)
 	}
 
 	return ivm_numeric_new(NAT_STATE(), IVM_TYPE_OF(op1) == IVM_TYPE_OF(op2));
+	*/
 
 	// RTM_FATAL(IVM_ERROR_MSG_UNEXPECT_IS_OPERAND);
 	// return IVM_NONE(NAT_STATE());
@@ -54,11 +69,15 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 					   ivm_context_t *ctx)
 {
 	ivm_type_t *type;
+	ivm_object_t *cons;
 	ivm_type_tag_t i;
 
 	for (i = 0; i < IVM_TYPE_COUNT; i++) {
 		type = IVM_BTTYPE(state, i);
-		ivm_context_setSlot_r(ctx, state, ivm_type_getName(type), ivm_type_getProto(type));
+		cons = ivm_function_object_newNative(state, ivm_type_getCons(type));
+		ivm_object_setProto(cons, state, ivm_type_getProto(type));
+
+		ivm_context_setSlot_r(ctx, state, ivm_type_getName(type), cons);
 	}
 
 	ivm_context_setSlot_r(ctx, state, "none", IVM_NONE(state));

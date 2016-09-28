@@ -19,21 +19,7 @@ struct ivm_runtime_t_tag;
 struct ivm_traverser_arg_t_tag;
 struct ivm_frame_stack_t_tag;
 
-typedef struct {
-	ivm_object_t *base;
-	ivm_argc_t argc;
-	ivm_object_t **argv;
-} ivm_function_arg_t;
-
-/* i starts from 1 */
-#define ivm_function_arg_has(arg, i) ((i) <= (arg).argc)
-#define ivm_function_arg_at(arg, i) ((arg).argv[-(i)])
-
 typedef ivm_uint16_t ivm_signal_mask_t;
-typedef ivm_object_t *(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
-											   struct ivm_coro_t_tag *,
-											   ivm_context_t *,
-											   ivm_function_arg_t);
 
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 

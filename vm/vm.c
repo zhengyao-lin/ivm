@@ -19,11 +19,12 @@
 
 IVM_PRIVATE
 ivm_type_t static_type_list[] = {
-#define TYPE_GEN(t, n, s, proto_init, ...) \
+#define TYPE_GEN(t, n, s, c, proto_init, ...) \
 	{                                      \
 		.tag = (t),                        \
 		.name = #n,                        \
 		.size = (s),                       \
+		.cons = (c),                       \
 		.is_builtin = IVM_TRUE,            \
 		__VA_ARGS__                        \
 	},

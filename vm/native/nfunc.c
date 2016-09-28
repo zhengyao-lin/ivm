@@ -12,6 +12,12 @@
 #include "priv.h"
 #include "nfunc.h"
 
+IVM_NATIVE_FUNC(_function_cons)
+{
+	CHECK_ARG_1(IVM_FUNCTION_OBJECT_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
 #if 0
 
 IVM_NATIVE_FUNC(_op_wrapper_call)

@@ -1,10 +1,13 @@
 import io
 
-fp = io.open("test/text1")
+fp = io.file("test/text1")
 print(fp.read())
+
+print(fp is io.file)
+
 fp.close()
 
-fp = io.open("test/text2")
+fp = io.file("test/text2")
 
 try: print(fp.read(1000)) catch: print("failed to read")
 print(fp.read(-1).len())
@@ -30,6 +33,7 @@ fp.close()
 ret
 
 // -> "str: content!"
+// -> "num: 1"
 
 // -> "str: failed to read"
 // -> "num: 619"

@@ -53,7 +53,7 @@ typedef ivm_size_t				ivm_function_id_t;
 
 enum {
 	IVM_TYPE_FIRST = -1,
-#define TYPE_GEN(tag, name, size, proto_init, ...) tag,
+#define TYPE_GEN(tag, name, size, cons, proto_init, ...) tag,
 	#include "type.def.h"
 #undef TYPE_GEN
 	IVM_TYPE_COUNT
@@ -83,6 +83,27 @@ typedef ivm_ptr_t		ivm_mark_t;
 typedef ivm_int_t		ivm_cgid_t;
 
 #define IVM_MARK_INIT 0
+
+struct ivm_object_t_tag;
+struct ivm_vmstate_t_tag;
+struct ivm_coro_t_tag;
+struct ivm_context_t_tag;
+
+typedef struct {
+	struct ivm_object_t_tag *base;
+	ivm_argc_t argc;
+	struct ivm_object_t_tag **argv;
+} ivm_function_arg_t;
+
+/* i starts from 1 */
+#define ivm_function_arg_has(arg, i) ((i) <= (arg).argc)
+#define ivm_function_arg_at(arg, i) ((arg).argv[-(i)])
+
+typedef struct ivm_object_t_tag *
+(*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
+						 struct ivm_coro_t_tag *,
+						 struct ivm_context_t_tag *,
+						 ivm_function_arg_t);
 
 #define IVM_GET(obj, type, member) (IVM_NULL, type##_GET_##member(obj))
 #define IVM_SET(obj, type, member, val) (type##_SET_##member((obj), (val)))

@@ -10,6 +10,7 @@
 #include "nstrobj.h"
 #include "nfunc.h"
 #include "nnum.h"
+#include "ntypeobj.h"
 #include "nobj.h"
 
 #include "glob.h"
@@ -22,5 +23,13 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 
 #define IVM_NATIVE_WRAP(state, name) \
 	ivm_function_object_newNative((state), IVM_GET_NATIVE_FUNC(name))
+
+ivm_object_t *
+IVM_NATIVE_WRAP_CONS_c(ivm_vmstate_t *state,
+					   ivm_object_t *proto,
+					   ivm_native_function_t func);
+
+#define IVM_NATIVE_WRAP_CONS(state, proto, name) \
+	IVM_NATIVE_WRAP_CONS_c((state), (proto), IVM_GET_NATIVE_FUNC(name))
 
 #endif

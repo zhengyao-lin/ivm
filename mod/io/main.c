@@ -12,7 +12,7 @@
 #include "vm/native/priv.h"
 
 #define IO_FILE_TYPE_NAME "io.file"
-#define IO_FILE_TYPE_MAGIC ((ivm_ptr_t)ivm_file_object_new)
+#define IO_FILE_TYPE_CONS IVM_GET_NATIVE_FUNC(_io_file)
 
 #define IO_ERROR_MSG_FAILED_TO_OPEN_FILE(file)							"failed to open file '%s'", (file)
 #define IO_ERROR_MSG_UNINIT_FILE_POINTER								"uninitialized file pointer"
@@ -51,7 +51,7 @@ ivm_file_object_destructor(ivm_object_t *obj,
 	return;
 }
 
-IVM_NATIVE_FUNC(_io_open)
+IVM_NATIVE_FUNC(_io_file)
 {
 	const ivm_string_t *file, *mode = IVM_NULL;
 	const ivm_char_t *rfile;
@@ -76,7 +76,7 @@ IVM_NATIVE_FUNC(_io_file_close)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -95,7 +95,7 @@ IVM_NATIVE_FUNC(_io_file_read)
 	ivm_number_t arg = -1, save_pos = 1;
 	ivm_long_t flen, len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 	MATCH_ARG("*nn", &arg, &save_pos);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -122,7 +122,7 @@ IVM_NATIVE_FUNC(_io_file_len)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -138,7 +138,7 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	ivm_size_t len;
 	const ivm_char_t *i, *end, *head;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -175,7 +175,7 @@ IVM_NATIVE_FUNC(_io_file_seek)
 	ivm_file_object_t *fobj;
 	ivm_number_t pos = 0;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 	MATCH_ARG("*n", &pos);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -190,7 +190,7 @@ IVM_NATIVE_FUNC(_io_file_cur)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_MAGIC);
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -202,7 +202,7 @@ IVM_PRIVATE
 ivm_type_t
 _io_file_type = IVM_TPTYPE_BUILD(
 	file, sizeof(ivm_file_object_t),
-	IO_FILE_TYPE_MAGIC,
+	IO_FILE_TYPE_CONS,
 
 	.des = ivm_file_object_destructor,
 	.const_bool = IVM_TRUE
@@ -231,8 +231,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	});
 
 	/* io */
-	ivm_object_setSlot_r(mod, state, "open", IVM_NATIVE_WRAP(state, _io_open));
-	ivm_object_setSlot_r(mod, state, "file", file_proto);
+	ivm_object_setSlot_r(mod, state, "file", IVM_NATIVE_WRAP_CONS(state, file_proto, _io_file));
 
 	return mod;
 }
