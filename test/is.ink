@@ -9,7 +9,10 @@ print(1 is 2)
 
 loc class = fn p, init: {
 	loc r = fn: {
-		loc n = { proto: p }
+		if p is function:
+			loc n = p()
+		else:
+			loc n = { proto: p }
 		init(n)
 		n
 	}
@@ -19,16 +22,23 @@ loc class = fn p, init: {
 	r
 }
 
-loc TypeA = class({
-	val: "old",
+loc Type0 = class({
 	shout: fn: print(base.val)
 }) { | self |
+	self.val = "this is type0"
+}
+
+loc TypeA = class(Type0) { | self |
 	self.val = "hi"
 }
 
-loc t = TypeA()
+loc TypeB = class(Type0) {}
 
-t.shout()
+loc t1 = TypeA()
+loc t2 = TypeB()
+
+t1.shout()
+t2.shout()
 
 ret
 
@@ -40,3 +50,4 @@ ret
 // -> "num: 1"
 // -> "num: 1"
 // -> "str: hi"
+// -> "str: this is type0"

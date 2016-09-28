@@ -38,7 +38,8 @@ IVM_NATIVE_FUNC(_global_is)
 
 	return ivm_numeric_new(NAT_STATE(),
 		(IVM_IS_NONE(NAT_STATE(), op2) && IVM_IS_NONE(NAT_STATE(), op1)) ||
-		(ivm_object_getProto(op1) == ivm_object_getProto(op2))
+		(ivm_object_getProto(op1) == ivm_object_getProto(op2)) ||
+		(IVM_TYPE_OF(op1) == IVM_TYPE_OF(op2))
 	);
 
 	// 1. op1 == op2 == none
