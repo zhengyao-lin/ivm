@@ -46,6 +46,23 @@ print("#####")
 for loc i in range(-10):
 	print(i)
 
+
+range_iter.proto.next = fn: {
+	print("here we are")
+	raise 0
+}
+
+list_iter.proto.next = fn: {
+	print("good")
+	raise 0
+}
+
+for loc i in range(100):
+	print("no!")
+
+for loc i in [ 0, 1 ]:
+	print("nop!!")
+
 // -> "num: 1"
 // -> "num: 2"
 // -> "str: #####"
@@ -86,3 +103,5 @@ for loc i in range(-10):
 // -> "num: 3"
 // -> "num: 4"
 // -> "str: #####"
+// -> "str: here we are"
+// -> "str: good"

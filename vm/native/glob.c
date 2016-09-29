@@ -29,18 +29,34 @@ IVM_NATIVE_FUNC(_global_typeof)
 
 IVM_NATIVE_FUNC(_global_is)
 {
-	ivm_object_t *op1, *op2;
+	ivm_object_t *op1, *op2, *proto, *cur;
 
 	MATCH_ARG("..", &op1, &op2);
 
 	// 1. op1 == op2 == none
 	// 2. op1.proto == op2.proto
 
+	if (IVM_IS_NONE(NAT_STATE(), op2) && IVM_IS_NONE(NAT_STATE(), op1)) {
+		return ivm_numeric_new(NAT_STATE(), IVM_TRUE);
+	}
+
+	proto = ivm_object_getProto(op2);
+	cur = op1;
+	
+	while ((cur = ivm_object_getProto(cur))
+		   != IVM_NULL) {
+		if (cur == proto) return ivm_numeric_new(NAT_STATE(), IVM_TRUE);
+	}
+
+	return ivm_numeric_new(NAT_STATE(), IVM_FALSE);
+
+/*
 	return ivm_numeric_new(NAT_STATE(),
 		(IVM_IS_NONE(NAT_STATE(), op2) && IVM_IS_NONE(NAT_STATE(), op1)) ||
 		(ivm_object_getProto(op1) == ivm_object_getProto(op2)) ||
 		(IVM_TYPE_OF(op1) == IVM_TYPE_OF(op2))
 	);
+*/
 
 	// 1. op1 == op2 == none
 	// 2. op1.type == op2

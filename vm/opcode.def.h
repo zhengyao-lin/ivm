@@ -862,8 +862,12 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	STACK_SET(1); // pop all elem but one
 
 	_TMP_OBJ1 = STACK_TOP(); // iter
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
 
-	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_ITER_T)) {
+	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_ITER_T) &&
+		IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_FUNCTION_OBJECT_T) &&
+		ivm_function_object_checkNative(_TMP_OBJ2, _list_iter_next)) {
+
 		_TMP_OBJ2 = ivm_list_object_iter_next(
 			IVM_AS(_TMP_OBJ1, ivm_list_object_iter_t), _STATE
 		);
@@ -874,7 +878,10 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 		} else {
 			GOTO_SET_INSTR(ADDR_ARG());
 		}
-	} else if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_RANGE_ITER_T)) {
+	} else if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_RANGE_ITER_T) &&
+			   IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_FUNCTION_OBJECT_T) &&
+			   ivm_function_object_checkNative(_TMP_OBJ2, _range_iter_next)) {
+
 		_TMP_OBJ2 = ivm_range_iter_next(IVM_AS(_TMP_OBJ1, ivm_range_iter_t), _STATE);
 
 		if (_TMP_OBJ2) {
@@ -884,13 +891,13 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 			GOTO_SET_INSTR(ADDR_ARG());
 		}
 	} else {
+REGULAR:
 		ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
 
 		// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
 
 		STACK_PUSH(_TMP_OBJ1);
 
-		_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
 		RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
 		STACK_PUSH(_TMP_OBJ2); // get iter.next
 

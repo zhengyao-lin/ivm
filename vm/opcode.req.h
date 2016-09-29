@@ -9,6 +9,8 @@
 #include "pub/obj.h"
 #include "pub/inlines.h"
 
+#include "native/native.h"
+
 #include "coro.h"
 #include "vmstack.h"
 #include "context.h"

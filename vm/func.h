@@ -129,6 +129,18 @@ ivm_function_object_newNative(struct ivm_vmstate_t_tag *state,
 	return ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, func));
 }
 
+IVM_INLINE
+ivm_bool_t
+ivm_function_object_checkNative_c(ivm_object_t *obj,
+								  ivm_native_function_t expect)
+{
+	ivm_function_t *f = IVM_AS(obj, ivm_function_object_t)->val;
+	return ivm_function_isNative(f) && f->u.native == expect;
+}
+
+#define ivm_function_object_checkNative(obj, func) \
+	ivm_function_object_checkNative_c((obj), IVM_GET_NATIVE_FUNC(func))
+
 void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   struct ivm_vmstate_t_tag *state);
