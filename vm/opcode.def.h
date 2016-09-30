@@ -108,22 +108,22 @@ OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", 0))
 OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", 0))
 
 /* binary operations */
-OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 0, 2))
-OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-", 0, 2))
-OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*", 0, 2))
-OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/", 0, 2))
-OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%", 0, 2))
+OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 0))
+OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-", 0))
+OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*", 0))
+OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/", 0))
+OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%", 0))
 
-OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&", 0, 2))
-OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0, 2))
-OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0, 2))
+OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&", 0))
+OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0))
+OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0))
 
-OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0, 2))
-OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, IDX, "[]=", 0, 3))
+OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0))
+OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, IDX, "[]=", 0))
 
-OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0, 2))
-OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0, 2))
-OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0, 2))
+OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0))
+OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0))
+OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0))
 
 OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=",
 	{

@@ -46,20 +46,14 @@
 		}                                                                                      \
 	}
 
-#define BINOP_HANDLER(op, op_name, e, req) \
+#define BINOP_HANDLER(op, op_name, e) \
 	{                                                                                          \
-		CHECK_STACK(req);                                                                      \
+		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (IVM_UNLIKELY(_TMP_OBJ3)) {                                                         \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ3);                                                             \
-			SET_IARG(1);                                                                       \
-			GOTO_INSTR(INVOKE_BASE);                                                           \
-		} else {                                                                               \
+		if (!_TMP_OBJ3) {                                                                      \
 			e;                                                                                 \
 			                                                                                   \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
@@ -73,25 +67,24 @@
 	        /* TODO: add exception handling(currently not possible) */                         \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
+		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ3);                                                             \
+			SET_IARG(1);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, oop, op_name, e, req) \
+#define TRIOP_HANDLER(op, oop, op_name, e) \
 	{                                                                                          \
-		CHECK_STACK(req);                                                                      \
+		CHECK_STACK(3);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = STACK_POP();                                                               \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(oop));                             \
-		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
-			STACK_PUSH(_TMP_OBJ3 ? _TMP_OBJ3 : IVM_NONE(_STATE));                              \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ4);                                                             \
-			SET_IARG(2);                                                                       \
-			GOTO_INSTR(INVOKE_BASE);                                                           \
-		} else {                                                                               \
+		if (!_TMP_OBJ4) {                                                                      \
 			e;                                                                                 \
 			                                                                                   \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
@@ -106,6 +99,13 @@
 	        /* TODO: add exception handling(currently not possible) */                         \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
+		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ3 ? _TMP_OBJ3 : IVM_NONE(_STATE));                              \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ4);                                                             \
+			SET_IARG(2);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
 	}
 
@@ -116,13 +116,7 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ4);                                                             \
-			SET_IARG(1);                                                                       \
-			GOTO_INSTR(INVOKE_BASE);                                                           \
-		} else {                                                                               \
+		if (!_TMP_OBJ4) {                                                                      \
 			e;                                                                                 \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
@@ -135,6 +129,12 @@
 			/* TODO: add exception handling(currently not possible) */                         \
 	        STACK_PUSH(ivm_numeric_new(_STATE, _TMP_CMP_REG));                                 \
 			NEXT_INSTR();                                                                      \
+		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ4);                                                             \
+			SET_IARG(1);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
 	}
 
@@ -145,13 +145,7 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (IVM_UNLIKELY(_TMP_OBJ4)) {                                                         \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ4);                                                             \
-			SET_IARG(1);                                                                       \
-			GOTO_INSTR(INVOKE_BASE);                                                           \
-		} else {                                                                               \
+		if (!_TMP_OBJ4) {                                                                      \
 			_USE_REG = IVM_TRUE;                                                               \
 			e;                                                                                 \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
@@ -165,6 +159,12 @@
 	        = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2);                          \
 	        /* TODO: add exception handling(currently not possible) */                         \
 			NEXT_INSTR();                                                                      \
+		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ4);                                                             \
+			SET_IARG(1);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
 	}
 
