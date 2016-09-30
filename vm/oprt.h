@@ -16,14 +16,16 @@ struct ivm_vmstate_t_tag;
 struct ivm_coro_t_tag;
 
 typedef struct ivm_object_t_tag *(*ivm_uniop_proc_t)(struct ivm_vmstate_t_tag *state,
-													 struct ivm_coro_t_tag *coro,
 													 struct ivm_object_t_tag *op1);
 
 typedef struct ivm_object_t_tag *(*ivm_binop_proc_t)(struct ivm_vmstate_t_tag *state,
-													 struct ivm_coro_t_tag *coro,
+													 struct ivm_object_t_tag *op1,
+													 struct ivm_object_t_tag *op2);
+
+typedef struct ivm_object_t_tag *(*ivm_triop_proc_t)(struct ivm_vmstate_t_tag *state,
 													 struct ivm_object_t_tag *op1,
 													 struct ivm_object_t_tag *op2,
-													 struct ivm_object_t_tag *assign);
+													 struct ivm_object_t_tag *op3);
 
 #define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
@@ -59,6 +61,7 @@ enum {
 	IVM_BINOP_ID(IOR), // inclusive or
 	IVM_BINOP_ID(EOR), // exclusive or
 	IVM_BINOP_ID(IDX),
+	IVM_BINOP_ID(IDXA),
 
 	IVM_BINOP_ID(SHL),
 	IVM_BINOP_ID(SHAR), // arithmetic

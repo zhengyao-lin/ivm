@@ -132,19 +132,27 @@ BINOP_GEN_C(IVM_STRING_OBJECT_T, IDX, IVM_STRING_OBJECT_T, ivm_binop_getStringIn
 BINOP_GEN_C(IVM_FUNCTION_OBJECT_T, IDX, IVM_STRING_OBJECT_T, ivm_binop_getStringIndex)
 BINOP_GEN_C(IVM_LIST_OBJECT_T, IDX, IVM_STRING_OBJECT_T, ivm_binop_getStringIndex)
 
+TRIOP_GEN_C(IVM_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
+TRIOP_GEN_C(IVM_NUMERIC_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
+TRIOP_GEN_C(IVM_STRING_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
+TRIOP_GEN_C(IVM_FUNCTION_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
+TRIOP_GEN_C(IVM_LIST_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
+
 BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	const ivm_string_t *str1;
 	ivm_long_t idx, len;
 	ivm_string_t *ret;
 	ivm_char_t *data;
 
-	RTM_ASSERT(!_ASSIGN, IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX);
+	// RTM_ASSERT(!_ASSIGN, IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX);
 
 	str1 = ivm_string_object_getValue(_OP1);
 	len = ivm_string_length(str1);
 	idx = ivm_list_realIndex(len, ivm_numeric_getValue(_OP2));
 
-	RTM_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
+	if (idx > len) return IVM_NONE(_STATE);
+
+	// RTM_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
 
 	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(1));
 	data = ivm_string_trimHead(ret);
@@ -157,18 +165,18 @@ BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
 
 BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	ivm_object_t *tmp;
-
-	if (_ASSIGN) {
-		return ivm_list_object_set(
-			IVM_AS(_OP1, ivm_list_object_t),
-			_STATE, ivm_numeric_getValue(_OP2),
-			_ASSIGN
-		);
-	}
-
 	tmp = ivm_list_object_get(IVM_AS(_OP1, ivm_list_object_t), ivm_numeric_getValue(_OP2));
-
 	return tmp ? tmp : IVM_NONE(_STATE);
+})
+
+TRIOP_GEN(IVM_LIST_OBJECT_T, IDXA, IVM_NUMERIC_T, {
+	ivm_list_object_set(
+		IVM_AS(_OP1, ivm_list_object_t),
+		_STATE, ivm_numeric_getValue(_OP2),
+		_OP3
+	);
+
+	return _OP3 ? _OP3 : IVM_NONE(_STATE);
 })
 
 BINOP_GEN(IVM_LIST_OBJECT_T, ADD, IVM_LIST_OBJECT_T, {

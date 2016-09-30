@@ -295,7 +295,7 @@ ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 	if (flag.is_left_val) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX_ASSIGN);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDXA);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	} else {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);

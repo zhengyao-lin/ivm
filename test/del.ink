@@ -34,3 +34,12 @@ f1 = fn: {
 }
 
 f1()
+
+a = {
+	val: 0
+}
+
+del a["val"]
+print(typeof(a.val))
+
+// -> "str: none"

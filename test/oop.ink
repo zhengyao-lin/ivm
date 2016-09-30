@@ -44,6 +44,19 @@ a = {
 
 a()
 
+a = {
+	val: 0,
+	[]: fn idx, assign: {
+		if assign != none:
+			base.val = assign
+		else:
+			base.val
+	}
+}
+
+print(a["anything"])
+print(a["anything"] = 10)
+
 // -> "num: 5"
 // -> "str: unable to invoke object of type <string>"
 // -> "str: yes!"
@@ -55,3 +68,6 @@ a()
 //
 // -> "str: none"
 // -> "str: a is called"
+// 
+// -> "num: 0"
+// -> "num: 10"

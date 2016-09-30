@@ -15,12 +15,14 @@
 #include "strobj.h"
 #include "listobj.h"
 
+/*
 #define RTM_FATAL(...) \
 	IVM_CORO_NATIVE_ASSERT(_CORO, _STATE, 0, __VA_ARGS__)
 
 #define RTM_ASSERT(cond, ...) \
 	IVM_CORO_NATIVE_ASSERT(_CORO, _STATE, (cond), __VA_ARGS__)
-
+*/
+	
 #define LINK_STRING_NUM(op1, op2, e) \
 	const ivm_string_t *str1 = ivm_string_object_getValue(op1);                \
 	ivm_size_t len1 = ivm_string_length(str1), len2;                           \

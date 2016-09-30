@@ -11,6 +11,8 @@ print("22".len())
 
 print("y".ord().char())
 
+print(typeof("0"[10]))
+
 ret
 
 // -> "str: exception"
@@ -19,3 +21,4 @@ ret
 // -> "num: 0"
 // -> "num: 2"
 // -> "str: y"
+// -> "str: none"
