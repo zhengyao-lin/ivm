@@ -103,27 +103,27 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", {
 	STACK_PUSH(ivm_numeric_new(_STATE, !ivm_object_toBool(_TMP_OBJ1, _STATE)));
 	NEXT_INSTR();
-}))
-OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", 0))
-OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", 0))
+}, IVM_FALSE))
+OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", 0, IVM_FALSE))
+OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", 0, IVM_FALSE))
 
 /* binary operations */
-OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 0))
-OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-", 0))
-OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*", 0))
-OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/", 0))
-OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%", 0))
+OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 0, IVM_FALSE))
+OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-", 0, IVM_FALSE))
+OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*", 0, IVM_FALSE))
+OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/", 0, IVM_FALSE))
+OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%", 0, IVM_FALSE))
 
-OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&", 0))
-OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0))
-OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0))
+OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&", 0, IVM_FALSE))
+OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0, IVM_FALSE))
+OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0, IVM_FALSE))
 
-OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0))
-OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, IDX, "[]=", 0))
+OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0, IVM_TRUE))
+OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, IDX, "[]=", 0, IVM_FALSE))
 
-OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0))
-OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0))
-OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0))
+OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0, IVM_FALSE))
+OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0, IVM_FALSE))
+OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0, IVM_FALSE))
 
 OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=",
 	{
@@ -131,7 +131,7 @@ OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=",
 			STACK_PUSH(ivm_numeric_new(_STATE, IVM_TRUE));
 			NEXT_INSTR();
 		}
-	}
+	}, IVM_FALSE
 ))
 
 OPCODE_GEN(EQ, "eq", N, -1, CMP_HANDLER(EQ, "==",
@@ -140,13 +140,13 @@ OPCODE_GEN(EQ, "eq", N, -1, CMP_HANDLER(EQ, "==",
 			STACK_PUSH(ivm_numeric_new(_STATE, IVM_FALSE));
 			NEXT_INSTR();
 		}
-	}
+	}, IVM_FALSE
 ))
 
-OPCODE_GEN(GT, "gt", N, -1, CMP_HANDLER(GT, ">", 0))
-OPCODE_GEN(GE, "ge", N, -1, CMP_HANDLER(GE, ">=", 0))
-OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(LT, "<", 0))
-OPCODE_GEN(LE, "le", N, -1, CMP_HANDLER(LE, "<=", 0))
+OPCODE_GEN(GT, "gt", N, -1, CMP_HANDLER(GT, ">", 0, IVM_FALSE))
+OPCODE_GEN(GE, "ge", N, -1, CMP_HANDLER(GE, ">=", 0, IVM_FALSE))
+OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(LT, "<", 0, IVM_FALSE))
+OPCODE_GEN(LE, "le", N, -1, CMP_HANDLER(LE, "<=", 0, IVM_FALSE))
 
 OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(NE, "!=",
 	{
@@ -154,7 +154,7 @@ OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(NE, "!=",
 			_TMP_CMP_REG = IVM_TRUE;
 			NEXT_INSTR();
 		}
-	}
+	}, IVM_FALSE
 ))
 
 OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(EQ, "==",
@@ -163,14 +163,14 @@ OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(EQ, "==",
 			_TMP_CMP_REG = IVM_FALSE;
 			NEXT_INSTR();
 		}
-	}
+	}, IVM_FALSE
 ))
 
-OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(GT, ">", 0))
-OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", 0))
+OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(GT, ">", 0, IVM_FALSE))
+OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", 0, IVM_FALSE))
 
-OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", 0))
-OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0))
+OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", 0, IVM_FALSE))
+OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0, IVM_FALSE))
 
 OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
 	_CONTEXT = ivm_runtime_appendContextNode(_RUNTIME, _STATE);

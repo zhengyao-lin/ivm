@@ -19,7 +19,7 @@
 #include "oprt.h"
 #include "dbg.h"
 
-#define UNIOP_HANDLER(op, op_name, e) \
+#define UNIOP_HANDLER(op, op_name, e, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
@@ -39,14 +39,16 @@
 					   IVM_ERROR_MSG_NO_UNIOP_FOR(op_name,                                     \
 												  IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));      \
 	                                                                                           \
-	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _TMP_OBJ1);                                      \
-	        /* TODO: add exception handling(currently not possible) */                         \
+	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                               \
+	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        	EXCEPTION();                                                                   \
+			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		}                                                                                      \
 	}
 
-#define BINOP_HANDLER(op, op_name, e) \
+#define BINOP_HANDLER(op, op_name, e, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -63,8 +65,10 @@
 					   							  op_name,                                     \
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 	                                                                                           \
-	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2);                           \
-	        /* TODO: add exception handling(currently not possible) */                         \
+	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                    \
+	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        	EXCEPTION();                                                                   \
+			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
@@ -76,7 +80,7 @@
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, oop, op_name, e) \
+#define TRIOP_HANDLER(op, oop, op_name, e, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(3);                                                                        \
                                                                                                \
@@ -95,8 +99,10 @@
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_OBJ1 = ((ivm_triop_proc_t)_TMP_BIN_PROC)                                      \
-	        			(_STATE, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                             \
-	        /* TODO: add exception handling(currently not possible) */                         \
+	        			(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                      \
+	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        	EXCEPTION();                                                                   \
+			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
@@ -109,7 +115,7 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER(op, op_name, e) \
+#define CMP_HANDLER(op, op_name, e, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -125,8 +131,10 @@
 					   							  op_name,                                     \
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 			_TMP_CMP_REG                                                                       \
-			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2);                          \
-			/* TODO: add exception handling(currently not possible) */                         \
+			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                   \
+			if ((has_exc) && ivm_vmstate_getException(_STATE)) {                               \
+	        	EXCEPTION();                                                                   \
+			}                                                                                  \
 	        STACK_PUSH(ivm_numeric_new(_STATE, _TMP_CMP_REG));                                 \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
@@ -138,7 +146,7 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER_R(op, op_name, e) \
+#define CMP_HANDLER_R(op, op_name, e, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -156,8 +164,10 @@
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_CMP_REG                                                                       \
-	        = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _TMP_OBJ1, _TMP_OBJ2);                          \
-	        /* TODO: add exception handling(currently not possible) */                         \
+	        = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                   \
+	        if ((has_exc) && ivm_vmstate_getException(_STATE)) {                               \
+	        	EXCEPTION();                                                                   \
+			}                                                                                  \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
 			STACK_PUSH(_TMP_OBJ2);                                                             \

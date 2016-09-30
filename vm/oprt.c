@@ -16,15 +16,18 @@
 
 #define UNIOP_PROC_DEF(name) \
 	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
+								   ivm_coro_t *__coro__,       \
 								   ivm_object_t *__op1__)
 
 #define BINOP_PROC_DEF(name) \
 	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
+								   ivm_coro_t *__coro__,       \
 								   ivm_object_t *__op1__,      \
 								   ivm_object_t *__op2__)
 
 #define TRIOP_PROC_DEF(name) \
 	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
+								   ivm_coro_t *__coro__,       \
 								   ivm_object_t *__op1__,      \
 								   ivm_object_t *__op2__,      \
 								   ivm_object_t *__op3__)

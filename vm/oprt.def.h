@@ -150,9 +150,7 @@ BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, {
 	len = ivm_string_length(str1);
 	idx = ivm_list_realIndex(len, ivm_numeric_getValue(_OP2));
 
-	if (idx > len) return IVM_NONE(_STATE);
-
-	// RTM_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
+	RTM_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
 
 	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(1));
 	data = ivm_string_trimHead(ret);
