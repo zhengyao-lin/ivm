@@ -108,6 +108,10 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 		}
 	}
 
+	if ((offset - 1) >= IVM_MAX_MOD_NAME_LEN) {
+		GEN_ERR_TOO_LONG_MOD_NAME(expr, (offset - 1));
+	}
+
 	buf[offset - 1] = '\0';
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, buf);

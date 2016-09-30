@@ -409,6 +409,8 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	IVM_CORO_NATIVE_ASSERT(coro, state, loader, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
 
+	// IVM_TRACE("found mod: %s\n", buf);
+
 	ret = ivm_object_getSlot_r(ivm_vmstate_getLoadedMod(state), state, buf);
 	if (ret) return ret;
 

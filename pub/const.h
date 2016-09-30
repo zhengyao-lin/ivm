@@ -79,4 +79,6 @@
 #define IVM_ASM_FILE_SUFFIX ".ias"
 #define IVM_CACHE_FILE_SUFFIX ".ivc"
 
+#define IVM_MAX_MOD_NAME_LEN 128
+
 #endif
