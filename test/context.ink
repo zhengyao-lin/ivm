@@ -69,8 +69,25 @@ a.proto = "no!!"
 
 print(typeof(b.proto))
 
+(fn: {
+	loc a = { val: 0 }
+	a.a = a
+	loc = a
+	print(val)
+	a.val = 2
+	print(val)
+
+	del loc
+
+	print(typeof(val))
+})()
+
 // -> "str: loc add 10"
 // -> "str: no ret"
 // -> "str: everything is ok"
 // -> "str: yo"
 // -> "str: object"
+
+// -> "num: 0"
+// -> "num: 2"
+// -> "str: none"

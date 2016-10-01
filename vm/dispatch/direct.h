@@ -323,6 +323,7 @@
 	#define AVAIL_STACK (IVM_PTR_DIFF(tmp_sp, tmp_bp, ivm_object_t *) + cst)
 #else
 	#define AVAIL_STACK IVM_PTR_DIFF(tmp_sp, tmp_bp, ivm_object_t *)
+	#define HAS_STACK (tmp_sp != tmp_bp)
 #endif
 
 #define CHECK_STACK(req) \

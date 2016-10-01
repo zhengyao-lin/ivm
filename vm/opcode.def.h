@@ -473,7 +473,7 @@ OPCODE_GEN(SET_PA_ARG, "set_pa_arg", I, 0, {
 OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	ivm_context_setSlot_cc(
 		_CONTEXT,
-		_STATE, SARG(), AVAIL_STACK ? STACK_POP() : IVM_NONE(_STATE),
+		_STATE, SARG(), HAS_STACK ? STACK_POP() : IVM_NONE(_STATE),
 		_INSTR
 	);
 

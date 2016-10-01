@@ -132,12 +132,15 @@ ivm_context_linkToObject(ivm_context_t *ctx,
 						 ivm_vmstate_t *state,
 						 ivm_object_t *obj)
 {
-	ivm_slot_table_t *slots = IVM_OBJECT_GET(obj, SLOTS);
+	ivm_slot_table_t *slots;
 
-	slots = ivm_slot_table_copyOnWrite(slots, state);
-	IVM_OBJECT_SET(obj, SLOTS, slots);
-
-	IVM_WBCTX(state, ctx, ctx->slots = slots);
+	if (obj) {
+		slots = ivm_slot_table_copyOnWrite(IVM_OBJECT_GET(obj, SLOTS), state);
+		IVM_OBJECT_SET(obj, SLOTS, slots);
+		IVM_WBCTX(state, ctx, ctx->slots = slots);
+	} else {
+		ctx->slots = IVM_NULL;
+	}
 
 	return;
 }

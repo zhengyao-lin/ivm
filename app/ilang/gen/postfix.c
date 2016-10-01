@@ -163,9 +163,13 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			ret = RETVAL(.has_base = IVM_TRUE);
 		} else {
 			if (tmp_ret.is_id_loc) {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_CONTEXT);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
+				// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
 			} else if (tmp_ret.is_id_top) {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_SLOT, tmp_str);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_CONTEXT);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
+				// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_SLOT, tmp_str);
 			} else if (is_proto) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 			} else {
