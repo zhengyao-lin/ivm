@@ -5,21 +5,20 @@
 #include "mem.h"
 #include "path.h"
 
-#if defined(IVM_OS_WINDOWS)
-
-#include <shlwapi.h>
+#if defined(IVM_OS_WIN32)
 
 ivm_bool_t
 ivm_path_realpath(ivm_char_t buffer[IVM_PATH_MAX_LEN + 1],
 				  ivm_char_t *rpath)
 {
-	ivm_size_t len = IVM_STRLEN(rpath);
+	ivm_char_t tmp[IVM_PATH_MAX_LEN + 1];
 
-	IVM_ASSERT(len <= IVM_PATH_MAX_LEN, IVM_ERROR_MSG_MAX_PATH_LEN_REACHED);
+	if (_fullpath(tmp, rpath, IVM_PATH_MAX_LEN)) {
+		STD_MEMCPY(buffer, tmp, IVM_STRLEN(tmp) + 1);
+		return IVM_TRUE;
+	}
 
-	STD_MEMCPY(buffer, rpath, len + 1);
-
-	return PathFindOnPath(buffer, IVM_NULL);
+	return IVM_FALSE;
 }
 
 #else

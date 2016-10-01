@@ -40,13 +40,13 @@ IVM_NATIVE_FUNC(_numeric_round)
 IVM_NATIVE_FUNC(_numeric_isnan)
 {
 	CHECK_BASE(IVM_NUMERIC_T);
-	return ivm_numeric_new(NAT_STATE(), isnan(ivm_numeric_getValue(NAT_BASE())));
+	return ivm_bool_new(NAT_STATE(), isnan(ivm_numeric_getValue(NAT_BASE())));
 }
 
 IVM_NATIVE_FUNC(_numeric_isinf)
 {
 	CHECK_BASE(IVM_NUMERIC_T);
-	return ivm_numeric_new(NAT_STATE(), isinf(ivm_numeric_getValue(NAT_BASE())));
+	return ivm_bool_new(NAT_STATE(), isinf(ivm_numeric_getValue(NAT_BASE())));
 }
 
 IVM_INLINE
@@ -66,13 +66,13 @@ _isneginf(ivm_number_t val)
 IVM_NATIVE_FUNC(_numeric_isposinf)
 {
 	CHECK_BASE(IVM_NUMERIC_T);
-	return ivm_numeric_new(NAT_STATE(), _isposinf(ivm_numeric_getValue(NAT_BASE())));
+	return ivm_bool_new(NAT_STATE(), _isposinf(ivm_numeric_getValue(NAT_BASE())));
 }
 
 IVM_NATIVE_FUNC(_numeric_isneginf)
 {
 	CHECK_BASE(IVM_NUMERIC_T);
-	return ivm_numeric_new(NAT_STATE(), _isneginf(ivm_numeric_getValue(NAT_BASE())));
+	return ivm_bool_new(NAT_STATE(), _isneginf(ivm_numeric_getValue(NAT_BASE())));
 }
 
 IVM_NATIVE_FUNC(_numeric_char)

@@ -8,11 +8,7 @@
 
 IVM_COM_HEADER
 
-#if defined(IVM_OS_WINDOWS)
-	#include <shlwapi.h>
-
-	#define IVM_PATH_MAX_LEN MAX_PATH
-#else
+#if defined(IVM_OS_LINUX)
 	#include <sys/param.h>
 	#include <limits.h>
 
@@ -21,7 +17,7 @@ IVM_COM_HEADER
 	#endif
 #endif
 
-#ifndef PATH_MAX
+#ifndef IVM_PATH_MAX_LEN
 	#define IVM_PATH_MAX_LEN 1024
 #endif
 

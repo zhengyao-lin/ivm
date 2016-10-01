@@ -259,7 +259,7 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 	{ (val), sizeof(val) - 1 },
 
 		SUF("")
-		SUF("/init")
+		SUF(IVM_FILE_SEPARATOR_S "init")
 
 #undef SUF
 	};

@@ -14,6 +14,12 @@
 	#error math module will not work correctly with GCC -ffast-math option open
 #endif
 
+#ifdef IVM_OS_WIN32
+	#define MATH_RAND_MAX (RAND_MAX + 1)
+#else
+	#define MATH_RAND_MAX RAND_MAX
+#endif
+
 #define C_PI 3.14159265358979323846
 
 #define C_NAN (((union { ivm_sint64_t i; ivm_double_t d; }){ .i = ~0 }).d)
@@ -99,7 +105,7 @@ IVM_NATIVE_FUNC(_math_random)
 	MATCH_ARG("*nn", &min, &max);
 	RTM_ASSERT(max >= min, MATH_ERR_MSG_RANDOM_MIN_MAX_ERROR);
 	
-	return ivm_numeric_new(NAT_STATE(), min + ((ivm_number_t)rand() / RAND_MAX) * (max - min));
+	return ivm_numeric_new(NAT_STATE(), min + ((ivm_number_t)rand() / MATH_RAND_MAX) * (max - min));
 }
 
 ivm_object_t *
