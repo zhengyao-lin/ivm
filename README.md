@@ -14,21 +14,18 @@ or
 
     cmake -DVERSION=release
     
-for faster releasing version
+for the faster releasing version
 
-Then use make to compile
+Then use make to compile & test
 
     make
-
-Tests(in /test dir) are available as well
-
     make test
 
 ## executable files(in build/bin in default)
 
-    build/bin/ias      parse and execute .ias file
-    build/bin/ilang    parse, compile and execute an example language
+    build/bin/ias      execute .ias file
+    build/bin/ilang    execute .ink file
     bulid/bin/testbed  general tests
 
 <br><br>
-ivm is still under development.
+ivm is still under development. orz
