@@ -13,6 +13,7 @@
 #include "std/env.h"
 #include "std/sys.h"
 #include "std/list.h"
+#include "std/path.h"
 
 #include "mod.h"
 #include "dll.h"
@@ -392,12 +393,19 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	ivm_size_t len = ivm_string_length(mod_name);
 
 	const ivm_char_t *mod = ivm_string_trimHead(mod_name);
-	ivm_char_t buf[_get_max_buf_size(len)];
 	ivm_char_t *err = IVM_NULL;
 	ivm_char_t *path_backup, *path;
 	ivm_bool_t is_const;
 
 	ivm_object_t *ret;
+
+	ivm_size_t buf_size = _get_max_buf_size(len);
+
+	if (buf_size < IVM_PATH_MAX_LEN + 1) {
+		buf_size = IVM_PATH_MAX_LEN + 1;
+	}
+
+	ivm_char_t buf[buf_size];
 
 	path_backup = ivm_vmstate_curPath(state);
 
@@ -408,8 +416,9 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	_ivm_mod_popModPath_n();
 
 	IVM_CORO_NATIVE_ASSERT(coro, state, loader, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
-
-	// IVM_TRACE("found mod: %s\n", buf);
+	
+	// avoid circular reference
+	IVM_CORO_NATIVE_ASSERT(coro, state, ivm_path_realpath(buf, buf), IVM_ERROR_MSG_FAILED_GET_ABS_PATH(buf));
 
 	ret = ivm_object_getSlot_r(ivm_vmstate_getLoadedMod(state), state, buf);
 	if (ret) return ret;

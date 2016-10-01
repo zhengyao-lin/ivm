@@ -2,6 +2,7 @@
 #define _IVM_VM_TYPE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <wchar.h>
 #include <float.h>
@@ -22,7 +23,7 @@ typedef uint16_t				ivm_uint16_t;
 typedef uint32_t				ivm_uint32_t;
 typedef uint64_t				ivm_uint64_t;
 
-typedef char					ivm_bool_t;
+typedef bool					ivm_bool_t;
 typedef int						ivm_int_t;
 typedef unsigned int			ivm_uint_t;
 typedef long					ivm_long_t;
@@ -37,8 +38,8 @@ typedef unsigned char			ivm_uchar_t;
 typedef signed char				ivm_schar_t;
 
 #define IVM_NULL				((void *)0)
-#define IVM_FALSE				0
-#define IVM_TRUE				!0
+#define IVM_FALSE				0 // false
+#define IVM_TRUE				1 // true
 
 typedef ivm_uptr_t				ivm_size_t;
 typedef ivm_uint8_t				ivm_byte_t;

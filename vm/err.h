@@ -101,6 +101,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_UNKNOWN_TP_TYPE(name)						"unregistered third-party type '%s'", (name)
 #define IVM_ERROR_MSG_REDEF_TP_TYPE(name)						"third-party type '%s' is redefined", (name)
 #define IVM_ERROR_MSG_UNABLE_TO_CONVERT_STR(type)				"unable to convert object of type <%s> to string", (type)
+#define IVM_ERROR_MSG_MAX_PATH_LEN_REACHED						"max path length reached"
+#define IVM_ERROR_MSG_FAILED_GET_ABS_PATH(path)					"failed to obtain the absolute path for '%s'", (path)
 
 IVM_COM_END
 

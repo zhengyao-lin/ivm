@@ -17,5 +17,4 @@ print(path1.path2.path3.path.val)
 
 // circular import
 
-// BUG: circular import caused seg fault
-// import circular
+import circular

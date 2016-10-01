@@ -153,8 +153,8 @@ loc test_bin2bool = fn ev, jud: {
 
 	loc perc = wrong / tcount * 100
 
-	if perc < 10:
-		print("predict success")
+	// if perc < 10:
+	// 	print("predict success")
 
 	print("error rate: " + perc + "%")
 }
@@ -167,5 +167,5 @@ ret
 
 // -> "str: \\[ \\[ 0 \\], \\[ 1 \\], \\[ 1 \\], \\[ 1 \\] \\]"
 // -> "str: training"
-// -> "str: predict success"
+// "str: predict success"
 // -> "str: error rate: .*%"
