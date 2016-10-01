@@ -48,8 +48,23 @@ _get_encode(const ivm_char_t *str,
 
 IVM_NATIVE_FUNC(_string_cons)
 {
-	CHECK_ARG_1(IVM_STRING_OBJECT_T);
-	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	ivm_object_t *arg;
+
+	CHECK_ARG_COUNT("string", 1);
+
+	arg = NAT_ARG_AT(1);
+
+	if (IVM_IS_BTTYPE(arg, NAT_STATE(), IVM_STRING_OBJECT_T)) {
+		return ivm_object_clone(arg, NAT_STATE());
+	} else if (IVM_IS_BTTYPE(arg, NAT_STATE(), IVM_NUMERIC_T)) {
+		ivm_char_t buf[25];
+		ivm_conv_dtoa(ivm_numeric_getValue(arg), buf);
+		return ivm_string_object_new(NAT_STATE(), ivm_vmstate_constantize_r(NAT_STATE(), buf));
+	}
+
+	RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_CONVERT_STR(IVM_OBJECT_GET(arg, TYPE_NAME)));
+
+	return IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(_string_len)

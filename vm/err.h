@@ -100,6 +100,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_UNEXPECT_IS_OPERAND						("unexpected type of the second operand of 'is' function(expecting none or type)")
 #define IVM_ERROR_MSG_UNKNOWN_TP_TYPE(name)						"unregistered third-party type '%s'", (name)
 #define IVM_ERROR_MSG_REDEF_TP_TYPE(name)						"third-party type '%s' is redefined", (name)
+#define IVM_ERROR_MSG_UNABLE_TO_CONVERT_STR(type)				"unable to convert object of type <%s> to string", (type)
 
 IVM_COM_END
 

@@ -621,11 +621,13 @@ strhash(const char *key)
 	return hash;
 }
 
+#include "std/complex.h"
+
 int main(int argc, const char **argv)
 {
 	ivm_env_init();
 
-#if 1
+#if 0
 
 	const ivm_char_t *err;
 	ivm_file_t *fp = ivm_file_new("test.bmp", IVM_FMODE_READ_BINARY);
