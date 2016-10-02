@@ -1,5 +1,6 @@
 #include "pub/type.h"
 #include "pub/err.h"
+#include "pub/com.h"
 
 #include "mem.h"
 #include "string.h"

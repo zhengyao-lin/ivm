@@ -54,18 +54,20 @@
 	#define IVM_OS_WIN64
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 	#define IVM_OS_WIN32
+#elif (defined(__APPLE__) && defined(__GNUC__)) || defined(__MACOSX__) || defined(macintosh)
+	#define IVM_OS_MAC
 #endif
 
 #ifndef IVM_LIB_PATH
 	#error library path not specified
 #endif
 
-#if defined(IVM_OS_LINUX)
-	#define IVM_FILE_SEPARATOR '/'
-	#define IVM_FILE_SEPARATOR_S "/"
-#elif defined(IVM_OS_WIN32)
+#if defined(IVM_OS_WIN32)
 	#define IVM_FILE_SEPARATOR '\\'
 	#define IVM_FILE_SEPARATOR_S "\\"
+#else
+	#define IVM_FILE_SEPARATOR '/'
+	#define IVM_FILE_SEPARATOR_S "/"
 #endif
 
 #endif

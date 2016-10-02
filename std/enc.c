@@ -45,7 +45,7 @@ ivm_enc_utf8_strlen_n(const ivm_char_t *mbs,
 	return ret;
 }
 
-#define HEAD(n) ((ivm_uchar_t)(~0 << (8 - (n))))
+#define HEAD(n) ((ivm_uchar_t)((ivm_uchar_t)(~0) << (8 - (n))))
 #define PREFIX 0x80
 #define LAST6(c) ((c) & 0x3F)
 #define FIRSTNBITS(c, n) ((c) & HEAD(n))

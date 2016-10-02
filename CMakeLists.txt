@@ -30,6 +30,8 @@ else()
 	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${CMAKE_INSTALL_PREFIX}\\\"")
 endif()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_DLL_SUFFIX=\\\"${CMAKE_SHARED_LIBRARY_SUFFIX}\\\"")
+
 # set flags for different versions
 if(VERSION STREQUAL "release")
 	

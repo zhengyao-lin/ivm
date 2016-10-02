@@ -23,7 +23,7 @@ IVM_COM_HEADER
 		1. IVM_DLL_SUFFIX
  */
 
-#if defined(IVM_OS_LINUX)
+#if defined(IVM_OS_LINUX) || defined(IVM_OS_MAC)
 
 	#include <dlfcn.h>
 
@@ -44,7 +44,13 @@ IVM_COM_HEADER
 
 	#define ivm_dll_freeError(str) STD_FREE(str)
 
-	#define IVM_DLL_SUFFIX ".so"
+	#ifndef IVM_DLL_SUFFIX
+		#if defined(IVM_OS_MAC)
+			#define IVM_DLL_SUFFIX ".dylib"
+		#else
+			#define IVM_DLL_SUFFIX ".so"
+		#endif
+	#endif
 
 #elif defined(IVM_OS_WIN32)
 
@@ -80,7 +86,9 @@ IVM_COM_HEADER
 
 	#define ivm_dll_freeError(str) LocalFree(str)
 
-	#define IVM_DLL_SUFFIX ".dll"
+	#ifndef IVM_DLL_SUFFIX
+		#define IVM_DLL_SUFFIX ".dll"
+	#endif
 
 #else
 	#error no support for dynamically linked library on this os
