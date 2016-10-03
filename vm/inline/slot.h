@@ -27,6 +27,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 		TO_HASH_TABLE:                                                                 \
 			hash = ivm_string_hash(key);                                               \
 			while (1) {                                                                \
+			AGAIN:                                                                     \
 				conflict = 0;                                                          \
 				tmp = table->tabl + hash % table->size;                                \
 				end = table->tabl + table->size;                                       \
@@ -36,7 +37,8 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					 i++, conflict++) {                                                \
 					if (IS_EMPTY_SLOT(i)) {                                            \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						if (obj) {                                                     \
 							i->k = ivm_vmstate_constantize(state, key);                \
@@ -46,7 +48,8 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 						return;                                                        \
 					} else if (ivm_string_compare(i->k, key)) {                        \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						i->v = obj;                                                    \
 						set_cc;                                                        \
@@ -59,7 +62,8 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					 i++, conflict++) {                                                \
 					if (IS_EMPTY_SLOT(i)) {                                            \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						if (obj) {                                                     \
 							i->k = ivm_vmstate_constantize(state, key);                \
@@ -69,7 +73,8 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 						return;                                                        \
 					} else if (ivm_string_compare(i->k, key)) {                        \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						i->v = obj;                                                    \
 						set_cc;                                                        \
@@ -276,6 +281,7 @@ GET_SLOT(
 		TO_HASH_TABLE:                                                                 \
 			hash = ivm_string_hash(key);                                               \
 			while (1) {                                                                \
+			AGAIN:                                                                     \
 				conflict = 0;                                                          \
 				tmp = table->tabl + hash % table->size;                                \
 				end = table->tabl + table->size;                                       \
@@ -285,14 +291,16 @@ GET_SLOT(
 					 i++, conflict++) {                                                \
 					if (IS_EMPTY_SLOT(i)) {                                            \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						i->k = ivm_vmstate_constantize(state, key);                    \
 						i->v = obj;                                                    \
 						return IVM_TRUE;                                               \
 					} else if (ivm_string_compare(i->k, key)) {                        \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						return IVM_FALSE;                                              \
 					}                                                                  \
@@ -303,14 +311,16 @@ GET_SLOT(
 					 i++, conflict++) {                                                \
 					if (IS_EMPTY_SLOT(i)) {                                            \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						i->k = ivm_vmstate_constantize(state, key);                    \
 						i->v = obj;                                                    \
 						return IVM_TRUE;                                               \
 					} else if (ivm_string_compare(i->k, key)) {                        \
 						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
-							continue;                                                  \
+							_ivm_slot_table_expand(table, state);                      \
+							goto AGAIN;                                                \
 						}                                                              \
 						return IVM_FALSE;                                              \
 					}                                                                  \

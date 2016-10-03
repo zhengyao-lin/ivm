@@ -205,25 +205,36 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 	return ret;
 }
 
+#define CHECK_CONFLICT() \
+	if (conflict >= IVM_DEFAULT_STRING_POOL_MAX_CONF_COUNT) {       \
+		_ivm_string_pool_expand(pool);                              \
+		goto AGAIN;                                                 \
+	}
+
 #define CHECK(cmp, copy) \
 	if (!i->k) {                                                    \
+		CHECK_CONFLICT();                                           \
 		i->k = (copy);                                              \
 		i->v = ivm_string_list_push(&pool->lst, i->k);              \
 		return i->k;                                                \
 	} else if (cmp) {                                               \
+		CHECK_CONFLICT();                                           \
 		return i->k;                                                \
 	}
 
 #define CHECK_I(cmp, copy) \
 	if (!i->k) {                                                    \
+		CHECK_CONFLICT();                                           \
 		i->k = (copy);                                              \
 		return i->v = ivm_string_list_push(&pool->lst, i->k);       \
 	} else if (cmp) {                                               \
+		CHECK_CONFLICT();                                           \
 		return i->v;                                                \
 	}
 
 #define SET_RAW(val, id) \
 	if (!i->k) {                                                    \
+		CHECK_CONFLICT();                                           \
 		i->v = id;                                                  \
 		return i->k = (val);                                        \
 	}
@@ -231,10 +242,13 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 #define HASH(hashee, each) \
 	{                                                                           \
 		ivm_hash_val_t hash;                                                    \
-		ivm_string_pos_t *i, *end, *tmp;                                        \
+		register ivm_string_pos_t *i, *end, *tmp;                               \
+		register ivm_uint_t conflict;                                           \
 		hash = ivm_hash_fromString(hashee);                                     \
 	                                                                            \
 		while (1) {                                                             \
+		AGAIN:                                                                  \
+			conflict = 0;                                                       \
 			end = pool->table + pool->size;                                     \
 			tmp = pool->table + hash % pool->size;                              \
 	                                                                            \
