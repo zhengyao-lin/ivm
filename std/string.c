@@ -111,6 +111,39 @@ ivm_string_compareToRaw_n(const ivm_string_t *a,
 					   b, len);
 }
 
+IVM_INLINE
+void
+_ivm_string_pool_init_c(ivm_string_pool_t *pool)
+{
+	ivm_ref_init(pool);
+	pool->heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
+	
+	ivm_string_list_init(&pool->lst);
+	pool->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
+	pool->table
+	= STD_ALLOC_INIT(sizeof(*pool->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
+
+	IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+
+	return;
+}
+
+void
+ivm_string_pool_init(ivm_string_pool_t *pool)
+{
+	_ivm_string_pool_init_c(pool);
+	return;
+}
+
+void
+ivm_string_pool_dump(ivm_string_pool_t *pool)
+{
+	ivm_heap_free(pool->heap);
+	ivm_string_list_dump(&pool->lst);
+	STD_FREE(pool->table);
+	return;
+}
+
 ivm_string_pool_t *
 ivm_string_pool_new()
 {
@@ -118,15 +151,7 @@ ivm_string_pool_new()
 
 	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
 
-	ivm_ref_init(ret);
-	ret->heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
-	
-	ivm_string_list_init(&ret->lst);
-	ret->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
-	ret->table
-	= STD_ALLOC_INIT(sizeof(*ret->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
-
-	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+	_ivm_string_pool_init_c(ret);
 
 	return ret;
 }

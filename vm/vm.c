@@ -56,7 +56,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_cgroup_list_prepush(&ret->coro_groups, &tmp_group);
 	ivm_cgroup_init(tmp_group);
 
-	ivm_type_list_init(&ret->tp_type_list);
+	ivm_type_pool_init(&ret->type_pool);
 	ivm_func_list_init(&ret->func_list);
 
 	ret->func_pool = ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
@@ -94,7 +94,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_oprt_initType(ret);
 
 	ret->loaded_mod = ivm_object_new(ret);
-	ret->tp_type = ivm_object_new(ret);
+	// ret->tp_type = ivm_object_new(ret);
 	ret->obj_none = ivm_none_new(ret);
 
 	ivm_vmstate_unlockGCFlag(ret);
@@ -109,7 +109,6 @@ void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
 	ivm_cgroup_list_iterator_t giter;
-	ivm_type_list_iterator_t titer;
 
 	ivm_type_t *i, *end;
 	ivm_int_t j;
@@ -126,10 +125,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 		ivm_cgroup_list_dump(&state->coro_groups);
 
-		IVM_TYPE_LIST_EACHPTR(&state->tp_type_list, titer) {
-			ivm_type_free(IVM_TYPE_LIST_ITER_GET(titer));
-		}
-		ivm_type_list_dump(&state->tp_type_list);
+		ivm_type_pool_dump(&state->type_pool);
 
 		ivm_func_list_dump(&state->func_list, state);
 
@@ -240,25 +236,4 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 	ivm_cgroup_empty(group, state);
 
 	return val;
-}
-
-ivm_type_t *
-ivm_vmstate_registerType_c(ivm_vmstate_t *state,
-						   const ivm_char_t *name,
-						   ivm_type_t *init)
-{
-	ivm_type_t *copy = ivm_type_new(*init);
-
-	if (!ivm_object_setEmptySlot_r(
-			state->tp_type,
-			state, name,
-			ivm_type_object_new(state, copy)
-		)) {
-		ivm_type_free(copy);
-		return IVM_NULL;
-	}
-
-	ivm_type_list_register(&state->tp_type_list, copy);
-
-	return copy;
 }

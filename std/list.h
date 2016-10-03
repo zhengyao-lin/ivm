@@ -201,8 +201,7 @@ ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
 IVM_INLINE
 void
 ivm_ptlist_insert(ivm_ptlist_t *ptlist,
-			   ivm_size_t i,
-			   void *p)
+				  ivm_size_t i, void *p)
 {
 	if (i >= ptlist->cur) {
 		ivm_ptlist_incTo(ptlist, i + 1);

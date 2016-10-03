@@ -32,7 +32,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_cgroup_list_t coro_groups;
 
-	ivm_type_list_t tp_type_list;
+	ivm_type_pool_t type_pool;
 	ivm_func_list_t func_list;					// 24
 
 	ivm_string_pool_t *const_pool;				// 8
@@ -41,8 +41,6 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_object_t *except;
 	ivm_object_t *loaded_mod;
 	ivm_object_t *obj_none;
-
-	ivm_object_t *tp_type; // third-party type objects
 
 #define CONST_GEN(name, str) const ivm_string_t *const_str_##name;
 	#include "vm.const.h"						// 8
@@ -82,26 +80,14 @@ ivm_type_t *
 IVM_TPTYPE(ivm_vmstate_t *state,
 		   const ivm_char_t *name)
 {
-	ivm_object_t *t = ivm_object_getSlot_r(state->tp_type, state, name);
-
-	if (t && IVM_IS_BTTYPE(t, state, IVM_TYPE_OBJECT_T)) {
-		return ivm_type_object_getValue(t);
-	}
-
-	IVM_FATAL(IVM_ERROR_MSG_UNKNOWN_TP_TYPE(name));
-	return IVM_NULL; /* unreachable */
+	return ivm_type_pool_get(&state->type_pool, name);
 }
 
-ivm_type_t *
-ivm_vmstate_registerType_c(ivm_vmstate_t *state,
-						   const ivm_char_t *name,
-						   ivm_type_t *init);
-
 #define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, name, init, ...) \
-	{                                                                               \
-		ivm_type_t *_TYPE = ivm_vmstate_registerType_c((state), (name), (init));    \
-		RTM_ASSERT_C((coro), (state), _TYPE, IVM_ERROR_MSG_REDEF_TP_TYPE(name));    \
-		__VA_ARGS__;                                                                \
+	{                                                                                       \
+		ivm_type_t *_TYPE = ivm_type_pool_register(&(state)->type_pool, (name), (init));    \
+		RTM_ASSERT_C((coro), (state), _TYPE, IVM_ERROR_MSG_REDEF_TP_TYPE(name));            \
+		__VA_ARGS__;                                                                        \
 	}
 
 ivm_vmstate_t *
@@ -531,8 +517,7 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 #define ivm_vmstate_getLoadedMod(state) ((state)->loaded_mod)
 #define ivm_vmstate_setLoadedMod(state, obj) ((state)->loaded_mod = (obj))
 
-#define ivm_vmstate_getTPType(state) ((state)->tp_type)
-#define ivm_vmstate_setTPType(state, obj) ((state)->tp_type = (obj))
+#define ivm_vmstate_getTypePool(state) (&(state)->type_pool)
 
 #define ivm_vmstate_getNone(state) ((state)->obj_none)
 #define ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))

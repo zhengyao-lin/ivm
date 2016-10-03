@@ -393,6 +393,7 @@ ivm_collector_travState(ivm_vmstate_t *state,
 						ivm_traverser_arg_t *arg)
 {
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
+	ivm_type_list_iterator_t titer;
 
 	ivm_vmstate_travAndCompactCGroup(state, arg);
 
@@ -401,16 +402,16 @@ ivm_collector_travState(ivm_vmstate_t *state,
 		ivm_collector_travType(types, arg);
 	}
 
+	IVM_TYPE_POOL_EACHPTR(ivm_vmstate_getTypePool(state), titer) {
+		ivm_collector_travType(IVM_TYPE_POOL_ITER_GET(titer), arg);
+	}
+
 	ivm_vmstate_setException(state,
 		ivm_collector_copyObject(ivm_vmstate_getException(state), arg)
 	);
 
 	ivm_vmstate_setLoadedMod(state,
 		ivm_collector_copyObject(ivm_vmstate_getLoadedMod(state), arg)
-	);
-
-	ivm_vmstate_setTPType(state,
-		ivm_collector_copyObject(ivm_vmstate_getTPType(state), arg)
 	);
 
 	ivm_vmstate_setNone(state,
