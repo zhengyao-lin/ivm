@@ -13,89 +13,103 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 					   ivm_vmstate_t *state);
 
 #define SET_SLOT(check, set_cc) \
-	{                                                                            \
-		ivm_hash_val_t hash;                                                     \
-		ivm_size_t osize;                                                        \
-                                                                                 \
-		register ivm_slot_t *i, *tmp, *end;                                      \
-                                                                                 \
-		IVM_WBSLOT(state, table, obj);                                           \
-		check;                                                                   \
-                                                                                 \
-        if (table->mark.sub.is_hash) {                                           \
-		TO_HASH_TABLE:                                                           \
-			hash = ivm_string_hash(key);                                         \
-			while (1) {                                                          \
-				tmp = table->tabl + hash % table->size;                          \
-				end = table->tabl + table->size;                                 \
-                                                                                 \
-				for (i = tmp;                                                    \
-					 i != end;                                                   \
-					 i++) {                                                      \
-					if (IS_EMPTY_SLOT(i)) {                                      \
-						if (obj) {                                               \
-							i->k = ivm_vmstate_constantize(state, key);          \
-							i->v = obj;                                          \
-							set_cc;                                              \
-						}                                                        \
-						return;                                                  \
-					} else if (ivm_string_compare(i->k, key)) {                  \
-						i->v = obj;                                              \
-						set_cc;                                                  \
-						return;                                                  \
-					}                                                            \
-				}                                                                \
-                                                                                 \
-				for (i = table->tabl;                                            \
-					 i != tmp;                                                   \
-					 i++) {                                                      \
-					if (IS_EMPTY_SLOT(i)) {                                      \
-						if (obj) {                                               \
-							i->k = ivm_vmstate_constantize(state, key);          \
-							i->v = obj;                                          \
-							set_cc;                                              \
-						}                                                        \
-						return;                                                  \
-					} else if (ivm_string_compare(i->k, key)) {                  \
-						i->v = obj;                                              \
-						set_cc;                                                  \
-						return;                                                  \
-					}                                                            \
-				}                                                                \
-				if (!obj) return;                                                \
-                                                                                 \
-				/* allocate new space */                                         \
-				_ivm_slot_table_expand(table, state);                            \
-			}                                                                    \
-		} else {                                                                 \
-			for (i = table->tabl,                                                \
-				 end = table->tabl + table->size;                                \
-				 i != end; i++) {                                                \
-				if (IS_EMPTY_SLOT(i)) {                                          \
-					if (obj) {                                                   \
-						i->k = ivm_vmstate_constantize(state, key);              \
-						i->v = obj;                                              \
-						set_cc;                                                  \
-					}                                                            \
-					return;                                                      \
-				} else if (ivm_string_compare(i->k, key)) {                      \
-					i->v = obj;                                                  \
-					set_cc;                                                      \
-					return;                                                      \
-				}                                                                \
-			}                                                                    \
-                                                                                 \
-			osize = table->size;                                                 \
-			if (_ivm_slot_table_expand(table, state)) {                          \
-				goto TO_HASH_TABLE;                                              \
-			}                                                                    \
-			i = table->tabl + osize;                                             \
-			i->k = ivm_vmstate_constantize(state, key);                          \
-			i->v = obj;                                                          \
-			set_cc;                                                              \
-		}                                                                        \
-                                                                                 \
-		return;                                                                  \
+	{                                                                                  \
+		ivm_hash_val_t hash;                                                           \
+		ivm_size_t osize;                                                              \
+		register ivm_uint_t conflict;                                                  \
+                                                                                       \
+		register ivm_slot_t *i, *tmp, *end;                                            \
+                                                                                       \
+		IVM_WBSLOT(state, table, obj);                                                 \
+		check;                                                                         \
+                                                                                       \
+        if (table->mark.sub.is_hash) {                                                 \
+		TO_HASH_TABLE:                                                                 \
+			hash = ivm_string_hash(key);                                               \
+			while (1) {                                                                \
+				conflict = 0;                                                          \
+				tmp = table->tabl + hash % table->size;                                \
+				end = table->tabl + table->size;                                       \
+                                                                                       \
+				for (i = tmp;                                                          \
+					 i != end;                                                         \
+					 i++, conflict++) {                                                \
+					if (IS_EMPTY_SLOT(i)) {                                            \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						if (obj) {                                                     \
+							i->k = ivm_vmstate_constantize(state, key);                \
+							i->v = obj;                                                \
+							set_cc;                                                    \
+						}                                                              \
+						return;                                                        \
+					} else if (ivm_string_compare(i->k, key)) {                        \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						i->v = obj;                                                    \
+						set_cc;                                                        \
+						return;                                                        \
+					}                                                                  \
+				}                                                                      \
+                                                                                       \
+				for (i = table->tabl;                                                  \
+					 i != tmp;                                                         \
+					 i++, conflict++) {                                                \
+					if (IS_EMPTY_SLOT(i)) {                                            \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						if (obj) {                                                     \
+							i->k = ivm_vmstate_constantize(state, key);                \
+							i->v = obj;                                                \
+							set_cc;                                                    \
+						}                                                              \
+						return;                                                        \
+					} else if (ivm_string_compare(i->k, key)) {                        \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						i->v = obj;                                                    \
+						set_cc;                                                        \
+						return;                                                        \
+					}                                                                  \
+				}                                                                      \
+				if (!obj) return;                                                      \
+                                                                                       \
+				/* allocate new space */                                               \
+				_ivm_slot_table_expand(table, state);                                  \
+			}                                                                          \
+		} else {                                                                       \
+			for (i = table->tabl,                                                      \
+				 end = table->tabl + table->size;                                      \
+				 i != end; i++) {                                                      \
+				if (IS_EMPTY_SLOT(i)) {                                                \
+					if (obj) {                                                         \
+						i->k = ivm_vmstate_constantize(state, key);                    \
+						i->v = obj;                                                    \
+						set_cc;                                                        \
+					}                                                                  \
+					return;                                                            \
+				} else if (ivm_string_compare(i->k, key)) {                            \
+					i->v = obj;                                                        \
+					set_cc;                                                            \
+					return;                                                            \
+				}                                                                      \
+			}                                                                          \
+                                                                                       \
+			osize = table->size;                                                       \
+			if (_ivm_slot_table_expand(table, state)) {                                \
+				goto TO_HASH_TABLE;                                                    \
+			}                                                                          \
+			i = table->tabl + osize;                                                   \
+			i->k = ivm_vmstate_constantize(state, key);                                \
+			i->v = obj;                                                                \
+			set_cc;                                                                    \
+		}                                                                              \
+                                                                                       \
+		return;                                                                        \
 	} int dummy()
 
 /* null obj for deleting slot */
@@ -249,70 +263,84 @@ GET_SLOT(
 );
 
 #define SET_EMPTY_SLOT() \
-	{                                                                            \
-		ivm_hash_val_t hash;                                                     \
-		ivm_size_t osize;                                                        \
-                                                                                 \
-		register ivm_slot_t *i, *tmp, *end;                                      \
-                                                                                 \
-		IVM_WBSLOT(state, table, obj);                                           \
-                                                                                 \
-        if (table->mark.sub.is_hash) {                                           \
-		TO_HASH_TABLE:                                                           \
-			hash = ivm_string_hash(key);                                         \
-			while (1) {                                                          \
-				tmp = table->tabl + hash % table->size;                          \
-				end = table->tabl + table->size;                                 \
-                                                                                 \
-				for (i = tmp;                                                    \
-					 i != end;                                                   \
-					 i++) {                                                      \
-					if (IS_EMPTY_SLOT(i)) {                                      \
-						i->k = ivm_vmstate_constantize(state, key);              \
-						i->v = obj;                                              \
-						return IVM_TRUE;                                         \
-					} else if (ivm_string_compare(i->k, key)) {                  \
-						return IVM_FALSE;                                        \
-					}                                                            \
-				}                                                                \
-                                                                                 \
-				for (i = table->tabl;                                            \
-					 i != tmp;                                                   \
-					 i++) {                                                      \
-					if (IS_EMPTY_SLOT(i)) {                                      \
-						i->k = ivm_vmstate_constantize(state, key);              \
-						i->v = obj;                                              \
-						return IVM_TRUE;                                         \
-					} else if (ivm_string_compare(i->k, key)) {                  \
-						return IVM_FALSE;                                        \
-					}                                                            \
-				}                                                                \
-				/* allocate new space */                                         \
-				_ivm_slot_table_expand(table, state);                            \
-			}                                                                    \
-		} else {                                                                 \
-			for (i = table->tabl,                                                \
-				 end = table->tabl + table->size;                                \
-				 i != end; i++) {                                                \
-				if (IS_EMPTY_SLOT(i)) {                                          \
-					i->k = ivm_vmstate_constantize(state, key);                  \
-					i->v = obj;                                                  \
-					return IVM_TRUE;                                             \
-				} else if (ivm_string_compare(i->k, key)) {                      \
-					return IVM_FALSE;                                            \
-				}                                                                \
-			}                                                                    \
-                                                                                 \
-			osize = table->size;                                                 \
-			if (_ivm_slot_table_expand(table, state)) {                          \
-				goto TO_HASH_TABLE;                                              \
-			}                                                                    \
-			tmp = table->tabl + osize;                                           \
-			tmp->k = ivm_vmstate_constantize(state, key);                        \
-			tmp->v = obj;                                                        \
-		}                                                                        \
-                                                                                 \
-		return IVM_TRUE;                                                         \
+	{                                                                                  \
+		ivm_hash_val_t hash;                                                           \
+		ivm_size_t osize;                                                              \
+                                                                                       \
+		register ivm_slot_t *i, *tmp, *end;                                            \
+		register ivm_uint_t conflict;                                                  \
+                                                                                       \
+		IVM_WBSLOT(state, table, obj);                                                 \
+                                                                                       \
+        if (table->mark.sub.is_hash) {                                                 \
+		TO_HASH_TABLE:                                                                 \
+			hash = ivm_string_hash(key);                                               \
+			while (1) {                                                                \
+				conflict = 0;                                                          \
+				tmp = table->tabl + hash % table->size;                                \
+				end = table->tabl + table->size;                                       \
+                                                                                       \
+				for (i = tmp;                                                          \
+					 i != end;                                                         \
+					 i++, conflict++) {                                                \
+					if (IS_EMPTY_SLOT(i)) {                                            \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						i->k = ivm_vmstate_constantize(state, key);                    \
+						i->v = obj;                                                    \
+						return IVM_TRUE;                                               \
+					} else if (ivm_string_compare(i->k, key)) {                        \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						return IVM_FALSE;                                              \
+					}                                                                  \
+				}                                                                      \
+                                                                                       \
+				for (i = table->tabl;                                                  \
+					 i != tmp;                                                         \
+					 i++, conflict++) {                                                \
+					if (IS_EMPTY_SLOT(i)) {                                            \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						i->k = ivm_vmstate_constantize(state, key);                    \
+						i->v = obj;                                                    \
+						return IVM_TRUE;                                               \
+					} else if (ivm_string_compare(i->k, key)) {                        \
+						if (conflict >= IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT) {       \
+							continue;                                                  \
+						}                                                              \
+						return IVM_FALSE;                                              \
+					}                                                                  \
+				}                                                                      \
+				/* allocate new space */                                               \
+				_ivm_slot_table_expand(table, state);                                  \
+			}                                                                          \
+		} else {                                                                       \
+			for (i = table->tabl,                                                      \
+				 end = table->tabl + table->size;                                      \
+				 i != end; i++) {                                                      \
+				if (IS_EMPTY_SLOT(i)) {                                                \
+					i->k = ivm_vmstate_constantize(state, key);                        \
+					i->v = obj;                                                        \
+					return IVM_TRUE;                                                   \
+				} else if (ivm_string_compare(i->k, key)) {                            \
+					return IVM_FALSE;                                                  \
+				}                                                                      \
+			}                                                                          \
+                                                                                       \
+			osize = table->size;                                                       \
+			if (_ivm_slot_table_expand(table, state)) {                                \
+				goto TO_HASH_TABLE;                                                    \
+			}                                                                          \
+			tmp = table->tabl + osize;                                                 \
+			tmp->k = ivm_vmstate_constantize(state, key);                              \
+			tmp->v = obj;                                                              \
+		}                                                                              \
+                                                                                       \
+		return IVM_TRUE;                                                               \
 	} int dummy()
 
 IVM_INLINE

@@ -6,7 +6,6 @@
 /* triggers of pools */
 #define IVM_USE_FUNCTION_POOL 1
 #define IVM_USE_CORO_POOL 1
-
 #define IVM_USE_INLINE_CACHE 1
 
 #define IVM_DEFAULT_CONTEXT_POOL_SIZE 32
@@ -53,7 +52,8 @@
 
 #define IVM_DEFAULT_SLOT_TABLE_SIZE 4
 /* when the number of elements is greater than this value, the slot table will be turned into hash table */
-#define IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD 8
+#define IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD 6
+#define IVM_DEFAULT_SLOT_TABLE_MAX_CONF_COUNT 2
 
 /* GC config */
 #define IVM_DEFAULT_MAX_STD_LIMIT (2 << 30)
