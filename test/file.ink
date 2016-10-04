@@ -28,6 +28,12 @@ print(fp.cur())
 fp.seek(10)
 print(fp.cur())
 
+nfp = fp.clone()
+
+// file cannot be cloned
+try: nfp.seek(10)
+catch: print("yes")
+
 fp.close()
 
 ret
@@ -46,3 +52,5 @@ ret
 // -> "num: 0"
 // -> "num: 21"
 // -> "num: 10"
+// 
+// -> "str: yes"

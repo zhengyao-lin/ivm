@@ -51,6 +51,14 @@ ivm_file_object_destructor(ivm_object_t *obj,
 	return;
 }
 
+void
+ivm_file_object_cloner(ivm_object_t *obj,
+					   ivm_vmstate_t *state)
+{
+	IVM_AS(obj, ivm_file_object_t)->fp = IVM_NULL;
+	return;
+}
+
 IVM_NATIVE_FUNC(_io_file)
 {
 	const ivm_string_t *file, *mode = IVM_NULL;
@@ -205,6 +213,7 @@ _io_file_type = IVM_TPTYPE_BUILD(
 	IO_FILE_TYPE_CONS,
 
 	.des = ivm_file_object_destructor,
+	.clone = ivm_file_object_cloner,
 	.const_bool = IVM_TRUE
 );
 

@@ -84,7 +84,10 @@ TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
-}, .des = ivm_list_object_destructor,
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _buffer_size));
+
+}, .des = ivm_buffer_object_destructor,
+   .clone = ivm_buffer_object_cloner,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),

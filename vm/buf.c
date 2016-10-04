@@ -51,3 +51,21 @@ ivm_buffer_object_destructor(ivm_object_t *obj,
 	STD_FREE(IVM_AS(obj, ivm_buffer_object_t)->buf);
 	return;
 }
+
+void
+ivm_buffer_object_cloner(ivm_object_t *obj,
+						 ivm_vmstate_t *state)
+{
+	ivm_buffer_object_t *buf = IVM_AS(obj, ivm_buffer_object_t);
+	ivm_byte_t *orig = buf->buf;
+	ivm_size_t size = sizeof(*buf->buf) * buf->size;
+
+	buf->buf = ivm_vmstate_allocWild(state, size);
+	if (!buf->buf) {
+		buf->alloc = buf->size = 0;
+	} else {
+		STD_MEMCPY(buf->buf, orig, size);
+	}
+
+	return;
+}

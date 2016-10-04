@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_buffer_cons);
+IVM_NATIVE_FUNC(_buffer_size);
 
 IVM_COM_END
 

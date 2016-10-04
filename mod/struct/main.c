@@ -83,6 +83,24 @@ ivm_struct_object_destructor(ivm_object_t *obj,
 	return;
 }
 
+void
+ivm_struct_object_cloner(ivm_object_t *obj,
+						 ivm_vmstate_t *state)
+{
+	ivm_struct_object_t *strc = IVM_AS(obj, ivm_struct_object_t);
+	ivm_struct_field_t *orig = strc->fields;
+	ivm_size_t size = sizeof(*strc->fields) * strc->fcount;
+
+	strc->fields = ivm_vmstate_allocWild(state, size);
+	if (!strc->fields) {
+		strc->rsize = strc->fcount = 0;
+	} else {
+		STD_MEMCPY(strc->fields, orig, size);
+	}
+
+	return;
+}
+
 IVM_NATIVE_FUNC(_struct_struct)
 {
 	ivm_object_t *def, *type;
@@ -301,6 +319,7 @@ _struct_type = IVM_TPTYPE_BUILD(
 	STRUCT_TYPE_CONS,
 
 	.des = ivm_struct_object_destructor,
+	.clone = ivm_struct_object_cloner,
 	.const_bool = IVM_TRUE
 );
 

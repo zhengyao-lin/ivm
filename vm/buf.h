@@ -44,6 +44,10 @@ void
 ivm_buffer_object_destructor(ivm_object_t *obj,
 							 struct ivm_vmstate_t_tag *state);
 
+void
+ivm_buffer_object_cloner(ivm_object_t *obj,
+						 struct ivm_vmstate_t_tag *state);
+
 IVM_COM_END
 
 #endif
