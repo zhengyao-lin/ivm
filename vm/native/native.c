@@ -19,8 +19,9 @@
 		2. 's': check string type and get the value                          -- const ivm_string_t **
 		3. 'l': check list type and convert to list object                   -- ivm_list_object_t **
 		4. 'f': check function type and convert to function object           -- ivm_function_object_t **
-		5. '.': no type check but accept the object                          -- ivm_object_t **
-		6. '*' prefix: following argument are all optional,
+		5. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
+		6. '.': no type check but accept the object                          -- ivm_object_t **
+		7. '*' prefix: following argument are all optional,
 			   but if they exist, the type will be checked[1][2]             -- \
 
 		NOTE:
@@ -65,6 +66,7 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 			SUB1('s', IVM_STRING_OBJECT_T, const ivm_string_t *, ivm_string_object_getValue(tmp))
 			SUB1('l', IVM_LIST_OBJECT_T, ivm_list_object_t *, IVM_AS(tmp, ivm_list_object_t))
 			SUB1('f', IVM_FUNCTION_OBJECT_T, ivm_function_object_t *, IVM_AS(tmp, ivm_function_object_t))
+			SUB1('b', IVM_BUFFER_OBJECT_T, ivm_buffer_object_t *, IVM_AS(tmp, ivm_buffer_object_t))
 
 			case '.':
 				if (ivm_function_arg_has(arg, i)) {

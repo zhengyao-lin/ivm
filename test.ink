@@ -55,8 +55,6 @@ __test = fn: {
 	sort.printl(sort.bubble([5, 4, 3, 2, 1]))
 	mod.test()
 
-	// `import`("test/testmod/test")
-
 	b = "no"
 
 	(fn: {
@@ -334,62 +332,6 @@ __test = fn: {
 
 	print("hey")
 	print(list.size())
-
-	//ret
-	// list = []
-
-	if 0: {
-		i = 1
-
-		/*	while i < 1000000 && i > 0:
-				if i == 2 && 0: i = 
-				elif 1:
-					if 0 && 1: 0
-					else: i = i + 1
-
-			ret
-		*/
-
-		print(1 || 0) // 1
-
-		print(0 || 1) // 1
-
-		print(0 && 1) // 0
-
-		print(1 && 0) // 0
-
-		print(0 && 0) // 0
-
-		print(1 && 1) // 1
-
-		print(1 && 1 || 1 && 0) // 1
-
-		print(1 && 1 && 1 && 0) // 0
-
-		print(1 && (1 || 0) && 1) // 1
-
-		print(1 && (1 && 0) && 1) // 0
-
-		print((1 && 0 || 0) && 1 || 1) // 1
-
-		print((1 && ((1 && 1) && 0 || 0)) && 1 && 1) // 0
-
-		if 1 && 1: print("yes!")
-		if 1 && 0: print("no!")
-		if 0 && 0: print("no!")
-		if 1 && 0 || (1 && (0 || 1)): print("yes!")
-		if 1 && (0 || (1 && (0 || 1))): print("yes!")
-
-		// ret
-	}
-
-	/*
-	print({
-		hey: "yes!!"
-	}["hey"])
-
-	ret
-	*/
 
 	fib = fn n: {
 		if n < 2: ret 1

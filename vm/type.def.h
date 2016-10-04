@@ -77,6 +77,16 @@ TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t),
    .trav = ivm_list_object_traverser,
    .const_bool = IVM_TRUE)
 
+TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
+	IVM_GET_NATIVE_FUNC(_buffer_cons), {
+
+	ivm_object_t *tmp = ivm_buffer_object_new(_STATE, 0);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+}, .des = ivm_list_object_destructor,
+   .const_bool = IVM_TRUE)
+
 TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
 	IVM_GET_NATIVE_FUNC(_function_cons), {
 	

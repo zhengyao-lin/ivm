@@ -201,7 +201,7 @@ IVM_NATIVE_FUNC(_io_file_cur)
 IVM_PRIVATE
 ivm_type_t
 _io_file_type = IVM_TPTYPE_BUILD(
-	file, sizeof(ivm_file_object_t),
+	IO_FILE_TYPE_NAME, sizeof(ivm_file_object_t),
 	IO_FILE_TYPE_CONS,
 
 	.des = ivm_file_object_destructor,

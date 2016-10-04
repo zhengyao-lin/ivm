@@ -192,6 +192,14 @@ ivm_object_merge(ivm_object_t *obj,
 	return;
 }
 
+IVM_INLINE
+ivm_function_object_t *
+ivm_object_callable(ivm_object_t *obj,
+					ivm_vmstate_t *state)
+{
+
+}
+
 IVM_COM_END
 
 #endif

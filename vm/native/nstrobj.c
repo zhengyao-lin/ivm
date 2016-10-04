@@ -50,7 +50,7 @@ IVM_NATIVE_FUNC(_string_cons)
 {
 	ivm_object_t *arg;
 
-	CHECK_ARG_COUNT("string", 1);
+	CHECK_ARG_COUNT(1);
 
 	arg = NAT_ARG_AT(1);
 

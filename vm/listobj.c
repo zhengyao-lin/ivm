@@ -31,6 +31,29 @@ ivm_list_object_new(ivm_vmstate_t *state,
 }
 
 ivm_object_t *
+ivm_list_object_new_b(ivm_vmstate_t *state,
+					  ivm_size_t buf)
+{
+	ivm_list_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_LIST_OBJECT_T));
+
+	ret->alloc = buf < IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE ? IVM_DEFAULT_LIST_OBJECT_BUFFER_SIZE : buf;
+	ret->size = 0;
+
+	ret->lst = ivm_vmstate_allocWild(
+		state,
+		sizeof(*ret->lst) * ret->alloc
+	);
+
+	// STD_INIT(ret->lst, sizeof(*ret->lst) * ret->alloc);
+
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+
+	return IVM_AS_OBJ(ret);
+}
+
+ivm_object_t *
 ivm_list_object_new_c(ivm_vmstate_t *state,
 					  ivm_object_t **init,
 					  ivm_size_t count)

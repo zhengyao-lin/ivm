@@ -103,6 +103,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_UNABLE_TO_CONVERT_STR(type)				"unable to convert object of type <%s> to string", (type)
 #define IVM_ERROR_MSG_MAX_PATH_LEN_REACHED						"max path length reached"
 #define IVM_ERROR_MSG_FAILED_GET_ABS_PATH(path)					"failed to obtain the absolute path for '%s'", (path)
+#define IVM_ERROR_MSG_FAILED_ALLOC_BUFFER(size)					"failed to allocate buffer with size %ld", (size)
 
 IVM_COM_END
 

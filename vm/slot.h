@@ -119,8 +119,6 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 					 ivm_slot_table_t *tb,
 					 ivm_bool_t overw);
 
-typedef ivm_slot_t *ivm_slot_table_iterator_t;
-
 ivm_slot_table_t *
 ivm_slot_table_copy_state(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state);
@@ -169,6 +167,8 @@ _ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
 							struct ivm_vmstate_t_tag *state,
 							ivm_size_t size);
 
+typedef ivm_slot_t *ivm_slot_table_iterator_t;
+
 #define IVM_SLOT_TABLE_ITER_SET_KEY(iter, key) ((iter)->k = (key))
 #define IVM_SLOT_TABLE_ITER_SET_VAL(iter, val) ((iter)->v = (val))
 #define IVM_SLOT_TABLE_ITER_SET(iter, key, val) ((iter)->k = (key), (iter)->v = (val))
@@ -179,7 +179,7 @@ _ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
 	for ((iter) = (table)->tabl, \
 		 __sl_end_##iter##__ = (iter) + (table)->size; \
 		 (iter) < __sl_end_##iter##__; \
-		 (iter)++)
+		 (iter)++) if ((iter)->k)
 
 /* be sure table is not null */
 IVM_INLINE

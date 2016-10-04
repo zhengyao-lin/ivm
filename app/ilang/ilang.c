@@ -25,7 +25,7 @@ IVM_NATIVE_FUNC(print)
 	ivm_object_t *obj;
 	ivm_char_t buf[25];
 
-	CHECK_ARG_COUNT("print", 1);
+	CHECK_ARG_COUNT(1);
 
 	obj = NAT_ARG_AT(1);
 
@@ -49,7 +49,7 @@ IVM_NATIVE_FUNC(call)
 {
 	ivm_function_object_t *func;
 
-	CHECK_ARG_COUNT("call", 1);
+	CHECK_ARG_COUNT(1);
 
 	func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
 

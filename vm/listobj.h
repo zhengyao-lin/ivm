@@ -28,6 +28,10 @@ ivm_list_object_new(struct ivm_vmstate_t_tag *state,
 					ivm_size_t size);
 
 ivm_object_t *
+ivm_list_object_new_b(struct ivm_vmstate_t_tag *state,
+					  ivm_size_t buf);
+
+ivm_object_t *
 ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 					  ivm_object_t **init,
 					  ivm_size_t size);

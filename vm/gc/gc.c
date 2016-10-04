@@ -145,12 +145,10 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 	// IVM_TRACE("pa %p -> %p\n", table, ret);
 
 	IVM_SLOT_TABLE_EACHPTR(ret, siter) {
-		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
-			// IVM_TRACE("  copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
-			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-										ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
-																 arg));
-		}
+		// IVM_TRACE("  copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+									ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
+															 arg));
 	}
 
 	oops = ivm_slot_table_getOops(ret);
@@ -184,14 +182,12 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 	// ivm_slot_table_updateUID(table, arg->state);
 
 	IVM_SLOT_TABLE_EACHPTR(table, siter) {
-		if (IVM_SLOT_TABLE_ITER_GET_KEY(siter)) {
-			// IVM_TRACE("  copied slot: %s: %p -> ",
-			// 	  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
-			// 	  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
-			IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-										(tmp = ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg)));
-			// IVM_TRACE("%p\n", tmp);
-		}
+		// IVM_TRACE("  copied slot: %s: %p -> ",
+		// 	  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
+		// 	  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
+									(tmp = ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg)));
+		// IVM_TRACE("%p\n", tmp);
 	}
 
 	oops = ivm_slot_table_getOops(table);
@@ -449,7 +445,6 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 
 	if (!arg->gen) {
 		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
-			// IVM_TRACE("catch! %p\n", IVM_WBCTX_LIST_ITER_GET(citer));
 			ivm_collector_travContext(IVM_WBCTX_LIST_ITER_GET(citer), arg);
 		}
 	}
@@ -472,7 +467,6 @@ ivm_collector_collect(ivm_collector_t *collector,
 					  ivm_vmstate_t *state,
 					  ivm_heap_t *heap)
 {
-
 #if IVM_USE_PERF_PROFILE
 	clock_t time_st = clock();
 #endif

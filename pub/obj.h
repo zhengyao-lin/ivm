@@ -8,5 +8,6 @@
 #include "../vm/func.h"
 #include "../vm/listobj.h"
 #include "../vm/range.h"
+#include "../vm/buf.h"
 
 #endif

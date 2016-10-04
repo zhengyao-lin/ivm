@@ -49,17 +49,16 @@
 		RTM_ASSERT(!__match_ret__, IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(__match_ret__));   \
 	}
 
-#define CHECK_ARG_COUNT(name, count) \
+#define CHECK_ARG_COUNT(count) \
 	RTM_ASSERT(NAT_ARGC() >= (count),                                       \
-			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((name), (count), NAT_ARGC()))
+			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((count), NAT_ARGC()))
 
 #define WRONG_ARG() \
 	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define IVM_NATIVE_ERROR_MSG_WRONG_BASE(tn)								"wrong base type <%s>", (tn)
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG									("wrong argument")
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(name, expect, given) \
-	"wrong argument count for %s(expect %d, %d given)", (name), (expect), (given)
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(expect, given)				"wrong argument count(expect %d, %d given)", (ivm_int_t)(expect), (ivm_int_t)(given)
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(i)							"wrong %dth argument", (i)
 
 #endif

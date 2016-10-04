@@ -8,3 +8,4 @@ CONST_GEN(C_LINE, "line")
 
 CONST_GEN(C_NEXT, "next")
 CONST_GEN(C_ITER, "iter")
+CONST_GEN(C_EXPAND, "expand")

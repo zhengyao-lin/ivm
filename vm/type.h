@@ -104,7 +104,7 @@ ivm_type_dump(ivm_type_t *type);
 #define IVM_TPTYPE_BUILD(n, s, c, ...) \
 	{                                       \
 		.tag = -1,                          \
-		.name = #n,                         \
+		.name = (n),                        \
 		.size = (s),                        \
 		.cons = (c),                        \
 		.is_builtin = IVM_FALSE,            \
