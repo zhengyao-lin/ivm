@@ -1,12 +1,12 @@
 import ulist
-import struct
+loc.merge(import struct, true)
 
-s = struct.struct({
-	v1: struct.int,
-	v2: struct.double,
-	v3: struct.float,
-	v4: struct.long
-})
+s = struct {
+	v1: int,
+	v2: double,
+	v3: float,
+	v4: long
+}
 
 buf = s.pack(2147483648, 1.2, 2.0, 100000000000000)
 s.unpack(buf).print()

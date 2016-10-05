@@ -1127,6 +1127,7 @@ RULE(block_param_opt)
 /*
 	block
 		: '{' nllo block_param_opt nllo expr_list nllo '}'
+		| '{' nllo slot_list_opt nllo '}'
 		| 'to' nllo block_param_opt nllo prefix_expr
  */
 RULE(block)
@@ -1150,6 +1151,19 @@ RULE(block)
 					TOKEN_POS(tmp_token),
 					RULE_RET_AT(3).u.expr_list
 				)
+			);
+		})
+
+		SUB_RULE(T(T_LBRAC) R(nllo)
+				 R(slot_list_opt)
+				 R(nllo) T(T_RBRAC)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.expr = ilang_gen_table_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.slot_list
 			);
 		})
 

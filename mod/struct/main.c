@@ -15,7 +15,7 @@
 #define STRUCT_TYPE_NAME "struct.struct"
 #define STRUCT_TYPE_CONS IVM_GET_NATIVE_FUNC(_struct_struct)
 
-#define STRUCT_ERROR_MSG_NO_DEFINED_FIELD							"no defined field is found"
+#define STRUCT_ERROR_MSG_NO_DEFINED_FIELD							"no field is found"
 #define STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(name)				"unknown type for field '%s'", (name)
 #define STRUCT_ERROR_MSG_NO_DEFAULT_SIZE							"no default size"
 #define STRUCT_ERROR_MSG_UNABLE_ALLOC_PACK_BUF						"unable to allocate buffer when packing"
