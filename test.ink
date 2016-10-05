@@ -7,6 +7,7 @@ printe = fn e: {
 }
 
 __test = fn: {
+	import test.ulist
 	loc.merge(import test.exc)
 
 	try: (fn: {
@@ -16,7 +17,8 @@ __test = fn: {
 
 	import test.sort
 	
-	test.sort.printl(test.sort.bubble([5, 4, 3, 2, 1]))
+	test.sort.bubble([5, 4, 3, 2, 1]).print()
+	test.sort.qsort([5, 4, 3, 2, 1]).print()
 
 	/*
 	import test.testmod.sub
@@ -52,7 +54,7 @@ __test = fn: {
 	try: `import`("wrongmod")
 	catch err: printe(err)
 
-	sort.printl(sort.bubble([5, 4, 3, 2, 1]))
+	sort.bubble([5, 4, 3, 2, 1]).print()
 	mod.test()
 
 	b = "no"
