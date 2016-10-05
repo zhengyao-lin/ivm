@@ -927,6 +927,9 @@ RULE(primary_expr)
 	MATCHED({})
 }
 
+#define NONE_EXPR() \
+	ilang_gen_none_expr_new(_ENV->unit, ilang_gen_pos_build(-1, -1), 0)
+
 /*
 	arg_list_sub
 		: nllo ',' nllo prefix_expr arg_list_sub
@@ -944,6 +947,12 @@ RULE(arg_list_sub)
 			tmp_ret = RULE_RET_AT(2);
 			tmp_list = _RETVAL.expr_list = RULE_RET_AT(3).u.expr_list;
 			ilang_gen_expr_list_push(tmp_list, tmp_ret.u.expr);
+		})
+
+		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(arg_list_sub)
+		{
+			tmp_list = _RETVAL.expr_list = RULE_RET_AT(2).u.expr_list;
+			ilang_gen_expr_list_push(tmp_list, NONE_EXPR());
 		})
 
 		SUB_RULE({
@@ -971,6 +980,15 @@ RULE(arg_list_opt)
 			tmp_ret = RULE_RET_AT(0);
 			tmp_list = _RETVAL.expr_list = RULE_RET_AT(1).u.expr_list;
 			ilang_gen_expr_list_push(tmp_list, tmp_ret.u.expr);
+		})
+
+		SUB_RULE(R(arg_list_sub)
+		{
+			tmp_list = _RETVAL.expr_list = RULE_RET_AT(0).u.expr_list;
+			if (ilang_gen_expr_list_size(tmp_list)) {
+				// not an empty list
+				ilang_gen_expr_list_push(tmp_list, NONE_EXPR());
+			}
 		})
 
 		SUB_RULE({
@@ -1934,8 +1952,9 @@ RULE(prefix_expr);
 /*
 	param
 		: id nllo '...'
-		| id
 		| '...'
+		| id '=' nllo logic_or_expr
+		| id
  */
 RULE(param)
 {
@@ -1945,18 +1964,24 @@ RULE(param)
 		SUB_RULE(T(T_ID) R(nllo) T(T_ELLIP)
 		{
 			tmp_token = TOKEN_AT(0);
-			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL(tmp_token));
+			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL(tmp_token), IVM_NULL);
+		})
+
+		SUB_RULE(T(T_ELLIP)
+		{
+			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL_EMPTY(), IVM_NULL);
+		})
+
+		SUB_RULE(T(T_ID) T(T_ASSIGN) R(nllo) R(logic_or_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.param = ilang_gen_param_build(IVM_FALSE, TOKEN_VAL(tmp_token), RULE_RET_AT(1).u.expr);
 		})
 
 		SUB_RULE(T(T_ID)
 		{
 			tmp_token = TOKEN_AT(0);
-			_RETVAL.param = ilang_gen_param_build(IVM_FALSE, TOKEN_VAL(tmp_token));
-		})
-
-		SUB_RULE(T(T_ELLIP)
-		{
-			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL_EMPTY());
+			_RETVAL.param = ilang_gen_param_build(IVM_FALSE, TOKEN_VAL(tmp_token), IVM_NULL);
 		})
 	);
 
@@ -2008,6 +2033,7 @@ RULE(param_list_opt)
 			tmp_value = RULE_RET_AT(0).u.param;
 			ilang_gen_param_list_push(tmp_list, &tmp_value);
 		})
+
 		SUB_RULE({
 			_RETVAL.param_list = ilang_gen_param_list_new(_ENV->unit);
 		})

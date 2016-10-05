@@ -80,10 +80,15 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(exec, GET_LINE(expr), NEW_VARG, param_count - cur_param);
 			}
 
-			if (tmp_str) {
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, tmp_str);
+			if (tmp_param1->def) {
+				tmp_param1->def->eval(tmp_param1->def, FLAG(0), env);
+				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_DEF, tmp_str);
 			} else {
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, "$varg");
+				if (tmp_str) {
+					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, tmp_str);
+				} else {
+					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, "$varg");
+				}
 			}
 		}
 	}

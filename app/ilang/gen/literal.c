@@ -1,6 +1,22 @@
 #include "priv.h"
 
 ilang_gen_value_t
+ilang_gen_none_expr_eval(ilang_gen_expr_t *expr,
+						 ilang_gen_flag_t flag,
+						 ilang_gen_env_t *env)
+{
+	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "none expression", flag);
+
+	if (flag.is_left_val) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	} else if (!flag.is_top_level) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
 ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_flag_t flag,
 						ilang_gen_env_t *env)

@@ -326,9 +326,13 @@
 	#define HAS_STACK (tmp_sp != tmp_bp)
 #endif
 
+#define INSUF_STACK(req) \
+	IVM_FATAL(IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
+
 #define CHECK_STACK(req) \
-	IVM_ASSERT(AVAIL_STACK >= (req), \
-			   IVM_ERROR_MSG_INSUFFICIENT_STACK((req), AVAIL_STACK))
+	if (AVAIL_STACK < (req)) {  \
+		INSUF_STACK(req);       \
+	}
 
 #define SAVE_RUNTIME(ip) \
 	(IVM_RUNTIME_SET(_RUNTIME, IP, (ip)), SAVE_STACK())

@@ -246,6 +246,13 @@ COMMON_EXPR(expr_block, "expression block", {
 	ret->list = list;
 }, ilang_gen_expr_list_t *list);
 
+/* none expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+} ilang_gen_none_expr_t;
+
+COMMON_EXPR(none_expr, "none expression", { }, int dummy);
+
 /* int expr */
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
@@ -509,11 +516,12 @@ COMMON_EXPR(logic_expr, "logic expression", {
 
 typedef struct {
 	ilang_gen_token_value_t name;
+	ilang_gen_expr_t *def;
 	ivm_bool_t is_varg;
 } ilang_gen_param_t;
 
-#define ilang_gen_param_build(varg, n) \
-	((ilang_gen_param_t) { .name = (n), .is_varg = (varg) })
+#define ilang_gen_param_build(varg, n, d) \
+	((ilang_gen_param_t) { .name = (n), .def = (d) , .is_varg = (varg) })
 
 typedef ivm_list_t ilang_gen_param_list_t;
 typedef IVM_LIST_ITER_TYPE(ilang_gen_param_t) ilang_gen_param_list_iterator_t;

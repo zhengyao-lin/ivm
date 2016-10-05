@@ -480,6 +480,28 @@ OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	NEXT_INSTR();
 })
 
+// set default
+OPCODE_GEN(SET_DEF, "set_def", S, -2, {
+	switch (AVAIL_STACK) {
+		case 1:
+			ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), STACK_POP(), _INSTR);
+			break;
+		case 0: INSUF_STACK(1); break;
+		default:
+			_TMP_OBJ1 = STACK_POP(); // default
+			_TMP_OBJ2 = STACK_POP();
+
+			if (IVM_IS_NONE(_STATE, _TMP_OBJ2)) {
+				ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), _TMP_OBJ1, _INSTR);
+			} else {
+				ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), _TMP_OBJ2, _INSTR);
+			}
+			break;
+	}
+
+	NEXT_INSTR();
+})
+
 /*
 	top
 	--------------
