@@ -65,7 +65,7 @@ void *
 ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {
 	// IVM_ASSERT(size, IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size));
-	void *ret = heap->bcurp;
+	register void *ret = heap->bcurp;
 
 	if ((heap->bcurp += size) <= heap->bendp) {
 		return ret;
@@ -79,7 +79,7 @@ IVM_INLINE
 void *
 ivm_heap_alloc(ivm_heap_t *heap, ivm_size_t size)
 {
-	void *ret = heap->bcurp;
+	register void *ret = heap->bcurp;
 
 	if ((heap->bcurp += size) <= heap->bendp) {
 		return ret;
@@ -92,9 +92,9 @@ IVM_INLINE
 ivm_bool_t
 ivm_heap_isIn(ivm_heap_t *heap, void *ptr)
 {
-	ivm_size_t bsize = heap->bsize;
-	ivm_byte_t **i, **end;
-	ivm_ptrdiff_t tmp;
+	register ivm_size_t bsize = heap->bsize;
+	register ivm_byte_t **i, **end;
+	register ivm_ptrdiff_t tmp;
 
 	for (i = heap->blocks,
 		 end = i + heap->bcount;
@@ -110,7 +110,7 @@ IVM_INLINE
 void *
 ivm_heap_addCopy(ivm_heap_t *heap, void *ptr, ivm_size_t size)
 {
-	void *new_ptr = ivm_heap_alloc(heap, size);
+	register void *new_ptr = ivm_heap_alloc(heap, size);
 
 	STD_MEMCPY(new_ptr, ptr, size);
 
@@ -124,7 +124,7 @@ ivm_heap_addCopy_c(ivm_heap_t *heap,
 				   ivm_size_t size,
 				   ivm_bool_t *add_block)
 {
-	void *new_ptr = ivm_heap_alloc_c(heap, size, add_block);
+	register void *new_ptr = ivm_heap_alloc_c(heap, size, add_block);
 
 	STD_MEMCPY(new_ptr, ptr, size);
 

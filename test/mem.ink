@@ -18,3 +18,8 @@ try: {
 }
 
 ret
+
+// -> "str: wrong1"
+// -> "str: wrong2"
+// -> "str: wrong3"
+// -> "str: \\[ 1, 2, 3 \\]"

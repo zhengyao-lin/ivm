@@ -990,7 +990,7 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	SAVE_STACK();
-	SET_BP(ivm_runtime_pushBlock(_RUNTIME, AVAIL_STACK));
+	SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, AVAIL_STACK));
 	NEXT_INSTR();
 })
 

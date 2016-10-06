@@ -23,6 +23,7 @@ typedef struct {
 	ivm_object_t **lst;
 } ivm_list_object_t;
 
+/*
 ivm_object_t *
 ivm_list_object_new(struct ivm_vmstate_t_tag *state,
 					ivm_size_t size);
@@ -36,9 +37,7 @@ ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 					  ivm_object_t **init,
 					  ivm_size_t size);
 
-ivm_object_t *
-ivm_list_object_iter_new(struct ivm_vmstate_t_tag *state,
-						 ivm_list_object_t *list);
+*/
 
 #define ivm_list_object_core(list) ((list)->lst)
 
@@ -57,11 +56,13 @@ ivm_list_object_realIndex(ivm_list_object_t *list,
 	return ivm_list_realIndex(list->size, i);
 }
 
+/*
 // return 0 if error
 ivm_size_t
 ivm_list_object_push(ivm_list_object_t *list,
 					 struct ivm_vmstate_t_tag *state,
 					 ivm_object_t *obj);
+*/
 
 IVM_INLINE
 ivm_object_t *
@@ -94,11 +95,13 @@ _ivm_list_object_get_c(ivm_list_object_t *list,
 }
 
 /* return NULL if error */
+/*
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,
 					struct ivm_vmstate_t_tag *state,
 					ivm_long_t i,
 					ivm_object_t *obj);
+*/
 
 /* return NULL if error */
 ivm_object_t *
@@ -106,8 +109,10 @@ ivm_list_object_link(ivm_list_object_t *list1,
 					 ivm_list_object_t *list2,
 					 struct ivm_vmstate_t_tag *state);
 
+/*
 void
 ivm_list_object_reverse(ivm_list_object_t *list);
+*/
 
 void
 ivm_list_object_step(ivm_list_object_t *list,
@@ -120,10 +125,12 @@ _ivm_list_object_unpackTo(ivm_list_object_t *list,
 						  ivm_size_t req);
 
 /* return false if error */
+/*
 ivm_bool_t
 ivm_list_object_multiply(ivm_list_object_t *list,
 						 struct ivm_vmstate_t_tag *state,
 						 ivm_size_t times);
+*/
 
 void
 ivm_list_object_destructor(ivm_object_t *obj,
@@ -144,9 +151,15 @@ typedef struct {
 	ivm_size_t cur;
 } ivm_list_object_iter_t;
 
+/*
+ivm_object_t *
+ivm_list_object_iter_new(struct ivm_vmstate_t_tag *state,
+						 ivm_list_object_t *list);
+
 ivm_object_t *
 ivm_list_object_iter_next(ivm_list_object_iter_t *iter,
 						  struct ivm_vmstate_t_tag *state);
+*/
 
 void
 ivm_list_object_iter_traverser(ivm_object_t *obj,

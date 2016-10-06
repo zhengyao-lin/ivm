@@ -45,6 +45,26 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 	return runtime->ip = ivm_exec_instrPtrStart(exec);
 }
 
+IVM_INLINE
+ivm_object_t ** /* new_bp */
+ivm_runtime_pushBlock(ivm_runtime_t *runtime,
+					  ivm_vmstate_t *state,
+					  ivm_size_t sp)
+{
+	return ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), state, sp);
+}
+
+IVM_INLINE
+void
+ivm_runtime_dump(ivm_runtime_t *runtime,
+				 ivm_vmstate_t *state)
+{
+	ivm_context_free(runtime->ctx, state);
+	ivm_vmstate_dumpBlock(state, runtime->blocks, runtime->block_alloc);
+	// STD_FREE(runtime->blocks);
+	return;
+}
+
 IVM_COM_END
 
 #endif

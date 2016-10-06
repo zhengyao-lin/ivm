@@ -71,16 +71,6 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 */
 
 IVM_INLINE
-void
-ivm_runtime_dump(ivm_runtime_t *runtime,
-				 struct ivm_vmstate_t_tag *state)
-{
-	ivm_context_free(runtime->ctx, state);
-	STD_FREE(runtime->blocks);
-	return;
-}
-
-IVM_INLINE
 struct ivm_object_t_tag **
 ivm_runtime_getPrevBlockTop(ivm_runtime_t *runtime,
 							struct ivm_object_t_tag **cur_sp,
@@ -95,14 +85,6 @@ ivm_runtime_getPrevBlockTop(ivm_runtime_t *runtime,
 
 #define ivm_runtime_hasNBlock(runtime, n) \
 	ivm_frame_hasNBlock(runtime, n)
-
-IVM_INLINE
-struct ivm_object_t_tag ** /* new_bp */
-ivm_runtime_pushBlock(ivm_runtime_t *runtime,
-					  ivm_size_t sp)
-{
-	return ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), sp);
-}
 
 IVM_INLINE
 void

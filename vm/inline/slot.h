@@ -29,7 +29,7 @@ _ivm_slot_table_expand(ivm_slot_table_t *table,
 			while (1) {                                                                \
 			AGAIN:                                                                     \
 				conflict = 0;                                                          \
-				tmp = table->tabl + hash % table->size;                                \
+				tmp = table->tabl + (hash & (table->size - 1));                        \
 				end = table->tabl + table->size;                                       \
                                                                                        \
 				for (i = tmp;                                                          \
@@ -159,7 +159,7 @@ SET_SLOT(
 		check;                                                                          \
                                                                                         \
 		if (table->mark.sub.is_hash) {                                                  \
-			hash = ivm_string_hash(key) % table->size;                                  \
+			hash = ivm_string_hash(key) & (table->size - 1);                            \
                                                                                         \
 			tmp = table->tabl + hash;                                                   \
 			end = table->tabl + table->size;                                            \
@@ -283,7 +283,7 @@ GET_SLOT(
 			while (1) {                                                                \
 			AGAIN:                                                                     \
 				conflict = 0;                                                          \
-				tmp = table->tabl + hash % table->size;                                \
+				tmp = table->tabl + (hash & (table->size - 1));                        \
 				end = table->tabl + table->size;                                       \
                                                                                        \
 				for (i = tmp;                                                          \
@@ -377,7 +377,7 @@ _ivm_slot_table_rehash(ivm_slot_table_t *table,
 	register ivm_slot_t *i, *tmp, *end;
 
 	IVM_ASSERT(table->mark.sub.is_hash, "impossible");
-	tmp = table->tabl + ivm_string_hash(key) % table->size;
+	tmp = table->tabl + (ivm_string_hash(key) & (table->size - 1));
 	end = table->tabl + table->size;
 
 	for (i = tmp; i != end; i++) {

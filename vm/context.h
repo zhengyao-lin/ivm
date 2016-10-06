@@ -106,6 +106,8 @@ typedef ivm_ptpool_t ivm_context_pool_t;
 
 #define ivm_context_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_context_t)))
 #define ivm_context_pool_free ivm_ptpool_free
+#define ivm_context_pool_init(pool, count) (ivm_ptpool_init((pool), (count), sizeof(ivm_context_t)))
+#define ivm_context_pool_destruct ivm_ptpool_destruct
 #define ivm_context_pool_alloc(pool) ((ivm_context_t *)ivm_ptpool_alloc(pool))
 #define ivm_context_pool_dump ivm_ptpool_dump
 #define ivm_context_pool_dumpAll ivm_ptpool_dumpAll

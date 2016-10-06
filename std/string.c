@@ -69,12 +69,6 @@ ivm_strdup_heap(const ivm_char_t *src,
 	return ret;
 }
 
-ivm_hash_val_t
-ivm_string_hash(const ivm_string_t *str)
-{
-	return ivm_hash_fromString_c(str->cont, ivm_string_length(str));
-}
-
 const ivm_string_t *
 ivm_string_copyNonConst(const ivm_string_t *str,
 						ivm_heap_t *heap)
@@ -120,6 +114,7 @@ _ivm_string_pool_init_c(ivm_string_pool_t *pool)
 	
 	ivm_string_list_init(&pool->lst);
 	pool->size = IVM_DEFAULT_STRING_POOL_BUFFER_SIZE;
+	pool->mask = pool->size - 1;
 	pool->table
 	= STD_ALLOC_INIT(sizeof(*pool->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
 
@@ -178,6 +173,7 @@ ivm_string_pool_new_t(const ivm_string_t **lst,
 	
 	ivm_string_list_init_t(&ret->lst, lst, count);
 	ret->size = count << 2;
+	ret->mask = ret->size - 1;
 	ret->table
 	= STD_ALLOC_INIT(sizeof(*ret->table) * ret->size);
 
@@ -217,6 +213,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 	otable = pool->table;
 
 	pool->size <<= 1;
+	pool->mask = pool->size - 1;
 	pool->table = STD_ALLOC_INIT(sizeof(*pool->table) * pool->size);
 
 	id = 0;
@@ -275,7 +272,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		AGAIN:                                                                  \
 			conflict = 0;                                                       \
 			end = pool->table + pool->size;                                     \
-			tmp = pool->table + hash % pool->size;                              \
+			tmp = pool->table + (hash & pool->mask);                            \
 	                                                                            \
 			for (i = tmp; i != end; i++) {                                      \
 				each;                                                           \

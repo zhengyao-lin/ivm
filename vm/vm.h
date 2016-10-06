@@ -22,21 +22,24 @@ IVM_COM_HEADER
 typedef struct ivm_vmstate_t_tag {
 	ivm_type_t type_list[IVM_TYPE_COUNT];		// 240 * 6 = 1440
 
-	ivm_coro_pool_t cr_pool;					// 72
-
-	ivm_function_pool_t *func_pool;				// 8
-
 	ivm_heap_t heaps[3];						// 120
 
-	ivm_context_pool_t *ct_pool;				// 8
+	ivm_coro_pool_t cr_pool;					// 72
+#if IVM_USE_BLOCK_POOL
+	ivm_block_pool_t block_pool;
+#endif
+
+	ivm_context_pool_t ct_pool;
 
 	ivm_cgroup_list_t coro_groups;
 
 	ivm_type_pool_t type_pool;
 	ivm_func_list_t func_list;					// 24
 
-	ivm_string_pool_t *const_pool;				// 8
 	ivm_collector_t gc;							// 8
+
+	ivm_function_pool_t *func_pool;				// 8
+	ivm_string_pool_t *const_pool;				// 8
 
 	ivm_object_t *except;
 	ivm_object_t *loaded_mod;
@@ -481,16 +484,31 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 
 /* context pool */
 #define ivm_vmstate_allocContext(state) \
-	(ivm_context_pool_alloc((state)->ct_pool))
+	(ivm_context_pool_alloc(&(state)->ct_pool))
 #define ivm_vmstate_dumpContext(state, ctx) \
-	(ivm_context_pool_dump((state)->ct_pool, (ctx)))
+	(ivm_context_pool_dump(&(state)->ct_pool, (ctx)))
 
-#if 0
+#if IVM_USE_BLOCK_POOL
 
-ivm_object_t *
-ivm_vmstate_newObject(ivm_vmstate_t *state);
-void
-ivm_vmstate_freeObject(ivm_vmstate_t *state, ivm_object_t *obj);
+#define ivm_vmstate_allocBlock(state, count) \
+	(ivm_block_pool_alloc(&(state)->block_pool, (count)))
+
+#define ivm_vmstate_dumpBlock(state, block, count) \
+	(ivm_block_pool_free(&(state)->block_pool, (block), (count)))
+
+#define ivm_vmstate_reallocBlock(state, block, ocount, count) \
+	(ivm_block_pool_realloc(&(state)->block_pool, (block), (ocount), (count)))
+
+#else
+
+#define ivm_vmstate_allocBlock(state, count) \
+	(STD_ALLOC(sizeof(ivm_block_t) * (count)))
+
+#define ivm_vmstate_dumpBlock(state, block, count) \
+	(STD_FREE(block))
+
+#define ivm_vmstate_reallocBlock(state, block, ocount, count) \
+	(STD_REALLOC((block), sizeof(ivm_block_t) * (count)))
 
 #endif
 

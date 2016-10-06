@@ -59,8 +59,13 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_type_pool_init(&ret->type_pool);
 	ivm_func_list_init(&ret->func_list);
 
+#if IVM_USE_BLOCK_POOL
+	ivm_block_pool_init(&ret->block_pool);
+#endif
+
 	ret->func_pool = ivm_function_pool_new(IVM_DEFAULT_FUNCTION_POOL_SIZE);
-	ret->ct_pool = ivm_context_pool_new(IVM_DEFAULT_CONTEXT_POOL_SIZE);
+
+	ivm_context_pool_init(&ret->ct_pool, IVM_DEFAULT_CONTEXT_POOL_SIZE);
 	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
 
 	ret->const_pool = const_pool;
@@ -128,9 +133,12 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_type_pool_dump(&state->type_pool);
 
 		ivm_func_list_dump(&state->func_list, state);
+#if IVM_USE_BLOCK_POOL
+		ivm_block_pool_dump(&state->block_pool);
+#endif
 
 		ivm_function_pool_free(state->func_pool);
-		ivm_context_pool_free(state->ct_pool);
+		ivm_context_pool_destruct(&state->ct_pool);
 		ivm_coro_pool_destruct(&state->cr_pool);
 
 		ivm_string_pool_free(state->const_pool);

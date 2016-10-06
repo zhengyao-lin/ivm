@@ -13,5 +13,6 @@
 #include "vm/inline/typeobj.h"
 #include "vm/inline/num.h"
 #include "vm/inline/strobj.h"
+#include "vm/inline/listobj.h"
 
 #endif

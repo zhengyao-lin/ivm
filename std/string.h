@@ -125,8 +125,12 @@ ivm_string_utf8Length(const ivm_string_t *str)
 #define ivm_string_charAt(str, i) \
 	((str)->cont[i])
 
+IVM_INLINE
 ivm_hash_val_t
-ivm_string_hash(const ivm_string_t *str);
+ivm_string_hash(const ivm_string_t *str)
+{
+	return ivm_hash_fromString_c(str->cont, ivm_string_length(str));
+}
 
 IVM_INLINE
 ivm_bool_t
@@ -186,6 +190,7 @@ typedef struct ivm_string_pool_t_tag {
 
 	ivm_string_list_t lst;
 	ivm_size_t size;
+	ivm_size_t mask;
 	ivm_string_pos_t *table; // hash table
 
 	IVM_REF_HEADER

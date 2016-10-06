@@ -4,6 +4,7 @@
 #include "pub/com.h"
 #include "pub/const.h"
 #include "pub/type.h"
+#include "pub/err.h"
 
 #include "std/mem.h"
 #include "std/pool.h"
@@ -22,6 +23,90 @@ typedef struct {
 
 #define ivm_block_getCatch(block) ((block)->catc)
 #define ivm_block_getSp(block) ((block)->sp)
+
+typedef struct {
+	ivm_ptpool_t pools[IVM_DEFAULT_BLOCK_POOL_CACHE_LEN];
+} ivm_block_pool_t;
+
+IVM_INLINE
+void
+ivm_block_pool_init(ivm_block_pool_t *pool)
+{
+	ivm_int_t i;
+
+	for (i = 0; i != IVM_DEFAULT_BLOCK_POOL_CACHE_LEN; i++) {
+		ivm_ptpool_init(
+			pool->pools + i,
+			IVM_DEFAULT_BLOCK_POOL_BUFFER_SIZE,
+			sizeof(ivm_block_t) * (i + 1)
+		);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_block_pool_dump(ivm_block_pool_t *pool)
+{
+	ivm_int_t i;
+
+	for (i = 0; i != IVM_DEFAULT_BLOCK_POOL_CACHE_LEN; i++) {
+		ivm_ptpool_destruct(pool->pools + i);
+	}
+
+	return;
+}
+
+IVM_INLINE
+ivm_block_t *
+ivm_block_pool_alloc(ivm_block_pool_t *pool,
+					 ivm_size_t count)
+{
+	if (count <= IVM_DEFAULT_BLOCK_POOL_CACHE_LEN) {
+		return (ivm_block_t *)ivm_ptpool_alloc(pool->pools + (count - 1));
+	}
+
+	ivm_block_t *ret = STD_ALLOC(sizeof(ivm_block_t) * count);
+
+	IVM_MEMCHECK(ret);
+
+	return ret;
+}
+
+IVM_INLINE
+void
+ivm_block_pool_free(ivm_block_pool_t *pool,
+					ivm_block_t *block,
+					ivm_size_t count)
+{
+	if (block) {
+		if (count <= IVM_DEFAULT_BLOCK_POOL_CACHE_LEN) {
+			ivm_ptpool_dump(&pool->pools[count - 1], block);
+		} else {
+			STD_FREE(block);
+		}
+	}
+
+	return;
+}
+
+IVM_INLINE
+ivm_block_t *
+ivm_block_pool_realloc(ivm_block_pool_t *pool,
+					   ivm_block_t *orig,
+					   ivm_size_t ocount,
+					   ivm_size_t count)
+{
+	ivm_block_t *ret = ivm_block_pool_alloc(pool, count);
+
+	if (orig) {
+		STD_MEMCPY(ret, orig, sizeof(ivm_block_t) * ocount);
+		ivm_block_pool_free(pool, orig, ocount);
+	}
+
+	return ret;
+}
 
 /* part needed to init every call */
 #define IVM_FRAME_HEADER_INIT \
@@ -62,25 +147,6 @@ typedef struct ivm_frame_t_tag {
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
-
-IVM_INLINE
-struct ivm_object_t_tag ** /* new_bp */
-ivm_frame_pushBlock(ivm_frame_t *frame,
-					ivm_size_t sp /* AVAIL_STACK */)
-{
-	if (frame->cur_block >=
-		frame->block_alloc) {
-		frame->block_alloc += 2;
-		frame->blocks =
-		STD_REALLOC(frame->blocks, sizeof(*frame->blocks) * frame->block_alloc);
-	}
-
-	frame->blocks[frame->cur_block++] = ((ivm_block_t) {
-		IVM_NULL, sp
-	});
-
-	return frame->bp += sp;
-}
 
 IVM_INLINE
 ivm_block_t *

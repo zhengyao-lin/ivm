@@ -35,6 +35,27 @@ ivm_frame_free(ivm_frame_t *frame, ivm_vmstate_t *state)
 }
 
 IVM_INLINE
+ivm_object_t ** /* new_bp */
+ivm_frame_pushBlock(ivm_frame_t *frame,
+					ivm_vmstate_t *state,
+					ivm_size_t sp /* AVAIL_STACK */)
+{
+	if (frame->cur_block >=
+		frame->block_alloc) {
+		register ivm_int_t orig = frame->block_alloc;
+
+		frame->blocks = ivm_vmstate_reallocBlock(state, frame->blocks, orig, orig + 2);
+		frame->block_alloc = orig + 2;
+	}
+
+	frame->blocks[frame->cur_block++] = ((ivm_block_t) {
+		IVM_NULL, sp
+	});
+
+	return frame->bp += sp;
+}
+
+IVM_INLINE
 void
 _ivm_frame_stack_expand(ivm_frame_stack_t *stack)
 {
