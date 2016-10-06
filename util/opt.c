@@ -23,7 +23,7 @@ _ivm_opt_il_new(ivm_string_pool_t *pool,
 {
 	ivm_opt_il_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("opt il"));
+	IVM_MEMCHECK(ret);
 
 	ret->pool = pool;
 	ivm_ref_inc(pool);

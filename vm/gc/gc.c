@@ -22,7 +22,7 @@ ivm_collector_new()
 {
 	ivm_collector_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("garbage collector"));
+	IVM_MEMCHECK(ret);
 
 	ret->live_ratio = 0;
 	ret->skip_time = 0;

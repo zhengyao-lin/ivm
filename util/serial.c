@@ -28,7 +28,7 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 
 	tmp = ret.instrs = STD_ALLOC(sizeof(*ret.instrs) * ret.size);
 
-	IVM_ASSERT(ret.instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable"));
+	IVM_MEMCHECK(ret.instrs);
 
 	for (i = ivm_exec_instrPtrStart(exec),
 		 end = i + ret.size;
@@ -72,7 +72,7 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 	ivm_size_t tmp_id;
 	ivm_serial_exec_t *i;
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable list"));
+	IVM_MEMCHECK(ret);
 
 	pools = ret->pool_list = ivm_string_pool_list_new();
 	i = ret->execs = STD_ALLOC(
@@ -80,7 +80,7 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 		* (ret->size = ivm_exec_list_size(list))
 	);
 
-	IVM_ASSERT(i, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable list"));
+	IVM_MEMCHECK(i);
 
 	IVM_EXEC_LIST_EACHPTR(list, eiter) {
 		tmp_exec = IVM_EXEC_LIST_ITER_GET(eiter);
@@ -122,7 +122,7 @@ ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
 {
 	ivm_serial_exec_unit_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable unit"));
+	IVM_MEMCHECK(ret);
 
 	ret->offset = ivm_exec_unit_offset(unit);
 	ret->root = ivm_exec_unit_root(unit);
@@ -256,7 +256,7 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 		goto CLEAN;
 	}
 
-	// IVM_ASSERT(table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized string pool"));
+	// IVM_MEMCHECK(table);
 
 	for (i = table,
 		 end = i + size;
@@ -399,7 +399,7 @@ _ivm_serial_execFromFile(ivm_file_t *file,
 
 	ret->instrs = STD_ALLOC(sizeof(*ret->instrs) * ret->size);
 
-	IVM_ASSERT(ret->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable"));
+	IVM_MEMCHECK(ret->instrs);
 
 	if (ivm_file_read(file, ret->instrs, sizeof(*ret->instrs), ret->size)
 		!= ret->size) {
@@ -459,7 +459,7 @@ _ivm_serial_execListFromFile(ivm_file_t *file)
 	ivm_serial_exec_list_t *
 	ret = STD_ALLOC_INIT(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable list"));
+	IVM_MEMCHECK(ret);
 
 	if (!(ret->pool_list = _ivm_serial_stringPoolListFromFile(file)))
 		goto CLEAN;
@@ -470,7 +470,7 @@ _ivm_serial_execListFromFile(ivm_file_t *file)
 	/* avoid error in cleaning */
 	i = ret->execs = STD_ALLOC_INIT(sizeof(*ret->execs) * ret->size);
 
-	IVM_ASSERT(i, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable list"));
+	IVM_MEMCHECK(i);
 
 	for (end = i + ret->size;
 		 i != end; i++) {
@@ -518,7 +518,7 @@ ivm_serial_execUnitFromFile(ivm_file_t *file)
 {
 	ivm_serial_exec_unit_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("serialized executable unit"));
+	IVM_MEMCHECK(ret);
 
 	if (!ivm_file_read(file, &ret->offset, sizeof(ret->offset), 1)) {
 		goto CLEAN;

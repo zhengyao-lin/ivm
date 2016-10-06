@@ -10,7 +10,7 @@ ivm_type_new(ivm_type_t type)
 {
 	ivm_type_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("type"));
+	IVM_MEMCHECK(ret);
 
 	ivm_type_init(ret, &type);
 

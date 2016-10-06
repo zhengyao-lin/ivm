@@ -57,6 +57,7 @@ ivm_list_object_realIndex(ivm_list_object_t *list,
 	return ivm_list_realIndex(list->size, i);
 }
 
+// return 0 if error
 ivm_size_t
 ivm_list_object_push(ivm_list_object_t *list,
 					 struct ivm_vmstate_t_tag *state,
@@ -92,12 +93,14 @@ _ivm_list_object_get_c(ivm_list_object_t *list,
 	return list->lst[i];
 }
 
+/* return NULL if error */
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,
 					struct ivm_vmstate_t_tag *state,
 					ivm_long_t i,
 					ivm_object_t *obj);
 
+/* return NULL if error */
 ivm_object_t *
 ivm_list_object_link(ivm_list_object_t *list1,
 					 ivm_list_object_t *list2,
@@ -116,7 +119,8 @@ _ivm_list_object_unpackTo(ivm_list_object_t *list,
 						  ivm_object_t **sp,
 						  ivm_size_t req);
 
-void
+/* return false if error */
+ivm_bool_t
 ivm_list_object_multiply(ivm_list_object_t *list,
 						 struct ivm_vmstate_t_tag *state,
 						 ivm_size_t times);

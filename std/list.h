@@ -77,7 +77,7 @@ void
 ivm_ptlist_inc(ivm_ptlist_t *ptlist)
 {
 	ptlist->lst = STD_REALLOC(ptlist->lst, sizeof(*ptlist->lst) * (ptlist->alloc <<= 1));
-	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
+	IVM_MEMCHECK(ptlist->lst);
 
 	return;
 }
@@ -192,7 +192,7 @@ ivm_ptlist_incTo(ivm_ptlist_t *ptlist,
 			ptlist->lst,
 			sizeof(*ptlist->lst) * ptlist->alloc
 		);
-		IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("increased ptlist space"));
+		IVM_MEMCHECK(ptlist->lst);
 	}
 
 	return;

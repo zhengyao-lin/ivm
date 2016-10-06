@@ -11,13 +11,13 @@ ivm_c_hash_table_new(ivm_size_t tsize,
 {
 	ivm_c_hash_table_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("hash table"));
+	IVM_MEMCHECK(ret);
 	IVM_ASSERT(tsize > 1, IVM_ERROR_MSG_TOO_SMALL_VALUE_FOR("hash table init size", tsize));
 
 	ret->tsize = tsize;
 	ret->table = STD_ALLOC_INIT(sizeof(*ret->table) * tsize);
 
-	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("hash table data"));
+	IVM_MEMCHECK(ret->table);
 
 	ret->cmp = cmp;
 	ret->hash = hash;
@@ -52,7 +52,7 @@ ivm_c_hash_table_expand(ivm_c_hash_table_t *table) /* includes rehashing */
 
 	table->table = STD_ALLOC_INIT(sizeof(*table->table) * dsize);
 
-	IVM_ASSERT(table->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded hash table data"));
+	IVM_MEMCHECK(table->table);
 
 	table->tsize = dsize;
 

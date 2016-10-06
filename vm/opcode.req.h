@@ -19,7 +19,7 @@
 #include "oprt.h"
 #include "dbg.h"
 
-#define UNIOP_HANDLER(op, op_name, e, has_exc) \
+#define UNIOP_HANDLER(op, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
@@ -40,7 +40,7 @@
 												  IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                               \
-	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        if (!_TMP_OBJ1) {                                                                  \
 	        	EXCEPTION();                                                                   \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
@@ -48,7 +48,7 @@
 		}                                                                                      \
 	}
 
-#define BINOP_HANDLER(op, op_name, e, has_exc) \
+#define BINOP_HANDLER(op, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -66,7 +66,7 @@
 												  IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));      \
 	                                                                                           \
 	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                    \
-	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        if (!_TMP_OBJ1) {                                                                  \
 	        	EXCEPTION();                                                                   \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
@@ -80,7 +80,7 @@
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, oop, op_name, e, has_exc) \
+#define TRIOP_HANDLER(op, oop, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(3);                                                                        \
                                                                                                \
@@ -100,7 +100,7 @@
 	                                                                                           \
 	        _TMP_OBJ1 = ((ivm_triop_proc_t)_TMP_BIN_PROC)                                      \
 	        			(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                      \
-	        if ((has_exc) && !_TMP_OBJ1) {                                                     \
+	        if (!_TMP_OBJ1) {                                                                  \
 	        	EXCEPTION();                                                                   \
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \

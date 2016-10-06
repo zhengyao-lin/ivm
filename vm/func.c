@@ -51,7 +51,7 @@ ivm_function_new(ivm_vmstate_t *state,
 {
 	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("function"));
+	IVM_MEMCHECK(ret);
 
 	_ivm_function_init(ret, state, body);
 
@@ -64,7 +64,7 @@ ivm_function_newNative(ivm_vmstate_t *state,
 {
 	ivm_function_t *ret = ivm_vmstate_allocFunc(state);
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("native function"));
+	IVM_MEMCHECK(ret);
 
 	_ivm_function_initNative(ret, state, func);
 

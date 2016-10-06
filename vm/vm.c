@@ -45,7 +45,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_cgroup_t *tmp_group;
 	ivm_int_t i;
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm state"));
+	IVM_MEMCHECK(ret);
 
 	for (i = 0; i < IVM_ARRLEN(ret->heaps); i++) {
 		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);

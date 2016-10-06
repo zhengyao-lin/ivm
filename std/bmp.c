@@ -13,7 +13,7 @@ ivm_image_new(ivm_size_t width,
 {
 	ivm_image_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("image"));
+	IVM_MEMCHECK(ret);
 
 	ret->width = width;
 	ret->height = height;
@@ -103,7 +103,7 @@ ivm_image_bmp_format(ivm_image_t *image,
 
 	dat = STD_ALLOC(isize);
 
-	IVM_ASSERT(dat, IVM_ERROR_MSG_FAILED_ALLOC_NEW("image data"));
+	IVM_MEMCHECK(dat);
 
 	for (i = 0, cur = dat;
 		 i < pcount; i++, cur += 3) {
@@ -174,7 +174,7 @@ ivm_image_bmp_parse(ivm_file_t *fp,
 
 	dat = STD_ALLOC(dsize);
 
-	IVM_ASSERT(dat, IVM_ERROR_MSG_FAILED_ALLOC_NEW("image data"));
+	IVM_MEMCHECK(dat);
 
 	if (ivm_file_read(fp, dat, sizeof(*dat), dsize) != dsize) {
 		tmp_err = "unexpected file ending";

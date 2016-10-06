@@ -11,7 +11,7 @@ ivm_heap_new(ivm_size_t bsize)
 {
 	ivm_heap_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap"));
+	IVM_MEMCHECK(ret);
 
 	ret->bcount = 2;
 	ret->bsize = bsize;
@@ -19,12 +19,12 @@ ivm_heap_new(ivm_size_t bsize)
 	ret->btop = 0;
 	ret->blocks = STD_ALLOC(sizeof(*ret->blocks) * 2);
 	
-	IVM_ASSERT(ret->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+	IVM_MEMCHECK(ret->blocks);
 
 	ret->bcurp = ret->blocks[0] = STD_ALLOC(bsize);
 	ret->blocks[1] = STD_ALLOC(bsize);
 
-	IVM_ASSERT(ret->bcurp && ret->blocks[1], IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+	IVM_MEMCHECK(ret->bcurp && ret->blocks[1]);
 
 	ret->bendp = ret->bcurp + bsize;
 
@@ -55,12 +55,12 @@ ivm_heap_init(ivm_heap_t *heap,
 	heap->btop = 0;
 	heap->blocks = STD_ALLOC(sizeof(*heap->blocks) * 2);
 	
-	IVM_ASSERT(heap->blocks, IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+	IVM_MEMCHECK(heap->blocks);
 
 	heap->bcurp = heap->blocks[0] = STD_ALLOC(bsize);
 	heap->blocks[1] = STD_ALLOC(bsize);
 
-	IVM_ASSERT(heap->bcurp && heap->blocks[1], IVM_ERROR_MSG_FAILED_ALLOC_NEW("heap block"));
+	IVM_MEMCHECK(heap->bcurp && heap->blocks[1]);
 
 	heap->bendp = heap->bcurp + bsize;
 

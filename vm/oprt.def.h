@@ -168,11 +168,11 @@ BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, {
 })
 
 TRIOP_GEN(IVM_LIST_OBJECT_T, IDXA, IVM_NUMERIC_T, {
-	ivm_list_object_set(
+	if (!ivm_list_object_set(
 		IVM_AS(_OP1, ivm_list_object_t),
 		_STATE, ivm_numeric_getValue(_OP2),
 		_OP3
-	);
+	)) return IVM_NULL;
 
 	return _OP3 ? _OP3 : IVM_NONE(_STATE);
 })
@@ -192,7 +192,9 @@ BINOP_GEN(IVM_LIST_OBJECT_T, MUL, IVM_NUMERIC_T, {
 	}
 
 	ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_list_object_t);
-	ivm_list_object_multiply(ret, _STATE, times);
+	if (!ivm_list_object_multiply(ret, _STATE, times)) {
+		return IVM_NULL;
+	}
 
 	return IVM_AS_OBJ(ret);
 })

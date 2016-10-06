@@ -269,7 +269,7 @@ ivm_parser_parseStr(const ivm_char_t *str,
 {
 	ivm_char_t *buf = STD_ALLOC(sizeof(*buf) * (len + 1));
 
-	IVM_ASSERT(buf, IVM_ERROR_MSG_FAILED_ALLOC_NEW("parsed string"));
+	IVM_MEMCHECK(buf);
 
 	if (ivm_parser_parseStr_c(buf, str, len, err) == -1) {
 		return IVM_NULL;

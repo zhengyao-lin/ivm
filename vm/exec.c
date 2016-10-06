@@ -52,7 +52,7 @@ _ivm_exec_init(ivm_exec_t *exec,
 	exec->next = 0;
 	exec->instrs = STD_ALLOC(sizeof(*exec->instrs) * IVM_DEFAULT_EXEC_BUFFER_SIZE);
 
-	IVM_ASSERT(exec->instrs, IVM_ERROR_MSG_FAILED_ALLOC_NEW("instruction list in executable"));
+	IVM_MEMCHECK(exec->instrs);
 
 	exec->cached = IVM_FALSE;
 
@@ -64,7 +64,7 @@ ivm_exec_new(ivm_string_pool_t *pool)
 {
 	ivm_exec_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable"));
+	IVM_MEMCHECK(ret);
 
 	_ivm_exec_init(ret, pool);
 
@@ -124,8 +124,7 @@ _ivm_exec_expand(ivm_exec_t *exec)
 	exec->alloc <<= 1;
 	exec->instrs = STD_REALLOC(exec->instrs, sizeof(*exec->instrs) * exec->alloc);
 
-	IVM_ASSERT(exec->instrs,
-			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded instruction list in executable"));
+	IVM_MEMCHECK(exec->instrs);
 
 	return;
 }
@@ -215,7 +214,7 @@ ivm_exec_unit_new(ivm_size_t root,
 {
 	ivm_exec_unit_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("executable unit"));
+	IVM_MEMCHECK(ret);
 
 	ret->root = root;
 	ret->pos = IVM_NULL;

@@ -11,7 +11,7 @@ ivm_ptpool_new(ivm_size_t ecount,
 {
 	ivm_ptpool_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptpool"));
+	IVM_MEMCHECK(ret);
 
 	ret->esize = esize;
 	ivm_heap_init(&ret->heap, ecount * esize);

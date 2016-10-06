@@ -160,20 +160,26 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	for (head = i = cont, end = i + len;
 		 i != end; i++) {
 		if (*i == '\n') {
-			ivm_list_object_push(
+			if (!ivm_list_object_push(
 				ret, NAT_STATE(),
 				ivm_string_object_new_rl(NAT_STATE(), head, IVM_PTR_DIFF(i, head, ivm_char_t))
-			);
+			)) goto ERROR;
 			head = i + 1;
 		}
 	}
 
-	ivm_list_object_push(
+	if (!ivm_list_object_push(
 		ret, NAT_STATE(),
 		ivm_string_object_new_rl(NAT_STATE(), head, IVM_PTR_DIFF(i, head, ivm_char_t))
-	);
+	)) goto ERROR;
 
 	STD_FREE(cont);
+
+goto ERROR_END;
+ERROR:
+	STD_FREE(cont);
+	return IVM_NULL;
+ERROR_END:;
 
 	return IVM_AS_OBJ(ret);
 }

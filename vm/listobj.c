@@ -108,41 +108,60 @@ _ivm_list_object_new_nc(ivm_vmstate_t *state,
 /* assert size > osize */
 IVM_PRIVATE
 IVM_INLINE
-void
+ivm_bool_t
 _ivm_list_object_expandTo(ivm_list_object_t *list,
 						  ivm_vmstate_t *state,
 						  ivm_size_t size)
 {
 	ivm_object_t **olst;
-	ivm_size_t osize = list->size;
+	ivm_size_t osize = list->size, oalloc;
 
 	if (size <= list->alloc) {
 		list->size = size;
 	} else {
+		oalloc = list->alloc;
 		list->alloc = size << 1;
+
 		list->size = size;
+
 		olst = list->lst;
 		list->lst = ivm_vmstate_reallocWild(state, list->lst, sizeof(*olst) * list->alloc);
+
+		if (!list->lst) {
+			list->alloc = oalloc;
+			list->size = osize;
+			list->lst = olst;
+
+			return IVM_FALSE;
+		}
 	}
 
 	STD_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
 
-	return;
+	return IVM_TRUE;
 }
 
 IVM_PRIVATE
 IVM_INLINE
-void
+ivm_bool_t
 _ivm_list_object_expand(ivm_list_object_t *list,
 						ivm_vmstate_t *state)
 {
+	ivm_object_t **olst = list->lst;
+
 	list->alloc <<= 1;
 	list->lst = ivm_vmstate_reallocWild(
 		state, list->lst,
 		sizeof(*list->lst) * list->alloc
 	);
 
-	return;
+	if (!list->lst) {
+		list->alloc >>= 1;
+		list->lst = olst;
+		return IVM_FALSE;
+	}
+
+	return IVM_TRUE;
 }
 
 ivm_size_t
@@ -151,7 +170,9 @@ ivm_list_object_push(ivm_list_object_t *list,
 					 ivm_object_t *obj)
 {
 	if (list->size + 1 >= list->alloc) {
-		_ivm_list_object_expand(list, state);
+		if (!_ivm_list_object_expand(list, state)) {
+			return 0;
+		}
 	}
 
 	IVM_WBOBJ(state, IVM_AS_OBJ(list), obj);
@@ -170,7 +191,9 @@ ivm_list_object_set(ivm_list_object_t *list,
 	i = ivm_list_object_realIndex(list, i);
 
 	if (i >= list->size) {
-		_ivm_list_object_expandTo(list, state, i + 1);
+		if (!_ivm_list_object_expandTo(list, state, i + 1)) {
+			return IVM_NULL;
+		}
 	}
 
 	IVM_WBOBJ(state, IVM_AS_OBJ(list), obj);
@@ -188,6 +211,10 @@ ivm_list_object_link(ivm_list_object_t *list1,
 		state,
 		sizeof(*nlist) * size
 	);
+
+	if (!nlist) {
+		return IVM_NULL;
+	}
 
 	ivm_object_t *ret;
 
@@ -260,7 +287,7 @@ _ivm_list_object_unpackTo(ivm_list_object_t *list,
 	return;
 }
 
-void
+ivm_bool_t
 ivm_list_object_multiply(ivm_list_object_t *list,
 						 ivm_vmstate_t *state,
 						 ivm_size_t times)
@@ -270,10 +297,12 @@ ivm_list_object_multiply(ivm_list_object_t *list,
 
 	if (!times) {
 		list->size = 0;
-		return;
+		return IVM_TRUE;
 	}
 
-	_ivm_list_object_expandTo(list, state, osize * times);
+	if (!_ivm_list_object_expandTo(list, state, osize * times)) {
+		return IVM_FALSE;
+	}
 
 	cur = lst = list->lst;
 	esize = sizeof(*lst) * osize;
@@ -282,7 +311,7 @@ ivm_list_object_multiply(ivm_list_object_t *list,
 		STD_MEMCPY(cur += osize, lst, esize);
 	}
 
-	return;
+	return IVM_TRUE;
 }
 
 void

@@ -15,7 +15,7 @@ IVM_STRNDUP(const ivm_char_t *str,
 {
 	ivm_char_t *ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string"));
+	IVM_MEMCHECK(ret);
 
 	STD_MEMCPY(ret, str, sizeof(*ret) * len);
 	ret[len] = '\0';
@@ -29,7 +29,7 @@ ivm_strdup(const ivm_char_t *src)
 	ivm_size_t size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
 	ivm_char_t *ret = STD_ALLOC(size);
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("new string"));
+	IVM_MEMCHECK(ret);
 
 	STD_MEMCPY(ret, src, size);
 
@@ -123,7 +123,7 @@ _ivm_string_pool_init_c(ivm_string_pool_t *pool)
 	pool->table
 	= STD_ALLOC_INIT(sizeof(*pool->table) * IVM_DEFAULT_STRING_POOL_BUFFER_SIZE);
 
-	IVM_ASSERT(pool->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+	IVM_MEMCHECK(pool->table);
 
 	return;
 }
@@ -149,7 +149,7 @@ ivm_string_pool_new()
 {
 	ivm_string_pool_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
+	IVM_MEMCHECK(ret);
 
 	_ivm_string_pool_init_c(ret);
 
@@ -171,7 +171,7 @@ ivm_string_pool_new_t(const ivm_string_t **lst,
 	ivm_string_id_t id;
 	ivm_string_list_iterator_t iter;
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool"));
+	IVM_MEMCHECK(ret);
 
 	ivm_ref_init(ret);
 	ret->heap = heap;
@@ -181,7 +181,7 @@ ivm_string_pool_new_t(const ivm_string_t **lst,
 	ret->table
 	= STD_ALLOC_INIT(sizeof(*ret->table) * ret->size);
 
-	IVM_ASSERT(ret->table, IVM_ERROR_MSG_FAILED_ALLOC_NEW("string pool data"));
+	IVM_MEMCHECK(ret->table);
 
 	id = 0;
 	IVM_STRING_LIST_EACHPTR(&ret->lst, iter) {

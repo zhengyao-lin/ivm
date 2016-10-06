@@ -201,6 +201,22 @@ IVM_WBCTX(ivm_vmstate_t *state,
 }
 
 IVM_INLINE
+ivm_coro_t *
+ivm_vmstate_curCoro(ivm_vmstate_t *state)
+{
+	return ivm_cgroup_curCoro(ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup));
+}
+
+IVM_INLINE
+void
+ivm_vmstate_setMemError(ivm_vmstate_t *state)
+{
+	state->except
+	= ivm_coro_newStringException(ivm_vmstate_curCoro(state), state, IVM_ERROR_MSG_MEM_ERROR);
+	return;
+}
+
+IVM_INLINE
 void *
 ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 {
@@ -281,6 +297,12 @@ ivm_vmstate_allocWild(ivm_vmstate_t *state,
 
 	ivm_vmstate_addWildSize(state, size);
 	ret = STD_ALLOC(size);
+	
+	if (!ret && size) {
+		ivm_vmstate_setMemError(state);
+		return IVM_NULL;
+	}
+
 	// IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
@@ -296,7 +318,11 @@ ivm_vmstate_reallocWild(ivm_vmstate_t *state,
 
 	ivm_vmstate_addWildSize(state, size);
 	ret = STD_REALLOC(orig, size);
-	// IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
+
+	if (!ret && size) {
+		ivm_vmstate_setMemError(state);
+		return IVM_NULL;
+	}
 
 	return ret;
 }
@@ -317,6 +343,11 @@ ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
 	ivm_vmstate_addWildSize(state, size);
 	*is_wild = IVM_TRUE;
 	ret = STD_ALLOC(size);
+
+	if (!ret && size) {
+		ivm_vmstate_setMemError(state);
+		return IVM_NULL;
+	}
 
 	// IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
@@ -572,13 +603,6 @@ ivm_cgroup_t *
 ivm_vmstate_curCGroup(ivm_vmstate_t *state)
 {
 	return ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup);
-}
-
-IVM_INLINE
-ivm_coro_t *
-ivm_vmstate_curCoro(ivm_vmstate_t *state)
-{
-	return ivm_cgroup_curCoro(ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup));
 }
 
 IVM_INLINE

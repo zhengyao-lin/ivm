@@ -30,7 +30,7 @@ ivm_file_new(const ivm_char_t *path,
 
 	ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("file"));
+	IVM_MEMCHECK(ret);
 
 	ret->fp = fp;
 

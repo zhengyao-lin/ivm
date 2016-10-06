@@ -275,31 +275,31 @@ IVM_NATIVE_FUNC(_struct_struct_unpack)
 		 i != end; i++) {
 		switch (i->type) {
 			case IVM_STRUCT_TYPE_INT:
-				ivm_list_object_push(
+				if (!ivm_list_object_push(
 					ret, NAT_STATE(),
 					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_sint32_t))
-				);
+				)) return IVM_NULL;
 				break;
 
 			case IVM_STRUCT_TYPE_LONG:
-				ivm_list_object_push(
+				if (!ivm_list_object_push(
 					ret, NAT_STATE(),
 					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_sint64_t))
-				);
+				)) return IVM_NULL;
 				break;
 
 			case IVM_STRUCT_TYPE_FLOAT:
-				ivm_list_object_push(
+				if (!ivm_list_object_push(
 					ret, NAT_STATE(),
 					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_single_t))
-				);
+				)) return IVM_NULL;
 				break;
 
 			case IVM_STRUCT_TYPE_DOUBLE:
-				ivm_list_object_push(
+				if (!ivm_list_object_push(
 					ret, NAT_STATE(),
 					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_double_t))
-				);
+				)) return IVM_NULL;
 				break;
 
 			default:

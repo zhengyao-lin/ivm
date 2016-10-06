@@ -31,7 +31,7 @@ ias_gen_env_new(ias_gen_block_list_t *block_list)
 {
 	ias_gen_env_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("generator environment"));
+	IVM_MEMCHECK(ret);
 
 	ret->str_pool = ivm_string_pool_new();
 	ivm_ref_inc(ret->str_pool);

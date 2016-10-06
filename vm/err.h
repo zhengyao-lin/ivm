@@ -14,6 +14,12 @@ IVM_COM_HEADER
 	fprintf(IVM_STDERR, __VA_ARGS__); \
 	fputc('\n', IVM_STDERR);
 
+#define IVM_MEMCHECK(ptr) \
+	if (!ptr) { \
+		fprintf(IVM_STDERR, "at %s: line %d: memory error\n", __FILE__, __LINE__); \
+		IVM_ABORT(); \
+	}
+
 #ifdef IVM_DEBUG
 
 	#define IVM_ASSERT(cond, ...) \
@@ -106,6 +112,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_FAILED_ALLOC_BUFFER(size)					"failed to allocate buffer with size %ld", (size)
 #define IVM_ERROR_MSG_ILLEGAL_BUFFER_SIZE(size)					"illegal buffer size %ld", (size)
 #define IVM_ERROR_MSG_NO_ENOUGH_BLOCK							"no enough block"
+#define IVM_ERROR_MSG_MEM_ERROR									"memory error"
 
 IVM_COM_END
 

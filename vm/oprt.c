@@ -123,7 +123,7 @@ ivm_binop_table_new()
 {
 	ivm_binop_table_t *ret = STD_ALLOC(sizeof(ivm_binop_table_t));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("binary operator table"));
+	IVM_MEMCHECK(ret);
 
 	ret->size = 0;
 	ret->lst = IVM_NULL;

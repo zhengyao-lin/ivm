@@ -25,15 +25,20 @@ IVM_NATIVE_FUNC(_list_size)
 
 IVM_NATIVE_FUNC(_list_push)
 {
+	ivm_size_t size;
 	ivm_object_t *obj;
 
 	CHECK_BASE(IVM_LIST_OBJECT_T);
-	MATCH_ARG(".", &obj);
+	CHECK_ARG_COUNT(1);
+
+	obj = NAT_ARG_AT(1);
+
+	size = ivm_list_object_push(IVM_AS(NAT_BASE(), ivm_list_object_t), NAT_STATE(), obj);
+	if (!size) {
+		return IVM_NULL;
+	}
 	
-	return ivm_numeric_new(
-		NAT_STATE(),
-		ivm_list_object_push(IVM_AS(NAT_BASE(), ivm_list_object_t), NAT_STATE(), obj)
-	);
+	return ivm_numeric_new(NAT_STATE(), size);
 }
 
 IVM_NATIVE_FUNC(_list_slice)

@@ -19,7 +19,7 @@ ivm_frame_new(ivm_vmstate_t *state,
 {
 	ivm_frame_t *ret = ivm_vmstate_allocFrame(state);
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("frame"));
+	IVM_MEMCHECK(ret);
 
 	STD_MEMCPY(ret, runtime, sizeof(IVM_FRAME_HEADER_SIZE));
 
@@ -43,8 +43,7 @@ _ivm_frame_stack_expand(ivm_frame_stack_t *stack)
 								sizeof(ivm_frame_t)
 								* stack->alloc);
 	
-	IVM_ASSERT(stack->frames,
-			   IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded frame stack buffer"));
+	IVM_MEMCHECK(stack->frames);
 
 	return;
 }

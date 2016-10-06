@@ -19,7 +19,7 @@ ivm_vmstack_init(ivm_vmstack_t *stack)
 		)) + IVM_DEFAULT_VMSTACK_BUFFER_SIZE
 	);
 
-	IVM_ASSERT(stack->bottom, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
+	IVM_MEMCHECK(stack->bottom);
 
 	return;
 }
@@ -29,7 +29,7 @@ ivm_vmstack_new()
 {
 	ivm_vmstack_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("vm stack"));
+	IVM_MEMCHECK(ret);
 
 	ivm_vmstack_init(ret);
 
@@ -69,7 +69,7 @@ ivm_vmstack_inc(ivm_vmstack_t *stack,
 	ost = stack->bottom;
 	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
-	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
+	IVM_MEMCHECK(nst);
 
 	IVM_FRAME_STACK_EACHPTR(fstack, siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);
@@ -96,7 +96,7 @@ ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 	ost = stack->bottom;
 	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
-	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
+	IVM_MEMCHECK(nst);
 
 	IVM_FRAME_STACK_EACHPTR(IVM_CORO_GET(coro, FRAME_STACK), siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);
@@ -137,7 +137,7 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 	ost = stack->bottom;
 	nst = STD_REALLOC(ost, sizeof(*ost) * stack->size);
 
-	IVM_ASSERT(nst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("expanded vm stack"));
+	IVM_MEMCHECK(nst);
 
 	IVM_FRAME_STACK_EACHPTR(IVM_CORO_GET(coro, FRAME_STACK), siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);

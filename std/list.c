@@ -8,7 +8,7 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 {
 	ivm_ptlist_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist"));
+	IVM_MEMCHECK(ret);
 
 	if (!buf_size) buf_size = 1;
 
@@ -18,7 +18,7 @@ ivm_ptlist_new_c(ivm_size_t buf_size)
 	ret->cur = 0;
 	ret->lst = STD_ALLOC(sizeof(*ret->lst) * buf_size);
 
-	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
+	IVM_MEMCHECK(ret->lst);
 
 	return ret;
 }
@@ -44,7 +44,7 @@ ivm_ptlist_init_c(ivm_ptlist_t *ptlist,
 	ptlist->cur = 0;
 	ptlist->lst = STD_ALLOC(sizeof(*ptlist->lst) * buf_size);
 
-	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
+	IVM_MEMCHECK(ptlist->lst);
 
 	return;
 }
@@ -61,7 +61,7 @@ ivm_ptlist_init_t(ivm_ptlist_t *ptlist,
 	ptlist->cur = size;
 	ptlist->lst = STD_ALLOC(alloc);
 
-	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("ptlist buffer"));
+	IVM_MEMCHECK(ptlist->lst);
 
 	STD_MEMCPY(ptlist->lst, lst, alloc);
 
@@ -78,7 +78,7 @@ ivm_ptlist_compact(ivm_ptlist_t *ptlist)
 		sizeof(*ptlist->lst) * (ptlist->alloc = ptlist->cur)
 	);
 
-	IVM_ASSERT(ptlist->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("compacted pointer list"));
+	IVM_MEMCHECK(ptlist->lst);
 
 	return;
 }
@@ -104,7 +104,7 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 {
 	ivm_list_t *ret = STD_ALLOC(sizeof(*ret));
 
-	IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list"));
+	IVM_MEMCHECK(ret);
 
 	if (!buf_size) buf_size = 1;
 
@@ -113,7 +113,7 @@ ivm_list_new_c(ivm_size_t esize, ivm_size_t buf_size)
 	ret->cur = 0;
 	ret->lst = STD_ALLOC(esize * buf_size);
 
-	IVM_ASSERT(ret->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
+	IVM_MEMCHECK(ret->lst);
 
 	return ret;
 }
@@ -130,7 +130,7 @@ ivm_list_init_c(ivm_list_t *list,
 	list->cur = 0;
 	list->lst = STD_ALLOC(esize * buf_size);
 
-	IVM_ASSERT(list->lst, IVM_ERROR_MSG_FAILED_ALLOC_NEW("list buffer"));
+	IVM_MEMCHECK(list->lst);
 
 	return;
 }
