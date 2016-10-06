@@ -171,6 +171,11 @@ ilang_gen_expr_init(ilang_gen_expr_t *expr,
 	return;
 }
 
+#define ilang_gen_expr_isExpr(expr, name) \
+	((expr)->eval == ilang_gen_##name##_eval)
+
+#define ilang_gen_expr_getPos(expr) ((expr)->pos)
+
 typedef ivm_ptlist_t ilang_gen_expr_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ilang_gen_expr_t *) ilang_gen_expr_list_iterator_t;
 
@@ -390,6 +395,28 @@ COMMON_EXPR(list_expr, "list expression", {
 	ret->elems = elems;
 }, ilang_gen_expr_list_t *elems);
 
+/* list comp expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *core;
+	ivm_int_t cblock;
+} ilang_gen_list_comp_core_expr_t;
+
+COMMON_EXPR(list_comp_core_expr, "list comprehension core expression", {
+	ret->core = core;
+	ret->cblock = cblock;
+}, ilang_gen_expr_t *core,
+   ivm_int_t cblock);
+
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *expr;
+} ilang_gen_list_comp_expr_t;
+
+COMMON_EXPR(list_comp_expr, "list comprehension expression", {
+	ret->expr = expr;
+}, ilang_gen_expr_t *expr);
+
 /* call expr */
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
@@ -602,6 +629,20 @@ COMMON_EXPR(if_expr, "if expression", {
    ilang_gen_branch_list_t *elifs,
    ilang_gen_branch_t last);
 
+#define ilang_gen_if_expr_new_c(unit, pos, cond, body) \
+	ilang_gen_if_expr_new(                             \
+		(unit), (pos),                                 \
+		ilang_gen_branch_build((cond), (body)),        \
+		ilang_gen_branch_list_new(unit),               \
+		ilang_gen_branch_build(IVM_NULL, IVM_NULL)     \
+	)
+
+#define ilang_gen_if_expr_setMainBody(expr, nbody) \
+	(IVM_AS((expr), ilang_gen_if_expr_t)->main.body = (nbody))
+
+#define ilang_gen_if_expr_getMainBody(expr) \
+	(IVM_AS((expr), ilang_gen_if_expr_t)->main.body)
+
 /* while expr */
 typedef struct {
 	ILANG_GEN_EXPR_HEADER
@@ -630,6 +671,12 @@ COMMON_EXPR(for_expr, "for expression", {
 }, ilang_gen_expr_t *var,
    ilang_gen_expr_t *iteree,
    ilang_gen_expr_t *body);
+
+#define ilang_gen_for_expr_setBody(expr, nbody) \
+	(IVM_AS((expr), ilang_gen_for_expr_t)->body = (nbody))
+
+#define ilang_gen_for_expr_getBody(expr) \
+	(IVM_AS((expr), ilang_gen_for_expr_t)->body)
 
 /* try expr */
 typedef struct {

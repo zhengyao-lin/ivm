@@ -267,3 +267,39 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 
 	return NORET();
 }
+
+ilang_gen_value_t
+ilang_gen_list_comp_core_expr_eval(ilang_gen_expr_t *expr,
+								   ilang_gen_flag_t flag,
+								   ilang_gen_env_t *env)
+{
+	ilang_gen_list_comp_core_expr_t *core_expr = IVM_AS(expr, ilang_gen_list_comp_core_expr_t);
+
+	// IVM_TRACE("block %d %p\n", core_expr->cblock, expr);
+
+	core_expr->core->eval(core_expr->core, FLAG(0), env);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_PREV_BLOCK, core_expr->cblock);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_LIST);
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_list_comp_expr_eval(ilang_gen_expr_t *expr,
+							  ilang_gen_flag_t flag,
+							  ilang_gen_env_t *env)
+{
+	ilang_gen_list_comp_expr_t *comp_expr = IVM_AS(expr, ilang_gen_list_comp_expr_t);
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "list comprehension expression", flag);
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, 0);
+	comp_expr->expr->eval(comp_expr->expr, FLAG(0), env);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+
+	if (flag.is_top_level) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	}
+
+	return NORET();
+}

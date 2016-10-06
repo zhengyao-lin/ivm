@@ -587,6 +587,18 @@ OPCODE_GEN(DUP, "dup", N, 1, {
 	NEXT_INSTR();
 })
 
+/* duplicate the top element in the nth previous block */
+OPCODE_GEN(DUP_PREV_BLOCK, "dup_prev_block", I, 1, {
+	_TMP_ARGC = IARG();
+	
+	RTM_ASSERT(ivm_runtime_hasNBlock(_RUNTIME, _TMP_ARGC), IVM_ERROR_MSG_NO_ENOUGH_BLOCK);
+	
+	_TMP_OBJ1 = STACK_PREV_BLOCK_TOP(_TMP_ARGC);
+	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR();
+})
+
 #if 1
 
 OPCODE_GEN(OUT, "out", S, 0, {
@@ -924,6 +936,25 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 
 		NEXT_INSTR();
 	}
+})
+
+/*
+	top
+	--------------
+	| list | obj |
+	--------------  
+ */
+OPCODE_GEN(PUSH_LIST, "push_list", N, -2, {
+
+	_TMP_OBJ1 = STACK_POP();
+	_TMP_OBJ2 = STACK_POP();
+
+	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("list", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+
+	ivm_list_object_push(IVM_AS(_TMP_OBJ1, ivm_list_object_t), _STATE, _TMP_OBJ2);
+
+	NEXT_INSTR();
 })
 
 /*

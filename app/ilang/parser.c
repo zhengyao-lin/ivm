@@ -806,6 +806,162 @@ RULE(mod_name)
 }
 
 /*
+	for_postfix
+		: 'for' nllo leftval nllo 'in' nllo logic_or_expr
+ */
+RULE(leftval);
+RULE(logic_or_expr);
+RULE(for_postfix)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_FOR) R(nllo)
+				 R(leftval) R(nllo)
+				 T(T_IN) R(nllo)
+				 R(logic_or_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_for_expr_new(
+				_ENV->unit, TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr,
+				RULE_RET_AT(4).u.expr,
+				IVM_NULL
+			);
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	for_if_postfix
+		: for_postfix
+		| 'if' nllo logic_or_expr
+ */
+RULE(for_if_postfix)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(for_postfix)
+		{
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
+		})
+
+		SUB_RULE(T(T_IF) R(nllo) R(logic_or_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_if_expr_new_c(
+				_ENV->unit, TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr, IVM_NULL
+			);
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	list_comp_postfix_sub
+		: nllo for_if_postfix list_comp_postfix_sub
+		| %empty
+ */
+RULE(list_comp_postfix_sub)
+{
+	ilang_gen_expr_t *tmp_expr;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(nllo) R(for_if_postfix) R(list_comp_postfix_sub)
+		{
+			tmp_expr = RULE_RET_AT(1).u.expr;
+
+			if (ilang_gen_expr_isExpr(tmp_expr, if_expr)) {
+				ilang_gen_if_expr_setMainBody(tmp_expr, RULE_RET_AT(2).u.expr);
+			} else {
+				ilang_gen_for_expr_setBody(tmp_expr, RULE_RET_AT(2).u.expr);
+			}
+
+			_RETVAL.expr = tmp_expr;
+		})
+
+		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	list_comp_postfix
+		: nllo for_postfix list_comp_postfix_sub
+ */
+RULE(list_comp_postfix)
+{
+	ilang_gen_expr_t *tmp_expr;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(nllo) R(for_postfix) R(list_comp_postfix_sub)
+		{
+			tmp_expr = RULE_RET_AT(1).u.expr;
+
+			ilang_gen_for_expr_setBody(tmp_expr, RULE_RET_AT(2).u.expr);
+
+			_RETVAL.expr = tmp_expr;
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	list_comp
+		: logic_or_expr list_comp_postfix
+ */
+RULE(list_comp)
+{
+	ilang_gen_expr_t *tmp_expr;
+	ilang_gen_expr_t *last;
+	ivm_int_t cblock;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(logic_or_expr) R(list_comp_postfix)
+		{
+			tmp_expr = RULE_RET_AT(0).u.expr;
+			last = RULE_RET_AT(1).u.expr;
+			cblock = 0;
+
+			_RETVAL.expr = ilang_gen_list_comp_expr_new(_ENV->unit, ilang_gen_expr_getPos(tmp_expr), last);
+
+			while (1) {
+				if (ilang_gen_expr_isExpr(last, if_expr)) {
+					if (!ilang_gen_if_expr_getMainBody(last)) break;
+					last = ilang_gen_if_expr_getMainBody(last);
+				} else {
+					cblock++; // only for expr generates block
+					if (!ilang_gen_for_expr_getBody(last)) break;
+					last = ilang_gen_for_expr_getBody(last);
+				}
+			}
+
+			tmp_expr = ilang_gen_list_comp_core_expr_new(_ENV->unit, ilang_gen_expr_getPos(tmp_expr), tmp_expr, cblock);
+
+			if (ilang_gen_expr_isExpr(last, if_expr)) {
+				ilang_gen_if_expr_setMainBody(last, tmp_expr);
+			} else {
+				ilang_gen_for_expr_setBody(last, tmp_expr);
+			}
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	primary_expr
 		: string
 		| int
@@ -815,6 +971,7 @@ RULE(mod_name)
 		| '(' nllo expr nllo ')'
 		| '{' expr_list '}'
 		| '{' nllo slot_list_opt nllo '}'
+		| '[' nllo arg_list_opt nllo ']'
  */
 RULE(expr);
 RULE(expr_list);
@@ -920,6 +1077,13 @@ RULE(primary_expr)
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(1).u.expr_list
 			);
+		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo)
+				 R(list_comp)
+				 R(nllo) T(T_RBRAKT)
+		{
+			_RETVAL.expr = RULE_RET_AT(1).u.expr;
 		})
 	);
 

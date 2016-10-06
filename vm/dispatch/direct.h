@@ -153,6 +153,9 @@
 
 #define STACK_POP_NOCACHE() (*--tmp_sp)
 
+#define STACK_PREV_BLOCK_TOP(n) \
+	(*ivm_runtime_getPrevBlockTop(_RUNTIME, tmp_sp, AVAIL_STACK, (n)))
+
 #define _STACK (tmp_stack)
 
 #if IVM_STACK_CACHE_N_TOS != 0

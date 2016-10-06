@@ -80,8 +80,21 @@ ivm_runtime_dump(ivm_runtime_t *runtime,
 	return;
 }
 
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_runtime_getPrevBlockTop(ivm_runtime_t *runtime,
+							struct ivm_object_t_tag **cur_sp,
+							ivm_size_t cur_count,
+							ivm_int_t n)
+{
+	return ivm_frame_getPrevBlockTop(IVM_AS(runtime, ivm_frame_t), cur_sp, cur_count, n);
+}
+
 #define ivm_runtime_hasBlock(runtime) \
 	ivm_frame_hasBlock(runtime)
+
+#define ivm_runtime_hasNBlock(runtime, n) \
+	ivm_frame_hasNBlock(runtime, n)
 
 IVM_INLINE
 struct ivm_object_t_tag ** /* new_bp */

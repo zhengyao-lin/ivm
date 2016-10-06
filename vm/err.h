@@ -105,6 +105,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_FAILED_GET_ABS_PATH(path)					"failed to obtain the absolute path for '%s'", (path)
 #define IVM_ERROR_MSG_FAILED_ALLOC_BUFFER(size)					"failed to allocate buffer with size %ld", (size)
 #define IVM_ERROR_MSG_ILLEGAL_BUFFER_SIZE(size)					"illegal buffer size %ld", (size)
+#define IVM_ERROR_MSG_NO_ENOUGH_BLOCK							"no enough block"
 
 IVM_COM_END
 

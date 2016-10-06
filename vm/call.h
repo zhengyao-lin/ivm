@@ -127,7 +127,25 @@ ivm_frame_popCurCatch(ivm_frame_t *frame)
 	return IVM_NULL;
 }
 
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_frame_getPrevBlockTop(ivm_frame_t *frame,
+						  struct ivm_object_t_tag **cur_sp,
+						  ivm_size_t cur_count,
+						  ivm_int_t n)
+{
+	ivm_int_t cur = frame->cur_block;
+	struct ivm_object_t_tag **ret = cur_sp - cur_count;
+
+	while (--n) {
+		ret -= frame->blocks[cur - n].sp;
+	}
+
+	return ret - 1;
+}
+
 #define ivm_frame_hasBlock(frame) ((frame)->cur_block != 0)
+#define ivm_frame_hasNBlock(frame, n) ((frame)->cur_block >= (n))
 
 /* pop all block until find a catch */
 ivm_instr_t *
