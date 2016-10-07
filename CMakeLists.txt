@@ -104,4 +104,12 @@ target_link_libraries(testbed ivm-vm ivm-util)
 add_library(testmod SHARED testmod.c)
 target_link_libraries(testmod ivm-vm)
 
+if(DEFINED MEMCHECK AND (MEMCHECK STREQUAL "yes"))
+	message(STATUS "Memory check enabled")
+	find_program(CMAKE_MEMORYCHECK_COMMAND valgrind)
+	set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full")
+else()
+	message(STATUS "Memory check disabled")
+endif()
+
 include(CMakeTests.txt)

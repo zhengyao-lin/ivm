@@ -244,7 +244,6 @@ ivm_function_object_cloner(ivm_object_t *obj,
 {
 	ivm_context_addRef(IVM_AS(obj, ivm_function_object_t)->scope);
 	ivm_vmstate_addDesLog(state, obj);
-	
 	return;
 }
 

@@ -56,6 +56,7 @@ ivm_file_object_cloner(ivm_object_t *obj,
 					   ivm_vmstate_t *state)
 {
 	IVM_AS(obj, ivm_file_object_t)->fp = IVM_NULL;
+	ivm_vmstate_addDesLog(state, obj);
 	return;
 }
 

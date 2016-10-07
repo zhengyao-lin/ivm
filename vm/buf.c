@@ -67,5 +67,7 @@ ivm_buffer_object_cloner(ivm_object_t *obj,
 		STD_MEMCPY(buf->buf, orig, size);
 	}
 
+	ivm_vmstate_addDesLog(state, obj);
+
 	return;
 }

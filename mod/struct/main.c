@@ -98,6 +98,8 @@ ivm_struct_object_cloner(ivm_object_t *obj,
 		STD_MEMCPY(strc->fields, orig, size);
 	}
 
+	ivm_vmstate_addDesLog(state, obj);
+
 	return;
 }
 
@@ -248,6 +250,73 @@ IVM_NATIVE_FUNC(_struct_struct_pack)
 	return ivm_buffer_object_new_c(NAT_STATE(), strc->rsize, buf);
 }
 
+IVM_NATIVE_FUNC(_struct_struct_packto)
+{
+	ivm_struct_object_t *strc;
+	ivm_struct_field_t *i, *end;
+	ivm_byte_t *buf, *cur;
+	ivm_argc_t arg;
+	ivm_buffer_object_t *buf_obj;
+
+	CHECK_BASE_TP(STRUCT_TYPE_CONS);
+
+	strc = IVM_AS(NAT_BASE(), ivm_struct_object_t);
+
+	CHECK_ARG_COUNT(strc->fcount + 1);
+	MATCH_ARG("b", &buf_obj);
+
+	RTM_ASSERT(
+		ivm_buffer_object_getSize(buf_obj) >= strc->rsize,
+		STRUCT_ERROR_MSG_BUFFER_TO_SMALL(ivm_buffer_object_getSize(buf_obj), strc->rsize)
+	);
+
+	cur = buf = ivm_buffer_object_getRaw(buf_obj);
+
+#define _CHECK_ARG(t) \
+	if (!IVM_IS_BTTYPE(NAT_ARG_AT(arg), NAT_STATE(), t)) {    \
+		RTM_FATAL(STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(       \
+			IVM_OBJECT_GET(NAT_ARG_AT(arg), TYPE_NAME),       \
+			ivm_vmstate_getTypeName(NAT_STATE(), t)           \
+		));                                                   \
+	}
+
+	for (arg = 2,
+		 i = strc->fields,
+		 end = i + strc->fcount;
+		 i != end; i++, arg++) {
+		switch (i->type) {
+			case IVM_STRUCT_TYPE_INT:
+				_CHECK_ARG(IVM_NUMERIC_T);
+				_write_native_endian(cur, ivm_sint32_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
+				break;
+
+			case IVM_STRUCT_TYPE_LONG:
+				_CHECK_ARG(IVM_NUMERIC_T);
+				_write_native_endian(cur, ivm_sint64_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
+				break;
+
+			case IVM_STRUCT_TYPE_FLOAT:
+				_CHECK_ARG(IVM_NUMERIC_T);
+				_write_native_endian(cur, ivm_single_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
+				break;
+
+			case IVM_STRUCT_TYPE_DOUBLE:
+				_CHECK_ARG(IVM_NUMERIC_T);
+				_write_native_endian(cur, ivm_double_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
+				break;
+
+			default:
+				RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(ivm_string_trimHead(i->name)));
+		}
+
+		cur += i->size;
+	}
+
+#undef _CHECK_ARG
+
+	return IVM_AS_OBJ(buf_obj);
+}
+
 IVM_NATIVE_FUNC(_struct_struct_unpack)
 {
 	ivm_buffer_object_t *buf;
@@ -339,6 +408,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 		ivm_object_setSlot_r(struct_proto, state, "size", IVM_NATIVE_WRAP(state, _struct_struct_size));
 		ivm_object_setSlot_r(struct_proto, state, "pack", IVM_NATIVE_WRAP(state, _struct_struct_pack));
+		ivm_object_setSlot_r(struct_proto, state, "packto", IVM_NATIVE_WRAP(state, _struct_struct_packto));
 		ivm_object_setSlot_r(struct_proto, state, "unpack", IVM_NATIVE_WRAP(state, _struct_struct_unpack));
 	});
 
