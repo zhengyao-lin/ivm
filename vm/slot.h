@@ -179,7 +179,7 @@ typedef ivm_slot_t *ivm_slot_table_iterator_t;
 	for ((iter) = (table)->tabl, \
 		 __sl_end_##iter##__ = (iter) + (table)->size; \
 		 (iter) < __sl_end_##iter##__; \
-		 (iter)++) if ((iter)->k)
+		 (iter)++) if ((iter)->v)
 
 /* be sure table is not null */
 IVM_INLINE

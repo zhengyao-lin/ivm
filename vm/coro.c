@@ -210,7 +210,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	ivm_frame_stack_t *tmp_frame_st;
 
 	register ivm_context_t *tmp_context;
-	IVM_REG ivm_object_t **tmp_st_end;
+	register ivm_object_t **tmp_st_end;
 
 	IVM_REG ivm_object_t *tmp_obj1 = IVM_NULL;
 	IVM_REG ivm_object_t *tmp_obj2 = IVM_NULL;

@@ -249,6 +249,8 @@ ivm_function_setExec(ivm_function_t *func,
 					 struct ivm_vmstate_t_tag *state,
 					 ivm_exec_t *body);
 
+/*
+
 ivm_instr_t *
 ivm_function_createRuntime(const ivm_function_t *func,
 						   struct ivm_vmstate_t_tag *state,
@@ -280,6 +282,8 @@ ivm_instr_t *
 ivm_function_object_invoke(ivm_function_object_t *obj,
 						   struct ivm_vmstate_t_tag *state,
 						   struct ivm_coro_t_tag *coro);
+
+*/
 
 IVM_COM_END
 

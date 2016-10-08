@@ -146,9 +146,7 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 
 	IVM_SLOT_TABLE_EACHPTR(ret, siter) {
 		// IVM_TRACE("  copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
-		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-									ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter),
-															 arg));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter, ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
 	}
 
 	oops = ivm_slot_table_getOops(ret);
@@ -170,7 +168,7 @@ ivm_slot_table_t *
 ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 							   ivm_traverser_arg_t *arg)
 {
-	ivm_object_t *tmp;
+	// ivm_object_t *tmp;
 	ivm_slot_table_iterator_t siter;
 	ivm_object_t **oops, **end;
 	ivm_int_t count;
@@ -185,8 +183,7 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 		// IVM_TRACE("  copied slot: %s: %p -> ",
 		// 	  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
 		// 	  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
-		IVM_SLOT_TABLE_ITER_SET_VAL(siter,
-									(tmp = ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg)));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter, ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
 		// IVM_TRACE("%p\n", tmp);
 	}
 

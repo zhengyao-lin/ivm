@@ -23,6 +23,15 @@ buf = buffer(1024)
 s.packto(buf, 2147483648, 1.2, 2.0, 100000000000000)
 s.unpack(buf).print()
 
+obj = {
+	a: int,
+	b: double
+}
+
+del obj.b
+
+s = struct(obj)
+
 ret
 
 // -> "str: \\[ -2147483648, 1\\.2, 2, 1e\\+14 \\]"

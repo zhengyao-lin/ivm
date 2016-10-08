@@ -1,10 +1,10 @@
 OPCODE_GEN(NOP, "nop", N, 0, {
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_NIL, "new_nil", N, 1, {
 	STACK_PUSH(IVM_NULL);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_NONE, "new_none", N, 1, {
@@ -96,7 +96,7 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 		STACK_INC_C(_TMP_ARGC);
 	}
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 /* unary operations */
@@ -174,12 +174,12 @@ OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0, IVM_FALSE))
 
 OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
 	_CONTEXT = ivm_runtime_appendContextNode(_RUNTIME, _STATE);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(EXPAND_LOC, "expand_loc", I, 0, {
@@ -238,7 +238,7 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 // no pop
@@ -251,7 +251,19 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, 1, {
 	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
+})
+
+OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_POP();
+	NOT_NONE(_TMP_OBJ1, "proto");
+
+	_TMP_OBJ1 = ivm_object_getProto(_TMP_OBJ1);
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
+
+	NEXT_INSTR_NGC();
 })
 
 /*
@@ -295,18 +307,6 @@ OPCODE_GEN(SET_SLOT_B, "set_slot_b", S, -1, {
 	NEXT_INSTR();
 })
 
-OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_POP();
-	NOT_NONE(_TMP_OBJ1, "proto");
-
-	_TMP_OBJ1 = ivm_object_getProto(_TMP_OBJ1);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
-
-	NEXT_INSTR();
-})
-
 OPCODE_GEN(SET_PROTO, "set_proto", N, -1, {
 	CHECK_STACK(2);
 
@@ -341,7 +341,7 @@ OPCODE_GEN(GET_CONTEXT_SLOT, "get_context_slot", S, 1, {
 */
 	// IVM_TRACE("gcs: %p %s -> %p\n", _CONTEXT, ivm_string_trimHead(SARG()), _TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, -1, {
@@ -370,7 +370,7 @@ OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 	);
 	STACK_PUSH(_TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
@@ -387,7 +387,7 @@ OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 	);
 	STACK_PUSH(_TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, -1, {
@@ -421,7 +421,7 @@ OPCODE_GEN(GET_LOCAL_SLOT, "get_local_slot", S, 1, {
 
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(SET_GLOBAL_SLOT, "set_global_slot", S, -1, {
@@ -444,7 +444,7 @@ OPCODE_GEN(GET_GLOBAL_SLOT, "get_global_slot", S, 1, {
 
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 #endif
@@ -546,20 +546,20 @@ OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IARG());
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(POP, "pop", N, -1, {
 	CHECK_STACK(1);
 	STACK_POP();
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(POP_N, "pop_n", I, -1, {
 	_TMP_ARGC = IARG();
 	CHECK_STACK(_TMP_ARGC);
 	STACK_CUT(_TMP_ARGC);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(DUP_N, "dup_n", I, 1, {
@@ -570,12 +570,12 @@ OPCODE_GEN(DUP_N, "dup_n", I, 1, {
 	_TMP_OBJ1 = STACK_BEFORE(_TMP_ARGC);
 	STACK_PUSH(_TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(DUP_ABS, "dup_abs", I, 1, {
 	STACK_PUSH(*(_BP + IARG()));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(DUP, "dup", N, 1, {
@@ -584,7 +584,7 @@ OPCODE_GEN(DUP, "dup", N, 1, {
 	_TMP_OBJ1 = STACK_TOP();
 	STACK_PUSH(_TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 /* duplicate the top element in the nth previous block */
@@ -596,14 +596,14 @@ OPCODE_GEN(DUP_PREV_BLOCK, "dup_prev_block", I, 1, {
 	_TMP_OBJ1 = STACK_PREV_BLOCK_TOP(_TMP_ARGC);
 	STACK_PUSH(_TMP_OBJ1);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 #if 1
 
 OPCODE_GEN(OUT, "out", S, 0, {
 	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_NUM, "out_num", N, 0, {
@@ -616,7 +616,7 @@ OPCODE_GEN(OUT_NUM, "out_num", N, 0, {
 		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME));
 	}
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_STR, "out_str", N, 0, {
@@ -629,12 +629,12 @@ OPCODE_GEN(OUT_STR, "out_str", N, 0, {
 		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME));
 	}
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, 0, {
 	IVM_TRACE("%ld\n", STACK_SIZE());
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
@@ -643,7 +643,7 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
 	_TMP_OBJ1 = STACK_TOP();
 	IVM_TRACE("%s\n", _TMP_OBJ1 ? IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME) : "<null pointer>");
 	
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 #endif
@@ -798,7 +798,7 @@ OPCODE_GEN(FORK, "fork", N, -1, {
 		IVM_AS(_TMP_OBJ1, ivm_function_object_t)
 	);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(GROUP, "group", N, 0, {
@@ -818,7 +818,7 @@ OPCODE_GEN(GROUP, "group", N, 0, {
 		)
 	);
 
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(GROUP_TO, "group_to", N, -1, {
@@ -884,8 +884,6 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 	
 	_TMP_OBJ1 = ivm_vmstate_schedule_g(_STATE, _TMP_OBJ1, _TMP_CGID);
 
-	// NOTE: _TMP_OBJ1 ?= NULL
-
 	UPDATE_RUNTIME();
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 	NEXT_INSTR();
@@ -934,7 +932,7 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 		RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
 		STACK_PUSH(_TMP_OBJ2); // get iter.next
 
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -964,12 +962,12 @@ OPCODE_GEN(PUSH_LIST, "push_list", N, -2, {
  */
 OPCODE_GEN(RPROT_SET, "rprot_set", A, 0, {
 	ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
 	ivm_runtime_setCurCatch(_RUNTIME, IVM_NULL);
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 /*
@@ -991,14 +989,14 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	SAVE_STACK();
 	SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, AVAIL_STACK));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
 	SAVE_STACK();
 	ivm_runtime_popBlock(_RUNTIME);
 	UPDATE_STACK_C();
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(RETURN, "return", N, -1, {
@@ -1028,7 +1026,7 @@ OPCODE_GEN(JUMP_TRUE, "jump_true", A, -1, {
 	if (ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -1038,7 +1036,7 @@ OPCODE_GEN(JUMP_FALSE, "jump_false", A, -1, {
 	if (!ivm_object_toBool(STACK_POP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -1050,7 +1048,7 @@ OPCODE_GEN(JUMP_TRUE_R, "jump_true_r", A, 0, {
 		if (_TMP_CMP_REG) {
 			GOTO_SET_INSTR(ADDR_ARG());
 		} else {
-			NEXT_INSTR();
+			NEXT_INSTR_NGC();
 		}
 	} else {
 		GOTO_INSTR(JUMP_TRUE);
@@ -1063,7 +1061,7 @@ OPCODE_GEN(JUMP_FALSE_R, "jump_false_r", A, 0, {
 		if (!_TMP_CMP_REG) {
 			GOTO_SET_INSTR(ADDR_ARG());
 		} else {
-			NEXT_INSTR();
+			NEXT_INSTR_NGC();
 		}
 	} else {
 		GOTO_INSTR(JUMP_FALSE);
@@ -1079,7 +1077,7 @@ OPCODE_GEN(JUMP_TRUE_N, "jump_true_n", A, -1, {
 	if (ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -1089,7 +1087,7 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 	if (!ivm_object_toBool(STACK_TOP(), _STATE)) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 
@@ -1098,7 +1096,7 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 	if (AVAIL_STACK) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
-		NEXT_INSTR();
+		NEXT_INSTR_NGC();
 	}
 })
 

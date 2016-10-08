@@ -51,18 +51,24 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (IVM_UNLIKELY(ivm_vmstate_checkGC(state))) {   \
+	if (!ivm_vmstate_checkGC(state)) {                \
+		goto *(ivm_instr_entry(tmp_ip));              \
+	} else {                                          \
 		SAVE_STACK();                                 \
 		ivm_vmstate_doGC(state);                      \
+		goto *(ivm_instr_entry(tmp_ip));              \
 	}                                                 \
-	goto *(ivm_instr_entry(tmp_ip));
 
 #define NEXT_INSTR() \
-	if (IVM_UNLIKELY(ivm_vmstate_checkGC(state))) {   \
+	if (!ivm_vmstate_checkGC(state)) {                \
+		goto *(ivm_instr_entry(++tmp_ip));            \
+	} else {                                          \
 		SAVE_STACK();                                 \
 		ivm_vmstate_doGC(state);                      \
-	}                                                 \
-	goto *(ivm_instr_entry(++tmp_ip));
+		goto *(ivm_instr_entry(++tmp_ip));            \
+	}
+
+#define NEXT_INSTR_NGC() goto *(ivm_instr_entry(++tmp_ip));
 
 #define NEXT_N_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip += (n)));
