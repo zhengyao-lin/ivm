@@ -3,6 +3,33 @@
 #include "priv.h"
 
 ilang_gen_value_t
+ilang_gen_expand_expr_eval(ilang_gen_expr_t *expr,
+						   ilang_gen_flag_t flag,
+						   ilang_gen_env_t *env)
+{
+	ilang_gen_expand_expr_t *expd = IVM_AS(expr, ilang_gen_expand_expr_t);
+
+	GEN_ASSERT_ONLY_ARG(expr, flag, "expand expression");
+
+	expd->list->eval(expd->list, FLAG(0), env);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
+
+	return NORET();
+}
+
+ilang_gen_value_t
+ilang_gen_pa_expr_eval(ilang_gen_expr_t *expr,
+					   ilang_gen_flag_t flag,
+					   ilang_gen_env_t *env)
+{
+	GEN_ASSERT_ONLY_ARG(expr, flag, "partially applied argument");
+
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_ABS, flag.pa_argno);
+
+	return NORET();
+}
+
+ilang_gen_value_t
 ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 						 ilang_gen_flag_t flag,
 						 ilang_gen_env_t *env)
@@ -14,6 +41,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_value_t tmp_ret;
 	ivm_int_t pa_argno;
 	ivm_int_t pa_arg_count = 0;
+	ivm_bool_t has_expand;
 
 	ilang_gen_addr_set_t addr_backup = env->addr;
 
@@ -23,12 +51,15 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "call expression", flag);
 
 	args = call_expr->args;
+	has_expand = IVM_FALSE;
 
 	{
 		ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
 			tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
 			if (tmp_arg->is_missing)
 				pa_arg_count++;
+			else if (ilang_gen_expr_isExpr(tmp_arg, expand_expr))
+				has_expand = IVM_TRUE;
 		}
 	}
 
@@ -42,6 +73,8 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		env->addr = ilang_gen_addr_set_init();
 
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PA_ARG, pa_arg_count);
+	} else if (has_expand) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
 	}
 
 	pa_argno = 0;
@@ -53,7 +86,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 			if (tmp_arg->is_missing) {
 				tmp_arg->eval(tmp_arg, FLAG(.is_arg = IVM_TRUE, .pa_argno = pa_argno), env);
 				pa_argno++;
-			} else{
+			} else {
 				tmp_arg->eval(tmp_arg, FLAG(.is_arg = IVM_TRUE), env);
 			}
 		}
@@ -65,16 +98,32 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		env
 	);
 
+	if (has_expand && pa_arg_count) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK_AT, pa_arg_count);
+	}
+
 	if (tmp_ret.has_base) {
-		ivm_exec_addInstr_l(
-			env->cur_exec, GET_LINE(expr), INVOKE_BASE,
-			ilang_gen_expr_list_size(args)
-		);
+		if (has_expand) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE_VAR);
+		} else {
+			ivm_exec_addInstr_l(
+				env->cur_exec, GET_LINE(expr), INVOKE_BASE,
+				ilang_gen_expr_list_size(args)
+			);
+		}
 	} else {
-		ivm_exec_addInstr_l(
-			env->cur_exec, GET_LINE(expr), INVOKE,
-			ilang_gen_expr_list_size(args)
-		);
+		if (has_expand) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_VAR);
+		} else {
+			ivm_exec_addInstr_l(
+				env->cur_exec, GET_LINE(expr), INVOKE,
+				ilang_gen_expr_list_size(args)
+			);
+		}
+	}
+
+	if (has_expand) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK_S1);
 	}
 
 	// restore env

@@ -45,8 +45,8 @@
 #define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list"
 #define GEN_ERR_MSG_FAILED_PARSE_STRING(msg)						"failed to parse string literal: %s", (msg)
 #define GEN_ERR_MSG_DUP_PARAM_NAME(name, len)						"duplicated parameter name '%.*s'", (int)(len), (name)
-#define GEN_ERR_MSG_MISSING_NOT_IN_ARG								"partial applied token must be in argument list"
 #define GEN_ERR_MSG_TOO_LONG_MOD_NAME(len)							"module name is too long(length of %ld)", (len)
+#define GEN_ERR_MSG_NOT_IN_ARG(name)								"%s without an argument list", (name)
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -67,6 +67,11 @@
 #define GEN_ASSERT_MISSING_IS_ARG(expr, flag) \
 	if (!(flag).is_arg) { \
 		GEN_ERR((expr)->pos, GEN_ERR_MSG_MISSING_NOT_IN_ARG); \
+	}
+
+#define GEN_ASSERT_ONLY_ARG(expr, flag, name) \
+	if (!(flag).is_arg) { \
+		GEN_ERR((expr)->pos, GEN_ERR_MSG_NOT_IN_ARG(name)); \
 	}
 
 #define GEN_ERR_MULTIPLE_VARG(expr) \

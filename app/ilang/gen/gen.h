@@ -37,7 +37,6 @@ typedef struct{
 	ilang_gen_addr_list_t *break_ref;
 	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
 	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
-
 } ilang_gen_addr_set_t;
 
 #define ilang_gen_addr_set_build(...) \
@@ -295,6 +294,16 @@ typedef struct {
 
 COMMON_EXPR(pa_expr, "partial applied expression", {
 }, ivm_int_t dummy);
+
+/* expand expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *list;
+} ilang_gen_expand_expr_t;
+
+COMMON_EXPR(expand_expr, "expand expression", {
+	ret->list = list;
+}, ilang_gen_expr_t *list);
 
 /* id expr */
 typedef struct {

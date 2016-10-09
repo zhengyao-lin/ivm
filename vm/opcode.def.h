@@ -99,6 +99,23 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 	NEXT_INSTR_NGC();
 })
 
+OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
+	_TMP_OBJ1 = STACK_POP();
+	RTM_ASSERT(
+		IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
+		IVM_ERROR_MSG_UNPACK_NON_LIST(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))
+	);
+
+	_TMP_ARGC = ivm_list_object_getSize(IVM_AS(_TMP_OBJ1, ivm_list_object_t));
+	_TMP_ARGV = STACK_ENSURE(_TMP_ARGC);
+
+	_ivm_list_object_unpackAll(IVM_AS(_TMP_OBJ1, ivm_list_object_t), _STATE, _TMP_ARGV);
+
+	STACK_INC_C(_TMP_ARGC);
+
+	NEXT_INSTR_NGC();
+})
+
 /* unary operations */
 OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", {
 	STACK_PUSH(ivm_numeric_new(_STATE, !ivm_object_toBool(_TMP_OBJ1, _STATE)));
@@ -663,6 +680,8 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
 OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 	_TMP_ARGC = IARG();
 
+	// if (_TMP_ARGC < 0) _TMP_ARGC = AVAIL_STACK;
+
 	CHECK_STACK(_TMP_ARGC + 1);
 	_TMP_OBJ1 = STACK_POP();
 
@@ -725,6 +744,8 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), {
 	_TMP_ARGC = IARG();
 
+	// if (_TMP_ARGC < 0) _TMP_ARGC = AVAIL_STACK;
+
 	CHECK_STACK(_TMP_ARGC + 2);
 
 	_TMP_OBJ1 = STACK_POP();
@@ -783,6 +804,18 @@ RETRY:
 		} while (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T));
 		goto RETRY;
 	}
+})
+
+OPCODE_GEN(INVOKE_VAR, "invoke_var", N, -1, {
+	CHECK_STACK(1);
+	SET_IARG(AVAIL_STACK - 1);
+	GOTO_INSTR(INVOKE);
+})
+
+OPCODE_GEN(INVOKE_BASE_VAR, "invoke_base_var", N, -1, {
+	CHECK_STACK(2);
+	SET_IARG(AVAIL_STACK - 2);
+	GOTO_INSTR(INVOKE_BASE);
 })
 
 OPCODE_GEN(FORK, "fork", N, -1, {
@@ -992,10 +1025,41 @@ OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	NEXT_INSTR_NGC();
 })
 
+OPCODE_GEN(PUSH_BLOCK_AT, "push_block_at", I, 0, {
+	SAVE_STACK();
+	SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, IARG()));
+	NEXT_INSTR_NGC();
+})
+
 OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
 	SAVE_STACK();
 	ivm_runtime_popBlock(_RUNTIME);
 	UPDATE_STACK_C();
+	NEXT_INSTR_NGC();
+})
+
+// save original stack
+OPCODE_GEN(POP_BLOCK_S, "pop_block_s", I, 0, {
+	_TMP_ARGC = IARG();
+	CHECK_STACK(_TMP_ARGC);
+
+	SAVE_STACK();
+	ivm_runtime_popBlock(_RUNTIME);
+	UPDATE_STACK_C();
+	STACK_INC_C(_TMP_ARGC);
+
+	NEXT_INSTR_NGC();
+})
+
+// save 1 original stack
+OPCODE_GEN(POP_BLOCK_S1, "pop_block_s1", N, 0, {
+	CHECK_STACK(1);
+
+	SAVE_STACK();
+	ivm_runtime_popBlock(_RUNTIME);
+	UPDATE_STACK_C();
+	STACK_INC_C(1);
+
 	NEXT_INSTR_NGC();
 })
 

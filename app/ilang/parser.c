@@ -42,6 +42,7 @@ enum token_id_t {
 	T_RAISE,
 	T_YIELD,
 	T_RESUME,
+	T_EXPAND,
 
 	T_WITH,
 	T_TO,
@@ -132,6 +133,7 @@ token_name_table[] = {
 	"keyword `raise`",
 	"keyword `yield`",
 	"keyword `resume`",
+	"keyword `expand`",
 
 	"keyword `with`",
 	"keyword `to`",
@@ -468,6 +470,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("raise", T_RAISE)
 		KEYWORD("yield", T_YIELD)
 		KEYWORD("resume", T_RESUME)
+		KEYWORD("expand", T_EXPAND)
 
 		KEYWORD("with", T_WITH)
 		KEYWORD("to", T_TO)
@@ -1095,6 +1098,32 @@ RULE(primary_expr)
 	ilang_gen_none_expr_new(_ENV->unit, ilang_gen_pos_build(-1, -1), 0)
 
 /*
+	arg
+		: 'expand' prefix_expr
+		| prefix_expr
+ */
+RULE(arg)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_EXPAND) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_expand_expr_new(_ENV->unit, TOKEN_POS(tmp_token), RULE_RET_AT(0).u.expr);
+		})
+
+		SUB_RULE(R(prefix_expr)
+		{
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	arg_list_sub
 		: nllo ',' nllo prefix_expr arg_list_sub
 		| %empty
@@ -1106,7 +1135,7 @@ RULE(arg_list_sub)
 	struct rule_val_t tmp_ret;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(prefix_expr) R(arg_list_sub)
+		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(arg) R(arg_list_sub)
 		{
 			tmp_ret = RULE_RET_AT(2);
 			tmp_list = _RETVAL.expr_list = RULE_RET_AT(3).u.expr_list;
@@ -1139,7 +1168,7 @@ RULE(arg_list_opt)
 	struct rule_val_t tmp_ret;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(prefix_expr) R(arg_list_sub)
+		SUB_RULE(R(arg) R(arg_list_sub)
 		{
 			tmp_ret = RULE_RET_AT(0);
 			tmp_list = _RETVAL.expr_list = RULE_RET_AT(1).u.expr_list;

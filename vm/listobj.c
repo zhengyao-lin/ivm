@@ -56,28 +56,6 @@ ivm_list_object_step(ivm_list_object_t *list,
 }
 
 void
-_ivm_list_object_unpackTo(ivm_list_object_t *list,
-						  ivm_vmstate_t *state,
-						  ivm_object_t **sp,
-						  ivm_size_t req)
-{
-	ivm_object_t **lst = list->lst;
-	ivm_size_t i, j, size = list->size;
-
-	j = req - 1;
-
-	for (i = 0; i != req && i != size; i++) {
-		sp[j--] = lst[i] ? lst[i] : IVM_NONE(state);
-	}
-
-	for (; i != req; i++) {
-		sp[j--] = IVM_NONE(state);
-	}
-
-	return;
-}
-
-void
 ivm_list_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {

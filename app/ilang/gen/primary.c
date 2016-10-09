@@ -1,18 +1,6 @@
 #include "priv.h"
 
 ilang_gen_value_t
-ilang_gen_pa_expr_eval(ilang_gen_expr_t *expr,
-					   ilang_gen_flag_t flag,
-					   ilang_gen_env_t *env)
-{
-	GEN_ASSERT_MISSING_IS_ARG(expr, flag);
-
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_ABS, flag.pa_argno);
-
-	return NORET();
-}
-
-ilang_gen_value_t
 ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 					   ilang_gen_flag_t flag,
 					   ilang_gen_env_t *env)
