@@ -1,3 +1,5 @@
+#include "vm/native/native.h"
+
 #include "util/opt.h"
 
 #include "priv.h"
@@ -234,7 +236,7 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 		BR(NE)
 
 		case ILANG_GEN_CMP_IS:
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, "is");
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, IVM_NATIVE_IS_FUNC);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE, 2);
 			break;
 

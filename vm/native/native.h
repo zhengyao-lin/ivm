@@ -33,4 +33,8 @@ IVM_NATIVE_WRAP_CONS_c(ivm_vmstate_t *state,
 #define IVM_NATIVE_WRAP_CONS(state, proto, name) \
 	IVM_NATIVE_WRAP_CONS_c((state), (proto), IVM_GET_NATIVE_FUNC(name))
 
+#define IVM_NATIVE_IMPORT_FUNC "$import"
+#define IVM_NATIVE_IS_FUNC "$is"
+#define IVM_NATIVE_VARG_NAME "$varg"
+
 #endif

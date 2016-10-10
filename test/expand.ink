@@ -17,9 +17,16 @@ p = a.f(_, expand [ 1, 2, 3 ], _, expand [ "hi", "wow" ], _, _)
 
 print(10 + p(1000, 20, 0, 5))
 
+try: f(expand 1)
+catch: print("error")
+
+f(expand [])
+
 // -> "str: \\[ 1, 2, 3, 1, 2 \\]"
 // -> "num: 10013"
 // -> "str: \\[ wow, hey, 1, 2, 3 \\]"
 // -> "num: 10015"
 // -> "str: \\[ 1000, 1, 2, 3, 20, hi, wow, 0, 5 \\]"
 // -> "num: 10021"
+// -> "str: error"
+// -> "str: \\[\\]"

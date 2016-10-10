@@ -1,7 +1,7 @@
 import math
-`import`("../ulist")
+$import("../ulist")
 
-loc.merge(`import`("../matrix"))
+loc.merge($import("../matrix"))
 
 loc sigmoid = fn x: (1 / (1 + math.exp(-x)))
 

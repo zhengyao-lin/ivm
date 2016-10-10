@@ -39,19 +39,19 @@ __test = fn: {
 	变量1 = "这个变量"
 	print(变量1)
 
-	sort = `import`("test/sort")
-	mod = `import`("testmod")
+	sort = $import("test/sort")
+	mod = $import("testmod")
 
-	try: `import`("build/lib/wrongmod")
+	try: $import("build/lib/wrongmod")
 	catch err: printe(err)
 
-	try: `import`("build/lib/libivm-vm")
+	try: $import("build/lib/libivm-vm")
 	catch err: printe(err)
 
-	try: `import`("never_found")
+	try: $import("never_found")
 	catch err: printe(err)
 
-	try: `import`("wrongmod")
+	try: $import("wrongmod")
 	catch err: printe(err)
 
 	sort.bubble([5, 4, 3, 2, 1]).print()

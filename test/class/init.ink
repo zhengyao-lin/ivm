@@ -1,17 +1,13 @@
+loc class = fn mixin..., init: {
+	loc p = mixin.size() && mixin[0] || object.proto
 
-loc class = fn mixins..., init: {
-	loc r = fn: {
-		loc n = { proto: r.proto }
-		init(n)
+	loc r = fn args...: {
+		loc n = { proto: p }
+		init(n, expand args)
 		ret n
 	}
 
-	r.core = init
-	if mixins.size(): {
-		loc p = r.proto = mixins[0]()
-		for loc mixin in mixins.slice(1):
-			mixin.core(p)
-	}
+	r.proto = p
 
 	ret r
 }

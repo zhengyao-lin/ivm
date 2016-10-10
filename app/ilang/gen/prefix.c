@@ -1,5 +1,7 @@
 #include "pub/const.h"
 
+#include "vm/native/native.h"
+
 #include "util/opt.h"
 
 #include "priv.h"
@@ -87,7 +89,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 				if (tmp_str) {
 					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, tmp_str);
 				} else {
-					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, "$varg");
+					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, IVM_NATIVE_VARG_NAME);
 				}
 			}
 		}
