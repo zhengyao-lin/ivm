@@ -57,6 +57,8 @@ ivm_runtime_new(struct ivm_vmstate_t_tag *state);
 #define ivm_runtime_free(runtime, state) \
 	(STD_FREE(runtime))
 
+#define ivm_runtime_decSP(runtime, n) ((runtime)->sp -= (n))
+
 /* rewrite the environment */
 /*
 void

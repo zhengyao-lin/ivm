@@ -176,5 +176,7 @@ ivm_vmstack_push(ivm_coro_t *coro,
 		ivm_vmstack_inc_c(stack, coro);
 	}
 
+	// IVM_TRACE("%p %p\n", runtime->bp, runtime->sp);
+
 	return;
 }

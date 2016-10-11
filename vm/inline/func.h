@@ -137,6 +137,21 @@ ivm_function_object_invoke(ivm_function_object_t *obj,
 	);
 }
 
+IVM_INLINE
+ivm_instr_t *
+ivm_function_object_invokeBase(ivm_function_object_t *obj,
+							   ivm_vmstate_t *state,
+							   ivm_coro_t *coro,
+							   ivm_object_t *base)
+{
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+
+	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
+	return _ivm_function_invoke_b(
+		obj->val, state, obj->scope, runtime, base
+	);
+}
+
 IVM_COM_END
 
 #endif

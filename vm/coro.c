@@ -380,7 +380,7 @@ ACTION_RETURN:
 
 			ivm_runtime_dump(tmp_runtime, state);
 			tmp_bp = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
-			
+
 			if (tmp_bp) {
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
@@ -427,6 +427,38 @@ ivm_cgroup_switchCoro(ivm_cgroup_t *group)
 	}
 
 	return IVM_FALSE;
+}
+
+ivm_object_t *
+ivm_coro_callBase_n(ivm_coro_t *coro,
+					ivm_vmstate_t *state,
+					ivm_function_object_t *func,
+					ivm_object_t *base)
+{
+	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+
+	if (ivm_function_object_invokeBase(func, state, coro, base)) {
+		/* non-native */
+		return ivm_coro_resume(coro, state, IVM_NULL);
+	}
+
+	// IVM_TRACE("call base: %p %p\n", runtime->bp, runtime->sp);
+
+	ivm_object_t *ret = ivm_function_callNative(
+		ivm_function_object_getFunc(func), state, coro,
+		ivm_function_object_getScope(func),
+		IVM_FUNCTION_SET_ARG_3(base, 0, IVM_NULL)
+	);
+	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
+
+	ivm_runtime_dump(runtime, state);
+	ivm_frame_stack_pop(frame_st, runtime);
+
+	if (!ivm_vmstate_checkGC(state)) {
+		ivm_vmstate_doGC(state);
+	}
+
+	return ret;
 }
 
 void

@@ -90,10 +90,12 @@ ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 					ivm_runtime_t *runtime)
 {
 	if (stack->top) {
+		runtime->sp = runtime->bp;
+
 		STD_MEMCPY(runtime, stack->frames + --stack->top,
 				   IVM_FRAME_HEADER_SIZE);
 
-		return runtime->sp = runtime->bp;
+		return runtime->bp;
 	}
 
 	return IVM_NULL;

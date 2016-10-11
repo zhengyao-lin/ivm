@@ -195,9 +195,28 @@ ivm_object_merge(ivm_object_t *obj,
 IVM_INLINE
 ivm_function_object_t *
 ivm_object_callable(ivm_object_t *obj,
-					ivm_vmstate_t *state)
+					ivm_vmstate_t *state,
+					ivm_object_t **base_p)
 {
+	if (IVM_IS_BTTYPE(obj, state, IVM_FUNCTION_OBJECT_T)) {
+		*base_p = IVM_NULL;
+		return IVM_AS(obj, ivm_function_object_t);
+	}
 
+	ivm_object_t *bas = IVM_NULL;
+
+	do {
+		bas = obj;
+		obj = ivm_object_getOop(obj, IVM_OOP_ID(CALL));
+		if (!obj) {
+			*base_p = IVM_NULL;
+			return IVM_AS(obj, ivm_function_object_t);
+		}
+	} while (!IVM_IS_BTTYPE(obj, state, IVM_FUNCTION_OBJECT_T));
+
+	*base_p = bas;
+
+	return IVM_AS(obj, ivm_function_object_t);
 }
 
 IVM_COM_END

@@ -17,8 +17,5 @@ loc b = TypeB("hey")
 a.print()
 b.print()
 
-for loc i in range(1000000):
-	TypeA()
-
 // -> "num: 10"
 // -> "str: b: hey"

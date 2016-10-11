@@ -13,8 +13,47 @@
 
 IVM_NATIVE_FUNC(_list_cons)
 {
-	CHECK_ARG_1(IVM_LIST_OBJECT_T);
-	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	ivm_object_t *obj, *iter, *list, *base, *ret, *next;
+	ivm_function_object_t *iter_func, *next_func;
+
+	CHECK_ARG_COUNT(1);
+
+	obj = NAT_ARG_AT(1);
+
+	if (IVM_IS_BTTYPE(obj, NAT_STATE(), IVM_LIST_OBJECT_T)) {
+		return ivm_object_clone(obj, NAT_STATE());
+	}
+
+	iter = ivm_object_getSlot(obj, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_ITER));
+
+	if (!iter || !(iter_func = ivm_object_callable(iter, NAT_STATE(), &base))) {
+		RTM_FATAL(IVM_ERROR_MSG_NON_ITERABLE);
+	}
+
+	iter = ivm_coro_callBase_n(NAT_CORO(), NAT_STATE(), iter_func, base ? base : obj);
+
+	list = ivm_list_object_new(NAT_STATE(), 0);
+	ivm_vmstack_push(NAT_CORO(), list);
+	ivm_vmstack_push(NAT_CORO(), iter);
+
+	while (1) {
+		iter = ivm_vmstack_prev(NAT_CORO(), 1);
+		next = ivm_object_getSlot(iter, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_NEXT));
+
+		if (!next || !(next_func = ivm_object_callable(next, NAT_STATE(), &base))) {
+			RTM_FATAL(IVM_ERROR_MSG_NON_ITERABLE);
+		}
+
+		ret = ivm_coro_callBase_n(NAT_CORO(), NAT_STATE(), next_func, base ? base : iter);
+
+		list = ivm_vmstack_prev(NAT_CORO(), 2);
+		if (!ret)
+			break;
+		
+		ivm_list_object_push(IVM_AS(list, ivm_list_object_t), NAT_STATE(), ret);
+	}
+
+	return list;
 }
 
 IVM_NATIVE_FUNC(_list_size)

@@ -120,6 +120,12 @@ ivm_coro_resume(ivm_coro_t *coro,
 	return ivm_coro_start(coro, state, IVM_NULL);
 }
 
+ivm_object_t *
+ivm_coro_callBase_n(ivm_coro_t *coro,
+					struct ivm_vmstate_t_tag *state,
+					ivm_function_object_t *func,
+					ivm_object_t *base);
+
 IVM_INLINE
 ivm_context_t *
 ivm_coro_getRuntimeGlobal(ivm_coro_t *coro)
