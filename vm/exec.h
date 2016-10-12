@@ -43,9 +43,9 @@ typedef struct ivm_exec_t_tag {
 	// ivm_int_t fin_stack; // final stack size
 	ivm_instr_t *instrs;
 	ivm_uint_t alloc;
-	ivm_uint_t next: 31;
+	ivm_uint_t next;
 
-	ivm_uint_t cached: 1;
+	ivm_bool_t cached;
 } ivm_exec_t;
 
 ivm_exec_t *

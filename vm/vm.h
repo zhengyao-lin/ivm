@@ -38,6 +38,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_coro_pool_t cr_pool;					// 72
 	ivm_cgroup_list_t coro_groups;
+	ivm_cgid_t last_gid;
 
 	ivm_type_pool_t type_pool;
 

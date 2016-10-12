@@ -290,6 +290,8 @@ ivm_list_at(ivm_list_t *list, ivm_size_t i)
 	return list->lst + (i * list->esize);
 }
 
+#define ivm_list_has(list, i) ((list)->cur > (i))
+
 #define ivm_list_size(list) ((list)->cur)
 #define ivm_list_empty(list) ((list)->cur = 0)
 #define ivm_list_core(list) ((list)->lst)

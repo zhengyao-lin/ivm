@@ -278,6 +278,7 @@ typedef IVM_LIST_ITER_TYPE(ivm_cgroup_t) ivm_cgroup_list_iterator_t;
 #define ivm_cgroup_list_size ivm_list_size
 #define ivm_cgroup_list_prepush(list, ptr) (ivm_list_prepush((list), (void **)(ptr)))
 #define ivm_cgroup_list_at(list, i) ((ivm_cgroup_t *)ivm_list_at((list), (i)))
+#define ivm_cgroup_list_has(list, i) (ivm_list_has((list), (i)))
 
 #define IVM_CGROUP_LIST_ITER_GET_PTR(iter) (IVM_LIST_ITER_GET_PTR((iter), ivm_cgroup_t))
 #define IVM_CGROUP_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_cgroup_t)

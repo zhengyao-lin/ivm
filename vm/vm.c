@@ -55,6 +55,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_cgroup_list_init(&ret->coro_groups);
 	ivm_cgroup_list_prepush(&ret->coro_groups, &tmp_group);
 	ivm_cgroup_init(tmp_group);
+	ret->last_gid = 1;
 
 	ivm_type_pool_init(&ret->type_pool);
 	ivm_func_list_init(&ret->func_list);
@@ -177,30 +178,42 @@ ivm_cgid_t
 ivm_vmstate_addCGroup(ivm_vmstate_t *state,
 					  ivm_function_object_t *func)
 {
-	ivm_cgroup_list_iterator_t giter;
+	// ivm_cgroup_list_iterator_t giter;
 	ivm_coro_t *coro;
-	ivm_cgroup_t *group, *ngroup = IVM_NULL;
-	ivm_cgid_t gid = 0;
+	ivm_cgroup_t *ngroup = IVM_NULL;
+	ivm_cgid_t gid, i, end;
+
+	// IVM_TRACE("%ld\n", ivm_cgroup_list_size(&state->coro_groups));
 
 	/* find dead group */
-	IVM_CGROUP_LIST_EACHPTR(&state->coro_groups, giter) {
-		group = IVM_CGROUP_LIST_ITER_GET_PTR(giter);
-		if (!ivm_cgroup_isAlive(group)) {
-			ngroup = group;
-			break;
-		}
-		gid++;
-	}
+	gid = state->last_gid;
 
-	if (!ngroup) {
-		// create new group
+	if (ivm_cgroup_list_has(&state->coro_groups, gid)) {
+		ngroup = ivm_cgroup_list_at(&state->coro_groups, gid);
+		end = ivm_cgroup_list_size(&state->coro_groups);
+
+		// IVM_TRACE("alive?: %d\n", ivm_cgroup_isAlive(ngroup));
+
+		// if (ivm_cgroup_isAlive(ngroup)) {
+		// 	IVM_TRACE("what? %d\n", gid);
+		// }
+
+		// find next gid
+		for (i = gid + 1; i != end; i++) {
+			if (!ivm_cgroup_isAlive(ivm_cgroup_list_at(&state->coro_groups, i))) {
+				break;
+			}
+		}
+
+		state->last_gid = i;
+	} else {
+		gid = ivm_cgroup_list_size(&state->coro_groups);
 		ivm_cgroup_list_prepush(&state->coro_groups, &ngroup);
 		ivm_cgroup_init(ngroup);
+		state->last_gid = gid + 1;
 	}
 
-	if (gid < 0) {
-		IVM_FATAL(IVM_ERROR_MSG_GROUP_ID_OVERFLOW);
-	}
+	// IVM_TRACE("final %d %d\n", gid, state->last_gid);
 
 	coro = ivm_coro_new(state);
 	ivm_coro_setRoot(coro, state, func);
@@ -242,6 +255,8 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 	state->cur_cgroup = orig;
 
 	ivm_cgroup_empty(group, state);
+	// IVM_TRACE("group %d is done, %d\n", gid, ivm_cgroup_isAlive(ivm_cgroup_list_at(&state->coro_groups, gid)));
+	state->last_gid = gid;
 
 	return val;
 }
