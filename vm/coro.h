@@ -10,6 +10,7 @@
 #include "func.h"
 #include "call.h"
 #include "runtime.h"
+#include "block.h"
 
 IVM_COM_HEADER
 
@@ -18,6 +19,7 @@ struct ivm_traverser_arg_t_tag;
 
 typedef struct ivm_coro_t_tag {
 	ivm_vmstack_t stack;
+	ivm_block_stack_t bstack;
 	ivm_frame_stack_t frame_st;
 	ivm_runtime_t runtime;
 
@@ -125,6 +127,106 @@ ivm_coro_callBase_n(ivm_coro_t *coro,
 					struct ivm_vmstate_t_tag *state,
 					ivm_function_object_t *func,
 					ivm_object_t *base);
+
+IVM_INLINE
+ivm_object_t **
+ivm_coro_pushBlock(ivm_block_stack_t *bstack,
+				   ivm_runtime_t *runtime,
+				   ivm_size_t sp)
+{
+	ivm_block_stack_push(bstack, sp);
+	return ivm_runtime_BPToSP(runtime);
+}
+
+IVM_INLINE
+ivm_object_t **
+ivm_coro_pushBlock_c(ivm_block_stack_t *bstack,
+					 ivm_runtime_t *runtime,
+					 ivm_size_t sp)
+{
+	ivm_block_stack_push(bstack, sp);
+	return ivm_runtime_incBP(runtime, sp);
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_coro_popBlock(ivm_block_stack_t *bstack,
+				  ivm_runtime_t *runtime)
+{
+	register ivm_size_t sp;
+
+	if (ivm_block_stack_checkCur(bstack, IVM_RUNTIME_GET(runtime, BCUR)))
+		return IVM_FALSE;
+	
+	sp = ivm_block_stack_pop(bstack);
+	ivm_runtime_SPToBP(runtime);
+	ivm_runtime_decBP(runtime, sp);
+
+	return IVM_TRUE;
+}
+
+IVM_INLINE
+void
+ivm_coro_setCurCatch(ivm_block_stack_t *bstack,
+					 ivm_runtime_t *runtime,
+					 ivm_instr_t *catc)
+{
+	if (ivm_block_stack_checkCur(bstack, IVM_RUNTIME_GET(runtime, BCUR))) {
+		IVM_FATAL("no block");
+		return;
+	}
+
+	ivm_block_stack_setCurCatch(bstack, catc);
+	return;
+}
+
+IVM_INLINE
+ivm_instr_t *
+ivm_coro_unsetCurCatch(ivm_block_stack_t *bstack,
+					   ivm_runtime_t *runtime)
+{
+	if (ivm_block_stack_checkCur(bstack, IVM_RUNTIME_GET(runtime, BCUR)))
+		return IVM_NULL;
+
+	return ivm_block_stack_unsetCurCatch(bstack);
+}
+
+IVM_INLINE
+ivm_instr_t *
+ivm_coro_popToCatch(ivm_block_stack_t *bstack,
+					ivm_runtime_t *runtime)
+{
+	ivm_instr_t *catc;
+
+	do {
+		catc = ivm_coro_unsetCurCatch(bstack, runtime);
+		// IVM_TRACE("pop: %p\n", catc);
+		if (catc) return catc;
+	} while (ivm_coro_popBlock(bstack, runtime));
+
+	return IVM_NULL;
+}
+
+IVM_INLINE
+void
+ivm_coro_popAllCatch(ivm_block_stack_t *bstack,
+					 ivm_runtime_t *runtime)
+{
+	do {
+		if (!ivm_coro_unsetCurCatch(bstack, runtime)) return;
+	} while (ivm_coro_popBlock(bstack, runtime));
+
+	return;
+}
+
+IVM_INLINE
+ivm_object_t **
+ivm_coro_getPrevBlockTop(ivm_block_stack_t *bstack,
+						 ivm_object_t **cur_bp,
+						 ivm_int_t n)
+{
+	return cur_bp - ivm_block_stack_getTopN(bstack, n - 1) - 1;
+}
 
 IVM_INLINE
 ivm_context_t *

@@ -7,6 +7,8 @@
 #include "runtime.h"
 #include "instr.h"
 
+#if 0
+
 ivm_instr_t *
 ivm_frame_popToCatch(ivm_frame_t *frame,
 					 ivm_object_t ***sp_p)
@@ -31,6 +33,8 @@ ivm_frame_popAllCatch(ivm_frame_t *frame,
 
 	return;
 }
+
+#endif
 
 void
 ivm_frame_stack_init(ivm_frame_stack_t *stack)

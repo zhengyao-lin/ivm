@@ -209,8 +209,7 @@ ivm_dbg_printRuntime(ivm_dbg_runtime_t runtime)
 	ivm_int_t border_count = MIN(MAX_CELL_COUNT, runtime.sp + tmp_cst);;
 
 	IVM_TRACE("\nstack state(sp: %ld, bp: %ld, cst: %d, cmp_reg: %d, block count: %d):\n",
-			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg,
-			  IVM_CORO_GET(runtime.coro, RUNTIME)->cur_block);
+			  runtime.sp, runtime.bp, runtime.cst, runtime.cmp_reg, -1);
 
 #if 0
 #if IVM_STACK_CACHE_N_TOS == 1

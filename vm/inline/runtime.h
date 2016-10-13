@@ -23,7 +23,9 @@ ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 	runtime->bp = runtime->sp;
 	runtime->ip = IVM_NULL;
 
-	IVM_FRAME_INIT_HEADER(runtime);
+	runtime->offset = 0;
+
+	// IVM_FRAME_INIT_HEADER(runtime);
 
 	return;
 }
@@ -38,13 +40,14 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 	runtime->ctx = ivm_context_addRef(ctx);
 	runtime->bp = runtime->sp;
 
-	IVM_FRAME_INIT_HEADER(runtime);
+	// IVM_FRAME_INIT_HEADER(runtime);
 
 	runtime->offset = ivm_exec_offset(exec);
 
 	return runtime->ip = ivm_exec_instrPtrStart(exec);
 }
 
+#if 0
 IVM_INLINE
 ivm_object_t ** /* new_bp */
 ivm_runtime_pushBlock(ivm_runtime_t *runtime,
@@ -53,6 +56,7 @@ ivm_runtime_pushBlock(ivm_runtime_t *runtime,
 {
 	return ivm_frame_pushBlock(IVM_AS(runtime, ivm_frame_t), state, sp);
 }
+#endif
 
 IVM_INLINE
 void
@@ -60,7 +64,7 @@ ivm_runtime_dump(ivm_runtime_t *runtime,
 				 ivm_vmstate_t *state)
 {
 	ivm_context_free(runtime->ctx, state);
-	ivm_vmstate_dumpBlock(state, runtime->blocks, runtime->block_alloc);
+	// ivm_vmstate_dumpBlock(state, runtime->blocks, runtime->block_alloc);
 	// STD_FREE(runtime->blocks);
 	return;
 }

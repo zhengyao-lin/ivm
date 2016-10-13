@@ -34,6 +34,7 @@ ivm_frame_free(ivm_frame_t *frame, ivm_vmstate_t *state)
 	return;
 }
 
+#if 0
 IVM_INLINE
 ivm_object_t ** /* new_bp */
 ivm_frame_pushBlock(ivm_frame_t *frame,
@@ -54,6 +55,7 @@ ivm_frame_pushBlock(ivm_frame_t *frame,
 
 	return frame->bp += sp;
 }
+#endif
 
 IVM_INLINE
 void
@@ -70,18 +72,20 @@ _ivm_frame_stack_expand(ivm_frame_stack_t *stack)
 }
 
 IVM_INLINE
-void
+ivm_frame_t *
 ivm_frame_stack_push(ivm_frame_stack_t *stack,
 					 ivm_runtime_t *runtime)
 {
+	register ivm_frame_t *ret;
+
 	if (stack->top >= stack->alloc) {
 		_ivm_frame_stack_expand(stack);
 	}
 
-	STD_MEMCPY(stack->frames + stack->top++, runtime,
+	STD_MEMCPY((ret = stack->frames + stack->top++), runtime,
 			   IVM_FRAME_HEADER_SIZE);
 
-	return;
+	return ret;
 }
 
 IVM_INLINE

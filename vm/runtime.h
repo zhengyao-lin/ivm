@@ -29,6 +29,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
+#define IVM_RUNTIME_GET_BCUR(runtime) ((runtime)->bcur)
 #define IVM_RUNTIME_GET_OFFSET(runtime) ((runtime)->offset)
 #define IVM_RUNTIME_GET_NO_REG(runtime) ((runtime)->no_reg)
 
@@ -38,10 +39,41 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_SET_IP(runtime, val) ((runtime)->ip = (val))
 #define IVM_RUNTIME_SET_BP(runtime, val) ((runtime)->bp = (val))
 #define IVM_RUNTIME_SET_SP(runtime, val) ((runtime)->sp = (val))
+#define IVM_RUNTIME_SET_BCUR(runtime, val) ((runtime)->bcur = (val))
 #define IVM_RUNTIME_SET_NO_REG(runtime, val) ((runtime)->no_reg = (val))
 
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))
+
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_runtime_BPToSP(ivm_runtime_t *runtime)
+{
+	return runtime->bp = runtime->sp;
+}
+
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_runtime_SPToBP(ivm_runtime_t *runtime)
+{
+	return runtime->sp = runtime->bp;
+}
+
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_runtime_decBP(ivm_runtime_t *runtime,
+				  ivm_size_t n)
+{
+	return runtime->bp -= n;
+}
+
+IVM_INLINE
+struct ivm_object_t_tag **
+ivm_runtime_incBP(ivm_runtime_t *runtime,
+				  ivm_size_t n)
+{
+	return runtime->bp += n;
+}
 
 ivm_context_t *
 ivm_runtime_appendContextNode(ivm_runtime_t *runtime,
@@ -71,6 +103,8 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   const ivm_exec_t *exec,
 				   ivm_context_t *ctx);
 */
+
+/*
 
 IVM_INLINE
 struct ivm_object_t_tag **
@@ -128,6 +162,8 @@ ivm_runtime_popAllCatch(ivm_runtime_t *runtime)
 						  &runtime->sp);
 	return;
 }
+
+*/
 
 typedef ivm_ptpool_t ivm_runtime_pool_t;
 

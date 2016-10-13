@@ -608,8 +608,8 @@ OPCODE_GEN(DUP, "dup", N, 1, {
 OPCODE_GEN(DUP_PREV_BLOCK, "dup_prev_block", I, 1, {
 	_TMP_ARGC = IARG();
 	
-	RTM_ASSERT(ivm_runtime_hasNBlock(_RUNTIME, _TMP_ARGC), IVM_ERROR_MSG_NO_ENOUGH_BLOCK);
-	
+	// RTM_ASSERT(ivm_runtime_hasNBlock(_RUNTIME, _TMP_ARGC), IVM_ERROR_MSG_NO_ENOUGH_BLOCK);
+
 	_TMP_OBJ1 = STACK_PREV_BLOCK_TOP(_TMP_ARGC);
 	STACK_PUSH(_TMP_OBJ1);
 
@@ -697,7 +697,7 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 			_TMP_FUNC, _STATE,
 			ivm_function_object_getScope(
 				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _RUNTIME, _FRAME_STACK
+			), _BLOCK_STACK, _FRAME_STACK, _RUNTIME
 		);
 
 		if (_INSTR) {
@@ -765,7 +765,7 @@ RETRY:
 			_TMP_FUNC, _STATE,
 			ivm_function_object_getScope(
 				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _RUNTIME, _FRAME_STACK, _TMP_OBJ2
+			), _TMP_OBJ2, _BLOCK_STACK, _FRAME_STACK, _RUNTIME
 		);
 
 		if (_INSTR) {
@@ -957,7 +957,7 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 			GOTO_SET_INSTR(ADDR_ARG());
 		}
 	} else {
-		ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
+		ivm_coro_setCurCatch(_BLOCK_STACK, _RUNTIME, ADDR_ARG());
 
 		// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
 
@@ -995,12 +995,12 @@ OPCODE_GEN(PUSH_LIST, "push_list", N, -2, {
 	raise protection set/cancel
  */
 OPCODE_GEN(RPROT_SET, "rprot_set", A, 0, {
-	ivm_runtime_setCurCatch(_RUNTIME, ADDR_ARG());
+	ivm_coro_setCurCatch(_BLOCK_STACK, _RUNTIME, ADDR_ARG());
 	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
-	ivm_runtime_setCurCatch(_RUNTIME, IVM_NULL);
+	ivm_coro_setCurCatch(_BLOCK_STACK, _RUNTIME, IVM_NULL);
 	NEXT_INSTR_NGC();
 })
 
@@ -1022,19 +1022,23 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	SAVE_STACK();
-	SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, AVAIL_STACK));
+	// SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, AVAIL_STACK));
+	SET_BP(ivm_coro_pushBlock(_BLOCK_STACK, _RUNTIME, AVAIL_STACK));
 	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(PUSH_BLOCK_AT, "push_block_at", I, 0, {
 	SAVE_STACK();
-	SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, IARG()));
+	// SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, IARG()));
+	SET_BP(ivm_coro_pushBlock_c(_BLOCK_STACK, _RUNTIME, IARG()));
+
 	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
 	SAVE_STACK();
-	ivm_runtime_popBlock(_RUNTIME);
+	// ivm_runtime_popBlock(_RUNTIME);
+	ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
 	UPDATE_STACK_C();
 	NEXT_INSTR_NGC();
 })
@@ -1045,7 +1049,7 @@ OPCODE_GEN(POP_BLOCK_S, "pop_block_s", I, 0, {
 	CHECK_STACK(_TMP_ARGC);
 
 	SAVE_STACK();
-	ivm_runtime_popBlock(_RUNTIME);
+	ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
 	UPDATE_STACK_C();
 	STACK_INC_C(_TMP_ARGC);
 
@@ -1057,7 +1061,7 @@ OPCODE_GEN(POP_BLOCK_S1, "pop_block_s1", N, 0, {
 	CHECK_STACK(1);
 
 	SAVE_STACK();
-	ivm_runtime_popBlock(_RUNTIME);
+	ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
 	UPDATE_STACK_C();
 	STACK_INC_C(1);
 
@@ -1080,8 +1084,8 @@ OPCODE_GEN(JUMP, "jump", A, 0, {
 
 OPCODE_GEN(INT_LOOP, "int_loop", A, 0, {
 	SAVE_STACK();
-	ivm_runtime_popAllCatch(_RUNTIME);
-	UPDATE_STACK();
+	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
+	UPDATE_STACK_C();
 	GOTO_SET_INSTR(ADDR_ARG());
 })
 

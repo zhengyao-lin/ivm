@@ -81,6 +81,7 @@ ivm_function_createRuntime(const ivm_function_t *func,
 
 	IVM_RUNTIME_SET(runtime, SP, sp);
 	IVM_RUNTIME_SET(runtime, BP, sp);
+	IVM_RUNTIME_SET(runtime, BCUR, 0);
 
 	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
@@ -90,10 +91,11 @@ ivm_instr_t *
 ivm_function_invoke(const ivm_function_t *func,
 					ivm_vmstate_t *state,
 					ivm_context_t *ctx,
-					ivm_runtime_t *runtime,
-					ivm_frame_stack_t *frame_st)
+					ivm_block_stack_t *bstack,
+					ivm_frame_stack_t *frame_st,
+					ivm_runtime_t *runtime)
 {
-	ivm_frame_stack_push(frame_st, runtime);
+	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
 	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
@@ -102,11 +104,13 @@ ivm_instr_t *
 ivm_function_invokeBase(const ivm_function_t *func,
 						ivm_vmstate_t *state,
 						ivm_context_t *ctx,
-						ivm_runtime_t *runtime,
+						ivm_object_t *base,
+						ivm_block_stack_t *bstack,
 						ivm_frame_stack_t *frame_st,
-						ivm_object_t *base)
+						ivm_runtime_t *runtime)
 {
-	ivm_frame_stack_push(frame_st, runtime);
+	// ivm_frame_stack_push(frame_st, runtime);
+	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
 	return _ivm_function_invoke_b(func, state, ctx, runtime, base);
 }
 
@@ -117,10 +121,8 @@ ivm_function_invoke_r(const ivm_function_t *func,
 					  ivm_coro_t *coro,
 					  ivm_context_t *ctx)
 {
-	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-
-	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
-	return _ivm_function_invoke_c(func, state, ctx, runtime);
+	ivm_coro_pushFrame(coro);
+	return _ivm_function_invoke_c(func, state, ctx, IVM_CORO_GET(coro, RUNTIME));
 }
 
 IVM_INLINE
@@ -131,10 +133,8 @@ ivm_function_object_invoke(ivm_function_object_t *obj,
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 
-	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
-	return _ivm_function_invoke_c(
-		obj->val, state, obj->scope, runtime
-	);
+	ivm_coro_pushFrame(coro);
+	return _ivm_function_invoke_c(obj->val, state, obj->scope, runtime);
 }
 
 IVM_INLINE
@@ -146,10 +146,8 @@ ivm_function_object_invokeBase(ivm_function_object_t *obj,
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 
-	ivm_frame_stack_push(IVM_CORO_GET(coro, FRAME_STACK), runtime);
-	return _ivm_function_invoke_b(
-		obj->val, state, obj->scope, runtime, base
-	);
+	ivm_coro_pushFrame(coro);
+	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base);
 }
 
 IVM_COM_END

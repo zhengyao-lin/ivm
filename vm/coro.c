@@ -20,6 +20,7 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_coro_t *ret = ivm_vmstate_allocCoro(state);
 
 	ivm_vmstack_init(&ret->stack);
+	ivm_block_stack_init(&ret->bstack);
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
 	ret->alive = IVM_FALSE;
@@ -40,6 +41,7 @@ ivm_coro_free(ivm_coro_t *coro,
 		}
 
 		ivm_vmstack_dump(&coro->stack);
+		ivm_block_stack_dump(&coro->bstack);
 		ivm_frame_stack_dump(&coro->frame_st);
 
 		ivm_vmstate_dumpCoro(state, coro);
@@ -207,6 +209,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	// register ivm_frame_t *tmp_frame;
 	register ivm_runtime_t *tmp_runtime;
 	ivm_vmstack_t *tmp_stack;
+	ivm_block_stack_t *tmp_bstack;
 	ivm_frame_stack_t *tmp_frame_st;
 
 	register ivm_context_t *tmp_context;
@@ -298,6 +301,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 	if (ivm_coro_isAlive(coro)) {
 		tmp_runtime = &coro->runtime;
 		tmp_stack = &coro->stack;
+		tmp_bstack = &coro->bstack;
 		tmp_frame_st = &coro->frame_st;
 		tmp_st_end = ivm_vmstack_edge(tmp_stack);
 
@@ -350,9 +354,10 @@ ACTION_EXCEPTION:
 
 			SAVE_STACK();
 
-			while (!(tmp_ip = ivm_runtime_popToCatch(_RUNTIME))) {
+			while (!(tmp_ip = ivm_coro_popToCatch(tmp_bstack, tmp_runtime))) {
+				// IVM_TRACE("kill!\n");
 				ivm_runtime_dump(tmp_runtime, state);
-				tmp_bp = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
+				tmp_bp = ivm_coro_popFrame(coro);
 				if (tmp_bp) {
 					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 						_TMP_OBJ1 = IVM_NULL;
@@ -379,7 +384,7 @@ ACTION_RETURN:
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
 
 			ivm_runtime_dump(tmp_runtime, state);
-			tmp_bp = ivm_frame_stack_pop(tmp_frame_st, tmp_runtime);
+			tmp_bp = ivm_coro_popFrame(coro);
 
 			if (tmp_bp) {
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
@@ -449,10 +454,9 @@ ivm_coro_callBase_n(ivm_coro_t *coro,
 		ivm_function_object_getScope(func),
 		IVM_FUNCTION_SET_ARG_3(base, 0, IVM_NULL)
 	);
-	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
 
 	ivm_runtime_dump(runtime, state);
-	ivm_frame_stack_pop(frame_st, runtime);
+	ivm_coro_popFrame(coro);
 
 	if (!ivm_vmstate_checkGC(state)) {
 		ivm_vmstate_doGC(state);

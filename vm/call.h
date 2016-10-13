@@ -11,18 +11,11 @@
 
 #include "instr.h"
 #include "exec.h"
+#include "block.h"
 
 IVM_COM_HEADER
 
-typedef struct {
-	ivm_instr_t *catc;
-	ivm_size_t sp; // count of element on the stack
-} ivm_block_t;
-
-#define ivm_block_setCatch(block, val) ((block)->catc = (val))
-
-#define ivm_block_getCatch(block) ((block)->catc)
-#define ivm_block_getSp(block) ((block)->sp)
+#if 0
 
 typedef struct {
 	ivm_ptpool_t pools[IVM_DEFAULT_BLOCK_POOL_CACHE_LEN];
@@ -108,28 +101,43 @@ ivm_block_pool_realloc(ivm_block_pool_t *pool,
 	return ret;
 }
 
+#endif
+
 /* part needed to init every call */
-#define IVM_FRAME_HEADER_INIT \
+#if 0
 	ivm_block_t *blocks;                   \
 	ivm_uint16_t cur_block;                \
 	ivm_uint16_t block_alloc;              \
+
+#define IVM_FRAME_HEADER_INIT \
 	ivm_uint_t offset;
+
+#endif
 
 #define IVM_FRAME_HEADER \
 	struct ivm_context_t_tag *ctx;   \
 	struct ivm_object_t_tag **bp;    \
 	ivm_instr_t *ip;                 \
-	/* init part */                  \
+	ivm_uint_t bcur;                 \
+	ivm_uint_t offset;
+
+#if 0
+	/* init part */
 	IVM_FRAME_HEADER_INIT
+#endif
 
 #define IVM_FRAME_HEADER_SIZE \
 	(sizeof(struct { IVM_FRAME_HEADER }))
+
+#if 0
 
 #define IVM_FRAME_HEADER_INIT_SIZE \
 	(sizeof(struct { IVM_FRAME_HEADER_INIT }))
 
 #define IVM_FRAME_INIT_HEADER(frame) \
-	(STD_INIT(&(frame)->blocks, IVM_FRAME_HEADER_INIT_SIZE))
+	(STD_INIT(&(frame)->bcur, IVM_FRAME_HEADER_INIT_SIZE))
+
+#endif
 
 struct ivm_vmstate_t_tag;
 struct ivm_runtime_t_tag;
@@ -143,11 +151,13 @@ typedef struct ivm_frame_t_tag {
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
 
+#define IVM_FRAME_SET_BCUR(frame, val) ((frame)->bcur = (val))
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))
 
+/*
 IVM_INLINE
 ivm_block_t *
 ivm_frame_popBlock(ivm_frame_t *frame,
@@ -209,6 +219,8 @@ ivm_frame_getPrevBlockTop(ivm_frame_t *frame,
 
 	return ret - 1;
 }
+
+*/
 
 #define ivm_frame_hasBlock(frame) ((frame)->cur_block != 0)
 #define ivm_frame_hasNBlock(frame, n) ((frame)->cur_block >= (n))

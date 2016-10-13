@@ -5,6 +5,7 @@
 #define _RUNTIME (tmp_runtime)
 #define _CONTEXT (tmp_context)
 #define _STATE (state)
+#define _BLOCK_STACK (tmp_bstack)
 #define _FRAME_STACK (tmp_frame_st)
 #define _INSTR (tmp_ip)
 
@@ -112,27 +113,27 @@
 #define INVOKE() goto ACTION_INVOKE
 
 #define RAISE(obj) \
-	_TMP_CATCH = ivm_runtime_popCurCatch(_RUNTIME);      \
-	SAVE_RUNTIME(tmp_ip);                                \
-	_TMP_OBJ1 = (obj);                                   \
-	if (_TMP_CATCH) {                                    \
-		STACK_PUSH(_TMP_OBJ1);                           \
-		GOTO_SET_INSTR(_TMP_CATCH);                      \
-	} else {                                             \
-		/* no raise protection -> fall back */           \
-		goto ACTION_RAISE;                               \
+	_TMP_CATCH = ivm_coro_unsetCurCatch(_BLOCK_STACK, _RUNTIME);  \
+	SAVE_RUNTIME(tmp_ip);                                         \
+	_TMP_OBJ1 = (obj);                                            \
+	if (_TMP_CATCH) {                                             \
+		STACK_PUSH(_TMP_OBJ1);                                    \
+		GOTO_SET_INSTR(_TMP_CATCH);                               \
+	} else {                                                      \
+		/* no raise protection -> fall back */                    \
+		goto ACTION_RAISE;                                        \
 	}
 
 /* exception detected */
 #define EXCEPTION() \
-	_TMP_CATCH = ivm_runtime_popCurCatch(_RUNTIME);      \
-	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);        \
-	if (_TMP_CATCH) {                                    \
-		STACK_PUSH(_TMP_OBJ1);                           \
-		GOTO_SET_INSTR(_TMP_CATCH);                      \
-	} else {                                             \
-		/* no raise protection -> fall back */           \
-		goto ACTION_EXCEPTION;                           \
+	_TMP_CATCH = ivm_coro_unsetCurCatch(_BLOCK_STACK, _RUNTIME);  \
+	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);                 \
+	if (_TMP_CATCH) {                                             \
+		STACK_PUSH(_TMP_OBJ1);                                    \
+		GOTO_SET_INSTR(_TMP_CATCH);                               \
+	} else {                                                      \
+		/* no raise protection -> fall back */                    \
+		goto ACTION_EXCEPTION;                                    \
 	}
 
 #define IARG() (ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR)))
@@ -160,7 +161,7 @@
 #define STACK_POP_NOCACHE() (*--tmp_sp)
 
 #define STACK_PREV_BLOCK_TOP(n) \
-	(*ivm_runtime_getPrevBlockTop(_RUNTIME, tmp_sp, AVAIL_STACK, (n)))
+	(*ivm_coro_getPrevBlockTop(_BLOCK_STACK, tmp_bp, (n)))
 
 #define _STACK (tmp_stack)
 
