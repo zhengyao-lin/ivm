@@ -75,6 +75,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PA_ARG, pa_arg_count);
 	} else if (has_expand) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
+		env->addr.nl_block++;
 	}
 
 	pa_argno = 0;
@@ -124,6 +125,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 
 	if (has_expand) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK_S1);
+		env->addr.nl_block--;
 	}
 
 	// restore env

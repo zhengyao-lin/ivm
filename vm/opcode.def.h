@@ -1089,6 +1089,24 @@ OPCODE_GEN(INT_LOOP, "int_loop", A, 0, {
 	GOTO_SET_INSTR(ADDR_ARG());
 })
 
+// pop n normal blocks(not include the blocks with catches)
+OPCODE_GEN(INT_N_LOOP, "int_n_loop", I, 0, {
+	SAVE_STACK();
+
+	_TMP_ARGC = IARG();
+
+	while (_TMP_ARGC--) {
+		ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
+		ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
+	}
+
+	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
+
+	UPDATE_STACK_C();
+
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(JUMP_TRUE, "jump_true", A, -1, {
 	CHECK_STACK(1);
 

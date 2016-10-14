@@ -37,13 +37,14 @@ typedef struct{
 	ilang_gen_addr_list_t *break_ref;
 	ilang_gen_addr_list_t *end_ref; // instrs that jump to branch end(if/while)
 	ilang_gen_addr_list_t *begin_ref; // instrs that jump to branch body(if/while)
+	ivm_uint_t nl_block; // non-loop block
 } ilang_gen_addr_set_t;
 
 #define ilang_gen_addr_set_build(...) \
 	((ilang_gen_addr_set_t) { __VA_ARGS__ })
 
-#define ilang_gen_addr_set_init(...) \
-	((ilang_gen_addr_set_t) { .continue_addr = -1 })
+#define ilang_gen_addr_set_init() \
+	((ilang_gen_addr_set_t) { .continue_addr = -1, .nl_block = 0 })
 
 typedef struct {
 	const ivm_char_t *file;

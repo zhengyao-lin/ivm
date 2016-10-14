@@ -22,6 +22,10 @@ catch: print("error")
 
 f(expand [])
 
+print([ "yeah", 2 ][(for loc i in range(10): {
+	f(1, f(expand [ break ]), 1)
+}, 0)])
+
 // -> "str: \\[ 1, 2, 3, 1, 2 \\]"
 // -> "num: 10013"
 // -> "str: \\[ wow, hey, 1, 2, 3 \\]"
@@ -30,3 +34,4 @@ f(expand [])
 // -> "num: 10021"
 // -> "str: error"
 // -> "str: \\[\\]"
+// -> "str: yeah"
