@@ -8,34 +8,6 @@
 
 #include "context.h"
 
-ivm_context_t *
-ivm_context_new(ivm_vmstate_t *state,
-				ivm_context_t *prev)
-{
-	ivm_context_t *ret = ivm_vmstate_allocContext(state);
-
-	if (prev) ivm_context_addRef(prev);
-	ret->prev = prev;
-	STD_INIT(&ret->slots, sizeof(ret->slots) + sizeof(ret->mark));
-
-	return ret;
-}
-
-void
-ivm_context_free(ivm_context_t *ctx,
-				 ivm_vmstate_t *state)
-{
-	ivm_context_t *tmp;
-
-	while (ctx && !--ctx->mark.ref) {
-		tmp = ctx->prev;
-		ivm_vmstate_dumpContext(state, ctx);
-		ctx = tmp;
-	}
-
-	return;
-}
-
 ivm_object_t *
 ivm_context_search(ivm_context_t *ctx,
 				   ivm_vmstate_t *state,

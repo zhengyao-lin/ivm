@@ -13,6 +13,11 @@
 
 IVM_NATIVE_FUNC(_list_cons)
 {
+	CHECK_ARG_1(IVM_LIST_OBJECT_T);
+	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+
+#if 0
+
 	ivm_object_t *obj, *iter, *list, *base, *ret, *next;
 	ivm_function_object_t *iter_func, *next_func;
 
@@ -54,6 +59,8 @@ IVM_NATIVE_FUNC(_list_cons)
 	}
 
 	return list;
+
+#endif
 }
 
 IVM_NATIVE_FUNC(_list_size)

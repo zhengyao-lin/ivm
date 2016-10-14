@@ -719,15 +719,15 @@ OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
 				IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
 			);
 
-			UPDATE_BP();
+			UPDATE_STACK();
 
 			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
-			if (IVM_UNLIKELY(!_TMP_OBJ1)) {
+			if (_TMP_OBJ1) {
+				RETURN();
+			} else {
 				EXCEPTION();
 			}
-
-			RETURN();
 		}
 	} else {
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
@@ -790,11 +790,11 @@ RETRY:
 
 			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
 
-			if (!_TMP_OBJ1) {
+			if (_TMP_OBJ1) {
+				RETURN();
+			} else {
 				EXCEPTION();
 			}
-
-			RETURN();
 		}
 	} else {
 		do {

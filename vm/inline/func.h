@@ -21,7 +21,7 @@ IVM_COM_HEADER
                                                                     \
 	e1;                                                             \
                                                                     \
-	return ivm_runtime_invoke(runtime, state, &func->u.body, ctx);
+	return ivm_runtime_invoke(runtime, state, ctx, &func->u.body);
 
 IVM_INLINE
 ivm_instr_t *

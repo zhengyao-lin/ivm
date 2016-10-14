@@ -56,6 +56,7 @@ ivm_context_addRef(ivm_context_t *ctx)
 	return ctx;
 }
 
+/*
 ivm_context_t *
 ivm_context_new(struct ivm_vmstate_t_tag *state,
 				ivm_context_t *prev);
@@ -63,6 +64,8 @@ ivm_context_new(struct ivm_vmstate_t_tag *state,
 void
 ivm_context_free(ivm_context_t *ctx,
 				 struct ivm_vmstate_t_tag *state);
+
+*/
 
 IVM_INLINE
 ivm_context_t *
