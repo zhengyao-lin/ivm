@@ -9,7 +9,7 @@ OPCODE_GEN(NEW_NIL, "new_nil", N, 1, {
 
 OPCODE_GEN(NEW_NONE, "new_none", N, 1, {
 	STACK_PUSH(IVM_NONE(_STATE));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_OBJ, "new_obj", N, 1, {
@@ -25,12 +25,12 @@ OPCODE_GEN(NEW_OBJ_T, "new_obj_t", I, 1, {
 
 OPCODE_GEN(NEW_NUM_I, "new_num_i", I, 1, {
 	STACK_PUSH(ivm_numeric_new(_STATE, IARG()));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_NUM_F, "new_num_f", F, 1, {
 	STACK_PUSH(ivm_numeric_new(_STATE, FARG()));
-	NEXT_INSTR();
+	NEXT_INSTR_NGC();
 })
 
 OPCODE_GEN(NEW_STR, "new_str", S, 1, {

@@ -196,11 +196,11 @@ ivm_context_search_cc(ivm_context_t *ctx,
 
 	do {
 		ret = ivm_context_getSlot_cc(ctx, state, key, instr);
-		if (ret) break;
+		if (ret) return ret;
 		ctx = ctx->prev;
 	} while (ctx);
 
-	return ret;
+	return IVM_NULL;
 }
 
 IVM_INLINE

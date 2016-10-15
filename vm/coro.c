@@ -201,7 +201,8 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 ivm_object_t *
 ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
-				 ivm_function_object_t *root, ivm_bool_t get_opcode_entry)
+				 ivm_function_object_t *root,
+                 ivm_bool_t get_opcode_entry)
 {
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
