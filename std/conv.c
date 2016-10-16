@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "pub/type.h"
 #include "pub/const.h"
@@ -492,4 +493,79 @@ ivm_conv_dtoa(ivm_double_t d, ivm_char_t dest[25])
 	dest[str_len] = '\0';
 
 	return str_len;
+}
+
+ivm_double_t
+ivm_conv_parseDouble(const ivm_char_t *src,
+					 ivm_size_t len,
+					 ivm_bool_t *overflow,
+					 ivm_bool_t *err)
+{
+	ivm_int_t sign = 1;
+	const ivm_char_t *end;
+	enum {
+		R_DEC = 10,
+		R_BIN = 2,
+		R_OCT = 8,
+		R_HEX = 16,
+	} radix = R_DEC;
+	ivm_double_t ret = 0;
+	ivm_uint_t dec_pos = 0;
+
+	/* sign & prefix */
+	if (len) {
+		/* sign */
+		if (src[0] == '+') {
+			src++; len--;
+		} else if (src[0] == '-') {
+			sign = -1;
+			src++; len--;
+		}
+
+		if (len >= 2 && src[0] == '0') {
+			if (src[1] == 'b' ||
+				src[1] == 'B') {
+				radix = R_BIN;
+				src += 2; len -= 2;
+			} else if (src[1] == 'o' ||
+					   src[1] == 'O') {
+				radix = R_OCT;
+				src += 2; len -= 2;
+			} else if (src[1] == 'x' ||
+					   src[1] == 'X') {
+				radix = R_HEX;
+				src += 2; len -= 2;
+			}
+		}
+	}
+
+	for (end = src + len;
+		 src != end;
+		 src++) {
+		if (*src == '.') {
+			dec_pos = 1;
+			continue;
+		}
+
+		if (_is_legal(*src, radix)) {
+			if (dec_pos) {
+				ret += (ivm_double_t)_hex_to_digit(*src) / pow(radix, dec_pos);
+				dec_pos++;
+			} else {
+				ret *= radix;
+				ret += _hex_to_digit(*src);
+			}
+		} else {
+			// PARSER_ERR_P((ivm_ptr_t)src - (ivm_ptr_t)beg,
+			// 			 PARSER_ERR_MSG_ILLEGAL_CHAR_RADIX(*src, radix));
+			if (err) *err = IVM_TRUE;
+		}
+	}
+
+	if ((ret > IVM_INT_MAX(ivm_int_t) ||
+		 ret < -IVM_INT_MAX(ivm_int_t)) && overflow) {
+		*overflow = IVM_TRUE;
+	}
+
+	return ret * sign;
 }

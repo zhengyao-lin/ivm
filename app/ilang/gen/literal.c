@@ -29,7 +29,7 @@ ilang_gen_int_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "integer expression", flag);
 
 	if (!flag.is_top_level) {
-		val = ivm_parser_parseNum(
+		val = ivm_conv_parseDouble(
 			int_expr->val.val,
 			int_expr->val.len,
 			&overfl,
@@ -68,7 +68,7 @@ ilang_gen_float_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "float expression", flag);
 
 	if (!flag.is_top_level) {
-		val = ivm_parser_parseNum(
+		val = ivm_conv_parseDouble(
 			float_expr->val.val,
 			float_expr->val.len,
 			IVM_NULL,

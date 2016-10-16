@@ -279,15 +279,15 @@ _ias_gen_opcode_arg_generateOpcodeArg(ias_gen_opcode_arg_t arg,
 		case 'F':
 			switch (param) {
 				case 'I':
-					tmp_int = ivm_parser_parseNum(arg.val, arg.len, &overflow, IVM_NULL);
+					tmp_int = ivm_conv_parseDouble(arg.val, arg.len, &overflow, IVM_NULL);
 					if (overflow) {
 						GEN_ERR(arg.pos, GEN_ERR_MSG_FLOAT_TO_INT_OVERFLOW(arg.val, arg.len));
 					}
 					return ivm_opcode_arg_fromInt(tmp_int);
 				case 'F':
-					return ivm_opcode_arg_fromFloat(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL, IVM_NULL));
+					return ivm_opcode_arg_fromFloat(ivm_conv_parseDouble(arg.val, arg.len, IVM_NULL, IVM_NULL));
 				case 'X':
-					return ivm_opcode_arg_fromFunc(ivm_parser_parseNum(arg.val, arg.len, IVM_NULL, IVM_NULL));
+					return ivm_opcode_arg_fromFunc(ivm_conv_parseDouble(arg.val, arg.len, IVM_NULL, IVM_NULL));
 				default: UNMATCHED();
 			}
 		case 'S':

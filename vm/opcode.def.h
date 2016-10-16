@@ -25,12 +25,12 @@ OPCODE_GEN(NEW_OBJ_T, "new_obj_t", I, 1, {
 
 OPCODE_GEN(NEW_NUM_I, "new_num_i", I, 1, {
 	STACK_PUSH(ivm_numeric_new(_STATE, IARG()));
-	NEXT_INSTR_NGC();
+	NEXT_INSTR();
 })
 
 OPCODE_GEN(NEW_NUM_F, "new_num_f", F, 1, {
 	STACK_PUSH(ivm_numeric_new(_STATE, FARG()));
-	NEXT_INSTR_NGC();
+	NEXT_INSTR();
 })
 
 OPCODE_GEN(NEW_STR, "new_str", S, 1, {
@@ -188,11 +188,6 @@ OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", 0, IVM_FALSE))
 
 OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", 0, IVM_FALSE))
 OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0, IVM_FALSE))
-
-OPCODE_GEN(APPEND_LOC, "append_loc", N, 0, {
-	_CONTEXT = ivm_runtime_appendContextNode(_RUNTIME, _STATE);
-	NEXT_INSTR_NGC();
-})
 
 OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);
@@ -1004,16 +999,6 @@ OPCODE_GEN(RPROT_CAC, "rprot_cac", N, 0, {
 	NEXT_INSTR_NGC();
 })
 
-/*
-OPCODE_GEN(FINAL, "final", A, 0, {
-	ivm_runtime_setCurCatch(_RUNTIME, IVM_NULL);
-	SAVE_STACK();
-	ivm_runtime_popBlock(_RUNTIME);
-	UPDATE_STACK();
-	GOTO_SET_INSTR(ADDR_ARG());
-})
-*/
-
 OPCODE_GEN(RAISE, "raise", N, -1, {
 	CHECK_STACK(1);
 	_TMP_OBJ1 = STACK_POP();
@@ -1186,39 +1171,3 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 		NEXT_INSTR_NGC();
 	}
 })
-
-#if 0
-
-OPCODE_GEN(JUMP_LT, "jump_lt", A, -2, CMP_HANDLER(0,
-	if ((ivm_ptr_t)_TMP_OBJ1 < 0) {
-		GOTO_SET_INSTR(ADDR_ARG());
-	} else {
-		NEXT_INSTR();
-	}
-))
-
-OPCODE_GEN(JUMP_LE, "jump_le", A, -2, CMP_HANDLER(0,
-	if ((ivm_ptr_t)_TMP_OBJ1 <= 0) {
-		GOTO_SET_INSTR(ADDR_ARG());
-	} else {
-		NEXT_INSTR();
-	}
-))
-
-OPCODE_GEN(JUMP_GT, "jump_gt", A, -2, CMP_HANDLER(0,
-	if ((ivm_ptr_t)_TMP_OBJ1 > 0) {
-		GOTO_SET_INSTR(ADDR_ARG());
-	} else {
-		NEXT_INSTR();
-	}
-))
-
-OPCODE_GEN(JUMP_GE, "jump_ge", A, -2, CMP_HANDLER(0,
-	if ((ivm_ptr_t)_TMP_OBJ1 >= 0) {
-		GOTO_SET_INSTR(ADDR_ARG());
-	} else {
-		NEXT_INSTR();
-	}
-))
-
-#endif

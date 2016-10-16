@@ -1,12 +1,3 @@
-fib = fn n: {
-	if n < 2: ret 1
-	ret fib(n - 1) + fib(n - 2)
-}
-
-print(fib(30))
-
-ret
-
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -16,6 +7,15 @@ printe = fn e: {
 }
 
 __test = fn: {
+
+	print(numeric("10"))
+	print(numeric("10.01001"))
+	print(numeric("-3.01"))
+	try: print(numeric("-3.01e1"))
+	catch: print("parse error")
+	try: print(numeric("abcd"))
+	catch: print("parse error")
+
 	import test.ulist
 	loc.merge(import test.exc)
 

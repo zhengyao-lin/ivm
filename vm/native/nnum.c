@@ -15,8 +15,37 @@
 
 IVM_NATIVE_FUNC(_numeric_cons)
 {
-	CHECK_ARG_1(IVM_NUMERIC_T);
-	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	ivm_object_t *arg;
+	const ivm_string_t *str;
+	ivm_bool_t err = IVM_FALSE;
+	ivm_double_t num;
+
+	CHECK_ARG_COUNT(1);
+
+	arg = NAT_ARG_AT(1);
+
+	switch (IVM_TYPE_TAG_OF(arg)) {
+		case IVM_NUMERIC_T:
+			return ivm_object_clone(arg, NAT_STATE());
+	
+		case IVM_STRING_OBJECT_T:
+			str = ivm_string_object_getValue(arg);
+			num = ivm_conv_parseDouble(
+				ivm_string_trimHead(str),
+				ivm_string_length(str),
+				IVM_NULL, &err
+			);
+
+			RTM_ASSERT(!err, IVM_ERROR_MSG_FAILED_PARSE_NUM(ivm_string_trimHead(str)));
+
+			return ivm_numeric_new(NAT_STATE(), num);
+
+		default: ;
+	}
+
+	RTM_FATAL(IVM_ERROR_MSG_WRONG_ARG_C("object of type <numeric> or <string>"));
+
+	return IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(_numeric_ceil)

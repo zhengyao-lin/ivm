@@ -7,14 +7,9 @@
 
 #include "std/list.h"
 #include "std/heap.h"
+#include "std/conv.h"
 
 IVM_COM_HEADER
-
-ivm_double_t
-ivm_parser_parseNum(const ivm_char_t *src,
-					ivm_size_t len,
-					ivm_bool_t *overflow,
-					ivm_bool_t *err);
 
 /*
 	return -1 if anything is wrong
