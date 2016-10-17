@@ -14,15 +14,14 @@
 #include "native.h"
 
 /*
-	rules:                                                                      pass in type
+	rules:                                                                      output type
 		1. 'n': check num type and get the value                             -- ivm_number_t *
 		2. 's': check string type and get the value                          -- const ivm_string_t **
 		3. 'l': check list type and convert to list object                   -- ivm_list_object_t **
 		4. 'f': check function type and convert to function object           -- ivm_function_object_t **
 		5. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
 		6. '.': no type check but accept the object                          -- ivm_object_t **
-		7. '*' prefix: following argument are all optional,
-			   but if they exist, the type will be checked[1][2]             -- \
+		7. '*' prefix: reverse the optional mark                             -- \
 
 		NOTE:
 			[1]. return address passed to an optional argument need to be initialized
@@ -34,7 +33,7 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 						 ivm_vmstate_t *state,
 						 const ivm_char_t *rule, ...)
 {
-	ivm_bool_t next_opt = IVM_FALSE;
+	ivm_bool_t opt = IVM_FALSE;
 	ivm_int_t ret = 0;
 	ivm_argc_t i;
 	ivm_object_t *tmp;
@@ -43,21 +42,25 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 	va_start(args, rule);
 
 #define SUB1(r, type, cvt, val) \
-	case r:                                           \
-		if (ivm_function_arg_has(arg, i)) {           \
-			tmp = ivm_function_arg_at(arg, i);        \
-			if (IVM_IS_BTTYPE(tmp, state, (type))) {  \
-				*((cvt *)va_arg(args, cvt *))         \
-				= (val);                              \
-			} else {                                  \
-				ret = i;                              \
-				goto END;                             \
-			}                                         \
-			i++;                                      \
-		} else {                                      \
-			if (!next_opt) ret = i;                   \
-			goto END;                                 \
-		}                                             \
+	case r:                                                        \
+		if (ivm_function_arg_has(arg, i)) {                        \
+			tmp = ivm_function_arg_at(arg, i);                     \
+			if (IVM_IS_BTTYPE(tmp, state, (type))) {               \
+				*((cvt *)va_arg(args, cvt *))                      \
+				= (val);                                           \
+			} else {                                               \
+				if (!(opt && IVM_IS_NONE(state, tmp))) {           \
+					ret = i;                                       \
+					goto END;                                      \
+				} else {                                           \
+					va_arg(args, cvt *);                           \
+				}                                                  \
+			}                                                      \
+			i++;                                                   \
+		} else {                                                   \
+			if (!opt) ret = i;                                     \
+			goto END;                                              \
+		}                                                          \
 		break;
 
 	for (i = 1; *rule; rule++) {
@@ -73,14 +76,14 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 					*(va_arg(args, ivm_object_t **)) = ivm_function_arg_at(arg, i);
 					i++;
 				} else {
-					if (!next_opt) ret = i;
+					if (!opt) ret = i;
 					goto END;
 				}
 				break;
 
 			case '*':
-				IVM_ASSERT(!next_opt, IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK);
-				next_opt = IVM_TRUE;
+				// IVM_ASSERT(!opt, IVM_ERROR_MSG_REPEAT_OPTIONAL_MARK);
+				opt = !opt;
 				break;
 
 			default:

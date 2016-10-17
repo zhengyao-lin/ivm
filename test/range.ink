@@ -46,6 +46,21 @@ print("#####")
 for loc i in range(-10):
 	print(i)
 
+print("#####")
+
+for loc i in range(, 5,):
+	print(i)
+
+print("#####")
+
+for loc i in range(1, 5,):
+	print(i)
+
+print("#####")
+
+for loc i in range(, 5):
+	print(i)
+
 
 range_iter.proto.next = fn: {
 	print("here we are")
@@ -103,5 +118,22 @@ for loc i in [ 0, 1 ]:
 // -> "num: 3"
 // -> "num: 4"
 // -> "str: #####"
+// -> "str: #####"
+// -> "num: 0"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
+// -> "num: 4"
+// -> "str: #####"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
+// -> "num: 4"
+// -> "str: #####"
+// -> "num: 0"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
+// -> "num: 4"
 // -> "str: here we are"
 // -> "str: good"

@@ -13,11 +13,17 @@ IVM_NATIVE_FUNC(_range_cons)
 {
 	ivm_number_t from = 0, to, step = 1;
 
-	if (NAT_ARGC() == 1) {
-		MATCH_ARG("n", &to);
-	} else {
-		MATCH_ARG("nn*n", &from, &to, &step);
-	} 
+	switch (NAT_ARGC()) {
+		case 0: WRONG_ARG_COUNT(1);
+		case 1:
+			MATCH_ARG("n", &to);
+			break;
+
+		default: // >= 2
+			MATCH_ARG("*n*n*n", &from, &to, &step);
+	}
+
+	// IVM_TRACE("%f %f %f\n", from, to, step);
 
 	return ivm_range_new(NAT_STATE(), from, to, step);
 }

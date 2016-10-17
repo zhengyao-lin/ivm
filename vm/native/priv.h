@@ -53,6 +53,9 @@
 	RTM_ASSERT(NAT_ARGC() >= (count),                                       \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((count), NAT_ARGC()))
 
+#define WRONG_ARG_COUNT(expect) \
+	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((expect), NAT_ARGC()))
+
 #define WRONG_ARG() \
 	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
