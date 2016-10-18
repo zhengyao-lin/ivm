@@ -178,7 +178,7 @@ typedef ivm_slot_t *ivm_slot_table_iterator_t;
 	ivm_slot_t *__sl_end_##iter##__; \
 	for ((iter) = (table)->tabl, \
 		 __sl_end_##iter##__ = (iter) + (table)->size; \
-		 (iter) < __sl_end_##iter##__; \
+		 (iter) != __sl_end_##iter##__; \
 		 (iter)++) if ((iter)->v)
 
 /* be sure table is not null */

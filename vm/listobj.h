@@ -41,11 +41,40 @@ ivm_list_object_new_c(struct ivm_vmstate_t_tag *state,
 
 #define ivm_list_object_core(list) ((list)->lst)
 
+typedef ivm_object_t **ivm_list_object_iterator_t;
+
+#define IVM_LIST_OBJECT_ITER_SET(iter, val) (*(iter) = (val))
+#define IVM_LIST_OBJECT_ITER_GET(iter) (*(iter))
+#define IVM_LIST_OBJECT_ITER_INDEX(list, iter) (IVM_PTR_DIFF((iter), (list)->lst, ivm_object_t *))
+#define IVM_LIST_OBJECT_ALLPTR(list, iter) \
+	ivm_object_t **__lo_end_##iter##__; \
+	for ((iter) = (list)->lst, \
+		 __lo_end_##iter##__ = (iter) + (list)->size; \
+		 (iter) != __lo_end_##iter##__; \
+		 (iter)++)
+
+#define IVM_LIST_OBJECT_EACHPTR(list, iter) IVM_LIST_OBJECT_ALLPTR((list), iter) if (*(iter))
+
 IVM_INLINE
 ivm_size_t
 ivm_list_object_getSize(ivm_list_object_t *list)
 {
 	return list->size;
+}
+
+IVM_INLINE
+ivm_size_t
+ivm_list_object_getElementCount(ivm_list_object_t *list)
+{
+	ivm_size_t ret = 0;
+	ivm_object_t **i, **end;
+
+	for (i = list->lst, end = i + list->size;
+		 i != end; i++) {
+		if (*i) ret++;
+	}
+
+	return ret;
 }
 
 IVM_INLINE

@@ -14,6 +14,11 @@ ivm_range_new(ivm_vmstate_t *state,
 
 	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_RANGE_T));
 
+	if (!step) {
+		ret->from = ret->to = ret->step = 0;
+		return IVM_AS_OBJ(ret);
+	}
+
 	delta = to - from;
 	count = delta / step;
 

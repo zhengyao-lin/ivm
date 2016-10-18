@@ -202,7 +202,7 @@ ivm_list_object_set(ivm_list_object_t *list,
 
 	IVM_WBOBJ(state, IVM_AS_OBJ(list), obj);
 
-	return list->lst[i] = obj;
+	return (list->lst[i] = obj) ? obj : IVM_NONE(state);
 }
 
 IVM_INLINE

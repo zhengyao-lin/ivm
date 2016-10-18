@@ -16,7 +16,9 @@
 #define STRUCT_TYPE_CONS IVM_GET_NATIVE_FUNC(_struct_struct)
 
 #define STRUCT_ERROR_MSG_NO_DEFINED_FIELD							"no field is found"
-#define STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(name)				"unknown type for field '%s'", (name)
+#define STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(n)						"unknown field type for the %ldth field", (n)
+#define STRUCT_ERROR_MSG_ILLEGAL_ARRAY_SIZE(size)					"illegal array size %ld", (size)
+#define STRUCT_ERROR_MSG_NOT_ENOUGH_FOR_ARRAY(size, req)			"list too small for array packing(expecting %ld, %ld given)", (req), (size)
 #define STRUCT_ERROR_MSG_NO_DEFAULT_SIZE							"no default size"
 #define STRUCT_ERROR_MSG_UNABLE_ALLOC_PACK_BUF						"unable to allocate buffer when packing"
 #define STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(type, expect)			"unexpected argument type(expecting %s, %s given)", (expect), (type)
@@ -24,6 +26,7 @@
 
 enum {
 	IVM_STRUCT_TYPE_NONE = 0,
+	IVM_STRUCT_TYPE_BYTE,
 	IVM_STRUCT_TYPE_INT,
 	IVM_STRUCT_TYPE_LONG,
 	IVM_STRUCT_TYPE_FLOAT,
@@ -41,13 +44,16 @@ _is_legal_type(ivm_uint_t t)
 }
 
 typedef struct {
-	const ivm_string_t *name;
 	ivm_size_t size;
+	ivm_size_t count;
 	ivm_uint_t type;
 } ivm_struct_field_t;
 
-#define ivm_struct_field_build(name, size, type) \
-	((ivm_struct_field_t) { (name), (size), (type) })
+#define ivm_struct_field_build(size, type) \
+	((ivm_struct_field_t) { (size), 0, (type) })
+
+#define ivm_struct_field_buildArray(size, type, count) \
+	((ivm_struct_field_t) { (size), (count), (type) })
 
 typedef struct {
 	IVM_OBJECT_HEADER
@@ -105,23 +111,18 @@ ivm_struct_object_cloner(ivm_object_t *obj,
 
 IVM_NATIVE_FUNC(_struct_struct)
 {
-	ivm_object_t *def, *type;
-	ivm_slot_table_t *slots;
-	ivm_slot_table_iterator_t siter;
+	ivm_list_object_t *def;
+	ivm_object_t *type, *tmp_obj;
+	ivm_list_object_iterator_t liter;
+
 	ivm_size_t fcount, size, fsize;
+	ivm_long_t arr_size;
 	ivm_struct_field_t *fields, *cur;
-	const ivm_string_t *name;
 	ivm_uint_t tid;
 
-	MATCH_ARG(".", &def);
+	MATCH_ARG("l", &def);
 
-	slots = IVM_OBJECT_GET(def, SLOTS);
-
-	RTM_ASSERT(slots, STRUCT_ERROR_MSG_NO_DEFINED_FIELD);
-
-	fcount = 0;
-	{ IVM_SLOT_TABLE_EACHPTR(slots, siter) fcount++; }
-
+	fcount = ivm_list_object_getElementCount(def);
 	RTM_ASSERT(fcount, STRUCT_ERROR_MSG_NO_DEFINED_FIELD);
 
 	fields = ivm_vmstate_allocWild(NAT_STATE(), sizeof(*fields) * fcount);
@@ -131,44 +132,81 @@ IVM_NATIVE_FUNC(_struct_struct)
 	cur = fields;
 	size = 0;
 
-	{
-		IVM_SLOT_TABLE_EACHPTR(slots, siter) {
-			name = IVM_SLOT_TABLE_ITER_GET_KEY(siter);
-			type = IVM_SLOT_TABLE_ITER_GET_VAL(siter);
+	IVM_LIST_OBJECT_EACHPTR(def, liter) {
+		type = IVM_LIST_OBJECT_ITER_GET(liter);
 
-			if (IVM_IS_BTTYPE(type, NAT_STATE(), IVM_NUMERIC_T)) {
-				tid = ivm_numeric_getValue(type);
-				
-				if (!_is_legal_type(tid)) {
-					goto ILLEGAL_TYPE;
-				}
-
-				fsize = 0;
-				switch (tid) {
-					case IVM_STRUCT_TYPE_INT:
-					case IVM_STRUCT_TYPE_FLOAT:
-						fsize = 4;
-						break;
-
-					case IVM_STRUCT_TYPE_LONG:
-					case IVM_STRUCT_TYPE_DOUBLE:
-						fsize = 8;
-						break;
-
-					default:
-						STD_FREE(fields);
-						RTM_FATAL(STRUCT_ERROR_MSG_NO_DEFAULT_SIZE);
-						/* unreachable */
-				}
-
-				size += fsize;
-				*cur++ = ivm_struct_field_build(name, fsize, tid);
-			} else {
-			ILLEGAL_TYPE:
-				STD_FREE(fields);
-				RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(ivm_string_trimHead(name)));
-				/* unreachable */
+		if (IVM_IS_BTTYPE(type, NAT_STATE(), IVM_NUMERIC_T)) {
+			tid = ivm_numeric_getValue(type);
+			
+			if (!_is_legal_type(tid)) {
+				goto ILLEGAL_TYPE;
 			}
+
+			fsize = 0;
+			switch (tid) {
+				case IVM_STRUCT_TYPE_BYTE:
+					fsize = 1;
+					break;
+
+				case IVM_STRUCT_TYPE_INT:
+				case IVM_STRUCT_TYPE_FLOAT:
+					fsize = 4;
+					break;
+
+				case IVM_STRUCT_TYPE_LONG:
+				case IVM_STRUCT_TYPE_DOUBLE:
+					fsize = 8;
+					break;
+
+				default:
+					STD_FREE(fields);
+					RTM_FATAL(STRUCT_ERROR_MSG_NO_DEFAULT_SIZE);
+					/* unreachable */
+			}
+
+			size += fsize;
+			*cur++ = ivm_struct_field_build(fsize, tid);
+		} else if (IVM_IS_BTTYPE(type, NAT_STATE(), IVM_OBJECT_T)) {
+			tmp_obj = ivm_object_getSlot_r(type, NAT_STATE(), "type");
+			if (tmp_obj && IVM_IS_BTTYPE(tmp_obj, NAT_STATE(), IVM_NUMERIC_T)) {
+				tid = ivm_numeric_getValue(tmp_obj);
+			} else goto ILLEGAL_TYPE;
+
+			tmp_obj = ivm_object_getSlot_r(type, NAT_STATE(), "count");
+			if (tmp_obj && IVM_IS_BTTYPE(tmp_obj, NAT_STATE(), IVM_NUMERIC_T)) {
+				arr_size = ivm_numeric_getValue(tmp_obj);
+			} else goto ILLEGAL_TYPE;
+
+			RTM_ASSERT(arr_size > 0, STRUCT_ERROR_MSG_ILLEGAL_ARRAY_SIZE(arr_size));
+
+			switch (tid) {
+				case IVM_STRUCT_TYPE_BYTE:
+					fsize = 1;
+					break;
+
+				case IVM_STRUCT_TYPE_INT:
+				case IVM_STRUCT_TYPE_FLOAT:
+					fsize = 4;
+					break;
+
+				case IVM_STRUCT_TYPE_LONG:
+				case IVM_STRUCT_TYPE_DOUBLE:
+					fsize = 8;
+					break;
+
+				default:
+					STD_FREE(fields);
+					RTM_FATAL(STRUCT_ERROR_MSG_NO_DEFAULT_SIZE);
+					/* unreachable */
+			}
+
+			size += fsize * arr_size;
+			*cur++ = ivm_struct_field_buildArray(fsize, tid, arr_size);
+		} else {
+		ILLEGAL_TYPE:
+			STD_FREE(fields);
+			RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_LIST_OBJECT_ITER_INDEX(def, liter)));
+			/* unreachable */
 		}
 	}
 
@@ -187,12 +225,88 @@ IVM_NATIVE_FUNC(_struct_struct_size)
 #define _read_native_endian(addr, type) \
 	(*((type *)addr))
 
+#define _CHECK_ARG(t) \
+	if (!IVM_IS_BTTYPE(NAT_ARG_AT(arg), NAT_STATE(), t)) {    \
+		RTM_FATAL(STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(       \
+			IVM_OBJECT_GET(NAT_ARG_AT(arg), TYPE_NAME),       \
+			ivm_vmstate_getTypeName(NAT_STATE(), t)           \
+		));                                                   \
+	}
+
+#define SUB_NUM_FIELD(id, type) \
+	case id:                                                                      \
+		_CHECK_ARG(IVM_NUMERIC_T);                                                \
+		_write_native_endian(cur, type, ivm_numeric_getValue(NAT_ARG_AT(arg)));   \
+		break;
+
+#define SUB_ARR_FIELD(id, type) \
+	case id: {                                                                                     \
+		ivm_size_t count = i->count;                                                               \
+		ivm_object_t *tmp_obj;                                                                     \
+		_CHECK_ARG(IVM_LIST_OBJECT_T);                                                             \
+                                                                                                   \
+		arr = IVM_AS(NAT_ARG_AT(arg), ivm_list_object_t);                                          \
+		RTM_ASSERT(ivm_list_object_getSize(arr) >= count,                                          \
+				   STRUCT_ERROR_MSG_NOT_ENOUGH_FOR_ARRAY(ivm_list_object_getSize(arr), count));    \
+                                                                                                   \
+		IVM_LIST_OBJECT_ALLPTR(arr, liter) {                                                       \
+			if (!count) break;                                                                     \
+			tmp_obj = IVM_LIST_OBJECT_ITER_GET(liter);                                             \
+			RTM_ASSERT(                                                                            \
+				tmp_obj && IVM_IS_BTTYPE(tmp_obj, NAT_STATE(), IVM_NUMERIC_T),                     \
+				STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(                                              \
+					tmp_obj ? IVM_OBJECT_GET(tmp_obj, TYPE_NAME) : "<nil>", "numeric"              \
+				)                                                                                  \
+			);                                                                                     \
+			_write_native_endian(cur, type, ivm_numeric_getValue(tmp_obj));                        \
+			cur += i->size;                                                                        \
+			count--;                                                                               \
+		}                                                                                          \
+		break;                                                                                     \
+	}
+
+#define WRITE_FIELD() \
+	if (!i->count) {                                                                                \
+		switch (i->type) {                                                                          \
+			SUB_NUM_FIELD(IVM_STRUCT_TYPE_BYTE, ivm_byte_t)                                         \
+			SUB_NUM_FIELD(IVM_STRUCT_TYPE_INT, ivm_sint32_t)                                        \
+			SUB_NUM_FIELD(IVM_STRUCT_TYPE_LONG, ivm_sint64_t)                                       \
+			SUB_NUM_FIELD(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)                                      \
+			SUB_NUM_FIELD(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)                                     \
+			default:                                                                                \
+				RTM_FATAL(                                                                          \
+					STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(                                            \
+						IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)                           \
+					)                                                                               \
+				);                                                                                  \
+		}                                                                                           \
+		cur += i->size;                                                                             \
+	} else {                                                                                        \
+		switch (i->type) {                                                                          \
+			SUB_ARR_FIELD(IVM_STRUCT_TYPE_BYTE, ivm_byte_t)                                         \
+			SUB_ARR_FIELD(IVM_STRUCT_TYPE_INT, ivm_sint32_t)                                        \
+			SUB_ARR_FIELD(IVM_STRUCT_TYPE_LONG, ivm_sint64_t)                                       \
+			SUB_ARR_FIELD(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)                                      \
+			SUB_ARR_FIELD(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)                                     \
+			default:                                                                                \
+				RTM_FATAL(                                                                          \
+					STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(                                            \
+						IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)                           \
+					)                                                                               \
+				);                                                                                  \
+		}                                                                                           \
+	}
+
 IVM_NATIVE_FUNC(_struct_struct_pack)
 {
 	ivm_struct_object_t *strc;
 	ivm_struct_field_t *i, *end;
 	ivm_byte_t *buf, *cur;
 	ivm_argc_t arg;
+	ivm_object_t *ret;
+
+	ivm_list_object_t *arr;
+	ivm_list_object_iterator_t liter;
 
 	CHECK_BASE_TP(STRUCT_TYPE_CONS);
 
@@ -201,53 +315,18 @@ IVM_NATIVE_FUNC(_struct_struct_pack)
 	CHECK_ARG_COUNT(strc->fcount);
 
 	cur = buf = ivm_vmstate_allocWild(NAT_STATE(), strc->rsize);
+	ret = ivm_buffer_object_new_c(NAT_STATE(), strc->rsize, buf);
 
 	RTM_ASSERT(buf, STRUCT_ERROR_MSG_UNABLE_ALLOC_PACK_BUF);
-
-#define _CHECK_ARG(t) \
-	if (!IVM_IS_BTTYPE(NAT_ARG_AT(arg), NAT_STATE(), t)) {    \
-		STD_FREE(buf);                                        \
-		RTM_FATAL(STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(       \
-			IVM_OBJECT_GET(NAT_ARG_AT(arg), TYPE_NAME),       \
-			ivm_vmstate_getTypeName(NAT_STATE(), t)           \
-		));                                                   \
-	}
 
 	for (arg = 1,
 		 i = strc->fields,
 		 end = i + strc->fcount;
 		 i != end; i++, arg++) {
-		switch (i->type) {
-			case IVM_STRUCT_TYPE_INT:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_sint32_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_LONG:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_sint64_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_FLOAT:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_single_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_DOUBLE:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_double_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			default:
-				RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(ivm_string_trimHead(i->name)));
-		}
-
-		cur += i->size;
+		WRITE_FIELD();
 	}
 
-#undef _CHECK_ARG
-
-	return ivm_buffer_object_new_c(NAT_STATE(), strc->rsize, buf);
+	return ret;
 }
 
 IVM_NATIVE_FUNC(_struct_struct_packto)
@@ -257,6 +336,9 @@ IVM_NATIVE_FUNC(_struct_struct_packto)
 	ivm_byte_t *buf, *cur;
 	ivm_argc_t arg;
 	ivm_buffer_object_t *buf_obj;
+
+	ivm_list_object_t *arr;
+	ivm_list_object_iterator_t liter;
 
 	CHECK_BASE_TP(STRUCT_TYPE_CONS);
 
@@ -272,47 +354,12 @@ IVM_NATIVE_FUNC(_struct_struct_packto)
 
 	cur = buf = ivm_buffer_object_getRaw(buf_obj);
 
-#define _CHECK_ARG(t) \
-	if (!IVM_IS_BTTYPE(NAT_ARG_AT(arg), NAT_STATE(), t)) {    \
-		RTM_FATAL(STRUCT_ERROR_MSG_UNEXPECTED_ARG_TYPE(       \
-			IVM_OBJECT_GET(NAT_ARG_AT(arg), TYPE_NAME),       \
-			ivm_vmstate_getTypeName(NAT_STATE(), t)           \
-		));                                                   \
-	}
-
 	for (arg = 2,
 		 i = strc->fields,
 		 end = i + strc->fcount;
 		 i != end; i++, arg++) {
-		switch (i->type) {
-			case IVM_STRUCT_TYPE_INT:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_sint32_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_LONG:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_sint64_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_FLOAT:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_single_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			case IVM_STRUCT_TYPE_DOUBLE:
-				_CHECK_ARG(IVM_NUMERIC_T);
-				_write_native_endian(cur, ivm_double_t, ivm_numeric_getValue(NAT_ARG_AT(arg)));
-				break;
-
-			default:
-				RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(ivm_string_trimHead(i->name)));
-		}
-
-		cur += i->size;
+		WRITE_FIELD();
 	}
-
-#undef _CHECK_ARG
 
 	return IVM_AS_OBJ(buf_obj);
 }
@@ -339,46 +386,75 @@ IVM_NATIVE_FUNC(_struct_struct_unpack)
 
 	cur = raw = ivm_buffer_object_getRaw(buf);
 
+#define SUB1(id, type) \
+	case id:                                                               \
+		if (!ivm_list_object_push(                                         \
+			ret, NAT_STATE(),                                              \
+			ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, type))   \
+		)) return IVM_NULL;                                                \
+		break;
+
+#define SUB2(id, type) \
+	case id: {                                                                                           \
+		ivm_size_t count = i->count, fsize = i->size;                                                    \
+		ivm_list_object_t *arr = IVM_AS(ivm_list_object_new_b(NAT_STATE(), count), ivm_list_object_t);   \
+                                                                                                         \
+		for (; count; count--, cur += fsize) {                                                           \
+			if (!ivm_list_object_push(                                                                   \
+				arr, NAT_STATE(),                                                                        \
+				ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, type))                             \
+			)) return IVM_NULL;                                                                          \
+		}                                                                                                \
+                                                                                                         \
+		if (!ivm_list_object_push(ret, NAT_STATE(), IVM_AS_OBJ(arr)))                                    \
+			return IVM_NULL;                                                                             \
+                                                                                                         \
+		break;                                                                                           \
+	}
+
 	for (i = strc->fields,
 		 end = i + strc->fcount;
 		 i != end; i++) {
-		switch (i->type) {
-			case IVM_STRUCT_TYPE_INT:
-				if (!ivm_list_object_push(
-					ret, NAT_STATE(),
-					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_sint32_t))
-				)) return IVM_NULL;
-				break;
+		if (!i->count) {
+			switch (i->type) {
+				SUB1(IVM_STRUCT_TYPE_BYTE, ivm_byte_t)
+				SUB1(IVM_STRUCT_TYPE_INT, ivm_sint32_t)
+				SUB1(IVM_STRUCT_TYPE_LONG, ivm_sint64_t)
+				SUB1(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)
+				SUB1(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)
+				default:
+					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)));
+			}
 
-			case IVM_STRUCT_TYPE_LONG:
-				if (!ivm_list_object_push(
-					ret, NAT_STATE(),
-					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_sint64_t))
-				)) return IVM_NULL;
-				break;
-
-			case IVM_STRUCT_TYPE_FLOAT:
-				if (!ivm_list_object_push(
-					ret, NAT_STATE(),
-					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_single_t))
-				)) return IVM_NULL;
-				break;
-
-			case IVM_STRUCT_TYPE_DOUBLE:
-				if (!ivm_list_object_push(
-					ret, NAT_STATE(),
-					ivm_numeric_new(NAT_STATE(), _read_native_endian(cur, ivm_double_t))
-				)) return IVM_NULL;
-				break;
-
-			default:
-				RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_TYPE_FOR_FIELD(ivm_string_trimHead(i->name)));
+			cur += i->size;
+		} else {
+			switch (i->type) {
+				SUB2(IVM_STRUCT_TYPE_BYTE, ivm_byte_t)
+				SUB2(IVM_STRUCT_TYPE_INT, ivm_sint32_t)
+				SUB2(IVM_STRUCT_TYPE_LONG, ivm_sint64_t)
+				SUB2(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)
+				SUB2(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)
+				default:
+					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)));
+			}
 		}
-
-		cur += i->size;
 	}
 
 	return IVM_AS_OBJ(ret);
+}
+
+IVM_NATIVE_FUNC(_struct_array)
+{
+	ivm_object_t *obj;
+
+	CHECK_ARG_COUNT(2);
+
+	obj = ivm_object_new(NAT_STATE());
+
+	ivm_object_setSlot_r(obj, NAT_STATE(), "type", NAT_ARG_AT(1));
+	ivm_object_setSlot_r(obj, NAT_STATE(), "count", NAT_ARG_AT(2));
+
+	return obj;
 }
 
 IVM_PRIVATE
@@ -414,10 +490,13 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	ivm_object_setSlot_r(mod, state, "struct", IVM_NATIVE_WRAP_CONS(state, struct_proto, _struct_struct));
 
+	ivm_object_setSlot_r(mod, state, "byte", ivm_numeric_new(state, IVM_STRUCT_TYPE_BYTE));
 	ivm_object_setSlot_r(mod, state, "int", ivm_numeric_new(state, IVM_STRUCT_TYPE_INT));
 	ivm_object_setSlot_r(mod, state, "long", ivm_numeric_new(state, IVM_STRUCT_TYPE_LONG));
 	ivm_object_setSlot_r(mod, state, "float", ivm_numeric_new(state, IVM_STRUCT_TYPE_FLOAT));
 	ivm_object_setSlot_r(mod, state, "double", ivm_numeric_new(state, IVM_STRUCT_TYPE_DOUBLE));
+
+	ivm_object_setSlot_r(mod, state, "array", IVM_NATIVE_WRAP(state, _struct_array));
 
 	return mod;
 }
