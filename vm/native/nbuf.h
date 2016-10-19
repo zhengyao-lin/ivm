@@ -10,6 +10,7 @@ IVM_COM_HEADER
 IVM_NATIVE_FUNC(_buffer_cons);
 IVM_NATIVE_FUNC(_buffer_size);
 IVM_NATIVE_FUNC(_buffer_to_s);
+IVM_NATIVE_FUNC(_buffer_init);
 
 IVM_COM_END
 

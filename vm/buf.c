@@ -16,11 +16,9 @@ ivm_buffer_object_new(ivm_vmstate_t *state,
 
 	ret->alloc = ret->size = init;
 
-	if (init) {
-		ret->buf = ivm_vmstate_allocWild(state, sizeof(*ret->buf) * init);
-	} else {
-		ret->buf = IVM_NULL;
-	}
+	IVM_ASSERT(init, IVM_ERROR_MSG_EMPTY_BUFFER);
+
+	ret->buf = ivm_vmstate_allocWild(state, sizeof(*ret->buf) * init);
 
 	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 

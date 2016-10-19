@@ -26,3 +26,14 @@ while i < 100000:
 	i = i + 1
 
 f2() // -> "str: yes"
+
+buf = buffer(24)
+bufc = buf.clone()
+
+bufc.init()
+
+for loc i in range(10000): none // gc
+
+print(bufc.to_s())
+
+// -> "str: 0x000000000000000000000000000000000000000000000000"

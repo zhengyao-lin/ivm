@@ -32,3 +32,13 @@ print(outv["arg 1"]) // -> "str: it's arg 1"
 print(outv["arg 2"]) // -> "str: arg2"
 print(outv["arg 3"]) // -> "str: three"
 print(outv["arg 4"] == none) // -> "num: 1"
+
+list_r = ref [ a, [ b, e1, e2, [ v1, v2 ] ], c, , d ]
+
+deref list_r = [ 1, [ 2, "hey", "hello", [ "wow", "lala" ] ], 3, 4, 5 ]
+
+import ulist
+
+[ a, b, c, d, e1, e2, v1, v2 ].print()
+
+// -> "str: \\[ 1, 2, 3, 5, hey, hello, wow, lala \\]"

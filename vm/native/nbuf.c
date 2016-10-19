@@ -72,3 +72,16 @@ IVM_NATIVE_FUNC(_buffer_to_s)
 
 	return ivm_string_object_new(NAT_STATE(), str);
 }
+
+IVM_NATIVE_FUNC(_buffer_init)
+{
+	ivm_buffer_object_t *buf;
+
+	CHECK_BASE(IVM_BUFFER_OBJECT_T);
+
+	buf = IVM_AS(NAT_BASE(), ivm_buffer_object_t);
+
+	STD_INIT(ivm_buffer_object_getRaw(buf), ivm_buffer_object_getSize(buf));
+
+	return IVM_NONE(NAT_STATE());
+}
