@@ -1,6 +1,10 @@
 import ulist
 loc.merge(import struct, true)
 
+s = struct([ array(byte, 10) ])
+buf = s.pack("hello".ords().fill(10))
+print(buf.to_s())
+
 s = struct([ int, double, float, long, byte ])
 
 buf = s.pack(2147483648, 1.2, 2.0, 100000000000000, 256)
@@ -37,6 +41,7 @@ s.unpack(buf).print()
 
 ret
 
+// -> "str: 0x68656c6c6f0000000000"
 // -> "str: \\[ -2147483648, 1\\.2, 2, 1e\\+14, 0 \\]"
 // -> "str: \\[ -2147483648, 1\\.2, 2, 1e\\+14, 0 \\]"
 // -> "str: \\[ -2147483648, 1\\.2, 2, 1e\\+14, 0 \\]"

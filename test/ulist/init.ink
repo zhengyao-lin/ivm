@@ -130,4 +130,16 @@
 			s
 		}
 	}
+
+	lp.fill = fn n, v = 0: {
+		loc r = base.clone()
+		loc s = r.size()
+
+		if n < s:
+			r.slice(, n)
+		else: {
+			for loc i in range(n - s): r.push(v)
+			r
+		}
+	}
 })()

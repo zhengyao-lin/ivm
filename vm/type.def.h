@@ -55,6 +55,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
+	ivm_object_setSlot_r(tmp, _STATE, "ords", IVM_NATIVE_WRAP(_STATE, _string_ords));
 
 }, .trav = ivm_string_object_traverser,
    .const_bool = IVM_TRUE)
@@ -85,6 +86,7 @@ TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _buffer_size));
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _buffer_to_s));
 
 }, .des = ivm_buffer_object_destructor,
    .clone = ivm_buffer_object_cloner,

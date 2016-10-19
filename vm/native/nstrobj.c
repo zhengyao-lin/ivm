@@ -95,3 +95,31 @@ IVM_NATIVE_FUNC(_string_ord)
 
 	return ivm_numeric_new(NAT_STATE(), ivm_string_charAt(str, i));
 }
+
+IVM_NATIVE_FUNC(_string_ords)
+{
+	const ivm_string_t *str;
+	const ivm_char_t *i, *end;
+	ivm_list_object_t *ret;
+	ivm_number_t nlen;
+	ivm_size_t len = -1;
+
+	CHECK_BASE(IVM_STRING_OBJECT_T);
+
+	str = ivm_string_object_getValue(NAT_BASE());
+	nlen = ivm_string_length(str);
+
+	MATCH_ARG("*n", &nlen);
+
+	len = nlen;
+	RTM_ASSERT(len <= ivm_string_length(str), IVM_ERROR_MSG_STRING_IDX_EXCEED(len, (ivm_size_t)ivm_string_length(str)));
+	ret = IVM_AS(ivm_list_object_new_b(NAT_STATE(), len), ivm_list_object_t);
+
+	for (i = ivm_string_trimHead(str),
+		 end = i + len;
+		 i != end; i++) {
+		ivm_list_object_push(ret, NAT_STATE(), ivm_numeric_new(NAT_STATE(), *i));
+	}
+
+	return IVM_AS_OBJ(ret);
+}

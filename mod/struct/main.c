@@ -205,7 +205,7 @@ IVM_NATIVE_FUNC(_struct_struct)
 		} else {
 		ILLEGAL_TYPE:
 			STD_FREE(fields);
-			RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_LIST_OBJECT_ITER_INDEX(def, liter)));
+			RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_LIST_OBJECT_ITER_INDEX(def, liter)) + 1);
 			/* unreachable */
 		}
 	}
@@ -277,7 +277,7 @@ IVM_NATIVE_FUNC(_struct_struct_size)
 				RTM_FATAL(                                                                          \
 					STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(                                            \
 						IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)                           \
-					)                                                                               \
+					) + 1                                                                           \
 				);                                                                                  \
 		}                                                                                           \
 		cur += i->size;                                                                             \
@@ -292,7 +292,7 @@ IVM_NATIVE_FUNC(_struct_struct_size)
 				RTM_FATAL(                                                                          \
 					STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(                                            \
 						IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)                           \
-					)                                                                               \
+					) + 1                                                                           \
 				);                                                                                  \
 		}                                                                                           \
 	}
@@ -423,7 +423,7 @@ IVM_NATIVE_FUNC(_struct_struct_unpack)
 				SUB1(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)
 				SUB1(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)
 				default:
-					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)));
+					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)) + 1);
 			}
 
 			cur += i->size;
@@ -435,7 +435,7 @@ IVM_NATIVE_FUNC(_struct_struct_unpack)
 				SUB2(IVM_STRUCT_TYPE_FLOAT, ivm_single_t)
 				SUB2(IVM_STRUCT_TYPE_DOUBLE, ivm_double_t)
 				default:
-					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)));
+					RTM_FATAL(STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(IVM_PTR_DIFF(i, strc->fields, ivm_struct_field_t)) + 1);
 			}
 		}
 	}

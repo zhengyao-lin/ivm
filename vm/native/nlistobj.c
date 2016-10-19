@@ -89,7 +89,7 @@ IVM_NATIVE_FUNC(_list_push)
 
 IVM_NATIVE_FUNC(_list_slice)
 {
-	ivm_number_t start, end, step = 1;
+	ivm_number_t start = 0, end, step = 1;
 	ivm_long_t size;
 	ivm_object_t **lst;
 	ivm_list_object_t *list;
@@ -100,7 +100,7 @@ IVM_NATIVE_FUNC(_list_slice)
 	list = NAT_BASE_C(ivm_list_object_t);
 	end = ivm_list_object_getSize(list);
 
-	MATCH_ARG("n*nn", &start, &end, &step);
+	MATCH_ARG("*nnn", &start, &end, &step);
 
 	RTM_ASSERT(step <= -1 || step >= 1, ERR_MSG_ILLEGAL_STEP);
 

@@ -236,6 +236,22 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 }
 
 IVM_INLINE
+ivm_string_t *
+ivm_vmstate_preallocStr(ivm_vmstate_t *state,
+						ivm_size_t len,
+						ivm_char_t **buf)
+{
+	ivm_string_t *str = ivm_vmstate_alloc(state, IVM_STRING_GET_SIZE(len));
+
+	ivm_string_initHead(str, IVM_FALSE, len);
+
+	if (buf)
+		*buf = ivm_string_trimHead(str);
+
+	return str;
+}
+
+IVM_INLINE
 void *
 ivm_vmstate_addCopy(ivm_vmstate_t *state,
 					void *ptr, ivm_size_t size)
