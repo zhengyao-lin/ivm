@@ -123,3 +123,9 @@ IVM_NATIVE_FUNC(_string_ords)
 
 	return IVM_AS_OBJ(ret);
 }
+
+IVM_NATIVE_FUNC(_string_to_s)
+{
+	CHECK_BASE(IVM_STRING_OBJECT_T);
+	return ivm_object_clone(NAT_BASE(), NAT_STATE());
+}

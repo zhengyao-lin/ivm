@@ -11,6 +11,7 @@ IVM_NATIVE_FUNC(_numeric_cons);
 IVM_NATIVE_FUNC(_numeric_ceil);
 IVM_NATIVE_FUNC(_numeric_floor);
 IVM_NATIVE_FUNC(_numeric_round);
+IVM_NATIVE_FUNC(_numeric_to_s);
 
 IVM_NATIVE_FUNC(_numeric_isnan);
 IVM_NATIVE_FUNC(_numeric_isinf);

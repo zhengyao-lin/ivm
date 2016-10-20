@@ -66,6 +66,17 @@ IVM_NATIVE_FUNC(_numeric_round)
 	return ivm_numeric_new(NAT_STATE(), round(ivm_numeric_getValue(NAT_BASE())));
 }
 
+IVM_NATIVE_FUNC(_numeric_to_s)
+{
+	ivm_char_t buf[25];
+	
+	CHECK_BASE(IVM_NUMERIC_T);
+
+	ivm_conv_dtoa(ivm_numeric_getValue(NAT_BASE()), buf);
+
+	return ivm_string_object_new(NAT_STATE(), ivm_vmstate_constantize_r(NAT_STATE(), buf));
+}
+
 IVM_NATIVE_FUNC(_numeric_isnan)
 {
 	CHECK_BASE(IVM_NUMERIC_T);
