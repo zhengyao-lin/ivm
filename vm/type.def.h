@@ -20,6 +20,8 @@ TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _type_to_s));
+
 }, .des = ivm_type_object_destructor,
    .trav = ivm_type_object_traverser,
    .const_bool = IVM_TRUE)
@@ -35,7 +37,7 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t),
 	ivm_object_setSlot_r(tmp, _STATE, "ceil", IVM_NATIVE_WRAP(_STATE, _numeric_ceil));
 	ivm_object_setSlot_r(tmp, _STATE, "floor", IVM_NATIVE_WRAP(_STATE, _numeric_floor));
 	ivm_object_setSlot_r(tmp, _STATE, "round", IVM_NATIVE_WRAP(_STATE, _numeric_round));
-	ivm_object_setSlot_r(tmp, _STATE, "to_s", IVM_NATIVE_WRAP(_STATE, _numeric_to_s));
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _numeric_to_s));
 
 	ivm_object_setSlot_r(tmp, _STATE, "isnan", IVM_NATIVE_WRAP(_STATE, _numeric_isnan));
 	ivm_object_setSlot_r(tmp, _STATE, "isinf", IVM_NATIVE_WRAP(_STATE, _numeric_isinf));
@@ -57,7 +59,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
 	ivm_object_setSlot_r(tmp, _STATE, "ords", IVM_NATIVE_WRAP(_STATE, _string_ords));
-	ivm_object_setSlot_r(tmp, _STATE, "to_s", IVM_NATIVE_WRAP(_STATE, _string_to_s));
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _string_to_s));
 
 }, .trav = ivm_string_object_traverser,
    .const_bool = IVM_TRUE)

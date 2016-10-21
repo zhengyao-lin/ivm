@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_type_cons);
+IVM_NATIVE_FUNC(_type_to_s);
 
 IVM_COM_END
 
