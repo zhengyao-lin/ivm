@@ -150,6 +150,59 @@ ivm_function_object_invokeBase(ivm_function_object_t *obj,
 	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base);
 }
 
+IVM_INLINE
+ivm_object_t *
+ivm_function_object_new(ivm_vmstate_t *state,
+						ivm_context_t *scope,
+						ivm_function_t *func)
+{
+	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_FUNCTION_OBJECT_T));
+
+	ret->scope = ivm_context_addRef(scope);
+	ret->val = func;
+
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
+
+	return IVM_AS_OBJ(ret);
+}
+
+IVM_INLINE
+void
+ivm_function_object_init(ivm_function_object_t *obj,
+						 ivm_vmstate_t *state,
+						 ivm_context_t *scope,
+						 ivm_function_t *func)
+{
+	ivm_object_init(IVM_AS_OBJ(obj), IVM_BTTYPE(state, IVM_FUNCTION_OBJECT_T));
+
+	obj->scope = ivm_context_addRef(scope);
+	obj->val = func;
+
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(obj)); /* function objects need destruction */
+
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_function_object_newNative(ivm_vmstate_t *state,
+							  ivm_native_function_t func)
+{
+	return ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, func));
+}
+
+IVM_INLINE
+void
+ivm_function_object_initNative(ivm_function_object_t *obj,
+							   ivm_vmstate_t *state,
+							   ivm_native_function_t func)
+{
+	ivm_function_object_init(obj, state, IVM_NULL, ivm_function_newNative(state, func));
+	return;
+}
+
 IVM_COM_END
 
 #endif

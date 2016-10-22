@@ -15,10 +15,10 @@
 #include "strobj.h"
 #include "listobj.h"
 
-#define RTM_FATAL(...) \
+#define OPRT_FATAL(...) \
 	IVM_CORO_NATIVE_ASSERT(_CORO, _STATE, 0, __VA_ARGS__)
 
-#define RTM_ASSERT(cond, ...) \
+#define OPRT_ASSERT(cond, ...) \
 	IVM_CORO_NATIVE_ASSERT(_CORO, _STATE, (cond), __VA_ARGS__)
 
 #define LINK_STRING_NUM(op1, op2, e) \

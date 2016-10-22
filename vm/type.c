@@ -45,6 +45,8 @@ ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 	type->header.slots = IVM_NULL;
 	type->header.mark.copy = IVM_NULL;
 
+	STD_INIT(type->def_oops, sizeof(type->def_oops));
+
 	for (i = type->binops, end = i + IVM_ARRLEN(type->binops);
 		 i != end; i++) {
 		ivm_binop_table_init(i);

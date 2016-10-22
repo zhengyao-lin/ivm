@@ -7,12 +7,57 @@
 
 #include "std/mem.h"
 
+#include "native/priv.h"
+
 #include "oprt.h"
 #include "obj.h"
 
 #define TYPE_TAG_OF(t) IVM_##t##_T
 #define UNIOP_PROC_NAME(op, t) ivm_uniop_##op##_##t
 #define BINOP_PROC_NAME(t1, op, t2) ivm_binop_##t1##_##op##_##t2
+
+#define DEF_OOP_UNIOP_NAME(op, t) ivm_def_oop_uniop_##op##_##t
+#define DEF_OOP_BINOP_NAME(t1, op, t2) ivm_def_oop_binop_##t1##_##op##_##t2
+#define DEF_OOP_TRIOP_NAME(t1, op, t2) ivm_def_oop_triop_##t1##_##op##_##t2
+
+#define DEF_OOP_UNIOP_PROC(type, op) \
+	IVM_NATIVE_FUNC_C(DEF_OOP_UNIOP_NAME(op, type)) {                                                         \
+		CHECK_BASE(type);                                                                                     \
+		ivm_uniop_proc_t proc = IVM_OBJECT_GET_UNIOP_PROC(NAT_BASE(), op);                                    \
+		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_UNIOP_FOR("<native op>", IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME)));   \
+		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE());                                                     \
+	}
+
+#define DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp) \
+	IVM_NATIVE_FUNC_C(DEF_OOP_BINOP_NAME(t1, op, t2)) {                                                       \
+		ivm_object_t *op2;                                                                                    \
+		CHECK_BASE(t1);                                                                                       \
+		CHECK_ARG_COUNT(1);                                                                                   \
+		op2 = NAT_ARG_AT(1);                                                                                  \
+		ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                               \
+		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                          \
+						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                            \
+						 	"<native op>",                                                                    \
+						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                 \
+		return is_cmp                                                                                         \
+			   ? ivm_numeric_new(NAT_STATE(), (ivm_ptr_t)proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2))      \
+			   : proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2);                                              \
+	}
+
+#define DEF_OOP_TRIOP_PROC(t1, op, t2) \
+	IVM_NATIVE_FUNC_C(DEF_OOP_TRIOP_NAME(t1, op, t2)) {                                                                      \
+		ivm_triop_proc_t proc;                                                                                               \
+		ivm_object_t *op2;                                                                                                   \
+		CHECK_BASE(t1);                                                                                                      \
+		CHECK_ARG_COUNT(2);                                                                                                  \
+		op2 = NAT_ARG_AT(1);                                                                                                 \
+		proc = (ivm_triop_proc_t)IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                                             \
+		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                                         \
+						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                                           \
+						 	"<native op>",                                                                                   \
+						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                                \
+		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));                                                \
+	}
 
 #define UNIOP_PROC_DEF(name) \
 	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
@@ -33,19 +78,22 @@
 								   ivm_object_t *__op3__)
 
 #define UNIOP_GEN(op, t, ...) \
-	UNIOP_PROC_DEF(UNIOP_PROC_NAME(op, t)) \
+	DEF_OOP_UNIOP_PROC(t, op)                \
+	UNIOP_PROC_DEF(UNIOP_PROC_NAME(op, t))   \
 	__VA_ARGS__
 
-#define BINOP_GEN(t1, op, t2, ...) \
-	BINOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2)) \
+#define BINOP_GEN(t1, op, t2, is_cmp, ...) \
+	DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)        \
+	BINOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
 	__VA_ARGS__
 
 #define TRIOP_GEN(t1, op, t2, ...) \
-	TRIOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2)) \
+	DEF_OOP_TRIOP_PROC(t1, op, t2)                \
+	TRIOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
 	__VA_ARGS__
 
-#define BINOP_GEN_C(t1, op, t2, func)
-#define TRIOP_GEN_C(t1, op, t2, func)
+#define BINOP_GEN_C(t1, op, t2, is_cmp, func) DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)
+#define TRIOP_GEN_C(t1, op, t2, func) DEF_OOP_TRIOP_PROC(t1, op, t2)
 
 #define _STATE (__state__)
 #define _CORO (__coro__)
@@ -168,23 +216,28 @@ ivm_oprt_initType(ivm_vmstate_t *state)
 	ivm_type_t *tmp_type;
 
 #define TRIOP_GEN(t1, op, t2, ...) \
-	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
+	(ivm_type_setDefaultOop(type_list + t1, IVM_OOP_ID(op), ivm_function_newNative(state, DEF_OOP_TRIOP_NAME(t1, op, t2))), \
+	 tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
 	 ivm_binop_table_set(tmp_table, t2, (ivm_binop_proc_t)BINOP_PROC_NAME(t1, op, t2)));
 
 #define TRIOP_GEN_C(t1, op, t2, func) \
-	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
+	(ivm_type_setDefaultOop(type_list + t1, IVM_OOP_ID(op), ivm_function_newNative(state, DEF_OOP_TRIOP_NAME(t1, op, t2))), \
+	 tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
 	 ivm_binop_table_set(tmp_table, t2, (ivm_binop_proc_t)(func)));
 
-#define BINOP_GEN(t1, op, t2, ...) \
-	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
+#define BINOP_GEN(t1, op, t2, is_cmp, ...) \
+	(ivm_type_setDefaultOop(type_list + t1, IVM_OOP_ID(op), ivm_function_newNative(state, DEF_OOP_BINOP_NAME(t1, op, t2))), \
+	 tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
 	 ivm_binop_table_set(tmp_table, t2, BINOP_PROC_NAME(t1, op, t2)));
 
-#define BINOP_GEN_C(t1, op, t2, func) \
-	(tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
+#define BINOP_GEN_C(t1, op, t2, is_cmp, func) \
+	(ivm_type_setDefaultOop(type_list + t1, IVM_OOP_ID(op), ivm_function_newNative(state, DEF_OOP_BINOP_NAME(t1, op, t2))), \
+	 tmp_table = ivm_type_getBinopTable((tmp_type = type_list + t1), op), \
 	 ivm_binop_table_set(tmp_table, t2, (func)));
 
 #define UNIOP_GEN(op, t, ...) \
-	(ivm_uniop_table_set(ivm_type_getUniopTable(type_list + t), \
+	(ivm_type_setDefaultOop(type_list + t, IVM_OOP_ID(op), ivm_function_newNative(state, DEF_OOP_UNIOP_NAME(op, t))), \
+	 ivm_uniop_table_set(ivm_type_getUniopTable(type_list + t), \
 						 IVM_UNIOP_ID(op), UNIOP_PROC_NAME(op, t)));
 
 	#include "oprt.def.h"

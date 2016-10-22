@@ -101,14 +101,35 @@ ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
 					 ivm_object_t *op2)
 {
 	ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC_R(op1, op, op2);
+	
 	if (proc) {
 		return proc(state, coro, op1, op2);
 	}
+
+	return IVM_NULL;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_object_doUniOp_c(struct ivm_vmstate_t_tag *state,
+					 struct ivm_coro_t_tag *coro,
+					 ivm_object_t *op1,
+					 ivm_int_t op)
+{
+	ivm_uniop_proc_t proc = IVM_OBJECT_GET_UNIOP_PROC_R(op1, op);
+	
+	if (proc) {
+		return proc(state, coro, op1);
+	}
+
 	return IVM_NULL;
 }
 
 #define ivm_object_doBinOp(state, coro, op1, op, op2) \
 	(ivm_object_doBinOp_c((state), (coro), (op1), IVM_BINOP_ID(op), (op2)))
+
+#define ivm_object_doUniOp(state, coro, op1, op, op2) \
+	(ivm_object_doUniOp_c((state), (coro), (op1), IVM_UNIOP_ID(op), (op2)))
 
 #define ivm_object_markOop(obj) ((obj)->mark.sub.oop = IVM_TRUE)
 #define ivm_object_hasOop(obj) ((obj)->mark.sub.oop)

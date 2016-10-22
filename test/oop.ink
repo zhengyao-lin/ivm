@@ -47,6 +47,15 @@ a()
 a = {
 	val: 0,
 	[]: fn idx, assign: {
+		print("here")
+		if assign != none:
+			base.val = assign
+		else:
+			base.val
+	},
+
+	[=]: fn idx, assign: {
+		print("there")
 		if assign != none:
 			base.val = assign
 		else:
@@ -56,6 +65,37 @@ a = {
 
 print(a["anything"])
 print(a["anything"] = 10)
+
+import ulist
+
+print((1).+(2))
+print([ 1 ].*(5).to_str())
+try: print("str".[](5).to_str())
+catch: print("yes")
+
+a = [ 1, 2, 3 ]
+
+a.[=](2, "hi")
+
+print(a.[](2))
+
+f = a.[=]
+b = { [=]: f }
+
+try: b[10] = 10
+catch: print("hey, wrong base")
+
+print((1).+(10))
+print((2).-(20))
+print((3).*(40))
+print((3)./(10))
+
+print((3).>(10))
+print((3).<(2))
+print((3).&(10))
+
+print((3).%(10))
+print([ 1 ].+([ 2 ]).to_str())
 
 // -> "num: 5"
 // -> "str: unable to invoke object of type <string>"
@@ -68,6 +108,24 @@ print(a["anything"] = 10)
 //
 // -> "str: none"
 // -> "str: a is called"
-// 
+//
+// -> "str: here"
 // -> "num: 0"
+// -> "str: there"
 // -> "num: 10"
+
+// -> "num: 3"
+// -> "str: \\[ 1, 1, 1, 1, 1 \\]"
+// -> "str: yes"
+
+// -> "str: hi"
+// -> "str: hey, wrong base"
+// -> "num: 11"
+// -> "num: -18"
+// -> "num: 120"
+// -> "num: 0.3"
+// -> "num: 0"
+// -> "num: 0"
+// -> "num: 2"
+// -> "num: 3"
+// -> "str: \\[ 1, 2 \\]"

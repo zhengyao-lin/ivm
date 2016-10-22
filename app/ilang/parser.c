@@ -373,7 +373,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		{
 			{ "=*", ST_IN_COMMENT1 },
 			{ "=/", ST_IN_COMMENT2 },
-			{ ".", ST_INIT, T_DIV, .exc = IVM_TRUE }
+			{ ".", ST_INIT, T_DIV }
 		},
 
 		/* IN_COMMENT1 */
@@ -1210,6 +1210,7 @@ RULE(arg_list_opt)
 		| '|'
 		| '^'
 		| '[' nllo ']'
+		| '[' nllo '=' nllo ']'
 		| '(' nllo ')'
 		| '!='
 		| '=='
@@ -1268,6 +1269,11 @@ RULE(oop)
 		SUB_RULE(T(T_LBRAKT) R(nllo) T(T_RBRAKT)
 		{
 			_RETVAL.oop = IVM_OOP_ID(IDX);
+		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo) T(T_ASSIGN) R(nllo) T(T_RBRAKT)
+		{
+			_RETVAL.oop = IVM_OOP_ID(IDXA);
 		})
 
 		SUB_RULE(T(T_LPAREN) R(nllo) T(T_RPAREN)

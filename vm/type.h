@@ -38,6 +38,7 @@ IVM_COM_HEADER
 struct ivm_vmstate_t_tag;
 struct ivm_object_t_tag;
 struct ivm_traverser_arg_t_tag;
+struct ivm_function_t_tag;
 
 typedef void (*ivm_destructor_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag *);
 typedef void (*ivm_traverser_t)(struct ivm_object_t_tag *, struct ivm_traverser_arg_t_tag *);
@@ -47,6 +48,7 @@ typedef void (*ivm_cloner_t)(struct ivm_object_t_tag *, struct ivm_vmstate_t_tag
 typedef struct ivm_type_t_tag {
 	ivm_binop_table_t binops[IVM_BINOP_COUNT];
 	ivm_uniop_table_t uniops;
+	struct ivm_function_t_tag *def_oops[IVM_OOP_COUNT];
 
 	ivm_destructor_t des;
 	ivm_native_function_t cons;
@@ -88,6 +90,9 @@ ivm_type_dump(ivm_type_t *type);
 #define ivm_type_getHeader(type) (&(type)->header)
 
 #define ivm_type_getName(type) ((type)->name)
+
+#define ivm_type_getDefaultOop(type, op) ((type)->def_oops[op])
+#define ivm_type_setDefaultOop(type, op, func) ((type)->def_oops[op] = (func))
 
 #define ivm_type_getCons(type) ((type)->cons)
 #define ivm_type_checkCons(type, val) ((type)->cons == (val))

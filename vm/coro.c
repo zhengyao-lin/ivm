@@ -227,7 +227,7 @@ ivm_coro_start_c(ivm_coro_t *coro, ivm_vmstate_t *state,
 
 	IVM_REG const ivm_string_t *tmp_str;
 	// IVM_REG ivm_context_t *tmp_ctx;
-	IVM_REG const ivm_function_t *tmp_func = IVM_NULL;
+	IVM_REG ivm_function_t *tmp_func = IVM_NULL;
 	IVM_REG ivm_sint32_t tmp_argc;
 	IVM_REG ivm_object_t **tmp_argv;
 

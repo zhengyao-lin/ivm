@@ -74,48 +74,14 @@ enum {
 };
 
 enum {
-	IVM_OOP_ID(NOT) = 0,
-	IVM_OOP_ID(NEG),
-	IVM_OOP_ID(POS),
+	IVM_OOP_ID(FIRST) = -1,
 
-	IVM_OOP_UNIOP_COUNT,
-
-	IVM_OOP_ID(ADD) = IVM_OOP_UNIOP_COUNT,
-	IVM_OOP_ID(SUB),
-	IVM_OOP_ID(MUL),
-	IVM_OOP_ID(DIV),
-	IVM_OOP_ID(MOD),
-
-	IVM_OOP_ID(NE),
-	IVM_OOP_ID(EQ),
-	IVM_OOP_ID(GT),
-	IVM_OOP_ID(GE),
-	IVM_OOP_ID(LT),
-	IVM_OOP_ID(LE),
-
-	IVM_OOP_ID(AND),
-	IVM_OOP_ID(IOR),
-	IVM_OOP_ID(EOR),
-	IVM_OOP_ID(IDX),
-
-	IVM_OOP_ID(SHL),
-	IVM_OOP_ID(SHLR),
-	IVM_OOP_ID(SHAR),
-
-	IVM_OOP_ID(CALL),
+#define OOP_DEF(name) IVM_OOP_ID(name),
+	#include "oop.def.h"
+#undef OOP_DEF
 
 	IVM_OOP_COUNT
 };
-
-/*
-	support overload op(max 14):
-		unary: not
-
-		binary:
-			add, sub, mul, div,
-			mod, and, ior, eor,
-			idx, shl, shar, shlr
- */
 
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 

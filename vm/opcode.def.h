@@ -136,7 +136,7 @@ OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0))
 OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0))
 
 OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0))
-OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, IDX, "[]=", 0))
+OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, "[=]", 0))
 
 OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0))
 OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0))
@@ -552,11 +552,18 @@ OPCODE_GEN(SET_OOP_B, "set_oop_b", I, -1, {
 OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	CHECK_STACK(1);
 
+	_TMP_ARGC = IARG();
 	_TMP_OBJ1 = STACK_POP();
 	NOT_NONE(_TMP_OBJ1, "overload op");
 
-	_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IARG());
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
+	_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, _TMP_ARGC);
+	if (!_TMP_OBJ2) {	
+		_TMP_FUNC = ivm_type_getDefaultOop(IVM_TYPE_OF(_TMP_OBJ1), _TMP_ARGC);
+		// IVM_TRACE("%d\n", _TMP_ARGC);
+		_TMP_OBJ2 = _TMP_FUNC ? ivm_function_object_new(_STATE, IVM_NULL, _TMP_FUNC) : IVM_NONE(_STATE);
+	}
+
+	STACK_PUSH(_TMP_OBJ2);
 
 	NEXT_INSTR_NGC();
 })

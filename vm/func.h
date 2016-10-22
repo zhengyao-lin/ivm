@@ -33,6 +33,11 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 											struct ivm_coro_t_tag *__coro__, \
 											ivm_context_t *__context__, \
 											ivm_function_arg_t __arg__)
+#define IVM_NATIVE_FUNC_C(name) ivm_object_t *name( \
+											  struct ivm_vmstate_t_tag *__state__, \
+											  struct ivm_coro_t_tag *__coro__, \
+											  ivm_context_t *__context__, \
+											  ivm_function_arg_t __arg__)
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
 
 #define NAT_STATE() (__state__)
@@ -110,24 +115,14 @@ ivm_function_getMaxStack(const ivm_function_t *func)
 }
 */
 
-typedef struct {
-	IVM_OBJECT_HEADER
-	ivm_context_t *scope;
+#define IVM_CALLABLE_HEADER \
+	IVM_OBJECT_HEADER       \
+	ivm_context_t *scope;   \
 	ivm_function_t *val;
+
+typedef struct {
+	IVM_CALLABLE_HEADER
 } ivm_function_object_t;
-
-ivm_object_t *
-ivm_function_object_new(struct ivm_vmstate_t_tag *state,
-						ivm_context_t *scope,
-						ivm_function_t *func);
-
-IVM_INLINE
-ivm_object_t *
-ivm_function_object_newNative(struct ivm_vmstate_t_tag *state,
-							  ivm_native_function_t func)
-{
-	return ivm_function_object_new(state, IVM_NULL, ivm_function_newNative(state, func));
-}
 
 IVM_INLINE
 ivm_bool_t

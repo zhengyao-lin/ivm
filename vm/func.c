@@ -104,23 +104,6 @@ ivm_function_setExec(ivm_function_t *func,
 	return;
 }
 
-ivm_object_t *
-ivm_function_object_new(ivm_vmstate_t *state,
-						ivm_context_t *scope,
-						ivm_function_t *func)
-{
-	ivm_function_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
-
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_FUNCTION_OBJECT_T));
-
-	ret->scope = ivm_context_addRef(scope);
-	ret->val = func;
-
-	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret)); /* function objects need destruction */
-
-	return IVM_AS_OBJ(ret);
-}
-
 void
 ivm_function_object_destructor(ivm_object_t *obj,
 							   ivm_vmstate_t *state)

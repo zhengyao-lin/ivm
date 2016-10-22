@@ -80,14 +80,14 @@
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, oop, op_name, e) \
+#define TRIOP_HANDLER(op, op_name, e) \
 	{                                                                                          \
 		CHECK_STACK(3);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = STACK_POP();                                                               \
-		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(oop));                             \
+		_TMP_OBJ4 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
 		if (!_TMP_OBJ4) {                                                                      \
 			e;                                                                                 \
 			                                                                                   \
