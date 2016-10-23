@@ -557,10 +557,15 @@ OPCODE_GEN(GET_OOP, "get_oop", I, -1, {
 	NOT_NONE(_TMP_OBJ1, "overload op");
 
 	_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, _TMP_ARGC);
-	if (!_TMP_OBJ2) {	
-		_TMP_FUNC = ivm_type_getDefaultOop(IVM_TYPE_OF(_TMP_OBJ1), _TMP_ARGC);
-		// IVM_TRACE("%d\n", _TMP_ARGC);
-		_TMP_OBJ2 = _TMP_FUNC ? ivm_function_object_new(_STATE, IVM_NULL, _TMP_FUNC) : IVM_NONE(_STATE);
+	if (!_TMP_OBJ2) {
+		if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T) &&
+			_TMP_ARGC == IVM_OOP_ID(CALL)) {
+			_TMP_OBJ2 = _TMP_OBJ1;
+		} else {
+			_TMP_FUNC = ivm_type_getDefaultOop(IVM_TYPE_OF(_TMP_OBJ1), _TMP_ARGC);
+			// IVM_TRACE("%d\n", _TMP_ARGC);
+			_TMP_OBJ2 = _TMP_FUNC ? ivm_function_object_new(_STATE, IVM_NULL, _TMP_FUNC) : IVM_NONE(_STATE);
+		}
 	}
 
 	STACK_PUSH(_TMP_OBJ2);

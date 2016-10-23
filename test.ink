@@ -7,6 +7,15 @@ printe = fn e: {
 }
 
 __test = fn: {
+	a = 1
+	a.proto = string.proto
+
+	print(a.+(1))
+
+	string.proto.+ = "".+
+
+	try: print(a.+(1))
+	catch: print("a little problem")
 
 	print(numeric("10"))
 	print(numeric("10.01001"))

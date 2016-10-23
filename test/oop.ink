@@ -97,6 +97,12 @@ print((3).&(10))
 print((3).%(10))
 print([ 1 ].+([ 2 ]).to_str())
 
+f = (fn: print("called! base: " + base.val))
+f.val = "yeah"
+a = { f: f, val: "no!" }
+
+a.f.()()
+
 // -> "num: 5"
 // -> "str: unable to invoke object of type <string>"
 // -> "str: yes!"
@@ -129,3 +135,5 @@ print([ 1 ].+([ 2 ]).to_str())
 // -> "num: 2"
 // -> "num: 3"
 // -> "str: \\[ 1, 2 \\]"
+
+// -> "str: called! base: yeah"
