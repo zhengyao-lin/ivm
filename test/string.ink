@@ -11,6 +11,9 @@ print("22".len())
 
 print("y".ord().char())
 
+for loc c in "abcd".chars():
+	print(c)
+
 ret
 
 // -> "str: exception"
@@ -19,3 +22,7 @@ ret
 // -> "num: 0"
 // -> "num: 2"
 // -> "str: y"
+// -> "str: a"
+// -> "str: b"
+// -> "str: c"
+// -> "str: d"

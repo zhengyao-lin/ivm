@@ -58,6 +58,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
 
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
+	ivm_object_setSlot_r(tmp, _STATE, "chars", IVM_NATIVE_WRAP(_STATE, _string_chars));
 	ivm_object_setSlot_r(tmp, _STATE, "ords", IVM_NATIVE_WRAP(_STATE, _string_ords));
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _string_to_s));
 

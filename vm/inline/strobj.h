@@ -60,6 +60,20 @@ ivm_string_object_new_r(ivm_vmstate_t *state,
 
 IVM_INLINE
 ivm_object_t *
+ivm_string_object_newChar(ivm_vmstate_t *state,
+						  ivm_char_t c)
+{
+	ivm_string_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_STRING_OBJECT_T));
+
+	ret->val = ivm_vmstate_allocChar(state, c);
+
+	return IVM_AS_OBJ(ret);
+}
+
+IVM_INLINE
+ivm_object_t *
 ivm_string_object_new_rl(ivm_vmstate_t *state,
 						 const ivm_char_t *val,
 						 ivm_size_t len)

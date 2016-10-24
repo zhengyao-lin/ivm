@@ -461,6 +461,20 @@ ivm_vmstate_allocString(ivm_vmstate_t *state,
 	return str;
 }
 
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_allocChar(ivm_vmstate_t *state,
+					  ivm_char_t c)
+{
+	ivm_string_t *ret;
+
+	ret = ivm_vmstate_alloc(state, IVM_STRING_GET_SIZE(1));
+	ivm_string_trimHead(ret)[0] = c;
+	ivm_string_trimHead(ret)[1] = '\0';
+
+	return ret;
+}
+
 /* function pool */
 #if IVM_USE_FUNCTION_POOL
 
