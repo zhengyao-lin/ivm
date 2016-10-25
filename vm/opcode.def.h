@@ -200,6 +200,46 @@ OPCODE_GEN(EXPAND_LOC, "expand_loc", I, 0, {
 })
 
 /*
+	top
+	-------------------
+	|  obj1  |  obj2  |
+	-------------------
+
+	tmp1 = pop obj1.proto
+	tmp2 = pop obj2.proto
+
+	while tmp2 && tmp1 != tmp2:
+		tmp2 = tmp2.proto
+
+	if tmp1 == tmp2: push true
+	else: push false
+ */
+OPCODE_GEN(CHECK_PROTO, "check_proto", N, 0, {
+	_TMP_OBJ1 = STACK_POP();
+	_TMP_OBJ2 = STACK_POP();
+
+	if (IVM_IS_NONE(_STATE, _TMP_OBJ1) &&
+		IVM_IS_NONE(_STATE, _TMP_OBJ2)) {
+		STACK_PUSH(ivm_bool_new(_STATE, IVM_TRUE));
+		NEXT_INSTR();
+	}
+
+	_TMP_OBJ1 = ivm_object_getProto(_TMP_OBJ1);
+	_TMP_OBJ2 = ivm_object_getProto(_TMP_OBJ2);
+
+	while (_TMP_OBJ2) {
+		if (_TMP_OBJ2 == _TMP_OBJ1) {
+			STACK_PUSH(ivm_bool_new(_STATE, IVM_TRUE));
+			NEXT_INSTR();
+		}
+		_TMP_OBJ2 = ivm_object_getProto(_TMP_OBJ2);
+	}
+
+	STACK_PUSH(ivm_bool_new(_STATE, IVM_FALSE));
+	NEXT_INSTR();
+})
+
+/*
 	assert_* is similar to get_*, but if the slot doesn't exist,
 	these instrs will create a new object and set it to the slot
  */
