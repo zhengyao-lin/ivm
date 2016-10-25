@@ -7,6 +7,8 @@ CONST_GEN(C_MSG, "msg")
 CONST_GEN(C_FILE, "file")
 CONST_GEN(C_LINE, "line")
 
+CONST_GEN(C_NOSLOT, "noslot")
+
 CONST_GEN(C_NEXT, "next")
 CONST_GEN(C_ITER, "iter")
 CONST_GEN(C_EXPAND, "expand")

@@ -25,12 +25,7 @@
                                                                                                \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(op));                              \
-		if (IVM_UNLIKELY(_TMP_OBJ2)) {                                                         \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
-			SET_IARG(0);                                                                       \
-			GOTO_INSTR(INVOKE_BASE);                                                           \
-		} else {                                                                               \
+		if (!_TMP_OBJ2) {                                                                      \
 			e;                                                                                 \
 	                                                                                           \
 			_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ1, op);                          \
@@ -45,6 +40,11 @@
 			}                                                                                  \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
+		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
+			SET_IARG(0);                                                                       \
+			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
 	}
 

@@ -208,11 +208,14 @@ OPCODE_GEN(EXPAND_LOC, "expand_loc", I, 0, {
 	tmp1 = pop obj1.proto
 	tmp2 = pop obj2.proto
 
+	if tmp1 == tmp2 == none:
+		ret false
+
 	while tmp2 && tmp1 != tmp2:
 		tmp2 = tmp2.proto
 
-	if tmp1 == tmp2: push true
-	else: push false
+	if tmp1 == tmp2: ret true
+	else: ret false
  */
 OPCODE_GEN(CHECK_PROTO, "check_proto", N, 0, {
 	_TMP_OBJ1 = STACK_POP();
@@ -287,10 +290,24 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	_TMP_OBJ1 = STACK_POP();
 	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
-	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 
-	NEXT_INSTR_NGC();
+	if (_TMP_OBJ2) {
+		STACK_PUSH(_TMP_OBJ2);
+		NEXT_INSTR_NGC();
+	} else {
+		_TMP_OBJ2 = ivm_object_getSlot(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NOSLOT));
+		if (_TMP_OBJ2) {
+			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
+			STACK_PUSH(_TMP_OBJ1);
+			STACK_PUSH(_TMP_OBJ2);
+			INVOKE_BASE_C(1);
+			// unreachable
+		}
+
+		STACK_PUSH(IVM_NONE(_STATE));
+		NEXT_INSTR_NGC();
+	}
 })
 
 // no pop
@@ -300,10 +317,24 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, 1, {
 	_TMP_OBJ1 = STACK_TOP();
 	NOT_NONE(_TMP_OBJ1, ivm_string_trimHead(SARG()));
 
-	_TMP_OBJ1 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, SARG(), _INSTR);
 
-	NEXT_INSTR_NGC();
+	if (_TMP_OBJ2) {
+		STACK_PUSH(_TMP_OBJ2);
+		NEXT_INSTR_NGC();
+	} else {
+		_TMP_OBJ2 = ivm_object_getSlot(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NOSLOT));
+		if (_TMP_OBJ2) {
+			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
+			STACK_PUSH(_TMP_OBJ1);
+			STACK_PUSH(_TMP_OBJ2);
+			INVOKE_BASE_C(1);
+			// unreachable
+		}
+
+		STACK_PUSH(IVM_NONE(_STATE));
+		NEXT_INSTR_NGC();
+	}
 })
 
 OPCODE_GEN(GET_PROTO, "get_proto", N, 0, {
@@ -724,134 +755,15 @@ OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
  * -----------------------------
  * 
  */
+
+#include "opcode.def.invoke.h"
+
 OPCODE_GEN(INVOKE, "invoke", I, -(IVM_OPCODE_VARIABLE_STACK_INC), {
-	_TMP_ARGC = IARG();
-
-	// if (_TMP_ARGC < 0) _TMP_ARGC = AVAIL_STACK;
-
-	CHECK_STACK(_TMP_ARGC + 1);
-	_TMP_OBJ1 = STACK_POP();
-
-	_TMP_ARGV = STACK_CUR();
-	STACK_CUT(_TMP_ARGC);
-
-	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
-		_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-
-		SAVE_RUNTIME(_INSTR + 1);
-
-		_INSTR = ivm_function_invoke(
-			_TMP_FUNC, _STATE,
-			ivm_function_object_getScope(
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _BLOCK_STACK, _FRAME_STACK, _RUNTIME
-		);
-
-		if (_INSTR) {
-			INVOKE_STACK();
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-			STACK_INC_C(_TMP_ARGC);
-			
-			INVOKE();
-		} else {
-			INVOKE_STACK();
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
-			STACK_INC_C(_TMP_ARGC);
-
-			_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
-			IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
-
-			_TMP_OBJ1 = ivm_function_callNative(
-				_TMP_FUNC, _STATE, _CORO, _CONTEXT,
-				IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV)
-			);
-
-			UPDATE_STACK();
-
-			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
-
-			if (_TMP_OBJ1) {
-				RETURN();
-			} else {
-				EXCEPTION();
-			}
-		}
-	} else {
-		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
-		if (_TMP_OBJ2) {
-			STACK_INC_C(_TMP_ARGC);
-			STACK_PUSH(_TMP_OBJ1);
-			STACK_PUSH(_TMP_OBJ2);
-			GOTO_INSTR(INVOKE_BASE);
-		} else {
-			RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-		}
-	}
+	INVOKE_C(IARG());
 })
 
 OPCODE_GEN(INVOKE_BASE, "invoke_base", I, -(1 + IVM_OPCODE_VARIABLE_STACK_INC), {
-	_TMP_ARGC = IARG();
-
-	// if (_TMP_ARGC < 0) _TMP_ARGC = AVAIL_STACK;
-
-	CHECK_STACK(_TMP_ARGC + 2);
-
-	_TMP_OBJ1 = STACK_POP();
-	_TMP_OBJ2 = STACK_POP();
-
-	_TMP_ARGV = STACK_CUR();
-	STACK_CUT(_TMP_ARGC);
-
-	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T)) {
-RETRY:
-		_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t));
-
-		SAVE_RUNTIME(_INSTR + 1);
-
-		_INSTR = ivm_function_invokeBase(
-			_TMP_FUNC, _STATE,
-			ivm_function_object_getScope(
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			), _TMP_OBJ2, _BLOCK_STACK, _FRAME_STACK, _RUNTIME
-		);
-
-		if (_INSTR) {
-			INVOKE_STACK();
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL));
-			STACK_INC_C(_TMP_ARGC);
-			INVOKE();
-		} else {
-			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */));
-
-			INVOKE_STACK();
-
-			_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE);
-			IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE);
-
-			_TMP_OBJ1 = ivm_function_callNative(
-				_TMP_FUNC, _STATE, _CORO, _CONTEXT,
-				IVM_FUNCTION_SET_ARG_3(_TMP_OBJ2, _TMP_ARGC, _TMP_ARGV)
-			);
-
-			UPDATE_STACK();
-
-			IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL);
-
-			if (_TMP_OBJ1) {
-				RETURN();
-			} else {
-				EXCEPTION();
-			}
-		}
-	} else {
-		do {
-			/* _TMP_OBJ2 is the base */
-			_TMP_OBJ2 = _TMP_OBJ1;
-			_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));
-			RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
-		} while (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T));
-		goto RETRY;
-	}
+	INVOKE_BASE_C(IARG());
 })
 
 OPCODE_GEN(INVOKE_VAR, "invoke_var", N, -1, {
