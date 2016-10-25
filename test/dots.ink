@@ -52,7 +52,7 @@ loc Vec = fn x, y: {
 loc Pos = Vec
 
 loc Vel = fn mag, deg: {
-	if typeof(mag) == "object": loc obj = mag
+	if typename(mag) == "object": loc obj = mag
 	else: {
 		loc rad = math.rad(deg)
 		loc mag_x = math.cos(rad) * mag

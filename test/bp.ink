@@ -3,7 +3,7 @@ import math
 import nn
 
 loc norm = fn outs: {
-	if typeof(outs) == "list": {
+	if typename(outs) == "list": {
 		loc r = []
 
 		for loc o in outs:

@@ -40,6 +40,6 @@ a = {
 }
 
 del a["val"]
-print(typeof(a.val))
+print(typename(a.val))
 
 // -> "str: none"

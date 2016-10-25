@@ -2,7 +2,7 @@ import ulist
 
 loc f = fn args...: {
 	for loc i in args:
-		print(typeof(i))
+		print(typename(i))
 }
 
 pa = f(_, 2, _)

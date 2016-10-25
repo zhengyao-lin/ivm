@@ -46,7 +46,7 @@
 		loc r = []
 
 		for loc e in base: {
-			loc t = typeof(e)
+			loc t = typename(e)
 			if t == "numeric" || t == "string":
 				r.push(e)
 			elif t == "list":

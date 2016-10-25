@@ -10,7 +10,7 @@ loc = {
 	the_msg: "hey",
 	a: a,
 	print: print,
-	typeof: typeof
+	typename: typename
 }
 
 a()
@@ -67,7 +67,7 @@ print(b.bala)
 
 a.proto = "no!!"
 
-print(typeof(b.proto))
+print(typename(b.proto))
 
 (fn: {
 	loc a = { val: 0 }
@@ -79,7 +79,7 @@ print(typeof(b.proto))
 
 	del loc
 
-	print(typeof(val))
+	print(typename(val))
 })()
 
 // -> "str: loc add 10"

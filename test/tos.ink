@@ -5,7 +5,7 @@ buf.init()
 print(1.to_s())
 print("hello".to_s())
 print(buf.to_s())
-print(1.type().to_s())
+print(type(1).to_s())
 
 // -> "str: 1"
 // -> "str: hello"

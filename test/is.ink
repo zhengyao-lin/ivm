@@ -9,7 +9,7 @@ print(range(1) is range)
 print(1 is 2)
 
 loc class = fn p, init: {
-	if typeof(p) == "function":
+	if typename(p) == "function":
 		p = p()
 
 	loc r = fn: {

@@ -5,7 +5,7 @@ loc printl = fn list: {
 	print("### list ###")
 
 	while i < size: {
-		loc t = typeof(list[i])
+		loc t = typename(list[i])
 		if t == "numeric" || t == "string":
 			print(list[i])
 		else:

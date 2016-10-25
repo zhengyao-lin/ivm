@@ -13,7 +13,7 @@ for [a, b, c, d, e, f] in list: {
 
 a = for i in [a, b, c]: 0
 
-print(typeof(a))
+print(typename(a))
 
 list = []
 i = 0

@@ -10,8 +10,8 @@
 
 IVM_NATIVE_FUNC(_type_cons)
 {
-	CHECK_ARG_1(IVM_TYPE_OBJECT_T);
-	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	CHECK_ARG_COUNT(1);
+	return ivm_type_object_new(NAT_STATE(), IVM_TYPE_OF(NAT_ARG_AT(1)));
 }
 
 IVM_NATIVE_FUNC(_type_to_s)

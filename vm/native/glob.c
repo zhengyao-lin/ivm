@@ -18,7 +18,7 @@ IVM_NATIVE_FUNC(_global_import)
 	return ivm_mod_load(mod, NAT_STATE(), NAT_CORO(), NAT_CONTEXT());
 }
 
-IVM_NATIVE_FUNC(_global_typeof)
+IVM_NATIVE_FUNC(_global_typename)
 {
 	ivm_object_t *obj;
 
@@ -101,9 +101,9 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 	ivm_context_setSlot_r(ctx, state, "true", ivm_bool_new(state, IVM_TRUE));
 	ivm_context_setSlot_r(ctx, state, "false", ivm_bool_new(state, IVM_FALSE));
 
-	ivm_context_setSlot_r(ctx, state, "typeof", IVM_NATIVE_WRAP(state, _global_typeof));
+	ivm_context_setSlot_r(ctx, state, "typename", IVM_NATIVE_WRAP(state, _global_typename));
 	ivm_context_setSlot_r(ctx, state, "$import", IVM_NATIVE_WRAP(state, _global_import));
-	ivm_context_setSlot_r(ctx, state, "$is", IVM_NATIVE_WRAP(state, _global_is));
+	// ivm_context_setSlot_r(ctx, state, "$is", IVM_NATIVE_WRAP(state, _global_is));
 
 	return;
 }

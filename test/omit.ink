@@ -3,7 +3,7 @@ import ulist
 loc types = fn lst: {
 	if lst:
 		for loc e in lst:
-			print(typeof(e))
+			print(typename(e))
 }
 
 loc f1 = fn args...: {

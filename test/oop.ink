@@ -26,11 +26,11 @@ else: print("yes!")
 a = [1, 2, 3]
 
 a.[] = fn idx: {
-	if typeof(idx) == "list":
+	if typename(idx) == "list":
 		for i in idx:
 			print(i)
 	else:
-		print(typeof(idx))
+		print(typename(idx))
 }
 
 a[1, 2, 3]
