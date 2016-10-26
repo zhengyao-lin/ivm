@@ -17,5 +17,12 @@ loc b = TypeB("hey")
 a.print()
 b.print()
 
+print(a is TypeA)
+print(b is TypeA)
+print(a is TypeB)
+
 // -> "num: 10"
 // -> "str: b: hey"
+// -> "num: 1"
+// -> "num: 1"
+// -> "num: 0"

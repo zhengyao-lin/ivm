@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
 #include "pub/type.h"
 #include "pub/vm.h"
 #include "pub/inlines.h"
+
+#include "std/time.h"
 
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
@@ -134,7 +135,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	DEF_FUNC(pow); DEF_FUNC(sqrt);
 
-	srand(time(IVM_NULL));
+	srand(ivm_time_getCur());
 	DEF_FUNC(random);
 
 	DEF_CONST("pi", C_PI);
