@@ -1,5 +1,5 @@
 (fn: {
-	lp = [].proto
+	lp = list.proto
 
 	lp.each = fn f: {
 		for loc e in base: f(e)
@@ -141,5 +141,11 @@
 			for loc i in range(n - s): r.push(v)
 			r
 		}
+	}
+
+	lp.has = fn val: {
+		for loc v in base:
+			if v == val: ret true
+		false
 	}
 })()
