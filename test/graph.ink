@@ -1,13 +1,15 @@
 import ulist
 import math
 
+loc inf = math.inf
+
 loc Graph = fn arg, is_graph = false: {
 	if is_graph: {
 		loc ws = arg
 		loc n = arg.size()
 	} else: {
 		loc n = arg
-		loc ws = [ [ (if i == j: 0 else: math.inf) for loc j in range(n) ] for loc i in range(n) ]
+		loc ws = [ [ (if i == j: 0 else: inf) for loc j in range(n) ] for loc i in range(n) ]
 	}
 
 	ret {
@@ -31,7 +33,7 @@ loc Graph = fn arg, is_graph = false: {
 			rest[init] = none
 
 			while true: {
-				loc min_w = math.inf
+				loc min_w = inf
 				loc min_pf = none // from
 				loc min_p = none
 
@@ -56,12 +58,12 @@ loc Graph = fn arg, is_graph = false: {
 		dijkstra: fn a = 0, b = n - 1: {
 			loc outs = [ a ]
 			loc dist = ws[a].clone()
-			loc prev = [ (if ws[a][i] != math.inf: 0 else: none) for loc i in range(n) ]
+			loc prev = [ (if ws[a][i] != inf: 0 else: none) for loc i in range(n) ]
 
 			while true: {
 				// dist.print()
 
-				loc min_d = math.inf
+				loc min_d = inf
 				loc min_p = none
 
 				for loc p in range(n): {
@@ -117,14 +119,14 @@ g1.prim(0).print()
 g1.dijkstra(0).print()
 
 loc g2 = Graph([
-	[math.inf, 2, 8, 1, math.inf, math.inf, math.inf, math.inf],
-	[2, math.inf, 6, math.inf, 1, math.inf, math.inf, math.inf],
-	[8, 6, math.inf, 7, 4, 2, 2, math.inf],
-	[1, 7, math.inf, math.inf, math.inf, math.inf, 9, math.inf],
-	[math.inf, 1, 4, math.inf, math.inf, 3, math.inf, 9],
-	[math.inf, 2, math.inf, math.inf, 3, math.inf, 4, 6],
-	[math.inf, math.inf, 2, 9, math.inf, 4, math.inf, 2],
-	[math.inf, math.inf, math.inf, math.inf, 9, 6, 2, math.inf]
+	[ inf, 2, 8, 1, inf, inf, inf, inf ],
+	[ 2, inf, 6, inf, 1, inf, inf, inf ],
+	[ 8, 6, inf, 7, 4, 2, 2, inf ],
+	[ 1, 7, inf, inf, inf, inf, 9, inf ],
+	[ inf, 1, 4, inf, inf, 3, inf, 9 ],
+	[ inf, 2, inf, inf, 3, inf, 4, 6 ],
+	[ inf, inf, 2, 9, inf, 4, inf, 2 ],
+	[ inf, inf, inf, inf, 9, 6, 2, inf ]
 ], true)
 
 g2.prim().print()

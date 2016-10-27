@@ -52,24 +52,24 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (!ivm_vmstate_checkGC(state)) {                \
+	if (!ivm_vmstate_hasIntr(state)) {                \
 		goto *(ivm_instr_entry(tmp_ip));              \
 	} else {                                          \
 		SAVE_STACK();                                 \
-		ivm_vmstate_doGC(state);                      \
+		ivm_vmstate_solveIntr(state);                 \
 		goto *(ivm_instr_entry(tmp_ip));              \
 	}                                                 \
 
 #define NEXT_INSTR() \
-	if (!ivm_vmstate_checkGC(state)) {                \
+	if (!ivm_vmstate_hasIntr(state)) {                \
 		goto *(ivm_instr_entry(++tmp_ip));            \
 	} else {                                          \
 		SAVE_STACK();                                 \
-		ivm_vmstate_doGC(state);                      \
+		ivm_vmstate_solveIntr(state);                 \
 		goto *(ivm_instr_entry(++tmp_ip));            \
 	}
 
-#define NEXT_INSTR_NGC() goto *(ivm_instr_entry(++tmp_ip));
+#define NEXT_INSTR_NINT() goto *(ivm_instr_entry(++tmp_ip));
 
 #define NEXT_N_INSTR(n) \
 	goto *(ivm_instr_entry(tmp_ip += (n)));

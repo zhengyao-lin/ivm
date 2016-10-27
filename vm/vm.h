@@ -20,6 +20,8 @@
 IVM_COM_HEADER
 
 typedef struct ivm_vmstate_t_tag {
+	ivm_bool_t intr;
+
 	ivm_heap_t heaps[3];						// 120
 
 	ivm_type_t type_list[IVM_TYPE_COUNT];		// 240 * 6 = 1440
@@ -101,14 +103,32 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool);
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
 
+IVM_INLINE
+void
+ivm_vmstate_interrupt(ivm_vmstate_t *state)
+{
+	state->intr = IVM_TRUE;
+	return;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_vmstate_hasIntr(ivm_vmstate_t *state)
+{
+	return state->intr;
+}
+
 #define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag == 1)
 
 IVM_INLINE
 void
 ivm_vmstate_openGCFlag(ivm_vmstate_t *state)
 {
-	if (state->gc_flag >= 0)
+	if (state->gc_flag >= 0) {
 		state->gc_flag = 1;
+		ivm_vmstate_interrupt(state);
+	}
+
 	return;
 }
 
@@ -118,6 +138,7 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 {
 	if (state->gc_flag >= 0)
 		state->gc_flag = 0;
+
 	return;
 }
 
@@ -130,6 +151,7 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 
 #define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
 #define ivm_vmstate_getHeaps(state) ((state)->heaps)
+
 
 IVM_INLINE
 ivm_bool_t
@@ -687,10 +709,18 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 
 #define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
 
-/*
-ivm_object_t *
-ivm_vmstate_execute();
-*/
+IVM_INLINE
+void
+ivm_vmstate_solveIntr(ivm_vmstate_t *state)
+{
+	state->intr = IVM_FALSE;
+
+	if (ivm_vmstate_checkGC(state)) {
+		ivm_vmstate_doGC(state);
+	}
+
+	return;
+}
 
 IVM_COM_END
 
