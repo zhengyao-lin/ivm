@@ -19,4 +19,13 @@ print("\uA5F0 \uA604 \u0d02" ==
 	  "\xea\x97\xb0 \xea\x98\x84 \xe0\xb4\x82")
 // -> "num: 1"
 
+// -> "num: 804"
+// -> "num: 5"
+// -> "num: 527"
+// -> "num: 527"
+print(0x324)
+print(0b101)
+print(0o1017)
+print(0O1017)
+
 ret

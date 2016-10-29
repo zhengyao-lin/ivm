@@ -610,9 +610,13 @@ _ias_parser_tokenToEnv(ivm_list_t *tokens)
 ias_gen_env_t *
 ias_parser_parseSource(const ivm_char_t *src)
 {
-	ivm_list_t *tokens = _ias_parser_getTokens(src);
-	ias_gen_env_t *ret = _ias_parser_tokenToEnv(tokens);
+	ivm_list_t *tokens;
+	ias_gen_env_t *ret;
 
+	tokens = _ias_parser_getTokens(src);
+	if (!tokens) return IVM_NULL;
+	
+	ret = _ias_parser_tokenToEnv(tokens);
 	ivm_list_free(tokens);
 
 	return ret;

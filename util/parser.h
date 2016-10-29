@@ -162,6 +162,7 @@ _is_match(const char c,
 		case '=': return c == reg[1];
 		case '-': return (c >= reg[1] && c <= reg[2]) ||
 						 (c <= reg[1] && c >= reg[2]);
+		case '|': return c == reg[1] || c == reg[2];
 		case '.': return IVM_TRUE;
 		case '$': return (ivm_uchar_t)c > 0x7F; // not ascii
 		default: ;
@@ -247,6 +248,11 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 					// tmp_token.val += tmp_entry->s_ofs;
 					// tmp_token.len += tmp_entry->ofs;
 
+					if (tmp_entry->msg) {
+						PARSER_ERR_LP(line, (ivm_ptr_t)c - col + 1, "%s", tmp_entry->msg);
+						goto FAILED;
+					}
+
 					if (tmp_entry->ign) {
 						tmp_token = ((struct token_t) { .len = 0, .val = c + 1, .line = line, .pos = (ivm_ptr_t)c - col + 1 });
 					} else if (tmp_entry->save != IVM_COMMON_TOKEN_NONE) { // save to token stack
@@ -288,6 +294,14 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	if (state != IVM_COMMON_TOKEN_STATE_INIT) {
 		PARSER_ERR_LP(line, (ivm_ptr_t)c - col + 1, PARSER_ERR_MSG_UNEXPECTED_ENDING(state));
 	}
+
+goto FAILED_END;
+FAILED:
+	
+	ivm_list_free(ret);
+	return IVM_NULL;
+
+FAILED_END:
 
 	return ret;
 }

@@ -235,7 +235,11 @@ enum state_t {
 	ST_IN_STR_ESC,
 	
 	ST_IN_NUM_INT,
-	ST_IN_NUM_DEC,
+	ST_IN_NUM_FLOAT,
+
+	ST_IN_NUM_HEX,
+	ST_IN_NUM_OCT,
+	ST_IN_NUM_BIN,
 
 	STATE_COUNT,
 	STATE_ERR
@@ -359,7 +363,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 
 		/* TRY_DOT */
 		{
-			{ "-09", ST_IN_NUM_DEC },
+			{ "-09", ST_IN_NUM_FLOAT },
 			{ "=.", ST_TRY_ELLIP },
 			{ ".", ST_INIT, T_DOT }
 		},
@@ -433,16 +437,43 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* IN_NUM_INT */
 		{
 			{ "-09", ST_IN_NUM_INT },
-			{ "=.", ST_IN_NUM_DEC },
+			{ "|xX", ST_IN_NUM_HEX },
+			{ "|oO", ST_IN_NUM_OCT },
+			{ "|bB", ST_IN_NUM_BIN },
+			{ "=.", ST_IN_NUM_FLOAT },
 			{ ".", ST_INIT, T_INT }
 		},
 
-		/* IN_NUM_DEC */
+		/* IN_NUM_FLOAT */
 		{
-			{ "-09", ST_IN_NUM_DEC },
+			{ "-09", ST_IN_NUM_FLOAT },
 			{ ".", ST_INIT, T_FLOAT }
+		},
+
+		/* IN_NUM_HEX */
+		{
+			{ "-09", ST_IN_NUM_HEX },
+			{ "-af", ST_IN_NUM_HEX },
+			{ "-AF", ST_IN_NUM_HEX },
+			{ ".", ST_INIT, T_INT }
+		},
+
+		/* IN_NUM_OCT */
+		{
+			{ "-07", ST_IN_NUM_OCT },
+			{ "|89", ST_INIT, .ign = IVM_TRUE, .msg = "illegal digit for octal literal" },
+			{ ".", ST_INIT, T_INT }
+		},
+
+		/* IN_NUM_BIN */
+		{
+			{ "|01", ST_IN_NUM_BIN },
+			{ "-29", ST_INIT, .ign = IVM_TRUE, .msg = "illegal digit for binary literal" },
+			{ ".", ST_INIT, T_INT }
 		}
 	);
+
+	if (!ret) return IVM_NULL;
 
 	ivm_int_t i, j, size = ivm_list_size(ret);
 	struct token_t *tmp_token;
@@ -3150,11 +3181,18 @@ ilang_parser_parseSource(const ivm_char_t *file,
 						 const ivm_char_t *src,
 						 ivm_bool_t debug)
 {
-	ivm_list_t *tokens = _ilang_parser_getTokens(src, debug);
+	ivm_list_t *tokens;
 	struct rule_val_t rule_ret;
-	ilang_gen_trans_unit_t *ret = ilang_gen_trans_unit_new(file);
-	struct env_t env = { ret, debug };
+	ilang_gen_trans_unit_t *ret;
+	struct env_t env;
 	ivm_bool_t suc;
+
+	tokens = _ilang_parser_getTokens(src, debug);
+
+	if (!tokens) return IVM_NULL;
+
+	ret = ilang_gen_trans_unit_new(file);
+	env = (struct env_t) { ret, debug };
 
 	RULE_START(trans_unit, &env, &rule_ret, tokens, suc);
 
