@@ -106,6 +106,15 @@ typedef struct ivm_object_t_tag *
 						 struct ivm_context_t_tag *,
 						 ivm_function_arg_t);
 
+// if the double is accurate(can be converted into long without the loss of precision)
+IVM_INLINE
+ivm_bool_t
+IVM_DOUBLE_ACC(ivm_double_t num)
+{
+	return (num <= 0x1fffffffffffff || num >= -0x1fffffffffffff)
+		   && (num - (ivm_long_t)num == 0);
+}
+
 #define IVM_GET(obj, type, member) (IVM_NULL, type##_GET_##member(obj))
 #define IVM_SET(obj, type, member, val) (type##_SET_##member((obj), (val)))
 

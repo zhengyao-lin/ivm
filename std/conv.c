@@ -515,27 +515,27 @@ ivm_conv_parseDouble(const ivm_char_t *src,
 	/* sign & prefix */
 	if (len) {
 		/* sign */
-		if (src[0] == '+') {
-			src++; len--;
-		} else if (src[0] == '-') {
-			sign = -1;
-			src++; len--;
-		}
+		switch (src[0]) {
+			case '+': src++; len--; break;
+			case '-': sign = -1; src++; len--; break;
+			case '0':
+				if (len >= 2) {
+					if (src[1] == 'b' ||
+						src[1] == 'B') {
+						radix = R_BIN;
+						src += 2; len -= 2;
+					} else if (src[1] == 'o' ||
+							   src[1] == 'O') {
+						radix = R_OCT;
+						src += 2; len -= 2;
+					} else if (src[1] == 'x' ||
+							   src[1] == 'X') {
+						radix = R_HEX;
+						src += 2; len -= 2;
+					}
+				}
 
-		if (len >= 2 && src[0] == '0') {
-			if (src[1] == 'b' ||
-				src[1] == 'B') {
-				radix = R_BIN;
-				src += 2; len -= 2;
-			} else if (src[1] == 'o' ||
-					   src[1] == 'O') {
-				radix = R_OCT;
-				src += 2; len -= 2;
-			} else if (src[1] == 'x' ||
-					   src[1] == 'X') {
-				radix = R_HEX;
-				src += 2; len -= 2;
-			}
+				break;
 		}
 	}
 
@@ -562,8 +562,7 @@ ivm_conv_parseDouble(const ivm_char_t *src,
 		}
 	}
 
-	if ((ret > IVM_INT_MAX(ivm_int_t) ||
-		 ret < -IVM_INT_MAX(ivm_int_t)) && overflow) {
+	if (!IVM_DOUBLE_ACC(ret) && overflow) {
 		*overflow = IVM_TRUE;
 	}
 

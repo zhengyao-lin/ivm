@@ -87,6 +87,32 @@ IVM_NATIVE_FUNC(_list_push)
 	return ivm_numeric_new(NAT_STATE(), size);
 }
 
+IVM_NATIVE_FUNC(_list_pop)
+{
+	ivm_list_object_t *list;
+
+	CHECK_BASE(IVM_LIST_OBJECT_T);
+
+	list = IVM_AS(NAT_BASE(), ivm_list_object_t);
+	RTM_ASSERT(ivm_list_object_getSize(list), IVM_ERROR_MSG_TOO_SMALL_LIST);
+	
+	return ivm_list_object_pop(list);
+}
+
+IVM_NATIVE_FUNC(_list_top)
+{
+	ivm_size_t size;
+	ivm_list_object_t *list;
+
+	CHECK_BASE(IVM_LIST_OBJECT_T);
+
+	list = IVM_AS(NAT_BASE(), ivm_list_object_t);
+	size = ivm_list_object_getSize(list);
+	RTM_ASSERT(size, IVM_ERROR_MSG_TOO_SMALL_LIST);
+	
+	return _ivm_list_object_get_c(list, size - 1);
+}
+
 IVM_NATIVE_FUNC(_list_slice)
 {
 	ivm_number_t start = 0, end, step = 1;

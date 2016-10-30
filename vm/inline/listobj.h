@@ -150,6 +150,17 @@ ivm_list_object_push(ivm_list_object_t *list,
 	return list->size;
 }
 
+IVM_INLINE
+ivm_object_t *
+ivm_list_object_pop(ivm_list_object_t *list)
+{
+	if (!list->size) {
+		return IVM_NULL;
+	}
+
+	return list->lst[--list->size];
+}
+
 /* assert size > osize */
 IVM_INLINE
 ivm_bool_t

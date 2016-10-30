@@ -116,6 +116,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_WRONG_ARG_C(expect)						"wrong argument(expecting %s)", (expect)
 #define IVM_ERROR_MSG_FAILED_PARSE_NUM(str)						"failed to parse number '%s'", (str)
 #define IVM_ERROR_MSG_EMPTY_BUFFER								"creating empty buffer"
+#define IVM_ERROR_MSG_TOO_SMALL_LIST							"too small list"
 
 IVM_COM_END
 
