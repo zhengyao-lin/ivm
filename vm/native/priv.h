@@ -47,6 +47,9 @@
 			   IVM_IS_BTTYPE(NAT_ARG_AT(3), NAT_STATE(), (t3),         \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
+#define HAS_ARG(n) \
+	(NAT_ARGC() >= (n) && !IVM_IS_NONE(NAT_STATE(), NAT_ARG_AT(n)))
+
 #define MATCH_ARG(rule, ...) \
 	{                                                                                   \
 		ivm_int_t __match_ret__                                                         \

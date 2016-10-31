@@ -61,15 +61,23 @@ typedef struct {
 	ivm_file_raw_t fp;
 } ivm_file_t;
 
+#define ivm_file_isStatic(file) (ivm_file_length(file) != -1)
+
 ivm_file_t *
 ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode);
+
+ivm_file_t *
+ivm_file_new_c(ivm_file_raw_t raw);
 
 void
 ivm_file_free(ivm_file_t *file);
 
 ivm_char_t *
-ivm_file_readAll(ivm_file_t *file);
+ivm_file_readAll_c(ivm_file_t *file,
+				   ivm_bool_t save_pos);
+
+#define ivm_file_readAll(file) ivm_file_readAll_c((file), IVM_TRUE)
 
 ivm_char_t *
 ivm_file_read_n(ivm_file_t *file,

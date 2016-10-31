@@ -21,6 +21,7 @@
 #define IO_ERROR_MSG_FAILED_SET_POS(pos)								"failed to set read position %ld", (ivm_long_t)(pos)
 #define IO_ERROR_MSG_FAILED_WRITE_FILE									"failed to write file"
 #define IO_ERROR_MSG_FAILED_REMOVE_FILE(file)							"failed to remove file '%s'", (file)
+#define IO_ERROR_MSG_NEG_SIZE											"negative size"
 
 #define CHECK_INIT_FP(fobj) \
 	RTM_ASSERT((fobj)->fp, IO_ERROR_MSG_UNINIT_FILE_POINTER)
@@ -103,7 +104,7 @@ IVM_NATIVE_FUNC(_io_file_read)
 	ivm_char_t *cont;
 	ivm_file_object_t *fobj;
 	ivm_object_t *ret;
-	ivm_number_t arg = -1, save_pos = 1;
+	ivm_number_t arg = -1, save_pos = IVM_FALSE;
 	ivm_long_t flen, len;
 
 	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
@@ -113,13 +114,23 @@ IVM_NATIVE_FUNC(_io_file_read)
 	CHECK_INIT_FP(fobj);
 
 	flen = ivm_file_length(fobj->fp);
-	len = ivm_list_realIndex(flen, arg) - ivm_file_curPos(fobj->fp) + 1;
 
-	// IVM_TRACE("read: %ld in %ld\n", len, flen);
+	if (!HAS_ARG(1)) len = flen;
+	else {
+		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
+		len = arg;
+	}
 
-	RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
-
-	cont = ivm_file_read_n(fobj->fp, len, save_pos);
+	if (flen == -1) {
+		if (!HAS_ARG(1)) {
+			cont = ivm_file_readAll_c(fobj->fp, save_pos);
+		} else {
+			cont = ivm_file_read_n(fobj->fp, len, save_pos);
+		}
+	} else {
+		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+		cont = ivm_file_read_n(fobj->fp, len, save_pos);
+	}
 
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
@@ -133,7 +144,7 @@ IVM_NATIVE_FUNC(_io_file_readBuffer)
 {
 	ivm_char_t *cont;
 	ivm_file_object_t *fobj;
-	ivm_number_t arg = -1, save_pos = 1;
+	ivm_number_t arg = -1, save_pos = IVM_FALSE;
 	ivm_long_t flen, len;
 
 	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
@@ -143,11 +154,23 @@ IVM_NATIVE_FUNC(_io_file_readBuffer)
 	CHECK_INIT_FP(fobj);
 
 	flen = ivm_file_length(fobj->fp);
-	len = ivm_list_realIndex(flen, arg) - ivm_file_curPos(fobj->fp) + 1;
 
-	RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+	if (!HAS_ARG(1)) len = flen;
+	else {
+		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
+		len = arg;
+	}
 
-	cont = ivm_file_read_n(fobj->fp, len, save_pos);
+	if (flen == -1) {
+		if (!HAS_ARG(1)) {
+			cont = ivm_file_readAll_c(fobj->fp, save_pos);
+		} else {
+			cont = ivm_file_read_n(fobj->fp, len, save_pos);
+		}
+	} else {
+		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+		cont = ivm_file_read_n(fobj->fp, len, save_pos);
+	}
 
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
@@ -314,6 +337,10 @@ ivm_mod_main(ivm_vmstate_t *state,
 	/* io */
 	ivm_object_setSlot_r(mod, state, "file", IVM_NATIVE_WRAP_CONS(state, file_proto, _io_file));
 	ivm_object_setSlot_r(mod, state, "remove", IVM_NATIVE_WRAP(state, _io_remove));
+
+	ivm_object_setSlot_r(mod, state, "stdin", ivm_file_object_new(state, ivm_file_new_c(stdin)));
+	ivm_object_setSlot_r(mod, state, "stdout", ivm_file_object_new(state, ivm_file_new_c(stdout)));
+	ivm_object_setSlot_r(mod, state, "stderr", ivm_file_object_new(state, ivm_file_new_c(stderr)));
 
 	return mod;
 }
