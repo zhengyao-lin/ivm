@@ -10,5 +10,5 @@ print(img.height())
 
 ret
 
-// -> "num: 3264"
-// -> "num: 2448"
+// -> "num: 200"
+// -> "num: 150"
