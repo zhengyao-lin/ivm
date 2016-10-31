@@ -127,6 +127,31 @@ IVM_NATIVE_FUNC(_io_file_read)
 	return ret;
 }
 
+IVM_NATIVE_FUNC(_io_file_readBuffer)
+{
+	ivm_char_t *cont;
+	ivm_file_object_t *fobj;
+	ivm_number_t arg = -1, save_pos = 1;
+	ivm_long_t flen, len;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	MATCH_ARG("*nn", &arg, &save_pos);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	flen = ivm_file_length(fobj->fp);
+	len = ivm_list_realIndex(flen, arg) + 1;
+
+	RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+
+	cont = ivm_file_read_n(fobj->fp, len, save_pos);
+
+	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
+
+	return ivm_buffer_object_new_c(NAT_STATE(), len, (ivm_byte_t *)cont);
+}
+
 IVM_NATIVE_FUNC(_io_file_len)
 {
 	ivm_file_object_t *fobj;
@@ -240,6 +265,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 		ivm_object_setSlot_r(file_proto, state, "close", IVM_NATIVE_WRAP(state, _io_file_close));
 		ivm_object_setSlot_r(file_proto, state, "read", IVM_NATIVE_WRAP(state, _io_file_read));
+		ivm_object_setSlot_r(file_proto, state, "readBuffer", IVM_NATIVE_WRAP(state, _io_file_readBuffer));
 		ivm_object_setSlot_r(file_proto, state, "len", IVM_NATIVE_WRAP(state, _io_file_len));
 		ivm_object_setSlot_r(file_proto, state, "lines", IVM_NATIVE_WRAP(state, _io_file_lines));
 		ivm_object_setSlot_r(file_proto, state, "seek", IVM_NATIVE_WRAP(state, _io_file_seek));

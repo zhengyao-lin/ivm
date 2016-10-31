@@ -22,6 +22,26 @@ ivm_image_new(ivm_size_t width,
 	return ret;
 }
 
+ivm_image_t *
+ivm_image_clone(ivm_image_t *img)
+{
+	ivm_size_t size;
+	ivm_image_t *ret = STD_ALLOC(sizeof(*ret));
+
+	IVM_MEMCHECK(ret);
+
+	ret->width = img->width;
+	ret->height = img->height;
+	size = sizeof(*ret->dat) * ret->width * ret->height;
+	ret->dat = STD_ALLOC(size);
+
+	IVM_MEMCHECK(ret->dat);
+
+	STD_MEMCPY(ret->dat, img->dat, size);
+
+	return ret;
+}
+
 void
 ivm_image_free(ivm_image_t *img)
 {
@@ -123,9 +143,122 @@ ivm_image_bmp_format(ivm_image_t *image,
 }
 
 ivm_image_t *
+ivm_image_bmp_parse_c(ivm_byte_t *dat,
+					  ivm_size_t size,
+					  const ivm_char_t **err)
+{
+	const ivm_char_t *tmp_err = IVM_NULL;
+	struct _bmp_header_t header;
+	ivm_size_t i, dsize = -1;
+	ivm_uchar_t tmp;
+	ivm_pixel_t *pixels, *cur;
+	ivm_image_t *ret = IVM_NULL;
+
+	if (size < sizeof(header)) {
+		tmp_err = "too little data";
+		goto ERROR;
+	}
+
+	header = *(struct _bmp_header_t *)dat;
+
+	if (header.type != 0x4d42) {
+		tmp_err = "not a bmp file";
+		goto ERROR;
+	}
+
+	if (header.ofs != sizeof(header)) {
+		tmp_err = "do not support palette";
+		goto ERROR;
+	}
+
+	dsize = header.size - sizeof(header);
+
+	dat += sizeof(header);
+	size -= sizeof(header);
+
+	if (size < dsize) {
+		tmp_err = "unexpected file ending";
+		goto ERROR;
+	}
+
+	switch (header.info.bpp) {
+		case 1:
+			pixels = STD_ALLOC(sizeof(*pixels) * dsize * 8);
+
+			for (i = 0, cur = pixels;
+				 i < dsize; i++, cur++) {
+
+#define BIT_AT(n) (cur[(n) - 1] = !!(tmp & (1 << (8 - (n)))))
+
+				tmp = dat[i]; // unsigned
+
+				BIT_AT(1);
+				BIT_AT(2);
+				BIT_AT(3);
+				BIT_AT(4);
+				BIT_AT(5);
+				BIT_AT(6);
+				BIT_AT(7);
+				BIT_AT(8);
+
+#undef BIT_AT
+
+			}
+
+			ret = ivm_image_new(header.info.width, header.info.height, pixels);
+
+			break;
+
+		case 24:
+			pixels = STD_ALLOC(sizeof(*pixels) * (dsize / 3));
+
+			for (i = 0, cur = pixels;
+				 i < dsize; i += 3, cur++) {
+				*cur = (dat[i] << 16) + (dat[i + 1] << 8) + dat[i + 2];
+			}
+
+			ret = ivm_image_new(header.info.width, header.info.height, pixels);
+
+			break;
+
+		case 32:
+			ret = ivm_image_new(header.info.width, header.info.height, (ivm_pixel_t *)dat);
+			break;
+
+		default:
+			tmp_err = "unsupported bit count per pixel";
+			goto ERROR;
+	}
+
+goto ERROR_END;
+ERROR:;
+	
+	if (err) {
+		*err = tmp_err;
+	}
+
+	return IVM_NULL;
+
+ERROR_END:
+	
+	return ret;
+}
+
+ivm_image_t *
 ivm_image_bmp_parse(ivm_file_t *fp,
 					const ivm_char_t **err)
 {
+	ivm_size_t size = ivm_file_length(fp);
+	ivm_byte_t *dat = (ivm_byte_t *)ivm_file_readAll(fp);
+	ivm_image_t *ret = ivm_image_bmp_parse_c(dat, size, err);
+
+	STD_FREE(dat);
+
+	return ret;
+}
+
+#if 0
+
 	const ivm_char_t *tmp_err = IVM_NULL;
 	struct _bmp_header_t header;
 	ivm_size_t i, dsize = -1;
@@ -245,6 +378,5 @@ ERROR:;
 	return IVM_NULL;
 
 ERROR_END:
-	
-	return ret;
-}
+
+#endif
