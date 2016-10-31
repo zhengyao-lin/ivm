@@ -36,6 +36,14 @@ catch: print("yes")
 
 fp.close()
 
+fp = io.file("test/text3", "wb+")
+
+fp.write("hello, world")
+fp.seek()
+print(fp.read())
+
+io.remove("test/text3")
+
 ret
 
 // -> "str: content!"
@@ -54,3 +62,4 @@ ret
 // -> "num: 10"
 // 
 // -> "str: yes"
+// -> "str: hello, world"

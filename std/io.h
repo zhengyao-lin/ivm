@@ -55,6 +55,8 @@ ivm_bool_t
 ivm_file_access(const ivm_char_t *path,
 				const ivm_char_t *mode);
 
+#define ivm_file_remove(file) (remove(file) == 0)
+
 typedef struct {
 	ivm_file_raw_t fp;
 } ivm_file_t;
