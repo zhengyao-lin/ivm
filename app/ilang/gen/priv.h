@@ -42,11 +42,13 @@
 #define GEN_ERR_MSG_UNSUPPORTED_CMP_TYPE(type)						"unsupported compare type type %d", (type)
 #define GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP						"using break/cont outside a loop"
 #define GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG						"ignore break/cont argument"
-#define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list"
+#define GEN_ERR_MSG_MULTIPLE_VARG									"only one variable argument parameter is allowed in a parameter list or list unpacking"
 #define GEN_ERR_MSG_FAILED_PARSE_STRING(msg)						"failed to parse string literal: %s", (msg)
 #define GEN_ERR_MSG_DUP_PARAM_NAME(name, len)						"duplicated parameter name '%.*s'", (int)(len), (name)
 #define GEN_ERR_MSG_TOO_LONG_MOD_NAME(len)							"module name is too long(length of %ld)", (len)
-#define GEN_ERR_MSG_NOT_IN_ARG(name)								"%s without an argument list", (name)
+#define GEN_ERR_MSG_NOT_IN_ARG(name)								"%s outside an argument list", (name)
+#define GEN_ERR_MSG_NOT_LEFT_VAL(name)								"a %s has to be a left expression", (name)
+#define GEN_ERR_MSG_NOT_IN_LIST(name)								"%s outside a list", (name)
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -72,6 +74,16 @@
 #define GEN_ASSERT_ONLY_ARG(expr, flag, name) \
 	if (!(flag).is_arg) { \
 		GEN_ERR((expr)->pos, GEN_ERR_MSG_NOT_IN_ARG(name)); \
+	}
+
+#define GEN_ASSERT_ONLY_LEFT_VAL(expr, flag, name) \
+	if (!(flag).is_left_val) { \
+		GEN_ERR((expr)->pos, GEN_ERR_MSG_NOT_LEFT_VAL(name)); \
+	}
+
+#define GEN_ASSERT_ONLY_LIST(expr, flag, name) \
+	if (!(flag).varg_offset) { \
+		GEN_ERR((expr)->pos, GEN_ERR_MSG_NOT_IN_LIST(name)); \
 	}
 
 #define GEN_ERR_MULTIPLE_VARG(expr) \

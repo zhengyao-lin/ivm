@@ -120,6 +120,7 @@ typedef struct {
 	ivm_bool_t has_branch; // whether the parent expr has branch structure(if/while)
 	ivm_bool_t is_arg;
 	ivm_int_t pa_argno;
+	ivm_int_t varg_offset; // real offset + 1
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
@@ -305,6 +306,16 @@ typedef struct {
 COMMON_EXPR(expand_expr, "expand expression", {
 	ret->list = list;
 }, ilang_gen_expr_t *list);
+
+/* varg expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *bondee;
+} ilang_gen_varg_expr_t;
+
+COMMON_EXPR(varg_expr, "varg expression", {
+	ret->bondee = bondee;
+}, ilang_gen_expr_t *bondee);
 
 /* id expr */
 typedef struct {

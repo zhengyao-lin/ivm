@@ -65,6 +65,8 @@ OPCODE_GEN(NEW_LIST, "new_list", I, 1, {
 OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 	_TMP_ARGC = AVAIL_STACK - IARG();
 
+	// IVM_TRACE("%d %d\n", AVAIL_STACK, _TMP_ARGC);
+
 	if (_TMP_ARGC > 0) {
 		_TMP_OBJ1 = ivm_list_object_new_c(_STATE, STACK_CUT(_TMP_ARGC), _TMP_ARGC);
 		ivm_list_object_reverse(IVM_AS(_TMP_OBJ1, ivm_list_object_t));
@@ -77,6 +79,8 @@ OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 })
 
 OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
+	CHECK_STACK(1);
+
 	_TMP_ARGC = IARG();
 
 	_TMP_OBJ1 = STACK_POP();
@@ -100,6 +104,8 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 })
 
 OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
+	CHECK_STACK(1);
+
 	_TMP_OBJ1 = STACK_POP();
 	RTM_ASSERT(
 		IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
@@ -976,9 +982,17 @@ OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	NEXT_INSTR_NINT();
 })
 
+OPCODE_GEN(PUSH_BLOCK_S1, "push_block_s1", N, 0, {
+	CHECK_STACK(1);
+
+	SAVE_STACK();
+	SET_BP(ivm_coro_pushBlock_c(_BLOCK_STACK, _RUNTIME, AVAIL_STACK - 1));
+	
+	NEXT_INSTR_NINT();
+})
+
 OPCODE_GEN(PUSH_BLOCK_AT, "push_block_at", I, 0, {
 	SAVE_STACK();
-	// SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, IARG()));
 	SET_BP(ivm_coro_pushBlock_c(_BLOCK_STACK, _RUNTIME, IARG()));
 
 	NEXT_INSTR_NINT();

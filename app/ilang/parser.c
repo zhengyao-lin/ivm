@@ -1628,6 +1628,23 @@ RULE(postfix_expr_sub)
 			}
 		})
 
+		SUB_RULE(T(T_ELLIP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("varg expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			tmp_expr = RULE_RET_AT(0).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), IVM_NULL));
+			} else {
+				_RETVAL.expr = ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), IVM_NULL);
+			}
+		})
+
 		SUB_RULE(
 		{
 			_RETVAL.expr = IVM_NULL;
