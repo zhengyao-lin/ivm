@@ -18,6 +18,7 @@
 #define IO_ERROR_MSG_UNINIT_FILE_POINTER								"uninitialized file pointer"
 #define IO_ERROR_MSG_FAILED_READ_FILE									"failed to read file"
 #define IO_ERROR_MSG_TOO_LARGE_LENGTH(len, max)							"too large length(length %ld for the file of length %ld)", (ivm_long_t)(len), (ivm_long_t)(max)
+#define IO_ERROR_MSG_TOO_SMALL_BUF(len, req)							"too small buffer(require at least %ld, buffer of size %ld given)", (ivm_long_t)(req), (ivm_long_t)(len)
 #define IO_ERROR_MSG_FAILED_SET_POS(pos)								"failed to set read position %ld", (ivm_long_t)(pos)
 #define IO_ERROR_MSG_FAILED_WRITE_FILE									"failed to write file"
 #define IO_ERROR_MSG_FAILED_REMOVE_FILE(file)							"failed to remove file '%s'", (file)
@@ -115,7 +116,7 @@ IVM_NATIVE_FUNC(_io_file_read)
 
 	flen = ivm_file_length(fobj->fp);
 
-	if (!HAS_ARG(1)) len = flen;
+	if (!HAS_ARG(1)) len = flen - ivm_file_curPos(fobj->fp);
 	else {
 		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
 		len = arg;
@@ -155,7 +156,7 @@ IVM_NATIVE_FUNC(_io_file_readBuffer)
 
 	flen = ivm_file_length(fobj->fp);
 
-	if (!HAS_ARG(1)) len = flen;
+	if (!HAS_ARG(1)) len = flen - ivm_file_curPos(fobj->fp);
 	else {
 		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
 		len = arg;
@@ -177,6 +178,53 @@ IVM_NATIVE_FUNC(_io_file_readBuffer)
 	return ivm_buffer_object_new_c(NAT_STATE(), len, (ivm_byte_t *)cont);
 }
 
+IVM_NATIVE_FUNC(_io_file_readToBuffer)
+{
+	ivm_file_object_t *fobj;
+	ivm_buffer_object_t *buf_obj;
+	ivm_number_t arg = -1, save_pos = IVM_FALSE;
+	ivm_size_t bsize;
+	ivm_long_t flen, len;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	MATCH_ARG("b*nn", &buf_obj, &arg, &save_pos);
+
+	// read length:
+	//     1. the length specified
+	//     2. file length
+	//     3. size the the buffer(is the file is non-static)
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	flen = ivm_file_length(fobj->fp);
+	bsize = ivm_buffer_object_getSize(buf_obj);
+
+	if (!HAS_ARG(2)) {
+		if (flen == -1) {
+			len = bsize;
+		} else {
+			len = flen - ivm_file_curPos(fobj->fp);
+		}
+	} else {
+		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
+		len = arg;
+	}
+
+	RTM_ASSERT(len <= bsize, IO_ERROR_MSG_TOO_SMALL_BUF(bsize, len));
+
+	if (flen != -1) {
+		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
+	}
+
+	if (ivm_file_read_s(fobj->fp, ivm_buffer_object_getRaw(buf_obj), sizeof(ivm_char_t), len, save_pos)
+		!= len) {
+		RTM_ASSERT(ivm_file_isEnd(fobj->fp) && !HAS_ARG(2), IO_ERROR_MSG_FAILED_READ_FILE);
+	}
+
+	return IVM_NONE(NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_io_file_write)
 {
 	ivm_file_object_t *fobj;
@@ -190,7 +238,26 @@ IVM_NATIVE_FUNC(_io_file_write)
 	CHECK_INIT_FP(fobj);
 
 	len = ivm_string_length(str);
-	RTM_ASSERT(ivm_file_write(fobj->fp, (void *)ivm_string_trimHead(str), sizeof(ivm_char_t), len)
+	RTM_ASSERT(ivm_file_write(fobj->fp, ivm_string_trimHead(str), sizeof(ivm_char_t), len)
+			   == len, IO_ERROR_MSG_FAILED_WRITE_FILE);
+
+	return IVM_NONE(NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_io_file_writeBuffer)
+{
+	ivm_file_object_t *fobj;
+	ivm_buffer_object_t *buf_obj;
+	ivm_size_t len;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	MATCH_ARG("b", &buf_obj);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	len = ivm_buffer_object_getSize(buf_obj);
+	RTM_ASSERT(ivm_file_write(fobj->fp, ivm_buffer_object_getRaw(buf_obj), sizeof(ivm_byte_t), len)
 			   == len, IO_ERROR_MSG_FAILED_WRITE_FILE);
 
 	return IVM_NONE(NAT_STATE());
@@ -325,8 +392,10 @@ ivm_mod_main(ivm_vmstate_t *state,
 		
 		ivm_object_setSlot_r(file_proto, state, "read", IVM_NATIVE_WRAP(state, _io_file_read));
 		ivm_object_setSlot_r(file_proto, state, "readBuffer", IVM_NATIVE_WRAP(state, _io_file_readBuffer));
+		ivm_object_setSlot_r(file_proto, state, "readToBuffer", IVM_NATIVE_WRAP(state, _io_file_readToBuffer));
 		
 		ivm_object_setSlot_r(file_proto, state, "write", IVM_NATIVE_WRAP(state, _io_file_write));
+		ivm_object_setSlot_r(file_proto, state, "writeBuffer", IVM_NATIVE_WRAP(state, _io_file_writeBuffer));
 
 		ivm_object_setSlot_r(file_proto, state, "len", IVM_NATIVE_WRAP(state, _io_file_len));
 		ivm_object_setSlot_r(file_proto, state, "lines", IVM_NATIVE_WRAP(state, _io_file_lines));

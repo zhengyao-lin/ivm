@@ -1,9 +1,19 @@
 import io
 
 fp = io.file("test/text1")
-print(fp.read())
-
+print(loc str = fp.read())
 print(fp is io.file)
+
+fp.seek()
+print(fp.readBuffer().size() == str.len())
+
+loc buf = buffer(16)
+buf.init()
+
+fp.seek()
+fp.readToBuffer(buf)
+
+print(buf.to_s())
 
 fp.close()
 
@@ -20,7 +30,7 @@ for loc str in fp.lines().slice(-2, -1):
 
 fp.seek()
 
-fp.read(10)
+print(fp.read(10))
 print(fp.cur())
 fp.seek()
 print(fp.cur())
@@ -53,11 +63,17 @@ io.remove("test/text3")
 try: io.stdin.write("no")
 catch: print("of course")
 
+print(io.stdin.len())
+print(io.stdin.cur())
+
 // a = io.stdin.read()
 // print(a)
 
-// a = io.stdin.read(5)
+// import ulist
+
+// a = io.stdin.lines()
 // print(a)
+// a.print()
 
 ret
 
@@ -65,12 +81,15 @@ ret
 
 // -> "str: content!"
 // -> "num: 1"
+// -> "num: 1"
+// -> "str: 0x636f6e74656e74210000000000000000"
 
 // -> "str: failed to read"
 // -> "num: 619"
 // -> "num: 1"
 // -> "str: So long lives this and this gives life to thee\\."
 
+// -> "str: Shall I co"
 // -> "num: 10"
 // -> "num: 0"
 // -> "num: 0"
@@ -78,7 +97,7 @@ ret
 // 
 // -> "str: yes"
 // -> "str: hello, world"
-
-// nop -> "hey"
-// nop -> "no line buffer!"
 // -> "str: of course"
+
+// -> "num: -1"
+// -> "num: -1"

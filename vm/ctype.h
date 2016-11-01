@@ -100,6 +100,9 @@ typedef struct {
 #define ivm_function_arg_has(arg, i) ((i) <= (arg).argc)
 #define ivm_function_arg_at(arg, i) ((arg).argv[-(i)])
 
+#define ivm_function_arg_buildEmpty() \
+	((ivm_function_arg_t) { IVM_NULL, 0, IVM_NULL })
+
 typedef struct ivm_object_t_tag *
 (*ivm_native_function_t)(struct ivm_vmstate_t_tag *,
 						 struct ivm_coro_t_tag *,
@@ -111,7 +114,7 @@ IVM_INLINE
 ivm_bool_t
 IVM_DOUBLE_ACC(ivm_double_t num)
 {
-	return (num <= 0x1fffffffffffff || num >= -0x1fffffffffffff)
+	return (num <= 0x1fffffffffffffl || num >= -0x1fffffffffffffl)
 		   && (num - (ivm_long_t)num == 0);
 }
 

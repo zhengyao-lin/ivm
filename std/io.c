@@ -66,7 +66,7 @@ ivm_file_free(ivm_file_t *file)
 
 #define FGOTO(fp, pos) (IVM_FSEEK((fp), IVM_FSEEK_##pos, 0))
 
-ivm_size_t
+ivm_long_t
 ivm_file_length(ivm_file_t *file)
 {
 	ivm_file_raw_t fp = file->fp;
@@ -119,7 +119,7 @@ ivm_file_readAll_c(ivm_file_t *file,
 		}
 	}
 
-	if (save_pos) {
+	if (orig != -1 && save_pos) {
 		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
 	}
 
@@ -139,8 +139,6 @@ ivm_file_read_n(ivm_file_t *file,
 
 	ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 	// IVM_TRACE("%ld\n", len);
-	if (orig != -1)
-		len -= orig;
 	
 	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
 		/* unexpected read len */
@@ -148,7 +146,7 @@ ivm_file_read_n(ivm_file_t *file,
 		return IVM_NULL;
 	}
 	
-	if (save_pos) {
+	if (orig != -1 && save_pos) {
 		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
 	}
 	

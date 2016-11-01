@@ -61,8 +61,6 @@ typedef struct {
 	ivm_file_raw_t fp;
 } ivm_file_t;
 
-#define ivm_file_isStatic(file) (ivm_file_length(file) != -1)
-
 ivm_file_t *
 ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode);
@@ -87,7 +85,7 @@ ivm_file_read_n(ivm_file_t *file,
 IVM_INLINE
 ivm_size_t
 ivm_file_write(ivm_file_t *file,
-			   void *buf,
+			   const void *buf,
 			   ivm_size_t size,
 			   ivm_size_t count)
 {
@@ -105,7 +103,7 @@ IVM_INLINE
 ivm_size_t
 ivm_file_writeAt(ivm_file_t *file,
 				 ivm_size_t pos,
-				 void *buf,
+				 const void *buf,
 				 ivm_size_t size,
 				 ivm_size_t count)
 {
@@ -123,8 +121,11 @@ ivm_file_writeAt(ivm_file_t *file,
 	return ret;
 }
 
-ivm_size_t
+ivm_long_t
 ivm_file_length(ivm_file_t *file);
+
+#define ivm_file_isStatic(file) (ivm_file_length(file) != -1)
+#define ivm_file_isEnd(file) (feof((file)->fp))
 
 IVM_INLINE
 ivm_size_t
@@ -143,8 +144,32 @@ ivm_file_read(ivm_file_t *file,
 	return ret;
 }
 
+/* save pos */
 IVM_INLINE
 ivm_size_t
+ivm_file_read_s(ivm_file_t *file,
+				void *buf,
+				ivm_size_t size,
+				ivm_size_t count,
+				ivm_bool_t save_pos)
+{
+	ivm_file_raw_t fp = file->fp;
+	ivm_size_t orig = IVM_FTELL(fp);
+	ivm_size_t ret = 0;
+
+	if (fp) {
+		ret = IVM_FREAD(buf, size, count, fp);
+	}
+
+	if (orig != -1 && save_pos) {
+		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
+	}
+
+	return ret;
+}
+
+IVM_INLINE
+ivm_long_t
 ivm_file_curPos(ivm_file_t *file)
 {
 	ivm_file_raw_t fp = file->fp;

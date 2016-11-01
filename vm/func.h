@@ -28,17 +28,19 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 #define IVM_FUNCTION_SET_ARG_3(base, argc, argv) \
 	(ivm_function_arg_t){ (base), (argc), (argv) }
 
-#define IVM_NATIVE_FUNC(name) ivm_object_t *IVM_GET_NATIVE_FUNC(name)( \
-											struct ivm_vmstate_t_tag *__state__, \
+#define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+
+#define IVM_NATIVE_FUNC(name) \
+	ivm_object_t *IVM_GET_NATIVE_FUNC(name)(struct ivm_vmstate_t_tag *__state__, \
 											struct ivm_coro_t_tag *__coro__, \
 											ivm_context_t *__context__, \
 											ivm_function_arg_t __arg__)
-#define IVM_NATIVE_FUNC_C(name) ivm_object_t *name( \
-											  struct ivm_vmstate_t_tag *__state__, \
-											  struct ivm_coro_t_tag *__coro__, \
-											  ivm_context_t *__context__, \
-											  ivm_function_arg_t __arg__)
-#define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+
+#define IVM_NATIVE_FUNC_C(name) \
+	ivm_object_t *name(struct ivm_vmstate_t_tag *__state__, \
+					   struct ivm_coro_t_tag *__coro__, \
+					   ivm_context_t *__context__, \
+					   ivm_function_arg_t __arg__)
 
 #define NAT_STATE() (__state__)
 #define NAT_CORO() (__coro__)

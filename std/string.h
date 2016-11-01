@@ -52,11 +52,11 @@ ivm_strdup_heap(const ivm_char_t *src,
 				ivm_heap_t *heap);
 
 typedef struct {
+	ivm_ulong_t len;
+
 	ivm_uint_t is_const: 1;
 	ivm_uint_t is_ascii: 1;
-	ivm_uint_t ulen: sizeof(ivm_uint_t) * 8 - 2; // length of utf-8 decoded length
-
-	ivm_uint_t len;
+	ivm_uint_t ulen; // length of utf-8 decoded length
 
 	ivm_char_t cont[];
 } IVM_NOALIGN ivm_string_t;
