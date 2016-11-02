@@ -1,8 +1,0 @@
-***naming specs***
-
-1. all global variables/functions/constants/types begin with header ivm_ or IVM_(for constants) or mem_ or STD_ depending on which module the code is in 
-2. all types have suffix of _t
-3. functions are named using lower camel case, e.g. ivm_eval, ivm_callObject
-4. names of (compile-time)constants i.e. macros, enum values are all upper-case, e.g. IVM_TYPE_OF, unless it's actually considered as a function
-5. local variables using underlines to separate words
-6. global variables(not be used unless they are necessary) using ivm_glob_ prefix
