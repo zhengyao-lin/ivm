@@ -12,7 +12,7 @@ printl = fn list: {
 	print("### end ###")
 }
 
-t1 = fn a, va..., c: {
+t1 = fn a, *va, c: {
 	print(a)
 	printl(va)
 	print(c)

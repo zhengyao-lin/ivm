@@ -15,7 +15,7 @@ try: deref a = 10
 catch: print("failed to set deref a as b[0]")
 // -> "str: failed to set deref a as b\\[0\\]"
 
-loc f = fn args..., out: {
+loc f = fn *args, out: {
 	loc i = 0
 	loc size = args.size()
 

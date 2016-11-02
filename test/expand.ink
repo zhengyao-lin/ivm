@@ -1,6 +1,6 @@
 import ulist
 
-loc f = fn args...: {
+loc f = fn *args: {
 	args.print()
 	10011
 }

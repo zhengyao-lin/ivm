@@ -1628,6 +1628,7 @@ RULE(postfix_expr_sub)
 			}
 		})
 
+/*
 		SUB_RULE(T(T_ELLIP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("varg expr"))
 		{
 			tmp_token = TOKEN_AT(0);
@@ -1644,7 +1645,8 @@ RULE(postfix_expr_sub)
 				_RETVAL.expr = ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), IVM_NULL);
 			}
 		})
-
+*/
+		
 		SUB_RULE(
 		{
 			_RETVAL.expr = IVM_NULL;
@@ -1724,6 +1726,12 @@ RULE(unary_expr)
 
 		UNARY_EXPR(T_REF, "ref expr", ILANG_GEN_UNIOP_REF)
 		UNARY_EXPR(T_DEREF, "deref expr", ILANG_GEN_UNIOP_DEREF)
+
+		SUB_RULE(T(T_MUL) R(nllo) R(unary_expr) DBB("varg expr")
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), RULE_RET_AT(1).u.expr);
+		})
 
 		SUB_RULE(R(postfix_expr)
 		{
@@ -2208,13 +2216,13 @@ RULE(param)
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_ID) R(nllo) T(T_ELLIP)
+		SUB_RULE(T(T_MUL) T(T_ID)
 		{
-			tmp_token = TOKEN_AT(0);
+			tmp_token = TOKEN_AT(1);
 			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL(tmp_token), IVM_NULL);
 		})
 
-		SUB_RULE(T(T_ELLIP)
+		SUB_RULE(T(T_MUL)
 		{
 			_RETVAL.param = ilang_gen_param_build(IVM_TRUE, TOKEN_VAL_EMPTY(), IVM_NULL);
 		})

@@ -79,7 +79,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 	pa_argno = 0;
-	// generate in a reverse order(original order in ast)
+	// generate in a reverse order(the order in ast is reversed)
 	{
 		ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
 			tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);

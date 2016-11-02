@@ -6,7 +6,7 @@ loc types = fn lst: {
 			print(typename(e))
 }
 
-loc f1 = fn args...: {
+loc f1 = fn *args: {
 	types(args)
 }
 

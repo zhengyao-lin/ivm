@@ -24,7 +24,7 @@ loc def3 = fn vals = [ 1, 2, 3, 4 ]: {
 def3()
 def3()
 
-loc def4 = fn vargs..., a = "hey": {
+loc def4 = fn *vargs, a = "hey": {
 	print(a)
 	vargs.print()
 }
