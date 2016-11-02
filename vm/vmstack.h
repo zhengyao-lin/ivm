@@ -70,6 +70,26 @@ ivm_vmstack_push(struct ivm_coro_t_tag *coro,
 #define ivm_vmstack_cut(stack, i) ((struct ivm_object_t_tag **)ivm_stack_cut((stack), (i)))
 #endif
 
+IVM_INLINE
+void
+ivm_vmstack_reverse(struct ivm_object_t_tag **lst,
+					ivm_size_t size)
+{
+	struct ivm_object_t_tag **end = lst + size - 1;
+	struct ivm_object_t_tag *tmp;
+
+	while (end > lst) {
+		tmp = *lst;
+		*lst = *end;
+		*end = tmp;
+
+		end--;
+		lst++;
+	}
+
+	return;
+}
+
 IVM_COM_END
 
 #endif

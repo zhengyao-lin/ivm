@@ -248,16 +248,7 @@ IVM_INLINE
 void
 ivm_list_object_reverse(ivm_list_object_t *list)
 {
-	ivm_object_t *tmp, **lst = list->lst;
-	ivm_size_t i, j, mid = list->size / 2;
-
-	for (i = 0, j = list->size - 1;
-		 i < mid; i++, j--) {
-		tmp = lst[i];
-		lst[i] = lst[j];
-		lst[j] = tmp;
-	}
-
+	ivm_vmstack_reverse(list->lst, list->size);
 	return;
 }
 

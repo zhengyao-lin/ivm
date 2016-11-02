@@ -78,6 +78,14 @@ OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(ENSURE_NONE, "ensure_none", N, 1, {
+	if (!AVAIL_STACK) {
+		STACK_PUSH(IVM_NONE(_STATE));
+	}
+	
+	NEXT_INSTR();
+})
+
 OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 	CHECK_STACK(1);
 

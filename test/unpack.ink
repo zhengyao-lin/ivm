@@ -79,6 +79,19 @@ r = ref a
 [ *deref r ] = [ 1, 2, 3, 4 ]
 a.print()
 
+loc n_sum = fn l: {
+	[ t, *h ] = l
+	print(t)
+	h.print()
+	if t == none: 0
+	else: t + n_sum(h)
+}
+
+// print(n_sum([ 1, 2, 3, 4 ]))
+
+[ t, *h, e ] = [ 1 ]
+[ t, h, e ].print()
+
 // -> "str: ### list ###"
 // -> "num: 1"
 // -> "num: 2"
@@ -113,3 +126,5 @@ a.print()
 // -> "str: \\[ 1, 2, 3, 4, 7, 8, 9, 8, 9 \\]"
 // -> "str: \\[ 5 \\]"
 // -> "str: \\[ 1, 2, 3, 4 \\]"
+
+// -> "str: \\[ 1, \\[\\], <none> \\]"

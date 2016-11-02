@@ -278,7 +278,13 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 		{
 			ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
 				tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-				tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs), env);
+				if (has_varg) {
+					// because of the unpack_list_all instr, we have to ensure that the stack is not empty
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ENSURE_NONE);
+					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs), env);
+				} else {
+					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs), env);
+				}
 				vofs--;
 			}
 		}
