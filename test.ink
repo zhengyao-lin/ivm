@@ -89,7 +89,7 @@ __test = fn: {
 
 	eval("print(\"from eval\")")
 	print(eval("a"))
-	print(eval("fn...,...:0"))
+	print(eval("fn*,*:0"))
 
 	print(eval("a = fn n: n < 2 && 1 || a(n - 1) + a(n - 2)")(10))
 
@@ -115,7 +115,7 @@ __test = fn: {
 		print("*** end ***")
 	}
 
-	varg = fn a, va..., c: {
+	varg = fn a, *va, c: {
 		print(a)
 		printl(va)
 		print(va[0])
