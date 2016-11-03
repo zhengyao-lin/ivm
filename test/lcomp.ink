@@ -43,6 +43,35 @@ loc check = fn lst: {
 
 print(check(qsort(lst)))
 
+loc exp_list = fn a: [ i for loc i in a ]
+loc fib = fn n: {
+	iter: fn: {
+		a: 0,
+		b: 0,
+		cur: 0,
+		next: fn: {
+			if n <= base.cur: raise "iter end"
+			else: {
+				loc tmp = base.a + base.b
+				base.a = base.b
+				base.b = tmp
+				base.cur = base.cur + 1
+				
+				if base.b == 0:
+					base.b = 1
+				else:
+					tmp
+			}
+		}
+	}
+}
+
+for i in fib(10):
+	print(i)
+
+[ *d, e ] = exp_list(fib(50))
+print(e)
+
 ret
 
 // -> "str: \\[ 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9 \\]"
@@ -52,3 +81,15 @@ ret
 // -> "str: \\[ a1, a2, a3, b1, b2, b3, c1, c2, c3 \\]"
 // -> "str: \\[ 60, 61, 62, 63, 64, 70, 71, 72, 73, 74, 80, 81, 82, 83, 84, 90, 91, 92, 93, 94 \\]"
 // -> "num: 1"
+
+// -> "num: 1"
+// -> "num: 1"
+// -> "num: 2"
+// -> "num: 3"
+// -> "num: 5"
+// -> "num: 8"
+// -> "num: 13"
+// -> "num: 21"
+// -> "num: 34"
+// -> "num: 55"
+// -> "num: 12586269025"
