@@ -1,6 +1,6 @@
 wait = fn: {
 	loc k = {}
-	while (yield "haha") != "haha": 0
+	while (yield k) != k: 0
 }
 
 fork: {
@@ -56,7 +56,7 @@ call(fn: {
 				msg = yield 1
 			}
 			print("printer end")
-			null
+			none
 		}
 
 		loc i = 0
@@ -64,7 +64,7 @@ call(fn: {
 			yield 1
 			i = i + 1
 		}
-		yield null
+		yield none
 	}
 
 	print("group test end")
