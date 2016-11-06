@@ -689,6 +689,7 @@ RULE(slot)
 				RULE_RET_AT(2).u.expr
 			);
 		})
+
 		SUB_RULE(R(oop) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
@@ -699,6 +700,7 @@ RULE(slot)
 				RULE_RET_AT(3).u.expr
 			);
 		})
+
 		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(1);
@@ -709,6 +711,7 @@ RULE(slot)
 				RULE_RET_AT(3).u.expr
 			);
 		})
+
 		SUB_RULE(T(T_DOT) R(nllo) R(oop) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);

@@ -191,7 +191,9 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 
 		if (tmp_entry.oop != -1) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_OOP_B, tmp_entry.oop);
-		} else {
+		} /* else if (tmp_entry.id) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_OOP_B, tmp_entry.oop);
+		} */ else {
 			tmp_str = ivm_parser_parseStr_heap(
 				env->heap,
 				tmp_entry.name.val,
