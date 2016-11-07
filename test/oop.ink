@@ -46,12 +46,9 @@ a()
 
 a = {
 	val: 0,
-	[]: fn idx, assign: {
+	[]: fn idx: {
 		print("here")
-		if assign != none:
-			base.val = assign
-		else:
-			base.val
+		base.val
 	},
 
 	[=]: fn idx, assign: {
@@ -65,6 +62,8 @@ a = {
 
 print(a["anything"])
 print(a["anything"] = 10)
+
+print(a["anything"])
 
 import ulist
 
@@ -118,6 +117,8 @@ a.f.()()
 // -> "str: here"
 // -> "num: 0"
 // -> "str: there"
+// -> "num: 10"
+// -> "str: here"
 // -> "num: 10"
 
 // -> "num: 3"

@@ -106,8 +106,9 @@
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ3 ? _TMP_OBJ3 : IVM_NONE(_STATE));                              \
+			/* assign value could be null */                                                   \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ4);                                                             \
 			SET_IARG(2);                                                                       \
