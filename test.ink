@@ -1,3 +1,12 @@
+
+a = {
+	[ "hi", 1 ]: 1024
+}
+
+print(a.hi)
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1

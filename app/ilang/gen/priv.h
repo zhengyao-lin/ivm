@@ -98,4 +98,9 @@
 #define GEN_ERR_TOO_LONG_MOD_NAME(expr, len) \
 	GEN_ERR((expr)->pos, GEN_ERR_MSG_TOO_LONG_MOD_NAME(len));
 
+void
+ilang_gen_index_expr_genArg(ilang_gen_expr_t *expr, /* not necessarily an index expr */
+							ilang_gen_expr_list_t *arg,
+							ilang_gen_env_t *env);
+
 #endif

@@ -292,6 +292,9 @@ DRAW_END:
 		case IVM_CORO_ACTION_EXCEPTION:
 			IVM_TRACE("****** ACTION: EXCEPTION(%s) ******", TYPE_NAME_OF(runtime.retval));
 			break;
+		case IVM_CORO_ACTION_OP_ALT:
+			IVM_TRACE("****** ACTION: OP ALT(%s) ******", ivm_opcode_table_getName(runtime.alt_op));
+			break;
 	}
 
 	getc(stdin);

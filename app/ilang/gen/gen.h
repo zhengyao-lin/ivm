@@ -365,7 +365,7 @@ typedef struct {
 	ilang_gen_pos_t pos;
 	ilang_gen_token_value_t name;
 	ivm_int_t oop; // -1 for not oop
-	ilang_gen_expr_t *id;
+	ilang_gen_expr_list_t *index;
 	ilang_gen_expr_t *expr;
 } ilang_gen_table_entry_t;
 

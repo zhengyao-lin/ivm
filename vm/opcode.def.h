@@ -150,6 +150,13 @@ OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", 0))
 OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", 0))
 
 OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", 0))
+
+/*
+	top
+	-------------------------------
+	|   id   |   obj   |  assign  |
+	-------------------------------
+ */
 OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, "[=]", 0))
 
 OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0))

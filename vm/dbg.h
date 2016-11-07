@@ -33,6 +33,7 @@ typedef struct {
 
 	ivm_instr_t *ip;
 	ivm_size_t bp, sp;
+	ivm_opcode_t alt_op;
 
 	ivm_int_t cmp_reg;
 

@@ -50,6 +50,15 @@
 		_DBG_RUNTIME_DEFAULT                      \
 	})
 
+#define DBG_RUNTIME_OP_ALT(opcode) \
+	((ivm_dbg_runtime_t) {                        \
+		.action = IVM_CORO_ACTION_OP_ALT,         \
+		.retval = IVM_NULL,                       \
+		.alt_op = (opcode),                       \
+		_DBG_RUNTIME_CACHE,                       \
+		_DBG_RUNTIME_DEFAULT                      \
+	})
+
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
 	if (!ivm_vmstate_hasIntr(state)) {                \
@@ -78,6 +87,7 @@
 	goto *(ivm_instr_entry(tmp_ip = (n)));
 
 #define GOTO_INSTR(opc) \
+	IVM_PER_INSTR_DBG(DBG_RUNTIME_OP_ALT(IVM_OPCODE(opc))); \
 	goto OPCODE_##opc;
 
 #define RTM_FATAL(...) \

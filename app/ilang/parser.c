@@ -672,6 +672,7 @@ RULE(nllo)
 		| '.' nllo oop nllo ':' nllo prefix_expr
  */
 
+RULE(arg_list_opt);
 RULE(prefix_expr);
 RULE(oop);
 RULE(slot)
@@ -720,6 +721,18 @@ RULE(slot)
 				TOKEN_POS(tmp_token),
 				RULE_RET_AT(1).u.oop,
 				RULE_RET_AT(4).u.expr
+			);
+		})
+
+		SUB_RULE(T(T_LBRAKT) R(nllo) R(arg_list_opt) R(nllo) T(T_RBRAKT)
+				 R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.slot = ilang_gen_table_entry_build_index(
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr_list,
+				RULE_RET_AT(5).u.expr
 			);
 		})
 	);

@@ -243,17 +243,14 @@ ilang_gen_cmp_expr_eval(ilang_gen_expr_t *expr,
 	return NORET();
 }
 
-ilang_gen_value_t
-ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
-						  ilang_gen_flag_t flag,
-						  ilang_gen_env_t *env)
+void
+ilang_gen_index_expr_genArg(ilang_gen_expr_t *expr,
+							ilang_gen_expr_list_t *arg,
+							ilang_gen_env_t *env)
 {
-	ilang_gen_index_expr_t *index_expr = IVM_AS(expr, ilang_gen_index_expr_t);
 	ilang_gen_expr_list_iterator_t eiter;
 	ilang_gen_expr_t *tmp_expr;
-	ivm_size_t count, sp_back;
-
-	index_expr->op->eval(index_expr->op, FLAG(0), env);
+	ivm_size_t count;
 
 	/*
 		count		index obj
@@ -261,30 +258,41 @@ ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
 		1			arg1
 		>1			[arg1, arg2, ...]
 	 */
-	switch (count = ilang_gen_expr_list_size(index_expr->idx)) {
+	switch (count = ilang_gen_expr_list_size(arg)) {
 		case 0:
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			break;
 		
 		case 1:
-			tmp_expr = ilang_gen_expr_list_at(index_expr->idx, 0);
-			INC_SP();
+			tmp_expr = ilang_gen_expr_list_at(arg, 0);
 			tmp_expr->eval(tmp_expr, FLAG(0), env);
-			DEC_SP();
 			break;
 
 		default: {
-			sp_back = env->sp;
-			ILANG_GEN_EXPR_LIST_EACHPTR_R(index_expr->idx, eiter) {
-				tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);\
-				INC_SP();
+			// sp_back = env->sp;
+			ILANG_GEN_EXPR_LIST_EACHPTR_R(arg, eiter) {
+				tmp_expr = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
 				tmp_expr->eval(tmp_expr, FLAG(0), env);
 			}
-			env->sp = sp_back;
+			// env->sp = sp_back;
 
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, count);
 		}
 	}
+
+	return;
+}
+
+ilang_gen_value_t
+ilang_gen_index_expr_eval(ilang_gen_expr_t *expr,
+						  ilang_gen_flag_t flag,
+						  ilang_gen_env_t *env)
+{
+	ilang_gen_index_expr_t *index_expr = IVM_AS(expr, ilang_gen_index_expr_t);
+
+	index_expr->op->eval(index_expr->op, FLAG(0), env);
+	
+	ilang_gen_index_expr_genArg(expr, index_expr->idx, env);
 
 	if (flag.is_left_val) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDXA);
