@@ -111,61 +111,63 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 	}
 
 	/*************** elifs ***************/
-	ivm_size_t elif_end_jmps[ilang_gen_branch_list_size(elifs) + 1];
-	ivm_size_t *cur_end_jmp = elif_end_jmps, *end;
+	ivm_size_t elif_end_jmps[(elifs ? ilang_gen_branch_list_size(elifs) : 0) + 1];
+	ivm_size_t *cur_end_jmp = elif_end_jmps, *end;	
 
-	ILANG_GEN_BRANCH_LIST_EACHPTR_R(elifs, biter) {
-		tmp_br = ILANG_GEN_BRANCH_LIST_ITER_GET(biter);
-		cond_ret = tmp_br.cond->eval(
-			tmp_br.cond,
-			FLAG(.if_use_cond_reg = IVM_TRUE),
-			env
-		);
+	if (elifs) {
+		ILANG_GEN_BRANCH_LIST_EACHPTR_R(elifs, biter) {
+			tmp_br = ILANG_GEN_BRANCH_LIST_ITER_GET(biter);
+			cond_ret = tmp_br.cond->eval(
+				tmp_br.cond,
+				FLAG(.if_use_cond_reg = IVM_TRUE),
+				env
+			);
 
-		if (cond_ret.use_branch) {
-			// redirect all begin ref to the begining of the body
+			if (cond_ret.use_branch) {
+				// redirect all begin ref to the begining of the body
+				cur = ivm_exec_cur(env->cur_exec);
+				ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
+					tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
+					ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
+				}
+				ilang_gen_addr_list_empty(begin_ref);
+			} else {
+				prev_elif_jmp = ivm_exec_addInstr_l( // jump to next elif/else if false
+					env->cur_exec, GET_LINE(expr), JUMP_FALSE, 0
+				);
+			}
+
+			tmp_br.body->eval(
+				tmp_br.body,
+				FLAG(.is_top_level = flag.is_top_level),
+				env
+			);
+
+			if (!ILANG_GEN_BRANCH_LIST_ITER_IS_LAST(elifs, biter) ||
+				last_br.body) {
+				// has branch(es) following
+				*cur_end_jmp++ = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
+			}
+
 			cur = ivm_exec_cur(env->cur_exec);
-			ILANG_GEN_ADDR_LIST_EACHPTR(begin_ref, iter) {
-				tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
-				ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
+
+			if (cond_ret.use_branch) {
+				ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
+					tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
+					ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
+				}
+				ilang_gen_addr_list_empty(end_ref);
+			} else {
+				ivm_exec_setArgAt(
+					env->cur_exec,
+					prev_elif_jmp,
+					cur - prev_elif_jmp // jump to here
+				);
 			}
-			ilang_gen_addr_list_empty(begin_ref);
-		} else {
-			prev_elif_jmp = ivm_exec_addInstr_l( // jump to next elif/else if false
-				env->cur_exec, GET_LINE(expr), JUMP_FALSE, 0
-			);
 		}
 
-		tmp_br.body->eval(
-			tmp_br.body,
-			FLAG(.is_top_level = flag.is_top_level),
-			env
-		);
-
-		if (!ILANG_GEN_BRANCH_LIST_ITER_IS_LAST(elifs, biter) ||
-			last_br.body) {
-			// has branch(es) following
-			*cur_end_jmp++ = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
-		}
-
-		cur = ivm_exec_cur(env->cur_exec);
-
-		if (cond_ret.use_branch) {
-			ILANG_GEN_ADDR_LIST_EACHPTR(end_ref, iter) {
-				tmp_addr = ILANG_GEN_ADDR_LIST_ITER_GET(iter);
-				ivm_exec_setArgAt(env->cur_exec, tmp_addr, cur - tmp_addr);
-			}
-			ilang_gen_addr_list_empty(end_ref);
-		} else {
-			ivm_exec_setArgAt(
-				env->cur_exec,
-				prev_elif_jmp,
-				cur - prev_elif_jmp // jump to here
-			);
-		}
+		/*************** elifs ***************/
 	}
-
-	/*************** elifs ***************/
 
 	/*************** else ***************/
 	if (last_br.body) { // has else branch

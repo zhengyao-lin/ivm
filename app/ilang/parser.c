@@ -2948,6 +2948,33 @@ RULE(group_expr)
 	MATCHED({})
 }
 
+RULE(branch_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(logic_or_expr)
+				 T(T_QM) R(nllo)
+				 R(prefix_expr) R(nllo)
+				 T(T_COLON) R(nllo)
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("branchexpr"))
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.expr = ilang_gen_if_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				ilang_gen_branch_build(RULE_RET_AT(0).u.expr, RULE_RET_AT(2).u.expr),
+				IVM_NULL,
+				ilang_gen_branch_build(IVM_NULL, RULE_RET_AT(5).u.expr)
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
 /*
 	prefix_expr
 		: assign_expr
@@ -2959,6 +2986,7 @@ RULE(group_expr)
 		| for_expr
 		| fork_expr
 		| group_expr
+		| branch_expr
 		| logic_or_expr
  */
 
@@ -2974,6 +3002,7 @@ RULE(prefix_expr)
 		SUB_RULE(R(for_expr))
 		SUB_RULE(R(fork_expr))
 		SUB_RULE(R(group_expr))
+		SUB_RULE(R(branch_expr))
 		SUB_RULE(R(logic_or_expr))
 	);
 
