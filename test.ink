@@ -192,21 +192,7 @@ __test = fn: {
 
 	b.a()
 
-	gid = group fn a: {
-		print("group")
-		print(a)
-		"from group"
-	}
-
-	fork fn a: {
-		print("fork")
-		print(a)
-	}
-
-	yield resume gid with 10
-
-	i = 0
-	f = none
+	loc f = none
 
 	(fn: {
 		f = fn: print(val)
@@ -299,43 +285,6 @@ __test = fn: {
 	catch err: print(err)
 
 	i = 0
-
-	fork fn a: {
-		print("init " + a)
-		while a = yield none:
-			if a == "skip":
-				print("skip")
-			else: {
-				print("received " + a)
-			}
-		print("printer end")
-	}
-
-	yield "1"
-	yield "2"
-	yield "3"
-	yield "4"
-	yield "skip"
-	yield "5"
-
-	call(fn: try: yield catch err: printe(err))
-
-	yield none
-
-	///////////////////////////////////////
-
-	fork: {
-		resume gid = group: {
-			print("another group")
-			try: resume 0
-			catch err: printe(err)
-		}
-		print("not next?")
-	}
-
-	yield
-	print(gid)
-	print(resume gid with "hey")
 
 	print(!"hi")
 
