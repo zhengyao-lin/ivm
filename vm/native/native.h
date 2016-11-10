@@ -5,6 +5,7 @@
 #include "pub/type.h"
 #include "pub/vm.h"
 
+#include "ncoro.h"
 #include "nbuf.h"
 #include "nrange.h"
 #include "nlistobj.h"

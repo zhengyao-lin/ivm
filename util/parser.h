@@ -376,6 +376,14 @@ FAILED_END:
 		break; \
 	}
 
+#define EXPECT_TOKEN_OPT(tid, action) \
+	if (HAS_NEXT_TOKEN() && (*__toki__++ = CUR_TOKEN())->id == (tid)) { \
+		__has_matched__ = IVM_TRUE; \
+		NEXT_TOKEN(); \
+	} else { \
+		action; \
+	}
+
 #define EXPECT_RULE(name) \
 	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
 		if (!__last_err__->line && __has_matched__ /* has matched token(s) */) { \
@@ -452,6 +460,9 @@ FAILED_END:
 		__VA_ARGS__; \
 		return IVM_TRUE; \
 	RULE_MATCHED_END: IVM_FATAL("impossible") return IVM_FALSE;
+
+#define GOTO_FAILED() goto RULE_FAILED;
+#define GOTO_MATCHED() goto RULE_MATCHED;
 
 #define RULE_START(name, env, ret, tokens, suc) \
 	ivm_size_t __i__ = 0; \

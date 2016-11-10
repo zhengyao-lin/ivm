@@ -112,6 +112,18 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
    .trav = ivm_function_object_traverser,
    .const_bool = IVM_TRUE)
 
+TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
+	IVM_GET_NATIVE_FUNC(_coro_cons), {
+	
+	ivm_object_t *tmp = ivm_coro_object_new(_STATE, IVM_NULL);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+}, .des = ivm_coro_object_destructor,
+   .clone = ivm_coro_object_cloner,
+   .trav = ivm_coro_object_traverser,
+   .const_bool = IVM_TRUE)
+
 TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),
 	IVM_GET_NATIVE_FUNC(_range_cons), {
 	

@@ -34,10 +34,71 @@ ivm_collector_new()
 	ivm_wbobj_list_init(&ret->wb_obj);
 	ivm_wbslot_list_init(&ret->wb_slot);
 	ivm_wbctx_list_init(&ret->wb_ctx);
+	ivm_wbcoro_list_init(&ret->wb_coro);
 	
 	ret->gen = 0;
 
 	return ret;
+}
+
+void
+ivm_collector_init(ivm_collector_t *col)
+{
+	col->live_ratio = 0;
+	col->skip_time = 0;
+	col->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
+	
+	ivm_destruct_list_init(&col->des_log[0]);
+	ivm_destruct_list_init(&col->des_log[1]);
+	
+	ivm_wbobj_list_init(&col->wb_obj);
+	ivm_wbslot_list_init(&col->wb_slot);
+	ivm_wbctx_list_init(&col->wb_ctx);
+	ivm_wbcoro_list_init(&col->wb_coro);
+	
+	col->gen = 0;
+
+	return;
+}
+
+void
+ivm_collector_free(ivm_collector_t *collector,
+				   ivm_vmstate_t *state)
+{
+	if (collector) {
+		ivm_collector_triggerAllDestructor(collector, state);
+		
+		ivm_destruct_list_dump(&collector->des_log[0]);
+		ivm_destruct_list_dump(&collector->des_log[1]);
+
+		ivm_wbobj_list_dump(&collector->wb_obj);
+		ivm_wbslot_list_dump(&collector->wb_slot);
+		ivm_wbctx_list_dump(&collector->wb_ctx);
+		ivm_wbcoro_list_dump(&collector->wb_coro);
+		
+		STD_FREE(collector);
+	}
+
+	return;
+}
+
+void
+ivm_collector_dump(ivm_collector_t *collector,
+				   ivm_vmstate_t *state)
+{
+	if (collector) {
+		ivm_collector_triggerAllDestructor(collector, state);
+		
+		ivm_destruct_list_dump(&collector->des_log[0]);
+		ivm_destruct_list_dump(&collector->des_log[1]);
+
+		ivm_wbobj_list_dump(&collector->wb_obj);
+		ivm_wbslot_list_dump(&collector->wb_slot);
+		ivm_wbctx_list_dump(&collector->wb_ctx);
+		ivm_wbcoro_list_dump(&collector->wb_coro);
+	}
+
+	return;
 }
 
 #define ADD_EMPTY_LIST(collector, obj) \
@@ -87,25 +148,6 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector,
 	tmp = collector->des_log[0];
 	collector->des_log[0] = collector->des_log[1];
 	collector->des_log[1] = tmp;
-
-	return;
-}
-
-void
-ivm_collector_free(ivm_collector_t *collector, ivm_vmstate_t *state)
-{
-	if (collector) {
-		ivm_collector_triggerAllDestructor(collector, state);
-		
-		ivm_destruct_list_dump(&collector->des_log[0]);
-		ivm_destruct_list_dump(&collector->des_log[1]);
-
-		ivm_wbobj_list_dump(&collector->wb_obj);
-		ivm_wbslot_list_dump(&collector->wb_slot);
-		ivm_wbctx_list_dump(&collector->wb_ctx);
-		
-		STD_FREE(collector);
-	}
 
 	return;
 }
@@ -352,6 +394,8 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_frame_stack_iterator_t fiter;
 	ivm_object_t **i, **sp;
 
+	ivm_coro_setWB(coro, IVM_FALSE);
+
 	if (runtime) {
 		for (i = ivm_vmstack_bottom(stack),
 			 sp = IVM_RUNTIME_GET(runtime, SP);
@@ -388,7 +432,9 @@ ivm_collector_travState(ivm_vmstate_t *state,
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
 	ivm_type_list_iterator_t titer;
 
-	ivm_vmstate_travAndCompactCGroup(state, arg);
+	// ivm_vmstate_travAndCompactCGroup(state, arg);
+
+	ivm_collector_travCoro(ivm_vmstate_curCoro(state), arg);
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
@@ -423,6 +469,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 	ivm_wbobj_list_iterator_t oiter;
 	ivm_wbslot_list_iterator_t siter;
 	ivm_wbctx_list_iterator_t citer;
+	ivm_wbcoro_list_iterator_t coro_iter;
 
 	if (!arg->gen) {
 		IVM_WBOBJ_LIST_EACHPTR(&collector->wb_obj, oiter) {
@@ -447,6 +494,14 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 	}
 
 	ivm_wbctx_list_empty(&collector->wb_ctx);
+
+	if (!arg->gen) {
+		IVM_WBCORO_LIST_EACHPTR(&collector->wb_coro, coro_iter) {
+			ivm_collector_travCoro(IVM_WBCORO_LIST_ITER_GET(coro_iter), arg);
+		}
+	}
+
+	ivm_wbcoro_list_empty(&collector->wb_coro);
 
 	return;
 }

@@ -348,7 +348,8 @@ int main(int argc, const char **argv)
 
 		// execute
 		PROF_START();
-		ivm_vmstate_schedule(state);
+		// ivm_vmstate_schedule(state);
+		ivm_vmstate_resumeCurCoro(state, IVM_NULL);
 		PROF_END();
 
 		ivm_vmstate_free(state);

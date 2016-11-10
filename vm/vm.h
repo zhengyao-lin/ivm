@@ -39,8 +39,9 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_object_t *obj_none;
 
 	ivm_coro_pool_t cr_pool;					// 72
-	ivm_cgroup_list_t coro_groups;
-	ivm_cgid_t last_gid;
+	// ivm_cgroup_list_t coro_groups;
+	// ivm_cgid_t last_gid;
+	ivm_coro_t *cur_coro;
 
 	ivm_type_pool_t type_pool;
 
@@ -57,7 +58,7 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_size_t wild_size;
 
-	ivm_cgid_t cur_cgroup;
+	// ivm_cgid_t cur_cgroup;
 	ivm_int_t gc_flag; /* gc flag:				// 4
 						  > 0: open
 						  = 0: closed
@@ -152,6 +153,18 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 #define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
 #define ivm_vmstate_getHeaps(state) ((state)->heaps)
 
+IVM_INLINE
+void
+IVM_WBCORO(ivm_vmstate_t *state,
+		   ivm_coro_t *coro)
+{
+	if (coro && !ivm_coro_getWB(coro)) {
+		ivm_collector_addWBCoro(&state->gc, coro);
+		ivm_coro_setWB(coro, IVM_TRUE);
+	}
+
+	return;
+}
 
 IVM_INLINE
 ivm_bool_t
@@ -227,11 +240,20 @@ IVM_WBCTX(ivm_vmstate_t *state,
 	return IVM_FALSE;
 }
 
+/*
 IVM_INLINE
 ivm_coro_t *
 ivm_vmstate_curCoro(ivm_vmstate_t *state)
 {
 	return ivm_cgroup_curCoro(ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup));
+}
+*/
+
+IVM_INLINE
+ivm_coro_t *
+ivm_vmstate_curCoro(ivm_vmstate_t *state)
+{
+	return state->cur_coro;
 }
 
 IVM_INLINE
@@ -239,7 +261,7 @@ void
 ivm_vmstate_setMemError(ivm_vmstate_t *state)
 {
 	state->except
-	= ivm_coro_newStringException(ivm_vmstate_curCoro(state), state, IVM_ERROR_MSG_MEM_ERROR);
+	= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_MEM_ERROR);
 	return;
 }
 
@@ -628,6 +650,40 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 #define ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))
 
 IVM_INLINE
+void
+ivm_vmstate_pushCurCoro(ivm_vmstate_t *state,
+						ivm_coro_t *coro)
+{
+	IVM_WBCORO(state, state->cur_coro);
+	state->cur_coro = coro;
+	return;
+}
+
+/* if coro == null, free the current coro */
+IVM_INLINE
+void
+ivm_vmstate_setCurCoro(ivm_vmstate_t *state,
+					   ivm_coro_t *coro)
+{
+	state->cur_coro = coro;
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+ivm_vmstate_resumeCurCoro(ivm_vmstate_t *state,
+						  ivm_object_t *init)
+{
+	if (state->cur_coro) {
+		return ivm_coro_resume(state->cur_coro, state, init);
+	}
+
+	return IVM_NULL;
+}
+
+#if 0
+
+IVM_INLINE
 ivm_size_t
 ivm_vmstate_addCoro_c(ivm_vmstate_t *state,
 					  ivm_coro_t *coro,
@@ -706,6 +762,8 @@ ivm_vmstate_schedule(ivm_vmstate_t *state)
 {
 	return ivm_vmstate_schedule_g(state, IVM_NULL, 0);
 }
+
+#endif
 
 #define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
 

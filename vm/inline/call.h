@@ -28,9 +28,21 @@ ivm_frame_new(ivm_vmstate_t *state,
 
 IVM_INLINE
 void
-ivm_frame_free(ivm_frame_t *frame, ivm_vmstate_t *state)
+ivm_frame_dump(ivm_frame_t *frame,
+			   ivm_vmstate_t *state)
 {
-	ivm_vmstate_dumpFrame(state, frame);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_frame_free(ivm_frame_t *frame,
+			   ivm_vmstate_t *state)
+{
+	if (frame) {
+		ivm_vmstate_dumpFrame(state, frame);
+	}
+
 	return;
 }
 

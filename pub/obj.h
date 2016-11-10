@@ -10,4 +10,6 @@
 #include "../vm/range.h"
 #include "../vm/buf.h"
 
+#include "../vm/coro.h"
+
 #endif

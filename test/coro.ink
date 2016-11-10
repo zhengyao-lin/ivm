@@ -1,108 +1,58 @@
-wait = fn: {
-	loc k = {}
-	while (yield k) != k: 0
+c1 = fork fn a: {
+	print("arg: " + a)
+	print("hi")
+	yield "yield!"
+	print("yah!")
 }
 
-fork: {
-	print("1")
-	yield
-	print("3")
-}
-
-fork: {
-	print("2")
-	yield
-	print("4")
-}
-
-wait()
-print(yield "end")
-
-fork fn a: {
-	print(a)
-	yield "hi back"
-	print("chat end")
-}
-
-print(yield "hi")
-wait()
+print("huh?")
+print(resume c1 with 1)
+resume c1
 print("end")
 
-print("#######")
+try: resume coro.proto
+catch: print("cannot resume")
 
-call(fn: {
-	try: {
-		yield "hi"
-		print("never printed")
-	}
-
-	resume group: {
-		fork: {
-			loc a = 1
-			loc b = 1
-			loc c = a
-
-			while yield a: {
-				c = a + b
-				a = b
-				b = c
-			}
-		}
-
-		// printer
-		fork fn msg: {
-			while msg: {
-				print(msg)
-				msg = yield 1
-			}
-			print("printer end")
-			none
-		}
-
-		loc i = 0
-		while i < 31: {
-			yield 1
-			i = i + 1
-		}
-		yield none
-	}
-
-	print("group test end")
-})
-
-print("end")
-
-g1 = group: {
-	print("g3")
-	try: {
-		resume g2 // g2 is locked
-		print("never printed 2")
+dummy = fork: {
+	while true: {
+		for i in range(100000): none
+		yield 10
 	}
 }
 
-g2 = group: {
-	print("g2")
-	resume g1
+fib = fork: {
+	loc a = 0
+	loc b = 1
+
+	while true: {
+		[ 1, 2, 3, resume dummy, 4, 5 ]
+		yield b
+		loc c = a + b
+		a = b
+		b = c
+	}
 }
 
-resume g2
+for i in range(100000): none
+for i in range(100000): none
 
-g3 = group: {}
+for i in range(20): {
+	print(resume fib)
+}
 
-resume g3
+call(fn: try: yield catch: print("failed to yield"))
 
-print(resume g3 with "not executed")
+print("hi?")
 
-// -> "str: 1"
-// -> "str: 2"
-// -> "str: 3"
-// -> "str: 4"
-// -> "str: end"
+ret
+
+// -> "str: huh\\?"
+// -> "str: arg: 1"
 // -> "str: hi"
-// -> "str: hi back"
-// -> "str: chat end"
+// -> "str: yield!"
+// -> "str: yah!"
 // -> "str: end"
-// -> "str: #######"
+// -> "str: cannot resume"
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 2"
@@ -123,20 +73,5 @@ print(resume g3 with "not executed")
 // -> "num: 2584"
 // -> "num: 4181"
 // -> "num: 6765"
-// -> "num: 10946"
-// -> "num: 17711"
-// -> "num: 28657"
-// -> "num: 46368"
-// -> "num: 75025"
-// -> "num: 121393"
-// -> "num: 196418"
-// -> "num: 317811"
-// -> "num: 514229"
-// -> "num: 832040"
-// -> "num: 1346269"
-// -> "str: printer end"
-// -> "str: group test end"
-// -> "str: end"
-// -> "str: g2"
-// -> "str: g3"
-// -> "str: not executed"
+// -> "str: failed to yield"
+// -> "str: hi\\?"

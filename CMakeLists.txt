@@ -12,7 +12,7 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall")
 
 if(NOT CMAKE_C_COMPILER MATCHES "icc")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-value")
@@ -98,8 +98,8 @@ foreach(dir ${app_list})
 endforeach(dir ${app_list})
 
 # test exe
-add_executable(testbed test.c)
-target_link_libraries(testbed ivm-vm ivm-util)
+# add_executable(testbed test.c)
+# target_link_libraries(testbed ivm-vm ivm-util)
 
 add_library(testmod SHARED testmod.c)
 target_link_libraries(testmod ivm-vm)

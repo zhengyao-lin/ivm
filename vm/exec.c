@@ -280,6 +280,7 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 	ivm_vmstate_t *state;
 	ivm_function_t *root;
 	ivm_char_t *str;
+	ivm_coro_t *coro;
 
 	IVM_ASSERT(ivm_exec_list_size(unit->execs), IVM_ERROR_MSG_MERGE_EMPTY_EXEC_UNIT);
 
@@ -292,14 +293,12 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 	}
 
 	if (root) {
-		ivm_vmstate_addCoroToCurCGroup(
-			state, IVM_AS(
-				ivm_function_object_new(
-					state, IVM_NULL, root
-				),
-				ivm_function_object_t
-			)
-		);
+		coro = ivm_coro_new(state);
+		ivm_coro_setRoot(coro, state, IVM_AS(ivm_function_object_new(
+			state, IVM_NULL, root
+		), ivm_function_object_t));
+
+		ivm_vmstate_pushCurCoro(state, coro);
 	}
 
 	return state;

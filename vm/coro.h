@@ -25,6 +25,8 @@ typedef struct ivm_coro_t_tag {
 
 	ivm_bool_t alive;
 	ivm_bool_t has_native;
+	ivm_bool_t active;
+	ivm_bool_t wb;
 } ivm_coro_t;
 
 typedef enum {
@@ -90,18 +92,20 @@ ivm_coro_printException(ivm_coro_t *coro,
 	}
 
 ivm_object_t *
-ivm_coro_start_c(ivm_coro_t *coro,
-				 struct ivm_vmstate_t_tag *state,
-				 ivm_function_object_t *root,
-				 ivm_bool_t get_opcode_entry);
-
-#define ivm_coro_start(coro, state, root) \
-	(ivm_coro_start_c((coro), (state), (root), IVM_FALSE))
+ivm_coro_resume_c(ivm_coro_t *coro,
+				  struct ivm_vmstate_t_tag *state,
+				  ivm_object_t *arg,
+				  ivm_bool_t get_opcode_entry);
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#define ivm_coro_getOpcodeEntry() \
-		((void **)ivm_coro_start_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
+		((void **)ivm_coro_resume_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
 #endif
+
+ivm_object_t *
+ivm_coro_resume(ivm_coro_t *coro,
+				struct ivm_vmstate_t_tag *state,
+				ivm_object_t *arg);
 
 void
 ivm_coro_setRoot(ivm_coro_t *coro,
@@ -109,19 +113,10 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 ivm_function_object_t *root);
 
 #define ivm_coro_isAlive(coro) ((coro)->alive)
+#define ivm_coro_isActive(coro) ((coro)->active)
 
-IVM_INLINE
-ivm_object_t *
-ivm_coro_resume(ivm_coro_t *coro,
-				struct ivm_vmstate_t_tag *state,
-				ivm_object_t *init)
-{
-	if (init) {
-		ivm_vmstack_push(coro, init);
-	}
-
-	return ivm_coro_start(coro, state, IVM_NULL);
-}
+#define ivm_coro_getWB(coro) ((coro)->wb)
+#define ivm_coro_setWB(coro, val) ((coro)->wb = (val))
 
 ivm_object_t *
 ivm_coro_callBase_n(ivm_coro_t *coro,
@@ -257,6 +252,37 @@ ivm_coro_getRuntimeLocal(ivm_coro_t *coro)
 ivm_long_t
 ivm_coro_where(ivm_coro_t *coro, ivm_size_t trback /* trace back */);
 
+typedef ivm_ptpool_t ivm_coro_pool_t;
+
+#define ivm_coro_pool_init(pool, count) (ivm_ptpool_init((pool), (count), sizeof(ivm_coro_t)))
+#define ivm_coro_pool_destruct ivm_ptpool_destruct
+#define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
+#define ivm_coro_pool_dump ivm_ptpool_dump
+#define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll
+
+typedef struct {
+	IVM_OBJECT_HEADER
+	ivm_coro_t *coro;
+} ivm_coro_object_t;
+
+ivm_object_t *
+ivm_coro_object_new(struct ivm_vmstate_t_tag *state,
+					ivm_coro_t *coro);
+
+#define ivm_coro_object_getCoro(obj) (IVM_AS((obj), ivm_coro_object_t)->coro)
+
+void
+ivm_coro_object_destructor(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state);
+
+void
+ivm_coro_object_cloner(ivm_object_t *obj,
+					   struct ivm_vmstate_t_tag *state);
+
+void
+ivm_coro_object_traverser(ivm_object_t *obj,
+						  struct ivm_traverser_arg_t_tag *arg);
+
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 
@@ -274,15 +300,9 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define IVM_CORO_LIST_ITER_INDEX IVM_PTLIST_ITER_INDEX
 #define IVM_CORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_CORO_LIST_ITER_GET(iter) ((ivm_coro_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)
+#define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)s
 
-typedef ivm_ptpool_t ivm_coro_pool_t;
-
-#define ivm_coro_pool_init(pool, count) (ivm_ptpool_init((pool), (count), sizeof(ivm_coro_t)))
-#define ivm_coro_pool_destruct ivm_ptpool_destruct
-#define ivm_coro_pool_alloc(pool) ((ivm_coro_t *)ivm_ptpool_alloc(pool))
-#define ivm_coro_pool_dump ivm_ptpool_dump
-#define ivm_coro_pool_dumpAll ivm_ptpool_dumpAll
+#if 0
 
 #if 0
 
@@ -385,6 +405,8 @@ typedef IVM_LIST_ITER_TYPE(ivm_cgroup_t) ivm_cgroup_list_iterator_t;
 
 #define IVM_CGROUP_LIST_ITER_GET_PTR(iter) (IVM_LIST_ITER_GET_PTR((iter), ivm_cgroup_t))
 #define IVM_CGROUP_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_cgroup_t)
+
+#endif
 
 IVM_COM_END
 

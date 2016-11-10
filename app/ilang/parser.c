@@ -48,7 +48,6 @@ enum token_id_t {
 	T_TO,
 
 	T_FORK,
-	T_GROUP,
 
 	T_DEL,
 	T_REF,
@@ -139,7 +138,6 @@ token_name_table[] = {
 	"keyword `to`",
 
 	"keyword `fork`",
-	"keyword `group`",
 
 	"operator `del`",
 	"operator `ref`",
@@ -507,7 +505,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("to", T_TO)
 
 		KEYWORD("fork", T_FORK)
-		KEYWORD("group", T_GROUP)
 
 		KEYWORD("del", T_DEL)
 		KEYWORD("ref", T_REF)
@@ -564,6 +561,7 @@ struct env_t {
 
 #define R EXPECT_RULE
 #define T EXPECT_TOKEN
+#define T_OPT EXPECT_TOKEN_OPT
 
 #define DBB(...) { if (_ENV->debug) { __VA_ARGS__; } } // debug block
 
@@ -2896,6 +2894,8 @@ RULE(fork_expr)
 	MATCHED({})
 }
 
+#if 0
+
 /*
 	group_expr
 		: 'group' nllo ':' nllo prefix_expr
@@ -2948,6 +2948,10 @@ RULE(group_expr)
 	MATCHED({})
 }
 
+#endif
+
+/*
+
 RULE(branch_expr)
 {
 	struct token_t *tmp_token;
@@ -2975,6 +2979,8 @@ RULE(branch_expr)
 	MATCHED({})
 }
 
+*/
+
 /*
 	prefix_expr
 		: assign_expr
@@ -2985,13 +2991,14 @@ RULE(branch_expr)
 		| while_expr
 		| for_expr
 		| fork_expr
-		| group_expr
-		| branch_expr
-		| logic_or_expr
+		| logic_or_expr '?' nllo prefix_expr nllo ':' nllo prefix_expr
  */
 
 RULE(prefix_expr)
 {
+	struct token_t *tmp_token;
+	ivm_bool_t is_branch = IVM_FALSE;
+
 	SUB_RULE_SET(
 		SUB_RULE(R(assign_expr) DBB(PRINT_MATCH_TOKEN("assign expr")))
 		SUB_RULE(R(intr_expr) DBB(PRINT_MATCH_TOKEN("intr expr")))
@@ -3001,14 +3008,33 @@ RULE(prefix_expr)
 		SUB_RULE(R(while_expr))
 		SUB_RULE(R(for_expr))
 		SUB_RULE(R(fork_expr))
-		SUB_RULE(R(group_expr))
-		SUB_RULE(R(branch_expr))
-		SUB_RULE(R(logic_or_expr))
+		// SUB_RULE(R(group_expr))
+		// SUB_RULE(R(branch_expr))
+		// SUB_RULE(R(logic_or_expr))
+
+		SUB_RULE(R(logic_or_expr)
+				 T_OPT(T_QM, { GOTO_MATCHED(); }) R(nllo)
+				 R(prefix_expr) R(nllo)
+				 T(T_COLON) R(nllo)
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("branch expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			is_branch = IVM_TRUE;
+
+			_RETVAL.expr = ilang_gen_if_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				ilang_gen_branch_build(RULE_RET_AT(0).u.expr, RULE_RET_AT(2).u.expr),
+				IVM_NULL,
+				ilang_gen_branch_build(IVM_NULL, RULE_RET_AT(5).u.expr)
+			);
+		})
 	);
 
 	FAILED({})
 	MATCHED({
-		_RETVAL.expr = RULE_RET_AT(0).u.expr;
+		if (!is_branch)
+			_RETVAL.expr = RULE_RET_AT(0).u.expr;
 	})
 }
 

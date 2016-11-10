@@ -256,16 +256,17 @@ ilang_gen_fork_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
 
 	if (fork_expr->is_group) {
-		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
+		/* fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GROUP);
 		if (flag.is_top_level) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
-		}
+		} */
+		IVM_FATAL("impossible");
 	} else {
 		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), FORK);
-		if (!flag.is_top_level) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+		if (flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
 	}
 

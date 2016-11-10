@@ -799,6 +799,71 @@ OPCODE_GEN(INVOKE_BASE_VAR, "invoke_base_var", N, -1, {
 	GOTO_INSTR(INVOKE_BASE);
 })
 
+OPCODE_GEN(FORK, "fork", N, 0, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
+
+	_TMP_CORO = ivm_coro_new(_STATE);
+	ivm_coro_setRoot(_TMP_CORO, _STATE, IVM_AS(_TMP_OBJ1, ivm_function_object_t));
+
+	_TMP_OBJ2 = ivm_coro_object_new(_STATE, _TMP_CORO);
+	STACK_PUSH(_TMP_OBJ2);
+
+	NEXT_INSTR_NINT();
+})
+
+OPCODE_GEN(YIELD, "yield", N, 0, {
+	CHECK_STACK(1);
+	
+	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(!IVM_CORO_GET(_CORO, HAS_NATIVE),
+			   IVM_ERROR_MSG_YIELD_ATOM_CORO);
+
+	INC_INSTR();
+	SAVE_RUNTIME(_INSTR);
+	
+	YIELD();
+})
+
+OPCODE_GEN(RESUME, "resume", N, -1, {
+	CHECK_STACK(2);
+
+	_TMP_OBJ2 = STACK_POP();
+	_TMP_OBJ1 = STACK_POP();
+
+	// IVM_TRACE("what?\n");
+
+	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_CORO_OBJECT_T),
+			   IVM_ERROR_MSG_RESUME_NON_CORO(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
+
+	_TMP_CORO = ivm_coro_object_getCoro(_TMP_OBJ2);
+
+	RTM_ASSERT(_TMP_CORO, IVM_ERROR_MSG_RESUME_EMPTY_CORO);
+
+	RTM_ASSERT(ivm_coro_isAlive(_TMP_CORO),
+			   IVM_ERROR_MSG_RESUME_DEAD_CORO(_TMP_CORO));
+
+	RTM_ASSERT(!ivm_coro_isActive(_TMP_CORO),
+			   IVM_ERROR_MSG_RESUME_ACTIVE_CORO(_TMP_CORO));
+
+	SAVE_RUNTIME(_INSTR);
+	
+	// _TMP_OBJ1 = ivm_vmstate_schedule_g(_STATE, _TMP_OBJ1, _TMP_CGID);
+	_TMP_OBJ1 = ivm_coro_resume(_TMP_CORO, _STATE, _TMP_OBJ1);
+
+	UPDATE_RUNTIME();
+	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
+
+	NEXT_INSTR();
+})
+
+#if 0
+
 OPCODE_GEN(FORK, "fork", N, -1, {
 	CHECK_STACK(1);
 
@@ -877,7 +942,6 @@ OPCODE_GEN(YIELD, "yield", N, 0, {
 	YIELD();
 })
 
-
 OPCODE_GEN(RESUME, "resume", N, -1, {
 	CHECK_STACK(2);
 
@@ -902,6 +966,8 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 	NEXT_INSTR();
 })
+
+#endif
 
 OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	CHECK_STACK(1);

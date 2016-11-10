@@ -394,7 +394,8 @@
 #define _TMP_ARGC (tmp_argc)
 #define _TMP_ARGV (tmp_argv)
 #define _TMP_CATCH (tmp_catch)
-#define _TMP_CGID (tmp_cgid)
+// #define _TMP_CGID (tmp_cgid)
+#define _TMP_CORO (tmp_coro)
 #define _TMP_BOOL (tmp_bool)
 #define _USE_REG (use_reg)
 

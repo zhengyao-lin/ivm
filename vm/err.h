@@ -78,7 +78,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT							("root function of coroutine cannot be native")
 #define IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO						("no code generated for target address")
 #define IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE					("one-round scheduler require at least one alive coroutine")
-#define IVM_ERROR_MSG_CORO_EXCEPTION(coro, file, line, msg)		"coro %p killed: exception: %s: line %ld: %s", (void *)(coro), (file), (line), (msg)
+#define IVM_ERROR_MSG_CORO_EXCEPTION(coro, file, line, msg)		"coro %p exception trapped: %s: line %ld: %s", (void *)(coro), (file), (line), (msg)
 #define IVM_ERROR_MSG_CIRCULAR_PROTO_REF						("circular prototype reference detected")
 #define IVM_ERROR_MSG_ILLEGAL_GID_TYPE(type)					"illegal group id with type <%s>", (type)
 #define IVM_ERROR_MSG_GROUP_ID_OVERFLOW							("group id overflow")
@@ -117,6 +117,10 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_FAILED_PARSE_NUM(str)						"failed to parse number '%s'", (str)
 #define IVM_ERROR_MSG_EMPTY_BUFFER								"creating empty buffer"
 #define IVM_ERROR_MSG_TOO_SMALL_LIST							"too small list"
+#define IVM_ERROR_MSG_RESUME_ACTIVE_CORO(coro)					"cannot resume active coroutine %p", (void *)(coro)
+#define IVM_ERROR_MSG_RESUME_NON_CORO(type)						"cannot resume non-coro object of type <%s>", (type)
+#define IVM_ERROR_MSG_RESUME_EMPTY_CORO							"cannot resume uninitialized coroutine"
+#define IVM_ERROR_MSG_RESUME_DEAD_CORO(coro)					"cannot resume dead coroutine %p", (void *)(coro)
 
 IVM_COM_END
 

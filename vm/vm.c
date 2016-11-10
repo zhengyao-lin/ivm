@@ -42,7 +42,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 {
 	ivm_vmstate_t *ret = STD_ALLOC(sizeof(*ret));
 	ivm_type_t *tmp_type, *end;
-	ivm_cgroup_t *tmp_group;
+	// ivm_cgroup_t *tmp_group;
 	ivm_int_t i;
 
 	IVM_MEMCHECK(ret);
@@ -53,11 +53,11 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);
 	}
 
-	ret->cur_cgroup = 0;
-	ivm_cgroup_list_init(&ret->coro_groups);
-	ivm_cgroup_list_prepush(&ret->coro_groups, &tmp_group);
-	ivm_cgroup_init(tmp_group);
-	ret->last_gid = 1;
+	// ret->cur_cgroup = 0;
+	// ivm_cgroup_list_init(&ret->coro_groups);
+	// ivm_cgroup_list_prepush(&ret->coro_groups, &tmp_group);
+	// ivm_cgroup_init(tmp_group);
+	// ret->last_gid = 1;
 
 	ivm_type_pool_init(&ret->type_pool);
 	ivm_func_list_init(&ret->func_list);
@@ -70,6 +70,8 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	ivm_context_pool_init(&ret->ct_pool, IVM_DEFAULT_CONTEXT_POOL_SIZE);
 	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
+
+	ret->cur_coro = IVM_NULL;
 
 	ret->const_pool = const_pool;
 	ivm_ref_inc(const_pool);
@@ -116,22 +118,26 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 void
 ivm_vmstate_free(ivm_vmstate_t *state)
 {
-	ivm_cgroup_list_iterator_t giter;
+	// ivm_cgroup_list_iterator_t giter;
 
 	ivm_type_t *i, *end;
 	ivm_int_t j;
 
 	if (state) {
+		ivm_coro_free(state->cur_coro, state);
+
 		ivm_collector_dump(&state->gc, state);
 
 		for (j = 0; j < IVM_ARRLEN(state->heaps); j++) {
 			ivm_heap_dump(state->heaps + j);
 		}
 
+		/*
 		IVM_CGROUP_LIST_EACHPTR(&state->coro_groups, giter) {
 			ivm_cgroup_dump(IVM_CGROUP_LIST_ITER_GET_PTR(giter), state);
 		}
-		ivm_cgroup_list_dump(&state->coro_groups);
+		*/
+		// ivm_cgroup_list_dump(&state->coro_groups);
 
 		ivm_type_pool_dump(&state->type_pool);
 
@@ -158,6 +164,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 	return;
 }
+
+#if 0
 
 void
 ivm_vmstate_travAndCompactCGroup(ivm_vmstate_t *state,
@@ -262,3 +270,5 @@ ivm_vmstate_schedule_g(ivm_vmstate_t *state,
 
 	return val;
 }
+
+#endif

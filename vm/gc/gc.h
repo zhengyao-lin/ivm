@@ -72,12 +72,27 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_context_t *) ivm_wbctx_list_iterator_t;
 #define IVM_WBCTX_LIST_ITER_GET(iter) ((ivm_context_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_WBCTX_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_context_t *)
 
+typedef ivm_ptlist_t ivm_wbcoro_list_t;
+typedef IVM_PTLIST_ITER_TYPE(struct ivm_coro_t_tag *) ivm_wbcoro_list_iterator_t;
+
+#define ivm_wbcoro_list_init(list) (ivm_ptlist_init_c((list), IVM_DEFAULT_WBCORO_LIST_BUFFER_SIZE))
+#define ivm_wbcoro_list_new() (ivm_ptlist_new_c(IVM_DEFAULT_WBCORO_LIST_BUFFER_SIZE))
+#define ivm_wbcoro_list_dump ivm_ptlist_dump
+#define ivm_wbcoro_list_free ivm_ptlist_free
+#define ivm_wbcoro_list_push ivm_ptlist_push
+#define ivm_wbcoro_list_empty ivm_ptlist_empty
+
+#define IVM_WBCORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
+#define IVM_WBCORO_LIST_ITER_GET(iter) ((struct ivm_coro_t_tag *)IVM_PTLIST_ITER_GET(iter))
+#define IVM_WBCORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, struct ivm_coro_t_tag *)
+
 typedef struct ivm_collector_t_tag {
 	ivm_destruct_list_t des_log[2];
 	
 	ivm_wbobj_list_t wb_obj;
 	ivm_wbslot_list_t wb_slot;
 	ivm_wbctx_list_t wb_ctx;
+	ivm_wbcoro_list_t wb_coro;
 
 	ivm_long_t skip_time;
 	ivm_double_t bc_weight;
@@ -103,6 +118,9 @@ typedef struct ivm_collector_t_tag {
 
 #define ivm_collector_addWBContext(collector, table) \
 	(ivm_wbctx_list_push(&(collector)->wb_ctx, (table)))
+
+#define ivm_collector_addWBCoro(collector, coro) \
+	(ivm_wbcoro_list_push(&(collector)->wb_coro, (coro)))
 
 #define ivm_collector_getGen(collector) \
 	((collector)->gen)
@@ -138,48 +156,16 @@ ivm_collector_triggerAllDestructor(ivm_collector_t *collector,
 	return;
 }
 
-IVM_INLINE
 void
-ivm_collector_init(ivm_collector_t *col)
-{
-	col->live_ratio = 0;
-	col->skip_time = 0;
-	col->bc_weight = IVM_DEFAULT_GC_BC_WEIGHT;
-	
-	ivm_destruct_list_init(&col->des_log[0]);
-	ivm_destruct_list_init(&col->des_log[1]);
-	
-	ivm_wbobj_list_init(&col->wb_obj);
-	ivm_wbslot_list_init(&col->wb_slot);
-	ivm_wbctx_list_init(&col->wb_ctx);
-	
-	col->gen = 0;
-
-	return;
-}
+ivm_collector_init(ivm_collector_t *col);
 
 void
 ivm_collector_free(ivm_collector_t *collector,
 				   struct ivm_vmstate_t_tag *state);
 
-IVM_INLINE
 void
 ivm_collector_dump(ivm_collector_t *collector,
-				   struct ivm_vmstate_t_tag *state)
-{
-	if (collector) {
-		ivm_collector_triggerAllDestructor(collector, state);
-		
-		ivm_destruct_list_dump(&collector->des_log[0]);
-		ivm_destruct_list_dump(&collector->des_log[1]);
-
-		ivm_wbobj_list_dump(&collector->wb_obj);
-		ivm_wbslot_list_dump(&collector->wb_slot);
-		ivm_wbctx_list_dump(&collector->wb_ctx);
-	}
-
-	return;
-}
+				   struct ivm_vmstate_t_tag *state);
 
 /* only objects in destructor log will be 'informed' when being destructed */
 #define ivm_collector_addDesLog(collector, obj) (ivm_destruct_list_add((collector)->des_log, (obj)))

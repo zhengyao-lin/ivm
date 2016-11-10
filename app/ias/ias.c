@@ -188,7 +188,8 @@ int main(int argc, const char **argv)
 			ivm_perf_startProfile();
 		}
 
-		ivm_vmstate_schedule(state);
+		// ivm_vmstate_schedule(state);
+		ivm_vmstate_resumeCurCoro(state, IVM_NULL);
 
 		if (cfg_prof) {
 			ivm_perf_stopProfile();
@@ -196,8 +197,8 @@ int main(int argc, const char **argv)
 		}
 	}
 
-	ivm_exec_unit_free(unit);
 	ivm_vmstate_free(state);
+	ivm_exec_unit_free(unit);
 	ivm_file_free(src_file);
 	ivm_file_free(cache_file);
 	ivm_file_free(output_cache);
