@@ -47,8 +47,6 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	IVM_MEMCHECK(ret);
 
-	ret->intr = IVM_FALSE;
-
 	for (i = 0; i < IVM_ARRLEN(ret->heaps); i++) {
 		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);
 	}

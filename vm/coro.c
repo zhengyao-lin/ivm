@@ -194,6 +194,17 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 	return;
 }
 
+IVM_PRIVATE
+ivm_coro_int_t
+_coro_int_flag = IVM_CORO_INT_NONE;
+
+void
+ivm_coro_setInt(ivm_coro_int_t flag)
+{
+	_coro_int_flag = flag;
+	return;
+}
+
 #define ivm_coro_kill(coro, state) \
 	(coro)->alive = IVM_FALSE;
 
@@ -202,10 +213,10 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 #define IVM_REG // register
 
 ivm_object_t *
-ivm_coro_resume_c(ivm_coro_t *coro,
-				  ivm_vmstate_t *state,
-				  ivm_object_t *arg,
-                  ivm_bool_t get_opcode_entry)
+ivm_coro_execute_c(ivm_coro_t *coro,
+				   ivm_vmstate_t *state,
+				   ivm_object_t *arg,
+                   ivm_bool_t get_opcode_entry)
 {
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -416,7 +427,7 @@ ivm_coro_resume(ivm_coro_t *coro,
 
 	ivm_vmstate_pushCurCoro(state, coro);
 
-	ret = ivm_coro_resume_c(coro, state, arg, IVM_FALSE);
+	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
 
 	ivm_vmstate_setCurCoro(state, orig);
 
@@ -494,6 +505,7 @@ ivm_coro_object_cloner(ivm_object_t *obj,
 	return;
 }
 
+/*
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  ivm_traverser_arg_t *arg)
@@ -504,70 +516,4 @@ ivm_coro_object_traverser(ivm_object_t *obj,
 	
 	return;
 }
-
-#if 0
-
-void
-ivm_cgroup_travAndCompact(ivm_cgroup_t *group,
-						  ivm_traverser_arg_t *arg)
-{
-	ivm_size_t ocur = group->cur,
-			   ncur = 0, i = 0;
-	ivm_coro_list_iterator_t cur_iter, citer;
-	ivm_coro_t *tmp_coro;
-	ivm_bool_t cur_set = IVM_FALSE;
-
-	cur_iter = IVM_CORO_LIST_ITER_BEGIN(&group->coros);
-	IVM_CORO_LIST_EACHPTR(&group->coros, citer) {
-		tmp_coro = IVM_CORO_LIST_ITER_GET(citer);
-		
-		if (ivm_coro_isAlive(tmp_coro)) {
-			arg->trav_coro(tmp_coro, arg);
-			IVM_CORO_LIST_ITER_SET(cur_iter, tmp_coro);
-			if (i == ocur) {
-				cur_set = IVM_TRUE;
-				group->cur = ncur;
-			}
-			cur_iter++;
-			ncur++;
-		} else {
-			ivm_coro_free(tmp_coro, arg->state);
-		}
-
-		i++;
-	}
-	ivm_coro_list_setSize(&group->coros, ncur);
-
-	IVM_ASSERT(cur_set || !ocur, "impossible");
-
-	return;
-}
-
-ivm_bool_t
-ivm_cgroup_switchCoro(ivm_cgroup_t *group)
-{
-	ivm_coro_list_iterator_t i, end;
-	ivm_coro_list_t *list = &group->coros;
-
-	for (i = IVM_CORO_LIST_ITER_AT(list, group->cur + 1),
-		 end = IVM_CORO_LIST_ITER_END(list);
-		 i != end; i++) {
-		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
-			group->cur = IVM_CORO_LIST_ITER_INDEX(list, i);
-			return IVM_TRUE;
-		}
-	}
-
-	for (end = i,
-		 i = IVM_CORO_LIST_ITER_BEGIN(list);
-		 i != end; i++) {
-		if (ivm_coro_isAlive(IVM_CORO_LIST_ITER_GET(i))) {
-			group->cur = IVM_CORO_LIST_ITER_INDEX(list, i);
-			return IVM_TRUE;
-		}
-	}
-
-	return IVM_FALSE;
-}
-
-#endif
+*/

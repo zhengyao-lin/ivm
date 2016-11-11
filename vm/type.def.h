@@ -121,7 +121,7 @@ TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
 
 }, .des = ivm_coro_object_destructor,
    .clone = ivm_coro_object_cloner,
-   .trav = ivm_coro_object_traverser,
+   // .trav = ivm_coro_object_traverser,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),

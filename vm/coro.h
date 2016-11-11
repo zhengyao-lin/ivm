@@ -38,6 +38,11 @@ typedef enum {
 	IVM_CORO_ACTION_OP_ALT
 } ivm_coro_action_t;
 
+typedef enum {
+	IVM_CORO_INT_NONE = 0,
+	IVM_CORO_INT_GC
+} ivm_coro_int_t;
+
 #define IVM_CORO_GET_STACK(coro) (&(coro)->stack)
 #define IVM_CORO_GET_FRAME_STACK(coro) (&(coro)->frame_st)
 #define IVM_CORO_GET_RUNTIME(coro) (&(coro)->runtime)
@@ -92,20 +97,23 @@ ivm_coro_printException(ivm_coro_t *coro,
 	}
 
 ivm_object_t *
-ivm_coro_resume_c(ivm_coro_t *coro,
-				  struct ivm_vmstate_t_tag *state,
-				  ivm_object_t *arg,
-				  ivm_bool_t get_opcode_entry);
+ivm_coro_execute_c(ivm_coro_t *coro,
+				   struct ivm_vmstate_t_tag *state,
+				   ivm_object_t *arg,
+				   ivm_bool_t get_opcode_entry);
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
 	#define ivm_coro_getOpcodeEntry() \
-		((void **)ivm_coro_resume_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
+		((void **)ivm_coro_execute_c(IVM_NULL, IVM_NULL, IVM_NULL, IVM_TRUE))
 #endif
 
 ivm_object_t *
 ivm_coro_resume(ivm_coro_t *coro,
 				struct ivm_vmstate_t_tag *state,
 				ivm_object_t *arg);
+
+void
+ivm_coro_setInt(ivm_coro_int_t flag);
 
 void
 ivm_coro_setRoot(ivm_coro_t *coro,
@@ -279,9 +287,11 @@ void
 ivm_coro_object_cloner(ivm_object_t *obj,
 					   struct ivm_vmstate_t_tag *state);
 
+/*
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  struct ivm_traverser_arg_t_tag *arg);
+*/
 
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;

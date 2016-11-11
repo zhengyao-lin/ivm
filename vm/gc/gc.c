@@ -394,6 +394,8 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_frame_stack_iterator_t fiter;
 	ivm_object_t **i, **sp;
 
+	// IVM_TRACE("%p\n", coro);
+
 	ivm_coro_setWB(coro, IVM_FALSE);
 
 	if (runtime) {
@@ -431,10 +433,15 @@ ivm_collector_travState(ivm_vmstate_t *state,
 {
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
 	ivm_type_list_iterator_t titer;
+	ivm_coro_t *cur_coro;
 
 	// ivm_vmstate_travAndCompactCGroup(state, arg);
 
-	ivm_collector_travCoro(ivm_vmstate_curCoro(state), arg);
+	cur_coro = ivm_vmstate_curCoro(state);
+	if (!ivm_coro_getWB(cur_coro)) {
+		// prevent duplicated traversing
+		ivm_collector_travCoro(cur_coro, arg);
+	}
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
@@ -562,8 +569,8 @@ ivm_collector_collect(ivm_collector_t *collector,
 
 	// IVM_TRACE("***collecting*** %d\n", arg.gen);
 
-	ivm_collector_checkWriteBarrier(collector, &arg);
 	ivm_collector_travState(state, &arg);
+	ivm_collector_checkWriteBarrier(collector, &arg);
 
 	if (arg.gen) {
 		tmp_ratio = IVM_HEAP_GET(swap, BLOCK_USED) * 100 /

@@ -12,7 +12,7 @@ set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
 
 if(NOT CMAKE_C_COMPILER MATCHES "icc")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-value")

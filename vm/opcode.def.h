@@ -1230,3 +1230,19 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 		NEXT_INSTR_NINT();
 	}
 })
+
+OPCODE_GEN(INTR, "intr", N, 0, {
+	switch (_coro_int_flag) {
+		case IVM_CORO_INT_GC:
+			ivm_vmstate_doGC(_STATE);
+			break;
+		case IVM_CORO_INT_NONE: break;
+		default: {
+			RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_coro_int_flag));
+		}
+	}
+
+	ivm_coro_setInt(IVM_CORO_INT_NONE);
+
+	INT_RET();
+})

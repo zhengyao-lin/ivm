@@ -1,3 +1,17 @@
+
+testo = {}
+
+another = fork: {
+	for i in range(100000): none
+	testo.val = 10
+}
+
+c0 = fork: {
+	print([ testo, resume another, 1 ][0].val)
+}
+
+resume c0
+
 c1 = fork fn a: {
 	print("arg: " + a)
 	print("hi")
@@ -46,6 +60,7 @@ print("hi?")
 
 ret
 
+// -> "num: 10"
 // -> "str: huh\\?"
 // -> "str: arg: 1"
 // -> "str: hi"
