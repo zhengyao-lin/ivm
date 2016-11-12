@@ -830,11 +830,17 @@ OPCODE_GEN(YIELD, "yield", N, 0, {
 	YIELD();
 })
 
+/*
+	top
+	------------------
+	|  coro  |  arg  |
+	------------------
+ */
 OPCODE_GEN(RESUME, "resume", N, -1, {
 	CHECK_STACK(2);
 
-	_TMP_OBJ2 = STACK_POP();
 	_TMP_OBJ1 = STACK_POP();
+	_TMP_OBJ2 = STACK_TOP();
 
 	// IVM_TRACE("what?\n");
 
@@ -857,6 +863,7 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 	_TMP_OBJ1 = ivm_coro_resume(_TMP_CORO, _STATE, _TMP_OBJ1);
 
 	UPDATE_RUNTIME();
+	STACK_POP();
 	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
 
 	NEXT_INSTR();
@@ -1232,17 +1239,17 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 })
 
 OPCODE_GEN(INTR, "intr", N, 0, {
-	switch (_coro_int_flag) {
+	_TMP_INT = _ivm_coro_popInt();
+
+	switch (_TMP_INT) {
 		case IVM_CORO_INT_GC:
 			ivm_vmstate_doGC(_STATE);
 			break;
 		case IVM_CORO_INT_NONE: break;
 		default: {
-			RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_coro_int_flag));
+			RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_TMP_INT));
 		}
 	}
-
-	ivm_coro_setInt(IVM_CORO_INT_NONE);
 
 	INT_RET();
 })

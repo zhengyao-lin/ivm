@@ -182,13 +182,14 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 			break;
 
 		case ILANG_GEN_INTR_RESUME:
+			intr->val->eval(intr->val, FLAG(0), env);
+			
 			if (intr->with) {
 				intr->with->eval(intr->with, FLAG(0), env);
 			} else {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
 			}
 
-			intr->val->eval(intr->val, FLAG(0), env);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), RESUME);
 
 			if (flag.is_top_level) {

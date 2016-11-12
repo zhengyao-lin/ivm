@@ -1,4 +1,11 @@
 
+f = fn: print("yeah")
+
+resume fork: {
+	for i in range(1000000): none
+	f()
+}
+
 testo = {}
 
 another = fork: {
@@ -60,6 +67,7 @@ print("hi?")
 
 ret
 
+// -> "str: yeah"
 // -> "num: 10"
 // -> "str: huh\\?"
 // -> "str: arg: 1"

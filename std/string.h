@@ -44,10 +44,6 @@ ivm_char_t *
 ivm_strdup(const ivm_char_t *src);
 
 ivm_char_t *
-ivm_strdup_state(const ivm_char_t *src,
-				 struct ivm_vmstate_t_tag *state);
-
-ivm_char_t *
 ivm_strdup_heap(const ivm_char_t *src,
 				ivm_heap_t *heap);
 

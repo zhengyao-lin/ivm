@@ -61,7 +61,7 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (!_coro_int_flag) {                            \
+	if (!_ivm_coro_hasInt()) {                        \
 		goto *(ivm_instr_entry(tmp_ip));              \
 	} else {                                          \
 		SAVE_STACK();                                 \
@@ -70,7 +70,7 @@
 	}                                                 \
 
 #define NEXT_INSTR() \
-	if (!_coro_int_flag) {                            \
+	if (!_ivm_coro_hasInt()) {                        \
 		goto *(ivm_instr_entry(++tmp_ip));            \
 	} else {                                          \
 		SAVE_STACK();                                 \
@@ -400,6 +400,7 @@
 // #define _TMP_CGID (tmp_cgid)
 #define _TMP_CORO (tmp_coro)
 #define _TMP_BOOL (tmp_bool)
+#define _TMP_INT (tmp_int)
 #define _USE_REG (use_reg)
 
 #endif

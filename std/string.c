@@ -1,5 +1,4 @@
 #include "pub/err.h"
-#include "pub/vm.h"
 #include "pub/type.h"
 
 #include "mem.h"
@@ -32,22 +31,6 @@ ivm_strdup(const ivm_char_t *src)
 	IVM_MEMCHECK(ret);
 
 	STD_MEMCPY(ret, src, size);
-
-	return ret;
-}
-
-ivm_char_t *
-ivm_strdup_state(const ivm_char_t *src,
-				 ivm_vmstate_t *state)
-{
-	ivm_size_t size;
-	ivm_char_t *ret = IVM_NULL;
-
-	if (src) {
-		size = sizeof(ivm_char_t) * (IVM_STRLEN(src) + 1);
-		ret = ivm_vmstate_alloc(state, size);
-		STD_MEMCPY(ret, src, size);
-	}
 
 	return ret;
 }
