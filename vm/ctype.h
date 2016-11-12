@@ -46,8 +46,6 @@ typedef ivm_uint8_t				ivm_byte_t;
 
 typedef ivm_int_t				ivm_type_tag_t;
 
-typedef ivm_double_t			ivm_number_t;
-
 #define IVM_NUMBER_MAX			(DBL_MAX + DBL_MAX)
 
 typedef ivm_size_t				ivm_function_id_t;
@@ -109,14 +107,26 @@ typedef struct ivm_object_t_tag *
 						 struct ivm_context_t_tag *,
 						 ivm_function_arg_t);
 
-// if the double is accurate(can be converted into long without the loss of precision)
+// if the double can be converted into long without the loss of precision)
 IVM_INLINE
 ivm_bool_t
 IVM_DOUBLE_ACC(ivm_double_t num)
 {
-	return (num <= 0x1fffffffffffffl || num >= -0x1fffffffffffffl)
+	return (num <= 0x1fffffffffffffl && num >= -0x1fffffffffffffl)
 		   && (num - (ivm_long_t)num == 0);
 }
+
+// if the double can be converted to long without overflow
+IVM_INLINE
+ivm_bool_t
+IVM_DOUBLE_NOOVERFLOW(ivm_double_t num)
+{
+	return num <= 0x1fffffffffffffl && num >= -0x1fffffffffffffl;
+}
+
+typedef ivm_double_t ivm_number_t;
+
+#define ivm_number_canbeLong(num) IVM_DOUBLE_NOOVERFLOW(num)
 
 #define IVM_GET(obj, type, member) (IVM_NULL, type##_GET_##member(obj))
 #define IVM_SET(obj, type, member, val) (type##_SET_##member((obj), (val)))

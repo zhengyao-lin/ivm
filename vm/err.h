@@ -122,6 +122,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_RESUME_EMPTY_CORO							"cannot resume uninitialized coroutine"
 #define IVM_ERROR_MSG_RESUME_DEAD_CORO(coro)					"cannot resume dead coroutine %p", (void *)(coro)
 #define IVM_ERROR_MSG_BAD_INT_FLAG(flag)						"bad int flag %d", (flag)
+#define IVM_ERROR_MSG_TO_LONG_OVERFLOW(num)						"converting number %f to integer will cause overflow", (num)
 
 IVM_COM_END
 

@@ -131,6 +131,7 @@ _ivm_list_object_expand(ivm_list_object_t *list,
 	return IVM_TRUE;
 }
 
+/* return 0 if error */
 IVM_INLINE
 ivm_size_t
 ivm_list_object_push(ivm_list_object_t *list,
@@ -196,15 +197,14 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 	return IVM_TRUE;
 }
 
+/* return NULL if error */
 IVM_INLINE
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,
 					ivm_vmstate_t *state,
-					ivm_long_t i,
+					ivm_size_t i,
 					ivm_object_t *obj)
 {
-	i = ivm_list_object_realIndex(list, i);
-
 	if (i >= list->size) {
 		if (!_ivm_list_object_expandTo(list, state, i + 1)) {
 			return IVM_NULL;
@@ -216,6 +216,7 @@ ivm_list_object_set(ivm_list_object_t *list,
 	return (list->lst[i] = obj) ? obj : IVM_NONE(state);
 }
 
+/* return false if error */
 IVM_INLINE
 ivm_bool_t
 ivm_list_object_multiply(ivm_list_object_t *list,

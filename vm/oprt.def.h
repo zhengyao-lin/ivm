@@ -166,9 +166,13 @@ BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, IVM_FALSE, {
 })
 
 TRIOP_GEN(IVM_LIST_OBJECT_T, IDXA, IVM_NUMERIC_T, {
+	ivm_number_t idx = ivm_numeric_getValue(_OP2);
+
+	OPRT_ASSERT(ivm_number_canbeLong(idx), IVM_ERROR_MSG_TO_LONG_OVERFLOW(idx));
+
 	if (!ivm_list_object_set(
 		IVM_AS(_OP1, ivm_list_object_t),
-		_STATE, ivm_numeric_getValue(_OP2), _OP3
+		_STATE, idx, _OP3
 	)) return IVM_NULL;
 
 	return _OP3 ? _OP3 : IVM_NONE(_STATE);

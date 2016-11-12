@@ -1,7 +1,7 @@
 
 import ulist
 
-loc big_num = 1000000000000
+loc big_num = 100000000000000000
 
 try: a = [ 1 ] * big_num
 catch: print("wrong1")
