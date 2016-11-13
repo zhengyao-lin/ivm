@@ -20,8 +20,15 @@
 ivm_collector_t *
 ivm_collector_new()
 {
-	ivm_collector_t *ret = STD_ALLOC(sizeof(*ret));
+	ivm_collector_t *ret;
 
+	/* cid update delay should not be later than the maximum delay of complete GC */
+	IVM_IMPORTANT(
+		(~(ivm_uint_t)0) > (IVM_DEFAULT_MAX_STD_LIMIT / sizeof(ivm_object_t)),
+		IVM_ERROR_MSG_MAX_CID_DELAY(IVM_DEFAULT_MAX_STD_LIMIT / sizeof(ivm_object_t))
+	);
+
+	ret = STD_ALLOC(sizeof(*ret));
 	IVM_MEMCHECK(ret);
 
 	ret->live_ratio = 0;
@@ -392,14 +399,18 @@ void
 ivm_collector_travCoro(ivm_coro_t *coro,
 					   ivm_traverser_arg_t *arg)
 {
-	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
-	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);
-	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
+	ivm_vmstack_t *stack;
+	ivm_frame_stack_t *frame_st;
+	ivm_runtime_t *runtime;
 	ivm_frame_stack_iterator_t fiter;
 	ivm_object_t **i, **sp;
 
 	// prevent duplicated traversing
 	if (ivm_coro_checkCID(coro, arg->cid)) return;
+
+	stack = IVM_CORO_GET(coro, STACK);
+	frame_st = IVM_CORO_GET(coro, FRAME_STACK);
+	runtime = IVM_CORO_GET(coro, RUNTIME);
 
 	// IVM_TRACE("trav coro: %p\n", coro);
 

@@ -14,6 +14,12 @@ IVM_COM_HEADER
 	fprintf(IVM_STDERR, __VA_ARGS__); \
 	fputc('\n', IVM_STDERR);
 
+#define IVM_IMPORTANT(cond, ...) \
+	if (IVM_UNLIKELY(!(cond))) { \
+		IVM_ERROR(__VA_ARGS__); \
+		IVM_ABORT(); \
+	}
+
 #define IVM_MEMCHECK(ptr) \
 	if (!ptr) { \
 		fprintf(IVM_STDERR, "at %s: line %d: memory error\n", __FILE__, __LINE__); \
@@ -123,6 +129,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_RESUME_DEAD_CORO(coro)					"cannot resume dead coroutine %p", (void *)(coro)
 #define IVM_ERROR_MSG_BAD_INT_FLAG(flag)						"bad int flag %d", (flag)
 #define IVM_ERROR_MSG_TO_LONG_OVERFLOW(num)						"converting number %f to integer will cause overflow", (num)
+#define IVM_ERROR_MSG_MAX_CID_DELAY(expect)						"maximum collecting id delay reached(should be greater than %ld)", (expect)
 
 IVM_COM_END
 
