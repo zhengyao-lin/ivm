@@ -54,7 +54,7 @@ fp.write("hello, world")
 fp.seek()
 print(fp.read())
 
-io.remove("test/text3")
+// io.remove("test/text3")
 
 // io.stdout.write("hey\n")
 // io.stderr.write("no line buffer")
@@ -63,8 +63,8 @@ io.remove("test/text3")
 try: io.stdin.write("no")
 catch: print("of course")
 
-print(io.stdin.len())
-print(io.stdin.cur())
+// print(io.stdin.len())
+// print(io.stdin.cur())
 
 // a = io.stdin.read()
 // print(a)
@@ -99,5 +99,5 @@ ret
 // -> "str: hello, world"
 // -> "str: of course"
 
-// -> "num: -1"
-// -> "num: -1"
+// nop -> "num: -1"
+// nop -> "num: -1"

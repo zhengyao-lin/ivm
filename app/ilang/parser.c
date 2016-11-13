@@ -542,6 +542,7 @@ struct rule_val_t {
 		ilang_gen_expr_t *expr;
 		ilang_gen_expr_list_t *expr_list;
 		ilang_gen_token_value_list_t *token_list;
+		ilang_gen_token_value_t token;
 		ilang_gen_table_entry_t slot;
 		ilang_gen_table_entry_list_t *slot_list;
 		ilang_gen_param_t param;
@@ -560,6 +561,8 @@ struct env_t {
 };
 
 #define R EXPECT_RULE
+#define R_LIST EXPECT_RULE_LIST
+
 #define T EXPECT_TOKEN
 #define T_OPT EXPECT_TOKEN_OPT
 
@@ -581,29 +584,13 @@ RULE(sep)
 }
 
 /*
-	sep_list_sub
-		: sep sep_list_sub
-		| %empty
- */
-RULE(sep_list_sub)
-{
-	SUB_RULE_SET(
-		SUB_RULE(R(sep) R(sep_list_sub))
-		SUB_RULE()
-	);
-
-	FAILED({})
-	MATCHED({})
-}
-
-/*
 	sep_list
-		: sep sep_list_sub
+		: list(sep)
  */
 RULE(sep_list)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(sep) R(sep_list_sub))
+		SUB_RULE(R_LIST(sep, {}))
 	);
 
 	FAILED({})
@@ -612,13 +599,13 @@ RULE(sep_list)
 
 /*
 	sep_list_opt
-		: sep sep_list_sub
+		: list(sep)
 		| %empty
  */
 RULE(sep_list_opt)
 {
 	SUB_RULE_SET(
-		SUB_RULE(R(sep) R(sep_list_sub))
+		SUB_RULE(R_LIST(sep, {}))
 		SUB_RULE()
 	);
 
@@ -627,15 +614,13 @@ RULE(sep_list_opt)
 }
 
 /*
-	newl_list_sub
-		: newl newl_list_sub
-		| %empty
+	newl_list_single
+		: newl
  */
-RULE(newl_list_sub)
+RULE(newl_list_single)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_NEWL) R(newl_list_sub))
-		SUB_RULE()
+		SUB_RULE(T(T_NEWL))
 	);
 
 	FAILED({})
@@ -644,13 +629,13 @@ RULE(newl_list_sub)
 
 /*
 	nllo
-		: newl newl_list_sub
+		: list(newl_list_single)
 		| %empty
  */
 RULE(nllo)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_NEWL) R(newl_list_sub))
+		SUB_RULE(R_LIST(newl_list_single, {}))
 		SUB_RULE()
 	);
 
@@ -740,25 +725,45 @@ RULE(slot)
 }
 
 /*
+	slot_list_single
+		: ',' nllo slot
+ */
+RULE(slot_list_single)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(nllo) R(slot) R(nllo)
+		{
+			_RETVAL.slot = RULE_RET_AT(1).u.slot;
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	slot_list_sub
-		: ',' slot slot_list_sub
+		: list(slot_list_single)
 		| %empty
  */
 RULE(slot_list_sub)
 {
+	ilang_gen_table_entry_list_t *tmp_list = IVM_NULL;
 	ilang_gen_table_entry_t tmp_entry;
-	ilang_gen_table_entry_list_t *tmp_list;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(nllo) R(slot) R(nllo) R(slot_list_sub)
-		{
-			tmp_list
-			= _RETVAL.slot_list
-			= RULE_RET_AT(3).u.slot_list;
-			tmp_entry = RULE_RET_AT(1).u.slot;
+		SUB_RULE(R_LIST(slot_list_single, {
+			if (!tmp_list) {
+				tmp_list = ilang_gen_table_entry_list_new(_ENV->unit);
+			}
 
+			tmp_entry = RULE_RET_AT(0).u.slot;
 			ilang_gen_table_entry_list_push(tmp_list, &tmp_entry);
+		}) {
+			ilang_gen_table_entry_list_reverse(tmp_list);
+			_RETVAL.slot_list = tmp_list;
 		})
+
 		SUB_RULE({
 			_RETVAL.slot_list = ilang_gen_table_entry_list_new(_ENV->unit);
 		})
@@ -799,24 +804,43 @@ RULE(slot_list_opt)
 }
 
 /*
+	mod_name_single
+		: '.' nllo id
+ */
+RULE(mod_name_single)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_DOT) R(nllo) T(T_ID)
+		{
+			_RETVAL.token = TOKEN_VAL(TOKEN_AT(1));
+		})
+	)
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	mod_name_sub:
-		: '.' nllo id mod_name_sub
+		: list(mod_name_single)
 		| %empty
  */
 RULE(mod_name_sub)
 {
-	ilang_gen_token_value_list_t *tokens;
+	ilang_gen_token_value_list_t *tokens = IVM_NULL;
 	ilang_gen_token_value_t tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(mod_name_sub)
-		{
-			tokens
-			= _RETVAL.token_list
-			= RULE_RET_AT(1).u.token_list;
-			tmp_token = TOKEN_VAL(TOKEN_AT(1));
+		SUB_RULE(R_LIST(mod_name_single, {
+			if (!tokens) {
+				tokens = ilang_gen_token_value_list_new(_ENV->unit);
+			}
 
+			tmp_token = RULE_RET_AT(0).u.token;
 			ilang_gen_token_value_list_push(tokens, &tmp_token);
+		}) {
+			ilang_gen_token_value_list_reverse(tokens);
+			_RETVAL.token_list = tokens;
 		})
 
 		SUB_RULE({
@@ -1169,28 +1193,47 @@ RULE(arg)
 }
 
 /*
-	arg_list_sub
-		: nllo ',' nllo prefix_expr arg_list_sub
-		| %empty
+	arg_list_single
+		: nllo ',' nllo arg
+		| nllo ',' nllo
  */
-RULE(prefix_expr);
-RULE(arg_list_sub)
+RULE(arg_list_single)
 {
-	ilang_gen_expr_list_t *tmp_list;
-	struct rule_val_t tmp_ret;
-
 	SUB_RULE_SET(
-		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(arg) R(arg_list_sub)
+		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(arg)
 		{
-			tmp_ret = RULE_RET_AT(2);
-			tmp_list = _RETVAL.expr_list = RULE_RET_AT(3).u.expr_list;
-			ilang_gen_expr_list_push(tmp_list, tmp_ret.u.expr);
+			_RETVAL.expr = RULE_RET_AT(2).u.expr;
 		})
 
-		SUB_RULE(R(nllo) T(T_COMMA) R(nllo) R(arg_list_sub)
+		SUB_RULE(R(nllo) T(T_COMMA) R(nllo)
 		{
-			tmp_list = _RETVAL.expr_list = RULE_RET_AT(2).u.expr_list;
-			ilang_gen_expr_list_push(tmp_list, NONE_EXPR());
+			_RETVAL.expr = NONE_EXPR();
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
+	arg_list_sub
+		: list(arg_list_single)
+		| %empty
+ */
+RULE(arg_list_sub)
+{
+	ilang_gen_expr_list_t *tmp_list = IVM_NULL;
+
+	SUB_RULE_SET(
+		SUB_RULE(R_LIST(arg_list_single, {
+			if (!tmp_list) {
+				tmp_list = ilang_gen_expr_list_new(_ENV->unit);
+			}
+
+			ilang_gen_expr_list_push(tmp_list, RULE_RET_AT(0).u.expr);
+		}) {
+			ilang_gen_expr_list_reverse(tmp_list);
+			_RETVAL.expr_list = tmp_list;
 		})
 
 		SUB_RULE({
@@ -1204,7 +1247,8 @@ RULE(arg_list_sub)
 
 /*
 	arg_list_opt
-		: prefix_expr arg_list_sub
+		: arg arg_list_sub
+		| arg_list_sub
 		| %empty
  */
 RULE(arg_list_opt)
@@ -3039,27 +3083,41 @@ RULE(prefix_expr)
 }
 
 /*
+	comma_expr_single
+		: ',' nllo prefix_expr
+ */
+RULE(comma_expr_single)
+{
+	SUB_RULE_SET(
+		SUB_RULE(T(T_COMMA) R(nllo) R(prefix_expr)
+		{
+			_RETVAL.expr = RULE_RET_AT(1).u.expr;
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	comma_expr_sub
-		: ',' prefix_expr comma_expr_sub
+		: list(comma_expr_single)
 		| %empty
  */
 RULE(comma_expr_sub)
 {
-	ilang_gen_expr_list_t *tmp_expr_list;
+	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_COMMA) R(nllo) R(prefix_expr) R(comma_expr_sub)
-		{
-			tmp_expr_list
-			= RULE_RET_AT(2).u.expr_list;
-
-			if (tmp_expr_list) {
-				_RETVAL.expr_list = tmp_expr_list;
-				ilang_gen_expr_list_push(tmp_expr_list, RULE_RET_AT(1).u.expr);
-			} else {
-				tmp_expr_list = _RETVAL.expr_list = ilang_gen_expr_list_new(_ENV->unit);
-				ilang_gen_expr_list_push(tmp_expr_list, RULE_RET_AT(1).u.expr);
+		SUB_RULE(R_LIST(comma_expr_single, {
+			if (!tmp_expr_list) {
+				tmp_expr_list = ilang_gen_expr_list_new(_ENV->unit);
 			}
+
+			ilang_gen_expr_list_push(tmp_expr_list, RULE_RET_AT(0).u.expr);
+		}) {
+			ilang_gen_expr_list_reverse(tmp_expr_list);
+			_RETVAL.expr_list = tmp_expr_list;
 		})
 
 		SUB_RULE({
@@ -3124,29 +3182,51 @@ RULE(expr)
 }
 
 /*
+	expr_list_single
+		: sep_list expr
+		| sep_list
+ */
+RULE(expr_list_single)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(sep_list) CLEAR_ERR() R(expr)
+		{
+			_RETVAL.expr = RULE_RET_AT(1).u.expr;
+		})
+
+		SUB_RULE(R(sep_list)
+		{
+			_RETVAL.expr = IVM_NULL;
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	expr_list_sub
-		: sep_list expr expr_list_sub
+		: list(expr_list_single)
 		| %empty
  */
 RULE(expr_list_sub)
 {
-	ilang_gen_expr_list_t *tmp_expr_list;
+	ilang_gen_expr_list_t *tmp_expr_list = IVM_NULL;
+	ilang_gen_expr_t *tmp_expr;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(sep_list) CLEAR_ERR() R(expr)
-				 DBB(IVM_TRACE("********* expr matched *********\n"))
-				 R(expr_list_sub)
-		{
-			tmp_expr_list
-			= _RETVAL.expr_list
-			= RULE_RET_AT(2).u.expr_list;
+		SUB_RULE(R_LIST(expr_list_single, {
+			if (!tmp_expr_list) {
+				tmp_expr_list = ilang_gen_expr_list_new(_ENV->unit);
+			}
 
-			ilang_gen_expr_list_push(tmp_expr_list, RULE_RET_AT(1).u.expr);
-		})
-		
-		SUB_RULE(R(sep_list)
-		{
-			_RETVAL.expr_list = ilang_gen_expr_list_new(_ENV->unit);
+			tmp_expr = RULE_RET_AT(0).u.expr;
+			if (tmp_expr) {
+				ilang_gen_expr_list_push(tmp_expr_list, tmp_expr);
+			}
+		}) {
+			ilang_gen_expr_list_reverse(tmp_expr_list);
+			_RETVAL.expr_list = tmp_expr_list;
 		})
 
 		SUB_RULE({

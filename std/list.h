@@ -30,6 +30,46 @@ ivm_list_realIndex(ivm_long_t size,
 	return i;
 }
 
+IVM_INLINE
+void
+ivm_list_reverse_c(void *lst,
+				   ivm_size_t size,
+				   ivm_size_t esize)
+{
+	void *end = (void *)((ivm_ptr_t)lst + (size - 1) * esize);
+	ivm_byte_t tmp[esize];
+
+	while (end > lst) {
+		STD_MEMCPY(tmp, lst, esize);
+		STD_MEMCPY(lst, end, esize);
+		STD_MEMCPY(end, tmp, esize);
+
+		end = (void *)((ivm_ptr_t)end - esize);
+		lst = (void *)((ivm_ptr_t)lst + esize);
+	}
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_ptlist_reverse_c(void **lst, ivm_size_t size)
+{
+	void **end = lst + size - 1;
+	void **tmp;
+
+	while (end > lst) {
+		tmp = *lst;
+		*lst = *end;
+		*end = tmp;
+
+		end--;
+		lst++;
+	}
+
+	return;
+}
+
 typedef struct {
 	ivm_size_t alloc;
 	ivm_size_t cur;
@@ -69,6 +109,14 @@ ivm_ptlist_dump(ivm_ptlist_t *ptlist)
 #define ivm_ptlist_at(ptlist, i) ((ptlist)->lst[i])
 #define ivm_ptlist_ptrAt(ptlist, i) ((ptlist)->lst + (i))
 #define ivm_ptlist_set(ptlist, i, val) ((ptlist)->lst[i] = (val))
+
+IVM_INLINE
+void
+ivm_ptlist_reverse(ivm_ptlist_t *ptlist)
+{
+	ivm_ptlist_reverse_c(ptlist->lst, ptlist->cur);
+	return;
+}
 
 #define ivm_ptlist_core(ptlist) ((ptlist)->lst)
 
@@ -288,6 +336,14 @@ void *
 ivm_list_at(ivm_list_t *list, ivm_size_t i)
 {
 	return list->lst + (i * list->esize);
+}
+
+IVM_INLINE
+void
+ivm_list_reverse(ivm_list_t *list)
+{
+	ivm_list_reverse_c(list->lst, list->cur, list->esize);
+	return;
 }
 
 #define ivm_list_has(list, i) ((list)->cur > (i))

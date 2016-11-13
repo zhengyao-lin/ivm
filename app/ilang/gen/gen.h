@@ -205,6 +205,7 @@ ilang_gen_expr_list_new(ilang_gen_trans_unit_t *unit)
 #define ilang_gen_expr_list_pushFront ivm_ptlist_pushFront
 #define ilang_gen_expr_list_size ivm_ptlist_size
 #define ilang_gen_expr_list_at(list, i) ivm_ptlist_at((list), (i))
+#define ilang_gen_expr_list_reverse(list) ivm_ptlist_reverse(list)
 
 #define ILANG_GEN_EXPR_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define ILANG_GEN_EXPR_LIST_ITER_GET(iter) ((ilang_gen_expr_t *)IVM_PTLIST_ITER_GET(iter))
@@ -344,6 +345,7 @@ ilang_gen_token_value_list_new(ilang_gen_trans_unit_t *unit)
 
 #define ilang_gen_token_value_list_push ivm_list_push
 #define ilang_gen_token_value_list_size ivm_list_size
+#define ilang_gen_token_value_list_reverse ivm_list_reverse
 
 #define ILANG_GEN_TOKEN_VALUE_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ilang_gen_token_value_t)
 #define ILANG_GEN_TOKEN_VALUE_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_token_value_t)
@@ -394,6 +396,7 @@ ilang_gen_table_entry_list_new(ilang_gen_trans_unit_t *unit)
 
 #define ilang_gen_table_entry_list_push ivm_list_push
 #define ilang_gen_table_entry_list_size ivm_list_size
+#define ilang_gen_table_entry_list_reverse ivm_list_reverse
 
 #define ILANG_GEN_TABLE_ENTRY_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ilang_gen_table_entry_t)
 #define ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_table_entry_t)
