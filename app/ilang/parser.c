@@ -195,8 +195,8 @@ token_name_table[] = {
 };
 
 #define IVM_USE_COMMON_PARSER
-#define IVM_COMMON_DEBUG_MODE 1
-#define IVM_COMMON_MAX_TOKEN_RULE 40
+#define IVM_COMMON_PARSER_DEBUG_MODE 1
+#define IVM_COMMON_PARSER_MAX_TOKEN_RULE 40
 #define IVM_COMMON_PARSER_NAME "ilang"
 #include "util/parser.h"
 

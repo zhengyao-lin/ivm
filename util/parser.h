@@ -40,11 +40,11 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
  *    3. struct env_t (possessed by every rule handler)
  *
  * default settings:
- *    1. default max transition rule count: IVM_COMMON_MAX_TOKEN_RULE = 20
- *    2. default none token value: IVM_COMMON_TOKEN_NONE = 0(don't set any token to 0)
- *    3. default init state: IVM_COMMON_TOKEN_STATE_INIT = 0
- *    4. default unexpected state: IVM_COMMON_TOKEN_STATE_UNEXP = 1
- *    5. debug mode is closed in default: IVM_COMMON_DEBUG_MODE(not defined)
+ *    1. default max transition rule count: IVM_COMMON_PARSER_MAX_TOKEN_RULE = 20
+ *    2. default none token value: IVM_COMMON_PARSER_TOKEN_NONE = 0(don't set any token to 0)
+ *    3. default init state: IVM_COMMON_PARSER_TOKEN_STATE_INIT = 0
+ *    4. default unexpected state: IVM_COMMON_PARSER_TOKEN_STATE_UNEXP = 1
+ *    5. debug mode is closed in default: IVM_COMMON_PARSER_DEBUG_MODE(not defined)
  *
  * transition rule(only apply to single character):
  *    1. "=a": the char is 'a'
@@ -64,21 +64,27 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 	#error no parser name given
 #endif
 
-#ifndef IVM_COMMON_MAX_TOKEN_RULE
-	#define IVM_COMMON_MAX_TOKEN_RULE 20
+#ifndef IVM_COMMON_PARSER_MAX_TOKEN_RULE
+	#define IVM_COMMON_PARSER_MAX_TOKEN_RULE 20
 #endif
 
-#ifndef IVM_COMMON_TOKEN_NONE
-	#define IVM_COMMON_TOKEN_NONE 0
+#ifndef IVM_COMMON_PARSER_TOKEN_NONE
+	#define IVM_COMMON_PARSER_TOKEN_NONE 0
 #endif
 
-#ifndef IVM_COMMON_TOKEN_STATE_INIT
-	#define IVM_COMMON_TOKEN_STATE_INIT 0
+#ifndef IVM_COMMON_PARSER_TOKEN_STATE_INIT
+	#define IVM_COMMON_PARSER_TOKEN_STATE_INIT 0
 #endif
 
-#ifndef IVM_COMMON_TOKEN_STATE_UNEXP
-	#define IVM_COMMON_TOKEN_STATE_UNEXP 1
+#ifndef IVM_COMMON_PARSER_TOKEN_STATE_UNEXP
+	#define IVM_COMMON_PARSER_TOKEN_STATE_UNEXP 1
 #endif
+
+#ifndef IVM_COMMON_PARSER_MAX_RECUR_DEPTH
+	#define IVM_COMMON_PARSER_MAX_RECUR_DEPTH 1024
+#endif
+
+#include "setjmp.h"
 
 struct err_msg_t {
 	ivm_size_t line;
@@ -126,6 +132,11 @@ struct trans_entry_t {
 
 #define PARSER_ERR_L(l, ...) \
 	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld: ", (l)); \
+	IVM_TRACE(__VA_ARGS__); \
+	IVM_TRACE("\n");
+
+#define PARSER_ERR_C(...) \
+	IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: "); \
 	IVM_TRACE(__VA_ARGS__); \
 	IVM_TRACE("\n");
 
@@ -213,10 +224,10 @@ _ivm_parser_dumpToken_r(struct token_t *from, struct token_t *to) // [from, to)
 IVM_PRIVATE
 IVM_INLINE
 ivm_list_t *
-_ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IVM_COMMON_MAX_TOKEN_RULE])
+_ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IVM_COMMON_PARSER_MAX_TOKEN_RULE])
 {
 	ivm_list_t *ret = ivm_list_new(sizeof(struct token_t));
-	ivm_int_t state = IVM_COMMON_TOKEN_STATE_INIT;
+	ivm_int_t state = IVM_COMMON_PARSER_TOKEN_STATE_INIT;
 
 	const ivm_char_t *c = src;
 	ivm_char_t cur_c;
@@ -255,7 +266,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 
 					if (tmp_entry->ign) {
 						tmp_token = ((struct token_t) { .len = 0, .val = c + 1, .line = line, .pos = (ivm_ptr_t)c - col + 1 });
-					} else if (tmp_entry->save != IVM_COMMON_TOKEN_NONE) { // save to token stack
+					} else if (tmp_entry->save != IVM_COMMON_PARSER_TOKEN_NONE) { // save to token stack
 						if (tmp_entry->ext || tmp_entry->to_state == state)
 							tmp_token.len++;
 
@@ -283,7 +294,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 				state = tmp_entry->to_state;
 			} else {
 				PARSER_ERR_LP(line, (ivm_ptr_t)c - col + 1, PARSER_ERR_MSG_UNEXPECTED_CHAR(*c, state));
-				state = IVM_COMMON_TOKEN_STATE_UNEXP;
+				state = IVM_COMMON_PARSER_TOKEN_STATE_UNEXP;
 				c--;
 			}
 
@@ -291,7 +302,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 		} while (cur_c != '\0' || has_exc);
 	}
 
-	if (state != IVM_COMMON_TOKEN_STATE_INIT) {
+	if (state != IVM_COMMON_PARSER_TOKEN_STATE_INIT) {
 		PARSER_ERR_LP(line, (ivm_ptr_t)c - col + 1, PARSER_ERR_MSG_UNEXPECTED_ENDING(state));
 	}
 
@@ -307,11 +318,11 @@ FAILED_END:
 }
 
 /* tokenizer */
-#define TOKENIZE(src, ...) (_ivm_parser_tokenizer(src, (struct trans_entry_t [][IVM_COMMON_MAX_TOKEN_RULE]){ __VA_ARGS__ }))
+#define TOKENIZE(src, ...) (_ivm_parser_tokenizer(src, (struct trans_entry_t [][IVM_COMMON_PARSER_MAX_TOKEN_RULE]){ __VA_ARGS__ }))
 
 /* syntax parser */
 #define RULE_ARG \
-	struct env_t *__env__, struct rule_val_t *__ret__, ivm_list_t *__tokens__, ivm_size_t *__i__, struct err_msg_t *__last_err__, int __indent__
+	struct env_t *__env__, struct rule_val_t *__ret__, ivm_list_t *__tokens__, ivm_size_t *__i__, struct err_msg_t *__last_err__, jmp_buf __esc__, int __depth__
 
 #define MAX_RULE_COUNT 10
 #define MAX_TOK_COUNT 10
@@ -350,9 +361,6 @@ FAILED_END:
 
 #define CLEAR_ERR() *__last_err__ = (struct err_msg_t) { 0 };
 
-#define SHIFT(name, ret, ofs) \
-	(*__i__ += (ofs), RULE_NAME(name)(_ENV, (ret), _TOKEN, __i__))
-
 #define RESTORE_RULE() \
 	__reti__ = __rets__; \
 	__toki__ = __toks__; \
@@ -385,7 +393,7 @@ FAILED_END:
 	}
 
 #define EXPECT_RULE(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
+	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __esc__, __depth__ + 1))) { \
 		if (!__last_err__->line && __has_matched__ /* has matched token(s) */) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__ = ERR_MSG_R( \
@@ -400,7 +408,7 @@ FAILED_END:
 	}
 
 #define EXPECT_RULE_NORET(name) \
-	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
+	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__, _TOKEN, __i__, __last_err__, __esc__, __depth__ + 1))) { \
 		break; \
 	}
 
@@ -409,7 +417,7 @@ FAILED_END:
 	EXPECT_RULE(name); \
 	do { \
 		__VA_ARGS__; \
-		while (IS_SUC(RULE_NAME(name)(_ENV, __reti_back__, _TOKEN, __i__, __last_err__, __indent__ + 1))) { \
+		while (IS_SUC(RULE_NAME(name)(_ENV, __reti_back__, _TOKEN, __i__, __last_err__, __esc__, __depth__ + 1))) { \
 			__VA_ARGS__; \
 		} \
 	} while (0);
@@ -418,6 +426,10 @@ FAILED_END:
 #define TOKEN_AT(i) (__toks__[i])
 
 #define SUB_RULE_SET(...) \
+	if (__depth__ >= IVM_COMMON_PARSER_MAX_RECUR_DEPTH) { \
+		PARSER_ERR_C("maximum recursion depth reached"); \
+		longjmp(__esc__, 1); \
+	} \
 	ivm_size_t __i_back__ = *__i__; \
 	struct rule_val_t __rets__[MAX_RULE_COUNT]; \
 	struct rule_val_t *__reti__ = __rets__; \
@@ -467,7 +479,12 @@ FAILED_END:
 #define RULE_START(name, env, ret, tokens, suc) \
 	ivm_size_t __i__ = 0; \
 	struct err_msg_t __last_err__ = { 0 }; \
-	(suc) = RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__, 0) && __i__ == ivm_list_size(tokens);
+	jmp_buf __esc__; \
+	if (setjmp(__esc__)) { \
+		(suc) = IVM_FALSE; \
+	} else { \
+		(suc) = RULE_NAME(name)((env), (ret), (tokens), &__i__, &__last_err__, __esc__, 0) && __i__ == ivm_list_size(tokens); \
+	}
 
 #endif
 
