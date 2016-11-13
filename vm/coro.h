@@ -23,6 +23,7 @@ typedef struct ivm_coro_t_tag {
 	ivm_frame_stack_t frame_st;
 	ivm_runtime_t runtime;
 
+	ivm_int_t cid; // collect id
 	ivm_bool_t alive;
 	ivm_bool_t has_native;
 	ivm_bool_t active;
@@ -120,6 +121,8 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 				 struct ivm_vmstate_t_tag *state,
 				 ivm_function_object_t *root);
 
+#define ivm_coro_checkCID(coro, id) ((coro)->cid == (id))
+#define ivm_coro_setCID(coro, id) ((coro)->cid = (id))
 #define ivm_coro_isAlive(coro) ((coro)->alive)
 #define ivm_coro_isActive(coro) ((coro)->active)
 
@@ -287,11 +290,9 @@ void
 ivm_coro_object_cloner(ivm_object_t *obj,
 					   struct ivm_vmstate_t_tag *state);
 
-/*
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  struct ivm_traverser_arg_t_tag *arg);
-*/
 
 typedef ivm_ptlist_t ivm_coro_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;

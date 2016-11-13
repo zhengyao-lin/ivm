@@ -27,7 +27,9 @@
 		} else { \
 			INVOKE_STACK(); \
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */)); \
+ \
 			STACK_INC_C(_TMP_ARGC); \
+			SAVE_STACK(); \
  \
 			_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE); \
 			IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE); \
@@ -82,36 +84,38 @@
 	_TMP_FUNC = ivm_function_object_getFunc(IVM_AS(_TMP_OBJ1, ivm_function_object_t)); \
  \
 	SAVE_RUNTIME(_INSTR + 1); \
-\
+ \
 	_INSTR = ivm_function_invokeBase( \
 		_TMP_FUNC, _STATE, \
 		ivm_function_object_getScope( \
 			IVM_AS(_TMP_OBJ1, ivm_function_object_t) \
 		), _TMP_OBJ2, _BLOCK_STACK, _FRAME_STACK, _RUNTIME \
 	); \
-\
+ \
 	if (_INSTR) { \
 		INVOKE_STACK(); \
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, IVM_NULL)); \
 		STACK_INC_C(_TMP_ARGC); \
 		INVOKE(); \
 	} else { \
-		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */)); \
-\
 		INVOKE_STACK(); \
-\
+		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */)); \
+ \
+		STACK_INC_C(_TMP_ARGC + 1); \
+		SAVE_STACK(); \
+ \
 		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE); \
 		IVM_CORO_SET(_CORO, HAS_NATIVE, IVM_TRUE); \
-\
+ \
 		_TMP_OBJ1 = ivm_function_callNative( \
 			_TMP_FUNC, _STATE, _CORO, _CONTEXT, \
 			IVM_FUNCTION_SET_ARG_3(_TMP_OBJ2, _TMP_ARGC, _TMP_ARGV) \
 		); \
-\
+ \
 		UPDATE_STACK(); \
-\
+ \
 		IVM_CORO_SET(_CORO, HAS_NATIVE, _TMP_BOOL); \
-\
+ \
 		if (_TMP_OBJ1) { \
 			RETURN(); \
 		} else { \

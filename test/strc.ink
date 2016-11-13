@@ -12,7 +12,7 @@ s.unpack(buf).print()
 
 s = s.clone()
 
-for i in range(1000000): 1 // gc
+// for i in range(1000000): 1 // gc
 
 buf = s.pack(2147483648, 1.2, 2.0, 100000000000000, 256)
 s.unpack(buf).print()

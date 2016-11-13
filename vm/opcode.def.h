@@ -1239,6 +1239,11 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 })
 
 OPCODE_GEN(INTR, "intr", N, 0, {
+	if (IVM_GC_DBG) {
+		ivm_vmstate_doGC(_STATE);
+		INT_RET();
+	}
+
 	_TMP_INT = _ivm_coro_popInt();
 
 	switch (_TMP_INT) {

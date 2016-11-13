@@ -98,6 +98,7 @@ typedef struct ivm_collector_t_tag {
 	ivm_double_t bc_weight;
 	ivm_int_t live_ratio; // 0 - 100
 	
+	ivm_int_t cid; // collect id
 	ivm_int_t gen;
 } ivm_collector_t;
 
@@ -136,6 +137,7 @@ typedef struct ivm_traverser_arg_t_tag {
 					 struct ivm_traverser_arg_t_tag *arg);
 	void (*trav_coro)(struct ivm_coro_t_tag *coro,
 					  struct ivm_traverser_arg_t_tag *arg);
+	ivm_int_t cid;
 	ivm_int_t gen;
 } ivm_traverser_arg_t;
 

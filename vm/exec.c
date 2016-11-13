@@ -298,7 +298,8 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 			state, IVM_NULL, root
 		), ivm_function_object_t));
 
-		ivm_vmstate_pushCurCoro(state, coro);
+		ivm_vmstate_setMainCoro(state, coro);
+		ivm_vmstate_setCurCoro(state, coro);
 	}
 
 	return state;

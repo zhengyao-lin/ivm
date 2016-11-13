@@ -36,6 +36,7 @@ ivm_collector_new()
 	ivm_wbctx_list_init(&ret->wb_ctx);
 	ivm_wbcoro_list_init(&ret->wb_coro);
 	
+	ret->cid = 0;
 	ret->gen = 0;
 
 	return ret;
@@ -56,6 +57,7 @@ ivm_collector_init(ivm_collector_t *col)
 	ivm_wbctx_list_init(&col->wb_ctx);
 	ivm_wbcoro_list_init(&col->wb_coro);
 	
+	col->cid = 0;
 	col->gen = 0;
 
 	return;
@@ -248,6 +250,8 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 	ivm_object_t *ret;
 	ivm_traverser_t trav;
 
+	// IVM_TRACE("%p, %f\n", obj, ivm_numeric_getValue(obj));
+
 	ret = ivm_heap_addCopy(arg->heap, obj, IVM_OBJECT_GET(obj, TYPE_SIZE));
 
 	IVM_OBJECT_SET(ret, COPY, IVM_NULL); /* remove the new object's copy */
@@ -394,9 +398,13 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_frame_stack_iterator_t fiter;
 	ivm_object_t **i, **sp;
 
-	// IVM_TRACE("%p\n", coro);
+	// prevent duplicated traversing
+	if (ivm_coro_checkCID(coro, arg->cid)) return;
+
+	// IVM_TRACE("trav coro: %p\n", coro);
 
 	ivm_coro_setWB(coro, IVM_FALSE);
+	ivm_coro_setCID(coro, arg->cid);
 
 	if (runtime) {
 		for (i = ivm_vmstack_bottom(stack),
@@ -433,15 +441,15 @@ ivm_collector_travState(ivm_vmstate_t *state,
 {
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
 	ivm_type_list_iterator_t titer;
-	ivm_coro_t *cur_coro;
+	ivm_coro_t *tmp_coro;
 
 	// ivm_vmstate_travAndCompactCGroup(state, arg);
 
-	cur_coro = ivm_vmstate_curCoro(state);
-	if (!ivm_coro_getWB(cur_coro)) {
-		// prevent duplicated traversing
-		ivm_collector_travCoro(cur_coro, arg);
-	}
+	tmp_coro = ivm_vmstate_curCoro(state);
+	ivm_collector_travCoro(tmp_coro, arg);
+
+	tmp_coro = ivm_vmstate_mainCoro(state);
+	ivm_collector_travCoro(tmp_coro, arg);
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {
@@ -502,11 +510,11 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 
 	ivm_wbctx_list_empty(&collector->wb_ctx);
 
-	if (!arg->gen) {
-		IVM_WBCORO_LIST_EACHPTR(&collector->wb_coro, coro_iter) {
-			ivm_collector_travCoro(IVM_WBCORO_LIST_ITER_GET(coro_iter), arg);
-		}
+	// if (!arg->gen) {
+	IVM_WBCORO_LIST_EACHPTR(&collector->wb_coro, coro_iter) {
+		ivm_collector_travCoro(IVM_WBCORO_LIST_ITER_GET(coro_iter), arg);
 	}
+	// }
 
 	ivm_wbcoro_list_empty(&collector->wb_coro);
 
@@ -550,6 +558,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 	arg.collector = collector;
 	arg.trav_ctx = ivm_collector_travContext;
 	arg.trav_coro = ivm_collector_travCoro;
+	arg.cid = ++collector->cid;
 	arg.gen = collector->gen;
 
 	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);
@@ -601,6 +610,8 @@ ivm_collector_collect(ivm_collector_t *collector,
 		// IVM_TRACE("heap2 is full\n");
 		collector->gen = 1;
 	}
+
+	// collector->gen = 1;
 
 	ivm_vmstate_closeGCFlag(state);
 

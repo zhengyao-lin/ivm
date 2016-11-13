@@ -70,6 +70,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
 
 	ret->cur_coro = IVM_NULL;
+	ret->main_coro = IVM_NULL;
 
 	ret->const_pool = const_pool;
 	ivm_ref_inc(const_pool);
@@ -122,7 +123,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	ivm_int_t j;
 
 	if (state) {
-		ivm_coro_free(state->cur_coro, state);
+		ivm_coro_free(state->main_coro, state);
 
 		ivm_collector_dump(&state->gc, state);
 

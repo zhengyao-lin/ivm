@@ -23,6 +23,8 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_block_stack_init(&ret->bstack);
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
+	
+	ret->cid = 0;
 	ret->alive = IVM_FALSE;
 	ret->has_native = IVM_FALSE;
 	ret->active = IVM_FALSE;
@@ -505,7 +507,7 @@ ivm_coro_resume(ivm_coro_t *coro,
 	ivm_object_t *ret;
 	ivm_coro_t *orig = ivm_vmstate_curCoro(state);
 
-	ivm_vmstate_pushCurCoro(state, coro);
+	ivm_vmstate_setCurCoro(state, coro);
 
 	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
 
@@ -560,6 +562,7 @@ ivm_coro_object_new(ivm_vmstate_t *state,
 	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_CORO_OBJECT_T));
 
 	ret->coro = coro;
+	// IVM_TRACE("coro obj: %p\n", coro);
 
 	if (coro) {
 		ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
@@ -585,7 +588,6 @@ ivm_coro_object_cloner(ivm_object_t *obj,
 	return;
 }
 
-/*
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  ivm_traverser_arg_t *arg)
@@ -596,4 +598,3 @@ ivm_coro_object_traverser(ivm_object_t *obj,
 	
 	return;
 }
-*/

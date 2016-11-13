@@ -40,6 +40,7 @@ typedef struct ivm_vmstate_t_tag {
 	// ivm_cgroup_list_t coro_groups;
 	// ivm_cgid_t last_gid;
 	ivm_coro_t *cur_coro;
+	ivm_coro_t *main_coro;
 
 	ivm_type_pool_t type_pool;
 
@@ -142,6 +143,7 @@ void
 IVM_WBCORO(ivm_vmstate_t *state,
 		   ivm_coro_t *coro)
 {
+	// IVM_TRACE("write barrier! %p %d\n", coro, coro ? coro->wb : -1);
 	if (coro && !ivm_coro_getWB(coro)) {
 		ivm_collector_addWBCoro(&state->gc, coro);
 		ivm_coro_setWB(coro, IVM_TRUE);
@@ -238,6 +240,13 @@ ivm_coro_t *
 ivm_vmstate_curCoro(ivm_vmstate_t *state)
 {
 	return state->cur_coro;
+}
+
+IVM_INLINE
+ivm_coro_t *
+ivm_vmstate_mainCoro(ivm_vmstate_t *state)
+{
+	return state->main_coro;
 }
 
 IVM_INLINE
@@ -635,21 +644,20 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 
 IVM_INLINE
 void
-ivm_vmstate_pushCurCoro(ivm_vmstate_t *state,
-						ivm_coro_t *coro)
-{
-	IVM_WBCORO(state, state->cur_coro);
-	state->cur_coro = coro;
-	return;
-}
-
-/* if coro == null, free the current coro */
-IVM_INLINE
-void
 ivm_vmstate_setCurCoro(ivm_vmstate_t *state,
 					   ivm_coro_t *coro)
 {
-	state->cur_coro = coro;
+	IVM_WBCORO(state, state->cur_coro);
+	IVM_WBCORO(state, state->cur_coro = coro);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_setMainCoro(ivm_vmstate_t *state,
+						ivm_coro_t *coro)
+{
+	state->main_coro = coro;
 	return;
 }
 

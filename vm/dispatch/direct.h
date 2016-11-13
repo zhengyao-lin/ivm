@@ -61,7 +61,7 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (!_ivm_coro_hasInt()) {                        \
+	if (!IVM_GC_DBG && !_ivm_coro_hasInt()) {         \
 		goto *(ivm_instr_entry(tmp_ip));              \
 	} else {                                          \
 		SAVE_STACK();                                 \
@@ -70,7 +70,7 @@
 	}                                                 \
 
 #define NEXT_INSTR() \
-	if (!_ivm_coro_hasInt()) {                        \
+	if (!IVM_GC_DBG && !_ivm_coro_hasInt()) {         \
 		goto *(ivm_instr_entry(++tmp_ip));            \
 	} else {                                          \
 		SAVE_STACK();                                 \
