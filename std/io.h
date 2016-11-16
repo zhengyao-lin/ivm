@@ -24,6 +24,9 @@ IVM_COM_HEADER
 	#define IVM_SNPRINTF(str, len, ...) (snprintf((str), (len), __VA_ARGS__))
 #endif
 
+#define ivm_fputs(fp, str) fputs((str), (fp))
+#define ivm_fgets(fp, buf, size) fgets((buf), (size), (fp))
+
 IVM_INLINE
 void
 ivm_fputs_n(FILE *fp, const ivm_char_t *str, ivm_size_t len)

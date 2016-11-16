@@ -4,6 +4,8 @@
 #include "pub/vm.h"
 #include "pub/obj.h"
 
+#include "std/io.h"
+
 #include "vm/mod/mod.h"
 
 #include "priv.h"
@@ -49,36 +51,52 @@ IVM_NATIVE_FUNC(_global_is)
 	}
 
 	return ivm_numeric_new(NAT_STATE(), IVM_FALSE);
+}
 
-/*
-	return ivm_numeric_new(NAT_STATE(),
-		(IVM_IS_NONE(NAT_STATE(), op2) && IVM_IS_NONE(NAT_STATE(), op1)) ||
-		(ivm_object_getProto(op1) == ivm_object_getProto(op2)) ||
-		(IVM_TYPE_OF(op1) == IVM_TYPE_OF(op2))
-	);
-*/
+IVM_NATIVE_FUNC(_global_input)
+{
+	const ivm_string_t *msg = IVM_NULL;
+	ivm_char_t *buf = IVM_NULL;
+	ivm_size_t cur = 0, i;
+	ivm_object_t *ret;
 
-	// 1. op1 == op2 == none
-	// 2. op1.type == op2
-	// 3. op1.type == op2.type
+	MATCH_ARG("*s", &msg);
 
-	/*
-	if (ivm_object_getProto(op1)
-		== ivm_object_getProto(op2)) {
-
-	}
-	
-	if (IVM_IS_NONE(NAT_STATE(), op2)) {
-		return ivm_numeric_new(NAT_STATE(), IVM_IS_NONE(NAT_STATE(), op1));
-	} else if (IVM_IS_BTTYPE(op2, NAT_STATE(), IVM_TYPE_OBJECT_T)) {
-		return ivm_numeric_new(NAT_STATE(), IVM_TYPE_OF(op1) == ivm_type_object_getValue(op2));
+	if (msg) {
+		ivm_fputs(IVM_STDOUT, ivm_string_trimHead(msg));
 	}
 
-	return ivm_numeric_new(NAT_STATE(), IVM_TYPE_OF(op1) == IVM_TYPE_OF(op2));
-	*/
+#define _BUF_SIZE 1024
 
-	// RTM_FATAL(IVM_ERROR_MSG_UNEXPECT_IS_OPERAND);
-	// return IVM_NONE(NAT_STATE());
+	do {
+		buf = STD_REALLOC(buf, sizeof(*buf) * (cur + _BUF_SIZE + 1));
+		STD_INIT(buf + cur, sizeof(*buf) * (_BUF_SIZE + 1));
+		
+		if (!ivm_fgets(IVM_STDIN, buf + cur, sizeof(*buf) * (_BUF_SIZE + 1))) {
+			STD_FREE(buf);
+			IVM_FATAL(IVM_ERROR_MSG_INPUT_READ_EOF);
+		}
+
+		cur += _BUF_SIZE;
+		// IVM_TRACE("%s: %d %d\n", buf, IVM_STRLEN(buf), cur);
+	} while (buf[cur - 1] != '\0' && buf[cur - 1] != '\n');
+
+#undef _BUF_SIZE
+
+	// FIX: possible false-positive invalid read reported by Valgrind due to use of SEE instr compiled in gcc >= 4.6?
+	i = IVM_STRLEN(buf);
+	if (i) {
+		if (i > 1 && buf[i - 2] == '\r') {
+			buf[i - 2] = '\0';
+		} else {
+			buf[i - 1] = '\0';
+		}
+	}
+
+	ret = ivm_string_object_new_r(NAT_STATE(), buf);
+	STD_FREE(buf);
+
+	return  ret;
 }
 
 void
@@ -102,6 +120,7 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 	ivm_context_setSlot_r(ctx, state, "false", ivm_bool_new(state, IVM_FALSE));
 
 	ivm_context_setSlot_r(ctx, state, "typename", IVM_NATIVE_WRAP(state, _global_typename));
+	ivm_context_setSlot_r(ctx, state, "input", IVM_NATIVE_WRAP(state, _global_input));
 	ivm_context_setSlot_r(ctx, state, "$import", IVM_NATIVE_WRAP(state, _global_import));
 	// ivm_context_setSlot_r(ctx, state, "$is", IVM_NATIVE_WRAP(state, _global_is));
 
