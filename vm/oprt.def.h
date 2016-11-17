@@ -137,26 +137,23 @@ TRIOP_GEN_C(IVM_FUNCTION_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStrin
 TRIOP_GEN_C(IVM_LIST_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex)
 
 BINOP_GEN(IVM_STRING_OBJECT_T, IDX, IVM_NUMERIC_T, IVM_FALSE, {
-	const ivm_string_t *str1;
+	const ivm_string_t *op1;
 	ivm_long_t idx, len;
-	ivm_string_t *ret;
-	ivm_char_t *data;
+	ivm_number_t n;
 
 	// OPRT_ASSERT(!_ASSIGN, IVM_ERROR_MSG_ASSIGN_TO_STRING_INDEX);
 
-	str1 = ivm_string_object_getValue(_OP1);
-	len = ivm_string_length(str1);
-	idx = ivm_list_realIndex(len, ivm_numeric_getValue(_OP2));
+	op1 = ivm_string_object_getValue(_OP1);
+	n = ivm_numeric_getValue(_OP2);
+
+	CHECK_OVERFLOW(n);
+
+	len = ivm_string_length(op1);
+	idx = ivm_list_realIndex(len, n);
 
 	OPRT_ASSERT(idx < len, IVM_ERROR_MSG_STRING_IDX_EXCEED(idx, len));
 
-	ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(1));
-	data = ivm_string_trimHead(ret);
-
-	STD_MEMCPY(data, ivm_string_trimHead(str1) + idx, sizeof(ivm_char_t));
-	data[1] = '\0';
-
-	return ivm_string_object_new_c(_STATE, ret);
+	return ivm_string_object_newChar(_STATE, ivm_string_trimHead(op1)[idx]);
 })
 
 BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, IVM_FALSE, {
@@ -168,7 +165,7 @@ BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, IVM_FALSE, {
 TRIOP_GEN(IVM_LIST_OBJECT_T, IDXA, IVM_NUMERIC_T, {
 	ivm_number_t idx = ivm_numeric_getValue(_OP2);
 
-	OPRT_ASSERT(ivm_number_canbeLong(idx), IVM_ERROR_MSG_TO_LONG_OVERFLOW(idx));
+	CHECK_OVERFLOW(idx);
 
 	if (!ivm_list_object_set(
 		IVM_AS(_OP1, ivm_list_object_t),

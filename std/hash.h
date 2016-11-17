@@ -83,6 +83,14 @@ ivm_hash_fromString(const ivm_char_t *key)
 	return ivm_hash_fromString_c(key, strlen(key));
 }
 
+IVM_INLINE
+ivm_hash_val_t
+ivm_hash_fromString_n(const ivm_char_t *key,
+					  ivm_size_t len)
+{
+	return ivm_hash_fromString_c(key, len);
+}
+
 IVM_COM_END
 
 #endif

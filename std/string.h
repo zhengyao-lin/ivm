@@ -133,6 +133,7 @@ ivm_bool_t
 ivm_string_compare(const ivm_string_t *a,
 				   const ivm_string_t *b)
 {
+	// IVM_TRACE("cmp: %p: %d: %s\n", a, a->len, a->cont);
 	return (a == b) ||
 		   ((a->len == b->len) &&
 		   	(!STD_MEMCMP(a->cont, b->cont, a->len)));

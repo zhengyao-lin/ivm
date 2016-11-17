@@ -244,12 +244,15 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		return i->k = (val);                                        \
 	}
 
-#define HASH(hashee, each) \
+#define RAW_HASH(str) ivm_hash_fromString(str)
+#define RAW_HASH_N(str, len) ivm_hash_fromString_n((str), (len))
+
+#define HASH(hashing, each) \
 	{                                                                           \
 		ivm_hash_val_t hash;                                                    \
 		register ivm_string_pos_t *i, *end, *tmp;                               \
 		register ivm_uint_t conflict;                                           \
-		hash = ivm_hash_fromString(hashee);                                     \
+		hash = hashing;                                                         \
 	                                                                            \
 		while (1) {                                                             \
 		AGAIN:                                                                  \
@@ -304,6 +307,8 @@ _ivm_string_new_heap(ivm_bool_t is_const,
 
 	STD_MEMCPY(ret->cont, str, sizeof(ivm_char_t) * (len + 1));
 
+	// IVM_TRACE("%p: %d: %s\n", ret, ret->len, ret->cont);
+
 	return ret;
 }
 
@@ -331,34 +336,37 @@ _ivm_string_new_heap_n(ivm_bool_t is_const,
 const ivm_string_t *
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str)
-HASH(ivm_string_trimHead(str),
+HASH(RAW_HASH(ivm_string_trimHead(str)),
 	 CHECK(ivm_string_compare(i->k, str),
 		   _ivm_string_copy_heap(str, pool->heap)));
 
 const ivm_string_t *
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)
-HASH(str, CHECK(!ivm_string_compareToRaw(i->k, str),
-				_ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
+HASH(RAW_HASH(str),
+	 CHECK(!ivm_string_compareToRaw(i->k, str),
+		   _ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
 
 ivm_string_id_t
 ivm_string_pool_registerRaw_i(ivm_string_pool_t *pool,
 							  const ivm_char_t *str)
-HASH(str, CHECK_I(!ivm_string_compareToRaw(i->k, str),
-				  _ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
+HASH(RAW_HASH(str),
+	 CHECK_I(!ivm_string_compareToRaw(i->k, str),
+			 _ivm_string_new_heap(IVM_TRUE, str, pool->heap)));
 
 const ivm_string_t *
 ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
 							  const ivm_char_t *str,
 							  ivm_size_t len)
-HASH(str, CHECK(!ivm_string_compareToRaw_n(i->k, str, len),
-				_ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
+HASH(RAW_HASH_N(str, len),
+	 CHECK(!ivm_string_compareToRaw_n(i->k, str, len),
+		   _ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
 
 IVM_PRIVATE
 const ivm_string_t *
 _ivm_string_pool_rehash(ivm_string_pool_t *pool,
 						const ivm_string_t *str,
 						ivm_string_id_t id)
-HASH(ivm_string_trimHead(str), SET_RAW(str, id));
+HASH(RAW_HASH(ivm_string_trimHead(str)), SET_RAW(str, id));
 
 #undef HASH
