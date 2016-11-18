@@ -1,6 +1,6 @@
 # lib vm
 
-add_lib_batch(ivm-vm SHARED "*.c" "gc/*.c" "native/*.c" "mod/*.c")
+add_lib_batch(ivm-vm SHARED "*.c" "gc/*.c" "native/*.c" "mod/*.c" "thread/*.c")
 
 # link libraries
 

@@ -41,7 +41,10 @@ typedef enum {
 
 typedef enum {
 	IVM_CORO_INT_NONE = 0,
-	IVM_CORO_INT_GC
+	IVM_CORO_INT_GC,
+#if IVM_USE_MULTITHREAD
+	IVM_CORO_INT_THREAD_YIELD
+#endif
 } ivm_coro_int_t;
 
 #define IVM_CORO_GET_STACK(coro) (&(coro)->stack)
@@ -128,6 +131,26 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #define ivm_coro_getWB(coro) ((coro)->wb)
 #define ivm_coro_setWB(coro, val) ((coro)->wb = (val))
+
+#if IVM_USE_MULTITHREAD
+
+void
+ivm_coro_lockGIL();
+
+void
+ivm_coro_unlockGIL();
+
+// to sync the clock
+void
+ivm_coro_setCSL();
+
+void
+ivm_coro_unsetCSL();
+
+ivm_bool_t
+ivm_coro_getCSL();
+
+#endif
 
 ivm_object_t *
 ivm_coro_callBase_n(ivm_coro_t *coro,

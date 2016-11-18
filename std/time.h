@@ -26,6 +26,7 @@ IVM_COM_HEADER
 
 	#include <unistd.h>
 
+	// millisecond
 	IVM_INLINE
 	ivm_bool_t
 	ivm_time_msleep(ivm_ulong_t ms)

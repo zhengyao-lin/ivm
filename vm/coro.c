@@ -7,6 +7,8 @@
 #include "pub/inlines.h"
 
 #include "std/string.h"
+#include "std/time.h"
+#include "std/thread.h"
 
 #include "coro.h"
 #include "vmstack.h"
@@ -196,6 +198,70 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 	return;
 }
 
+#if IVM_USE_MULTITHREAD
+
+IVM_PRIVATE
+ivm_thread_mutex_t _coro_gil = IVM_THREAD_MUTEXT_INITVAL;
+
+// clock sync lock
+IVM_PRIVATE
+volatile
+ivm_bool_t _coro_csl = IVM_FALSE;
+
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_coro_lockGIL()
+{
+	ivm_thread_mutex_lock(&_coro_gil);
+	return;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+void
+_ivm_coro_unlockGIL()
+{
+	ivm_thread_mutex_unlock(&_coro_gil);
+	return;
+}
+
+void
+ivm_coro_lockGIL()
+{
+	_ivm_coro_lockGIL();
+	return;
+}
+
+void
+ivm_coro_unlockGIL()
+{
+	_ivm_coro_unlockGIL();
+	return;
+}
+
+void
+ivm_coro_setCSL()
+{
+	_coro_csl = IVM_TRUE;
+	return;
+}
+
+void
+ivm_coro_unsetCSL()
+{
+	_coro_csl = IVM_FALSE;
+	return;
+}
+
+ivm_bool_t
+ivm_coro_getCSL()
+{
+	return _coro_csl;
+}
+
+#endif
+
 #define _INT_BUF_SIZE IVM_DEFAULT_CORO_INT_BUFFER_SIZE
 
 #if _INT_BUF_SIZE != 2 && \
@@ -284,6 +350,35 @@ _ivm_coro_popInt()
 	_INT_UNLOCK();
 
 	return ret;
+}
+
+IVM_PRIVATE
+IVM_INLINE
+ivm_bool_t
+_ivm_coro_otherInt(ivm_coro_int_t intr)
+{
+	switch (intr) {
+#if IVM_USE_MULTITHREAD
+
+		case IVM_CORO_INT_THREAD_YIELD:
+			// IVM_TRACE("################ thread switch\n");
+
+			_ivm_coro_unlockGIL();
+			ivm_coro_setCSL();
+			
+			// ivm_time_msleep(1);
+
+			_ivm_coro_lockGIL();
+			
+			return IVM_TRUE;
+
+#endif
+
+		case IVM_CORO_INT_NONE:
+			return IVM_TRUE;
+		default:
+			return IVM_FALSE;
+	}
 }
 
 #define ivm_coro_kill(coro, state) \
@@ -516,7 +611,7 @@ ivm_coro_resume(ivm_coro_t *coro,
 	if (!ret) {
 		// ret = ivm_vmstate_popException(state);
 		ivm_coro_printException(coro, state, ivm_vmstate_popException(state));
-		return IVM_NONE(state);
+		ret = IVM_NONE(state);
 	}
 
 	return ret;

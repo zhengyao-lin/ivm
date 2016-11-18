@@ -79,7 +79,7 @@
 		GOTO_INSTR(INTR);                             \
 	}
 
-#define NEXT_INSTR_NINT() goto *(ivm_instr_entry(++tmp_ip));
+#define NEXT_INSTR_NINT() NEXT_INSTR() // goto *(ivm_instr_entry(++tmp_ip));
 
 #define INT_RET() goto *(ivm_instr_entry(tmp_ip));
 

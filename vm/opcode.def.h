@@ -1246,14 +1246,10 @@ OPCODE_GEN(INTR, "intr", N, 0, {
 
 	_TMP_INT = _ivm_coro_popInt();
 
-	switch (_TMP_INT) {
-		case IVM_CORO_INT_GC:
-			ivm_vmstate_doGC(_STATE);
-			break;
-		case IVM_CORO_INT_NONE: break;
-		default: {
-			RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_TMP_INT));
-		}
+	if (_TMP_INT == IVM_CORO_INT_GC) {
+		ivm_vmstate_doGC(_STATE);
+	} else if (!_ivm_coro_otherInt(_TMP_INT)) {
+		RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_TMP_INT));
 	}
 
 	INT_RET();

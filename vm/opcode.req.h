@@ -9,6 +9,8 @@
 #include "pub/obj.h"
 #include "pub/inlines.h"
 
+#include "thread/sched.h"
+
 #include "native/native.h"
 
 #include "coro.h"
