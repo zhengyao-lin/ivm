@@ -18,7 +18,8 @@ _ivm_thread_inst_clock(void *arg)
 		ivm_time_msleep(1);
 		// IVM_TRACE("########signal!\n");
 		ivm_coro_setInt(IVM_CORO_INT_THREAD_YIELD);
-		while (!ivm_coro_getCSL());
+		while (!ivm_coro_getCSL())
+			ivm_thread_cancelPoint();
 	}
 
 	return IVM_NULL;
@@ -30,14 +31,16 @@ ivm_bool_t _thread_enabled = IVM_FALSE;
 IVM_PRIVATE
 ivm_thread_t _t_clock;
 
-void
+ivm_bool_t
 ivm_thread_enableThread()
 {
 	// ivm_coro_lockCSL();
-	_thread_enabled = IVM_TRUE;
-	ivm_thread_init(&_t_clock, _ivm_thread_inst_clock, IVM_NULL);
-	
-	return;
+	if (_thread_enabled) {
+		_thread_enabled = IVM_TRUE;
+		ivm_thread_init(&_t_clock, _ivm_thread_inst_clock, IVM_NULL);
+	}
+
+	return IVM_TRUE;
 }
 
 void
@@ -45,7 +48,9 @@ ivm_thread_clean()
 {
 	if (_thread_enabled) {
 		ivm_thread_cancel(&_t_clock);
+		// IVM_TRACE("wait!\n");
 		ivm_thread_wait(&_t_clock);
+		// IVM_TRACE("end\n");
 		ivm_thread_dump(&_t_clock);
 	}
 
@@ -74,6 +79,18 @@ ivm_thread_mainThreadEnd()
 }
 
 #else
+
+ivm_bool_t
+ivm_thread_enableThread()
+{
+	return IVM_FALSE;
+}
+
+void
+ivm_thread_clean()
+{
+	return;
+}
 
 void
 ivm_thread_mainThreadStart()

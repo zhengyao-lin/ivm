@@ -58,6 +58,18 @@ else()
 	message(FATAL_ERROR "Unknown compile mode '${VERSION}'")
 endif()
 
+# other flags
+
+if((MULTITHREAD STREQUAL "enabled") OR (NOT DEFINED MULTITHREAD))
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_USE_MULTITHREAD=1")
+	set(USE_PTHREAD 1)
+	message(STATUS "Thread enabled")
+elseif(MULTITHREAD STREQUAL "disabled")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DIVM_USE_MULTITHREAD=0")
+	set(USE_PTHREAD 0)
+	message(STATUS "Thread disabled")
+endif()
+
 message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
 
 # reset output dir

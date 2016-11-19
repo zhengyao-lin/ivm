@@ -9,15 +9,12 @@
 
 IVM_COM_HEADER
 
-#if IVM_USE_MULTITHREAD
-
-void
+// return false if thread is not built-in/enabled
+ivm_bool_t
 ivm_thread_enableThread();
 
 void
 ivm_thread_clean();
-
-#endif
 
 // must be called by the root thread
 void

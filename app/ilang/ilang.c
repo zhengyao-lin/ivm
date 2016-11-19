@@ -347,7 +347,7 @@ int main(int argc, const char **argv)
 
 		ivm_vmstate_unlockGCFlag(state);
 
-		// ivm_thread_enableThread();
+		ivm_thread_enableThread();
 
 		// execute
 		PROF_START();

@@ -40,6 +40,7 @@ ivm_thread_wait(ivm_thread_t *thread)
 	return ret;
 }
 
+#define ivm_thread_cancelPoint() pthread_testcancel()
 #define ivm_thread_cancel(thread) (pthread_cancel(*(thread)) == 0)
 
 typedef pthread_mutex_t ivm_thread_mutex_t;
