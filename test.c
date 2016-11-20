@@ -28,6 +28,8 @@
 #include "app/ias/parser.h"
 #include "app/ias/gen.h"
 
+#if 0
+
 IVM_NATIVE_FUNC(test)
 {
 	IVM_OUT("from native!!\n");
@@ -872,6 +874,62 @@ ivm_perf_printElapsed();
 #endif
 
 	ivm_env_clean();
+
+	return 0;
+}
+
+#endif
+
+int main()
+{
+	ivm_ptset_t set;
+	void *rd_ptr[6];
+	ivm_int_t i;
+	ivm_ptset_iterator_t iter;
+
+	for (i = 0; i < IVM_ARRLEN(rd_ptr); i++) {
+		rd_ptr[i] = STD_ALLOC(i * 3);
+		IVM_TRACE("%p\n", rd_ptr[i]);
+	}
+
+	IVM_TRACE("########\n");
+
+	ivm_ptset_init(&set);
+
+	for (i = 0; i < IVM_ARRLEN(rd_ptr); i++) {
+		ivm_ptset_insert(&set, rd_ptr[i]);
+	}
+
+	{
+		IVM_PTSET_EACHPTR(&set, iter, void *) {
+			IVM_TRACE("%p\n", IVM_PTSET_ITER_GET(iter));
+		}
+	}
+
+	IVM_TRACE("########\n");
+
+	IVM_TRACE("remove: %p\n", rd_ptr[2]);
+	IVM_TRACE("remove: %p\n", rd_ptr[4]);
+	IVM_TRACE("remove: %p\n", rd_ptr[0]);
+	ivm_ptset_remove(&set, rd_ptr[2]);
+	ivm_ptset_remove(&set, rd_ptr[4]);
+	ivm_ptset_remove(&set, rd_ptr[0]);
+
+	{
+		IVM_PTSET_EACHPTR(&set, iter, void *) {
+			IVM_TRACE("%p\n", IVM_PTSET_ITER_GET(iter));
+		}
+	}
+
+	for (i = 0; i < IVM_ARRLEN(rd_ptr); i++) {
+		IVM_TRACE("found %p: %p\n", rd_ptr[i], *ivm_ptset_find(&set, rd_ptr[i]));
+	}
+
+	for (i = 0; i < IVM_ARRLEN(rd_ptr); i++) {
+		STD_FREE(rd_ptr[i]);
+	}
+
+	ivm_ptset_dump(&set);
 
 	return 0;
 }

@@ -210,11 +210,7 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 	return ret;
 }
 
-#define CHECK_CONFLICT() \
-	if (conflict >= IVM_DEFAULT_STRING_POOL_MAX_CONF_COUNT) {       \
-		_ivm_string_pool_expand(pool);                              \
-		goto AGAIN;                                                 \
-	}
+#define CHECK_CONFLICT()
 
 #define CHECK(cmp, copy) \
 	if (!i->k) {                                                    \
@@ -251,12 +247,9 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 	{                                                                           \
 		ivm_hash_val_t hash;                                                    \
 		register ivm_string_pos_t *i, *end, *tmp;                               \
-		register ivm_uint_t conflict;                                           \
 		hash = hashing;                                                         \
 	                                                                            \
 		while (1) {                                                             \
-		AGAIN:                                                                  \
-			conflict = 0;                                                       \
 			end = pool->table + pool->size;                                     \
 			tmp = pool->table + (hash & pool->mask);                            \
 	                                                                            \

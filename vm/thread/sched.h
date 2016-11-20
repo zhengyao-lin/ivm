@@ -6,6 +6,7 @@
 #include "pub/vm.h"
 
 #include "std/thread.h"
+#include "std/hash.h"
 
 IVM_COM_HEADER
 
