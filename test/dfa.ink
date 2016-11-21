@@ -1,4 +1,6 @@
 // import ulist
+import math
+loc merge(import exc)
 
 // rule: [ from, char, next ]
 loc dfa = fn rules, fin_node = [], init = 0: {
@@ -77,7 +79,9 @@ print(d2.accept("aaa"))
 print(d2.accept("a"))
 print(d2.accept("aaaa"))
 
-d3 = dfa([
+print("number check")
+
+loc d3 = dfa([
 	[ 0, "0", 2 ],
 	[ 0, ".", 4 ],
 
@@ -130,7 +134,30 @@ d3 = dfa([
 
 ], [ 1, 2, 3 ])
 
-print("number check")
+loc num_parse = fn str: {
+	loc i = 0
+	loc num = 0
+	loc dec = 0
+
+	loc rule = d3
+
+	loc c2i = fn c: c.ord() - "0".ord()
+
+	if !rule.accept(str):
+		raise Exception("failed to parse")
+
+	for i in range(str.len()): {
+		if str[i] == ".":
+			dec = 1
+		elif dec: {
+			num = num + c2i(str[i]) / math.pow(10, dec)
+			dec = dec + 1
+		} else:
+			num = num * 10 + c2i(str[i])
+	}
+
+	num
+}
 
 print(d3.accept("0.123"))
 print(d3.accept("0."))
@@ -142,6 +169,11 @@ print(d3.accept("."))
 print(d3.accept(".0"))
 print(d3.accept("1.1."))
 print(d3.accept("123131.2132131"))
+
+print(num_parse("1.23"))
+print(num_parse("123131.2"))
+print(num_parse(".0"))
+print(num_parse("0."))
 
 ret
 
@@ -165,3 +197,8 @@ ret
 // -> "num: 1"
 // -> "num: 0"
 // -> "num: 1"
+
+// -> "num: 1.23"
+// -> "num: 123131.2"
+// -> "num: 0"
+// -> "num: 0"
