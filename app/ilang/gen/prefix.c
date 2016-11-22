@@ -230,18 +230,54 @@ ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 	// assign expression itself should not be left value
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
 
-	assign->rhe->eval(assign->rhe, FLAG(0), env);
-	INC_SP();
-	if (!flag.is_top_level) {
-		INC_SP();
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
-	}
-	// ilang_gen_leftval_eval(assign->lhe, expr, env);
-	assign->lhe->eval(assign->lhe, FLAG(.is_left_val = IVM_TRUE), env);
+	if (assign->inp_op != -1) {
+		assign->lhe->eval(assign->lhe, FLAG(0), env);
+		assign->rhe->eval(assign->rhe, FLAG(0), env);
 
-	DEC_SP();
-	if (!flag.is_top_level) {
+#define INPLACE_OP(op) \
+	case IVM_BINOP_ID(op): \
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), op); \
+		break;
+
+		switch (assign->inp_op) {
+			INPLACE_OP(INADD)
+			INPLACE_OP(INSUB)
+			INPLACE_OP(INMUL)
+			INPLACE_OP(INDIV)
+			INPLACE_OP(INMOD)
+
+			INPLACE_OP(INAND)
+			INPLACE_OP(INIOR)
+			INPLACE_OP(INEOR)
+
+			INPLACE_OP(INSHL)
+			INPLACE_OP(INSHAR)
+			INPLACE_OP(INSHLR)
+
+			default:
+				IVM_FATAL("impossible");
+		}
+#undef INPLACE_OP
+
+		if (!flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+		}
+
+		assign->lhe->eval(assign->lhe, FLAG(.is_left_val = IVM_TRUE), env);
+	} else {
+		assign->rhe->eval(assign->rhe, FLAG(0), env);
+		INC_SP();
+		if (!flag.is_top_level) {
+			INC_SP();
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+		}
+		// ilang_gen_leftval_eval(assign->lhe, expr, env);
+		assign->lhe->eval(assign->lhe, FLAG(.is_left_val = IVM_TRUE), env);
+
 		DEC_SP();
+		if (!flag.is_top_level) {
+			DEC_SP();
+		}
 	}
 
 	return NORET();

@@ -163,6 +163,22 @@ OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", 0))
 OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", 0))
 OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", 0))
 
+/* inplace op */
+
+OPCODE_GEN(INADD, "inadd", N, -1, BINOP_HANDLER(INADD, "+=", 0))
+OPCODE_GEN(INSUB, "insub", N, -1, BINOP_HANDLER(INSUB, "-=", 0))
+OPCODE_GEN(INMUL, "inmul", N, -1, BINOP_HANDLER(INMUL, "*=", 0))
+OPCODE_GEN(INDIV, "indiv", N, -1, BINOP_HANDLER(INDIV, "/=", 0))
+OPCODE_GEN(INMOD, "inmod", N, -1, BINOP_HANDLER(INMOD, "%=", 0))
+
+OPCODE_GEN(INAND, "inand", N, -1, BINOP_HANDLER(INAND, "&=", 0))
+OPCODE_GEN(INEOR, "ineor", N, -1, BINOP_HANDLER(INEOR, "^=", 0))
+OPCODE_GEN(INIOR, "inior", N, -1, BINOP_HANDLER(INIOR, "|=", 0))
+
+OPCODE_GEN(INSHL, "inshl", N, -1, BINOP_HANDLER(INSHL, "<<=", 0))
+OPCODE_GEN(INSHAR, "inshar", N, -1, BINOP_HANDLER(INSHAR, ">>=", 0))
+OPCODE_GEN(INSHLR, "inshlr", N, -1, BINOP_HANDLER(INSHLR, ">>>=", 0))
+
 OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=",
 	{
 		if (IVM_TYPE_OF(_TMP_OBJ1) != IVM_TYPE_OF(_TMP_OBJ2)) {

@@ -88,6 +88,19 @@ enum token_id_t {
 	T_SHAR,		// >>
 	T_SHLR,		// >>>
 
+	T_INADD,	// +=
+	T_INSUB,	// -=
+	T_INMUL,	// *=
+	T_INDIV,	// /=
+	T_INMOD,	// %=
+
+	T_INBAND,	// &=
+	T_INBIOR,	// |=
+	T_INBEOR,	// ^=
+	T_INSHL,	// <<=
+	T_INSHAR,	// >>=
+	T_INSHLR,	// >>>=
+
 	T_NOT,		// !
 
 	T_CGT,		// >
@@ -178,6 +191,19 @@ token_name_table[] = {
 	"shift arithmetic right",
 	"shift logic right",
 
+	"inplace add operator",
+	"inplace sub operator",
+	"inplace mul operator",
+	"inplace div operator",
+	"inplace mod operator",
+
+	"inplace bit and operator",
+	"inplace bit inclusive or operator",
+	"inplace bit exclusive or operator",
+	"inplace shift left",
+	"inplace shift arithmetic right",
+	"inplace shift logic right",
+
 	"not operator",
 
 	"greater-than operator",
@@ -208,11 +234,21 @@ enum state_t {
 
 	ST_TRY_GT,
 	ST_TRY_LT,
+	ST_TRY_SHL,
 	ST_TRY_NOT,
+	
 	ST_TRY_ASSIGN,
+
+	ST_TRY_ADD,
+	ST_TRY_SUB,
+	ST_TRY_MUL,
+	ST_TRY_MOD,
+	ST_TRY_BEOR,
+
 	ST_TRY_AND,
 	ST_TRY_OR,
 	ST_TRY_SHR,
+	ST_TRY_SHLR,
 
 	ST_TRY_DOT,
 	ST_TRY_ELLIP,
@@ -272,12 +308,12 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=[", ST_INIT, T_LBRAKT },
 			{ "=]", ST_INIT, T_RBRAKT },
 
-			{ "=+", ST_INIT, T_ADD },
-			{ "=-", ST_INIT, T_SUB },
-			{ "=*", ST_INIT, T_MUL },
-			{ "=%", ST_INIT, T_MOD },
+			{ "=+", ST_TRY_ADD },
+			{ "=-", ST_TRY_SUB },
+			{ "=*", ST_TRY_MUL },
+			{ "=%", ST_TRY_MOD },
 
-			{ "=^", ST_INIT, T_BEOR },
+			{ "=^", ST_TRY_BEOR },
 			{ "=@", ST_INIT, T_AT },
 			{ "=?", ST_INIT, T_QM },
 
@@ -325,8 +361,14 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* TRY_LT */
 		{
 			{ "==", ST_INIT, T_CLE, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "=<", ST_INIT, T_SHL, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "=<", ST_TRY_SHL },
 			{ ".", ST_INIT, T_CLT }
+		},
+
+		/* TRY_SHL */
+		{
+			{ "==", ST_INIT, T_INSHL, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_SHL }
 		},
 
 		/* TRY_NOT */
@@ -341,22 +383,61 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ ".", ST_INIT, T_ASSIGN }
 		},
 
+		/* TRY_ADD */
+		{
+			{ "==", ST_INIT, T_INADD, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_ADD }
+		},
+
+		/* TRY_SUB */
+		{
+			{ "==", ST_INIT, T_INSUB, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_SUB }
+		},
+
+		/* TRY_MUL */
+		{
+			{ "==", ST_INIT, T_INMUL, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_MUL }
+		},
+
+		/* TRY_MOD */
+		{
+			{ "==", ST_INIT, T_INMOD, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_MOD }
+		},
+
+		/* TRY_BEOR */
+		{
+			{ "==", ST_INIT, T_INBEOR, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_BEOR }
+		},
+
 		/* TRY_AND */
 		{
 			{ "=&", ST_INIT, T_CAND, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "==", ST_INIT, T_INBAND, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_BAND }
 		},
 
 		/* TRY_OR */
 		{
 			{ "=|", ST_INIT, T_COR, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "==", ST_INIT, T_INBIOR, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_BIOR }
 		},
 
 		/* TRY_SHR */
 		{
-			{ "=>", ST_INIT, T_SHLR, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "=>", ST_TRY_SHLR },
+			{ "==", ST_INIT, T_INSHAR, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_SHAR }
+		},
+
+		/* TRY_SHLR */
+		{
+			{ "==", ST_INIT, T_INSHLR, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ ".", ST_INIT, T_SHLR }
 		},
 
 		/* TRY_DOT */
@@ -375,6 +456,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		{
 			{ "=*", ST_IN_COMMENT1 },
 			{ "=/", ST_IN_COMMENT2 },
+			{ "==", ST_INIT, T_INDIV, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_DIV }
 		},
 
@@ -2608,30 +2690,87 @@ RULE(leftval)
 	MATCHED({})
 }
 
+#define INPLACE_OP(op) \
+	SUB_RULE(T(T_IN##op) R(nllo) R(prefix_expr) \
+	{ \
+		tmp_token = TOKEN_AT(0); \
+		_RETVAL.expr = ilang_gen_assign_expr_new( \
+			_ENV->unit, \
+			TOKEN_POS(tmp_token), \
+			IVM_NULL, \
+			RULE_RET_AT(1).u.expr, IVM_BINOP_ID(IN##op) \
+		); \
+	})
+
+#define INPLACE_OP_B(op) \
+	SUB_RULE(T(T_INB##op) R(nllo) R(prefix_expr) \
+	{ \
+		tmp_token = TOKEN_AT(0); \
+		_RETVAL.expr = ilang_gen_assign_expr_new( \
+			_ENV->unit, \
+			TOKEN_POS(tmp_token), \
+			IVM_NULL, \
+			RULE_RET_AT(1).u.expr, IVM_BINOP_ID(IN##op) \
+		); \
+	})
+
+RULE(assign_left_side)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ASSIGN) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_assign_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				IVM_NULL,
+				RULE_RET_AT(1).u.expr, -1
+			);
+		})
+
+		INPLACE_OP(ADD)
+		INPLACE_OP(SUB)
+		INPLACE_OP(MUL)
+		INPLACE_OP(DIV)
+		INPLACE_OP(MOD)
+
+		INPLACE_OP_B(AND)
+		INPLACE_OP_B(IOR)
+		INPLACE_OP_B(EOR)
+
+		INPLACE_OP(SHL)
+		INPLACE_OP(SHAR)
+		INPLACE_OP(SHLR)
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
 /*
 	assign_expr
 		| leftval '=' nllo prefix_expr
  */
 RULE(assign_expr)
 {
-	struct token_t *tmp_token;
+	ilang_gen_expr_t *tmp_expr;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(leftval) T(T_ASSIGN) R(nllo) R(prefix_expr)
+		SUB_RULE(R(leftval) R(assign_left_side)
 		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_assign_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(0).u.expr,
-				RULE_RET_AT(2).u.expr
-			);
+			tmp_expr = _RETVAL.expr = RULE_RET_AT(1).u.expr;
+			SET_OPERAND(tmp_expr, 1, RULE_RET_AT(0).u.expr);
 		})
 	);
 
 	FAILED({})
 	MATCHED({})
 }
+
+#undef INPLACE_OP
+#undef INPLACE_OP_B
 
 /*
 	elif_branch

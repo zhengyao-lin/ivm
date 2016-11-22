@@ -117,6 +117,26 @@
 		return tmp_obj ? tmp_obj : IVM_NONE(_STATE);
 	}
 
+	BINOP_PROC_DEF(ivm_binop_linkStringString)
+	{
+		const ivm_string_t *str1 = ivm_string_object_getValue(_OP1);
+		const ivm_string_t *str2 = ivm_string_object_getValue(_OP2);
+		ivm_size_t len1 = ivm_string_length(str1);
+		ivm_size_t len2 = ivm_string_length(str2);
+		ivm_size_t size = len1 + len2;
+		ivm_string_t *ret = ivm_vmstate_alloc(_STATE, IVM_STRING_GET_SIZE(size));
+
+		ivm_char_t *data = ivm_string_trimHead(ret);
+
+		STD_MEMCPY(data, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
+		STD_MEMCPY(data + len1, ivm_string_trimHead(str2), len2 * sizeof(ivm_char_t));
+		data[size] = '\0';
+
+		ivm_string_initHead(ret, IVM_FALSE, size);
+
+		return ivm_string_object_new_c(_STATE, ret);
+	}
+
 	BINOP_PROC_DEF(ivm_binop_linkStringNum)
 	{
 		LINK_STRING_NUM(_OP1, _OP2, {
@@ -133,6 +153,23 @@
 			STD_MEMCPY(data + len2, ivm_string_trimHead(str1), len1 * sizeof(ivm_char_t));
 			data[size] = '\0';
 		});
+	}
+
+	BINOP_PROC_DEF(ivm_binop_mulList)
+	{
+		ivm_number_t times = ivm_numeric_getValue(_OP2);
+		ivm_list_object_t *ret;
+
+		if (times <= 0) {
+			return ivm_list_object_new(_STATE, 0);
+		}
+
+		ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_list_object_t);
+		if (!ivm_list_object_multiply(ret, _STATE, times)) {
+			return IVM_NULL;
+		}
+
+		return IVM_AS_OBJ(ret);
 	}
 
 	BINOP_PROC_DEF(ivm_binop_eq)
