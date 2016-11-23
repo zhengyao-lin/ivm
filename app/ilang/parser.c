@@ -1392,6 +1392,18 @@ RULE(arg_list_opt)
 		| '<<'
 		| '>>'
 		| '>>>'
+
+		| '+='
+		| '-='
+		| '*='
+		| '\='
+		| '%='
+		| '&='
+		| '|='
+		| '^='
+		| '<<='
+		| '>>='
+		| '>>>='
  */
 RULE(oop)
 {
@@ -1403,15 +1415,27 @@ RULE(oop)
 	})
 
 #define DEF_OOP_B(op) \
-	SUB_RULE(T(T_B##op)                 \
+	SUB_RULE(T(T_B##op)                \
 	{                                  \
 		_RETVAL.oop = IVM_OOP_ID(op);  \
 	})
 
 #define DEF_OOP_C(op) \
-	SUB_RULE(T(T_C##op)                 \
+	SUB_RULE(T(T_C##op)                \
 	{                                  \
 		_RETVAL.oop = IVM_OOP_ID(op);  \
+	})
+
+#define DEF_OOP_INP(op) \
+	SUB_RULE(T(T_IN##op)                   \
+	{                                      \
+		_RETVAL.oop = IVM_OOP_ID(IN##op);  \
+	})
+
+#define DEF_OOP_INP_B(op) \
+	SUB_RULE(T(T_INB##op)                  \
+	{                                      \
+		_RETVAL.oop = IVM_OOP_ID(IN##op);  \
 	})
 
 	SUB_RULE_SET(
@@ -1462,6 +1486,20 @@ RULE(oop)
 		DEF_OOP(SHL)
 		DEF_OOP(SHAR)
 		DEF_OOP(SHLR)
+
+		DEF_OOP_INP(ADD)
+		DEF_OOP_INP(SUB)
+		DEF_OOP_INP(MUL)
+		DEF_OOP_INP(DIV)
+		DEF_OOP_INP(MOD)
+
+		DEF_OOP_INP_B(AND)
+		DEF_OOP_INP_B(IOR)
+		DEF_OOP_INP_B(EOR)
+
+		DEF_OOP_INP(SHL)
+		DEF_OOP_INP(SHAR)
+		DEF_OOP_INP(SHLR)
 	)
 
 #undef DEF_OOP
