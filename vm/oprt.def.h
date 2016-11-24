@@ -23,11 +23,19 @@ BINOP_GEN(IVM_NUMERIC_T, MUL, IVM_NUMERIC_T, IVM_FALSE, {
 })
 
 BINOP_GEN(IVM_NUMERIC_T, DIV, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) / ivm_numeric_getValue(_OP2));
+	ivm_number_t denom = ivm_numeric_getValue(_OP2);
+
+	OPRT_ASSERT(denom != 0, IVM_ERROR_MSG_DIV_MOD_ZERO);
+
+	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) / denom);
 })
 
 BINOP_GEN(IVM_NUMERIC_T, MOD, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, fmod(ivm_numeric_getValue(_OP1), ivm_numeric_getValue(_OP2)));
+	ivm_number_t denom = ivm_numeric_getValue(_OP2);
+
+	OPRT_ASSERT(denom != 0, IVM_ERROR_MSG_DIV_MOD_ZERO);
+
+	return ivm_numeric_new(_STATE, fmod(ivm_numeric_getValue(_OP1), denom));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, NE, IVM_NUMERIC_T, IVM_TRUE, {
@@ -183,11 +191,19 @@ BINOP_GEN(IVM_NUMERIC_T, INMUL, IVM_NUMERIC_T, IVM_FALSE, {
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INDIV, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) / ivm_numeric_getValue(_OP2));
+	ivm_number_t denom = ivm_numeric_getValue(_OP2);
+
+	OPRT_ASSERT(denom != 0, IVM_ERROR_MSG_DIV_MOD_ZERO);
+
+	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) / denom);
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INMOD, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, fmod(ivm_numeric_getValue(_OP1), ivm_numeric_getValue(_OP2)));
+	ivm_number_t denom = ivm_numeric_getValue(_OP2);
+
+	OPRT_ASSERT(denom != 0, IVM_ERROR_MSG_DIV_MOD_ZERO);
+
+	return ivm_numeric_new(_STATE, fmod(ivm_numeric_getValue(_OP1), denom));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INAND, IVM_NUMERIC_T, IVM_FALSE, {

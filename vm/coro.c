@@ -57,23 +57,40 @@ ivm_coro_free(ivm_coro_t *coro,
 }
 
 IVM_INLINE
-ivm_object_t *
-_ivm_coro_newException_c(ivm_vmstate_t *state,
-						 const ivm_char_t *file,
-						 ivm_long_t line,
-						 ivm_object_t *msg)
+void
+_ivm_coro_setExceptionPos(ivm_vmstate_t *state,
+						  ivm_object_t *obj,
+						  ivm_instr_t *ip)
 {
-	ivm_object_t *ret = ivm_object_new(state);
+	ivm_long_t line = -1;
+	const ivm_char_t *file = "<untraceable>";
 
-	ivm_object_setSlot(ret, state,
+	if (ip) {
+		file = ivm_source_pos_getFile(ivm_instr_pos(ip));
+		line = ivm_instr_lineno(ip);
+	}
+
+	ivm_object_setSlot(obj, state,
 		IVM_VMSTATE_CONST(state, C_FILE),
 		ivm_string_object_new(state, IVM_CSTR(state, file))
 	);
 
-	ivm_object_setSlot(ret, state,
+	ivm_object_setSlot(obj, state,
 		IVM_VMSTATE_CONST(state, C_LINE),
 		ivm_numeric_new(state, line)
 	);
+
+	return;
+}
+
+IVM_INLINE
+ivm_object_t *
+_ivm_coro_newException_c(ivm_vmstate_t *state,
+						 ivm_object_t *msg)
+{
+	ivm_object_t *ret = ivm_object_new(state);
+
+	// _ivm_coro_updateExceptionPos(state, ret, file, line);
 
 	ivm_object_setSlot(ret, state, IVM_VMSTATE_CONST(state, C_MSG), msg);
 
@@ -87,20 +104,15 @@ ivm_coro_newStringException(ivm_coro_t *coro,
 {
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 	ivm_instr_t *tmp_ip;
-	ivm_long_t line = -1;
-	const ivm_char_t *tmp_file = "<untraceable>";
+	ivm_object_t *ret;
 
 	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
 
-	if (tmp_ip) {
-		tmp_file = ivm_source_pos_getFile(ivm_instr_pos(tmp_ip));
-		line = ivm_instr_lineno(tmp_ip);
-	}
+	ret = _ivm_coro_newException_c(state, ivm_string_object_new(state, IVM_CSTR(state, msg)));
 
-	return _ivm_coro_newException_c(
-		state, tmp_file, line,
-		ivm_string_object_new(state, IVM_CSTR(state, msg))
-	);
+	_ivm_coro_setExceptionPos(state, ret, tmp_ip);
+
+	return ret;
 
 #if 0
 	ivm_frame_stack_t *frame_st = IVM_CORO_GET(coro, FRAME_STACK);

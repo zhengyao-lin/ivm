@@ -141,6 +141,7 @@
 #define EXCEPTION() \
 	_TMP_CATCH = ivm_coro_unsetCurCatch(_BLOCK_STACK, _RUNTIME);  \
 	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);                 \
+	_ivm_coro_setExceptionPos(_STATE, _TMP_OBJ1, tmp_ip);         \
 	if (_TMP_CATCH) {                                             \
 		STACK_PUSH(_TMP_OBJ1);                                    \
 		GOTO_SET_INSTR(_TMP_CATCH);                               \

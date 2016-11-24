@@ -24,12 +24,9 @@ print(math.sqrt(math.pow(11, 2)))
 try: print(math.sqrt(-0.0001))
 catch: print("yes")
 
-print((1 / 0).isinf())
-print(!(1 / 0).isneginf())
-print((1 / 0).isposinf())
-
-print((1 / -0).isneginf())
-print((-1 / 0).isneginf())
+print(math.inf.isinf())
+print((-math.inf).isneginf())
+print(math.inf.isposinf())
 
 print(math.nan.isnan())
 print(math.inf.isinf())
@@ -56,8 +53,6 @@ ret
 
 // -> "num: 11"
 // -> "str: yes"
-// -> "num: 1"
-// -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
