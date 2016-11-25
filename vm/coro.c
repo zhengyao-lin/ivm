@@ -329,6 +329,7 @@ ivm_coro_setInt(ivm_coro_int_t flag)
 	}
 
 	_INT_UNLOCK();
+	
 	return;
 }
 
@@ -377,9 +378,6 @@ _ivm_coro_otherInt(ivm_coro_int_t intr)
 
 			_ivm_coro_unlockGIL();
 			ivm_coro_setCSL();
-			
-			// ivm_time_msleep(1);
-
 			_ivm_coro_lockGIL();
 			
 			return IVM_TRUE;

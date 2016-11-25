@@ -14,6 +14,13 @@ print("y".ord().char())
 for loc c in "abcd".chars():
 	print(c)
 
+print("y" * 2)
+print("y" * 0)
+print("y" * 1)
+print("y" * -100)
+try: print("y" * 10000000000)
+catch: print("yep")
+
 ret
 
 // -> "str: exception"
@@ -26,3 +33,9 @@ ret
 // -> "str: b"
 // -> "str: c"
 // -> "str: d"
+
+// -> "str: yy"
+// -> "str: "
+// -> "str: y"
+// -> "str: "
+// -> "str: yep"

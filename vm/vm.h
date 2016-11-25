@@ -265,6 +265,10 @@ ivm_vmstate_alloc(ivm_vmstate_t *state, ivm_size_t size)
 	ivm_bool_t add_block = IVM_FALSE;
 	void *ret = ivm_heap_alloc_c((state)->heaps, size, &add_block);
 
+	if (!ret) {
+		ivm_vmstate_setMemError(state);
+	}
+
 	if (IVM_UNLIKELY(add_block)) {
 		ivm_vmstate_openGCFlag(state);
 	}
@@ -309,6 +313,10 @@ ivm_vmstate_allocAt(ivm_vmstate_t *state, ivm_size_t size, ivm_int_t heap)
 {
 	ivm_bool_t add_block = IVM_FALSE;
 	void *ret = ivm_heap_alloc_c((state)->heaps + heap, size, &add_block);
+
+	if (!ret) {
+		ivm_vmstate_setMemError(state);
+	}
 
 	if (IVM_UNLIKELY(add_block)) {
 		ivm_vmstate_openGCFlag(state);

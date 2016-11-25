@@ -72,6 +72,7 @@ ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 	}
 	
 	*add_block = IVM_TRUE;
+	
 	return _ivm_heap_addBlock(heap, size);
 }
 

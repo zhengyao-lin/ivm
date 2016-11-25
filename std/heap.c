@@ -119,11 +119,11 @@ void *
 _ivm_heap_addLargeBlock(ivm_heap_t *heap, ivm_size_t size)
 {
 	ivm_byte_t *cur_block;
+	ivm_byte_t *orig = IVM_NULL;
 
 	if (++heap->btop < heap->bcount) {
-		heap->blocks[heap->btop]
-		= cur_block
-		= STD_REALLOC(heap->blocks[heap->btop], size);
+		orig = heap->blocks[heap->btop];
+		cur_block = STD_ALLOC(size);
 	} else {
 		heap->btop = heap->bcount++;
 
@@ -132,10 +132,16 @@ _ivm_heap_addLargeBlock(ivm_heap_t *heap, ivm_size_t size)
 			sizeof(*heap->blocks) * heap->bcount
 		);
 
-		cur_block
-		= heap->blocks[heap->btop]
-		= STD_ALLOC(size);
+		cur_block = STD_ALLOC(size);
 	}
+
+	if (!cur_block) {
+		heap->btop--;
+		return IVM_NULL;
+	}
+
+	heap->blocks[heap->btop] = cur_block;
+	STD_FREE(orig);
 
 	heap->bcurp
 	= heap->bendp
@@ -167,9 +173,9 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t size)
 
 		heap->bcurp = cur_block + size;
 		heap->bendp = cur_block + heap->bsize;
-	} else {
-		return _ivm_heap_addLargeBlock(heap, size);
-	}
 
-	return cur_block;
+		return cur_block;
+	}
+	
+	return _ivm_heap_addLargeBlock(heap, size);
 }

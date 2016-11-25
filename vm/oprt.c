@@ -160,12 +160,33 @@
 		ivm_number_t times = ivm_numeric_getValue(_OP2);
 		ivm_list_object_t *ret;
 
+		CHECK_OVERFLOW(times);
+
 		if (times <= 0) {
 			return ivm_list_object_new(_STATE, 0);
 		}
 
 		ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_list_object_t);
 		if (!ivm_list_object_multiply(ret, _STATE, times)) {
+			return IVM_NULL;
+		}
+
+		return IVM_AS_OBJ(ret);
+	}
+
+	BINOP_PROC_DEF(ivm_binop_mulString)
+	{
+		ivm_number_t times = ivm_numeric_getValue(_OP2);
+		ivm_string_object_t *ret;
+
+		CHECK_OVERFLOW(times);
+
+		if (times <= 0) {
+			return ivm_string_object_new(_STATE, IVM_VMSTATE_CONST(_STATE, C_EMPTY));
+		}
+
+		ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_string_object_t);
+		if (!ivm_string_object_multiply(ret, _STATE, times)) {
 			return IVM_NULL;
 		}
 

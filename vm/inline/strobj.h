@@ -101,6 +101,46 @@ ivm_string_object_new(ivm_vmstate_t *state,
 	return IVM_AS_OBJ(ret);
 }
 
+IVM_INLINE
+ivm_bool_t
+ivm_string_object_multiply(ivm_string_object_t *obj,
+						   ivm_vmstate_t *state,
+						   ivm_size_t times)
+{
+	const ivm_string_t *str = ivm_string_object_getValue(obj);
+	ivm_size_t len = ivm_string_length(str);
+	ivm_size_t dlen, i;
+	ivm_string_t *ret;
+	const ivm_char_t *orig;
+	ivm_char_t *cur;
+
+	dlen = len * times;
+
+	if (!dlen) {
+		obj->val = IVM_VMSTATE_CONST(state, C_EMPTY);
+		return IVM_TRUE;
+	}
+
+	obj->val = ret = ivm_vmstate_alloc(state, IVM_STRING_GET_SIZE(dlen));
+
+	if (!ret) {
+		return IVM_FALSE;
+	}
+
+	orig = ivm_string_trimHead(str);
+	cur = ivm_string_trimHead(ret);
+
+	for (i = 0; i != times; i++, cur += len) {
+		STD_MEMCPY(cur, orig, sizeof(ivm_char_t) * len);
+	}
+
+	ivm_string_trimHead(ret)[dlen] = '\0';
+	ivm_string_initHead(ret, IVM_FALSE, dlen);
+
+	return IVM_TRUE;
+}
+
+
 IVM_COM_END
 
 #endif
