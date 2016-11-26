@@ -39,6 +39,20 @@ IVM_NATIVE_FUNC(_object_clone)
 	return ivm_object_clone(NAT_BASE(), NAT_STATE());
 }
 
+IVM_NATIVE_FUNC(_object_call)
+{
+	ivm_function_object_t *func;
+
+	CHECK_ARG_COUNT(1);
+
+	func = IVM_AS(NAT_ARG_AT(1), ivm_function_object_t);
+
+	RTM_ASSERT(IVM_IS_BTTYPE(func, NAT_STATE(), IVM_FUNCTION_OBJECT_T),
+			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(func, TYPE_NAME)));
+
+	return ivm_coro_callBase_0(NAT_CORO(), NAT_STATE(), func, NAT_BASE());
+}
+
 /*
 IVM_NATIVE_FUNC(_object_type)
 {

@@ -45,10 +45,6 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 				   struct ivm_coro_t_tag *coro,
 				   ivm_size_t size);
 
-void
-ivm_vmstack_push(struct ivm_coro_t_tag *coro,
-				 struct ivm_object_t_tag *obj);
-
 #define ivm_vmstack_bottom(stack) ((stack)->bottom)
 #define ivm_vmstack_edge(stack) ((stack)->edge)
 #define ivm_vmstack_offset(stack, ptr) \

@@ -157,26 +157,3 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 
 	return;
 }
-
-void
-ivm_vmstack_push(ivm_coro_t *coro,
-				 ivm_object_t *obj)
-{
-	ivm_vmstack_t *stack = IVM_CORO_GET(coro, STACK);
-	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
-	ivm_object_t **sp;
-
-	IVM_ASSERT(runtime, IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK);
-	
-	sp = IVM_RUNTIME_GET(runtime, SP_INC);
-
-	*sp++ = obj;
-
-	if (sp == stack->edge) {
-		ivm_vmstack_inc_c(stack, coro);
-	}
-
-	// IVM_TRACE("%p %p\n", runtime->bp, runtime->sp);
-
-	return;
-}

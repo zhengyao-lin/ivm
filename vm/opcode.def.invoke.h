@@ -101,7 +101,7 @@
 		INVOKE_STACK(); \
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */)); \
  \
-		STACK_INC_C(_TMP_ARGC + 1); \
+		STACK_INC_C(_TMP_ARGC + 1); /* include base */ \
 		SAVE_STACK(); \
  \
 		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE); \

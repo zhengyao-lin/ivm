@@ -33,7 +33,7 @@ loc TypeA = class(Type0) { | self |
 	self.val = "hi"
 }
 
-loc TypeB = class(Type0) {}
+loc TypeB = class(Type0) { none }
 
 loc t1 = TypeA()
 loc t2 = TypeB()

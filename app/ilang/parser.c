@@ -1552,8 +1552,8 @@ RULE(block_param_opt)
 
 /*
 	block
-		: '{' nllo block_param_opt nllo expr_list nllo '}'
-		| '{' nllo slot_list_opt nllo '}'
+		: '{' nllo block_param_opt nllo expr_list_opt nllo '}'
+		// | '{' nllo slot_list_opt nllo '}'
 		| 'to' nllo block_param_opt nllo prefix_expr
  */
 RULE(block)
@@ -1580,6 +1580,7 @@ RULE(block)
 			);
 		})
 
+		/*
 		SUB_RULE(T(T_LBRAC) R(nllo)
 				 R(slot_list_opt)
 				 R(nllo) T(T_RBRAC)
@@ -1592,6 +1593,7 @@ RULE(block)
 				RULE_RET_AT(1).u.slot_list
 			);
 		})
+		*/
 
 		SUB_RULE(T(T_TO) R(nllo)
 				 R(block_param_opt) R(nllo)

@@ -153,7 +153,12 @@ ivm_coro_getCSL();
 #endif
 
 ivm_object_t *
-ivm_coro_callBase_n(ivm_coro_t *coro,
+ivm_coro_call_0(ivm_coro_t *coro,
+				struct ivm_vmstate_t_tag *state,
+				ivm_function_object_t *func);
+
+ivm_object_t *
+ivm_coro_callBase_0(ivm_coro_t *coro,
 					struct ivm_vmstate_t_tag *state,
 					ivm_function_object_t *func,
 					ivm_object_t *base);
@@ -334,113 +339,7 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define IVM_CORO_LIST_ITER_INDEX IVM_PTLIST_ITER_INDEX
 #define IVM_CORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_CORO_LIST_ITER_GET(iter) ((ivm_coro_t *)IVM_PTLIST_ITER_GET(iter))
-#define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)s
-
-#if 0
-
-#if 0
-
-typedef ivm_list_t ivm_cgroup_stack_t;
-typedef IVM_LIST_ITER_TYPE(ivm_cgid_t) ivm_cgroup_stack_iterator_t;
-
-#define ivm_cgroup_stack_init(stack) (ivm_list_init_c((stack), sizeof(ivm_cgid_t), IVM_DEFAULT_CGROUP_STACK_BUFFER_SIZE))
-#define ivm_cgroup_stack_dump(stack) (ivm_list_dump(stack))
-#define ivm_cgroup_stack_isEmpty ivm_list_isEmpty
-#define ivm_cgroup_stack_empty ivm_list_empty
-#define ivm_cgroup_stack_push(stack, gid) {   \
-	ivm_cgid_t tmp = (gid);                   \
-	ivm_list_push((stack), &tmp);             \
-}
-
-#define ivm_cgroup_stack_pop(stack) (*(ivm_cgid_t *)ivm_list_pop(stack))
-
-#endif
-
-typedef struct {
-	ivm_coro_list_t coros;
-	ivm_size_t cur;
-	ivm_bool_t lock;
-} ivm_cgroup_t;
-
-IVM_INLINE
-void
-ivm_cgroup_init(ivm_cgroup_t *group)
-{
-	ivm_coro_list_init(&group->coros);
-	group->cur = 0;
-	group->lock = IVM_FALSE;
-
-	return;
-}
-
-IVM_INLINE
-void
-ivm_cgroup_dump(ivm_cgroup_t *group,
-				struct ivm_vmstate_t_tag *state)
-{
-	ivm_coro_list_iterator_t citer;
-
-	if (group) {
-		IVM_CORO_LIST_EACHPTR(&group->coros, citer) {
-			ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
-		}
-		ivm_coro_list_dump(&group->coros);
-	}
-
-	return;
-}
-
-#define ivm_cgroup_getCoroList(group) (&(group)->coros)
-#define ivm_cgroup_isAlive(group) (ivm_coro_list_size(&(group)->coros) != 0)
-#define ivm_cgroup_addCoro(group, coro) (ivm_coro_list_push(&(group)->coros, (coro)))
-
-IVM_INLINE
-ivm_coro_t *
-ivm_cgroup_curCoro(ivm_cgroup_t *group)
-{
-	return ivm_coro_list_at(&group->coros, group->cur);
-}
-
-#define ivm_cgroup_isLocked(group) ((group)->lock)
-#define ivm_cgroup_lock(group) ((group)->lock = IVM_TRUE)
-#define ivm_cgroup_unlock(group) ((group)->lock = IVM_FALSE)
-
-ivm_bool_t
-ivm_cgroup_switchCoro(ivm_cgroup_t *group);
-
-IVM_INLINE
-void
-ivm_cgroup_empty(ivm_cgroup_t *group,
-				 struct ivm_vmstate_t_tag *state)
-{
-	ivm_coro_list_iterator_t citer;
-
-	IVM_CORO_LIST_EACHPTR(&group->coros, citer) {
-		ivm_coro_free(IVM_CORO_LIST_ITER_GET(citer), state);
-	}
-	ivm_coro_list_empty(&group->coros);
-
-	return;
-}
-
-void
-ivm_cgroup_travAndCompact(ivm_cgroup_t *group,
-						  struct ivm_traverser_arg_t_tag *arg);
-
-typedef ivm_list_t ivm_cgroup_list_t;
-typedef IVM_LIST_ITER_TYPE(ivm_cgroup_t) ivm_cgroup_list_iterator_t;
-
-#define ivm_cgroup_list_init(list) (ivm_list_init_c((list), sizeof(ivm_cgroup_t), IVM_DEFAULT_CGROUP_LIST_BUFFER_SIZE))
-#define ivm_cgroup_list_dump ivm_list_dump
-#define ivm_cgroup_list_size ivm_list_size
-#define ivm_cgroup_list_prepush(list, ptr) (ivm_list_prepush((list), (void **)(ptr)))
-#define ivm_cgroup_list_at(list, i) ((ivm_cgroup_t *)ivm_list_at((list), (i)))
-#define ivm_cgroup_list_has(list, i) (ivm_list_has((list), (i)))
-
-#define IVM_CGROUP_LIST_ITER_GET_PTR(iter) (IVM_LIST_ITER_GET_PTR((iter), ivm_cgroup_t))
-#define IVM_CGROUP_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_cgroup_t)
-
-#endif
+#define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)
 
 IVM_COM_END
 

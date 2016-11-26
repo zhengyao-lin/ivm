@@ -57,9 +57,7 @@ IVM_NATIVE_FUNC(call)
 	RTM_ASSERT(IVM_IS_BTTYPE(func, NAT_STATE(), IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(func, TYPE_NAME)));
 
-	ivm_function_object_invoke(func, NAT_STATE(), NAT_CORO());
-
-	return ivm_coro_resume(NAT_CORO(), NAT_STATE(), IVM_NULL);
+	return ivm_coro_call_0(NAT_CORO(), NAT_STATE(), func);
 }
 
 IVM_NATIVE_FUNC(eval)
