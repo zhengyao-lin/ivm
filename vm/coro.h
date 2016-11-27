@@ -158,10 +158,23 @@ ivm_coro_call_0(ivm_coro_t *coro,
 				ivm_function_object_t *func);
 
 ivm_object_t *
+ivm_coro_call_1(ivm_coro_t *coro,
+				struct ivm_vmstate_t_tag *state,
+				ivm_function_object_t *func,
+				ivm_object_t *arg);
+
+ivm_object_t *
 ivm_coro_callBase_0(ivm_coro_t *coro,
 					struct ivm_vmstate_t_tag *state,
 					ivm_function_object_t *func,
 					ivm_object_t *base);
+
+ivm_object_t *
+ivm_coro_callBase_1(ivm_coro_t *coro,
+					struct ivm_vmstate_t_tag *state,
+					ivm_function_object_t *func,
+					ivm_object_t *base,
+					ivm_object_t *arg);
 
 IVM_INLINE
 ivm_object_t **
