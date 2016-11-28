@@ -1,3 +1,4 @@
+import std
 
 loc.merge(import class)
 

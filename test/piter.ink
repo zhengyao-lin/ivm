@@ -1,3 +1,5 @@
+import std
+
 // pseudo iter
 
 list_proto = [].proto

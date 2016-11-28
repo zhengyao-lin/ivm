@@ -1,3 +1,4 @@
+import std
 
 err_func = fn: {
 	raise "something wrong"

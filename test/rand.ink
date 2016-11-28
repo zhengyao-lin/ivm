@@ -1,3 +1,4 @@
+import std
 import math
 
 i = 0

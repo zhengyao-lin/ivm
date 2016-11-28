@@ -1,4 +1,5 @@
 
+import std
 import testmod
 
 ret

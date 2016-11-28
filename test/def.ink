@@ -1,3 +1,5 @@
+import std
+
 loc def = fn a = 10: {
 	print(a)
 }

@@ -1,3 +1,5 @@
+import std
+
 loc M = 1000000
 loc B = 2 * 5 * 4 * 4 * 4 + 1
 loc A = 100001

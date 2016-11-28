@@ -1,3 +1,4 @@
+import std
 
 buf = buffer(8)
 buf.init()

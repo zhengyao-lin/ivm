@@ -1,3 +1,5 @@
+import std
+
 print(1 << 2)		// -> "num: 4"
 print(1024 >> 2)	// -> "num: 256"
 print(-1 >> 2)		// -> "num: -1"

@@ -1,5 +1,6 @@
 // object literal
 
+import std
 import ulist
 import exc
 

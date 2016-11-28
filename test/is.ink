@@ -1,3 +1,5 @@
+import std
+
 print(none is none)
 print(1 is numeric)
 print((fn:0) is function)

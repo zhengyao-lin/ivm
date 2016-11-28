@@ -1,3 +1,4 @@
+import std
 
 loc res = "<!DOCTYPE html>"
 loc depth = 0

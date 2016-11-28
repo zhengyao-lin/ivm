@@ -1,3 +1,4 @@
+import std
 
 a = 0
 a += 1

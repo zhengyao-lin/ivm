@@ -1,3 +1,5 @@
+import std
+
 a = fn: {
 	ret fn: {
 		print(the_msg) // -> "str: hey"
@@ -10,6 +12,8 @@ loc = {
 	the_msg: "hey",
 	a: a,
 	print: print,
+	string: string,
+	numeric: numeric,
 	typename: typename
 }
 

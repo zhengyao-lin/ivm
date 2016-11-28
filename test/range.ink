@@ -1,3 +1,5 @@
+import std
+
 for loc i in range(1, 3):
 	print(i)
 

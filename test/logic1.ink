@@ -1,3 +1,5 @@
+import std
+
 print(1 || 0)									// -> "num: 1"
 print(0 || 2)									// -> "num: 2"
 print(0 && 1)									// -> "num: 0"

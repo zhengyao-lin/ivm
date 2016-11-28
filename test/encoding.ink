@@ -1,3 +1,5 @@
+import std
+
 loc check = fn str: str + ", len: " + str.len()
 
 print("编码测试, " + "エンコードテスト, " + "тест Кодирование, " + "인코딩 테스트, " + "encoding test" ==

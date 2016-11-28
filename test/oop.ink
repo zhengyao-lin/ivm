@@ -1,3 +1,5 @@
+import std
+
 a = 10
 a.+ = fn b: base - b
 a.* = "hi"

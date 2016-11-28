@@ -1,3 +1,4 @@
+import std
 import ulist
 
 print([1, 2, 3, " happies"].reduce(fn a, b: a + b))

@@ -1,3 +1,4 @@
+import std
 import graph
 
 loc g1 = graph.Graph(4)

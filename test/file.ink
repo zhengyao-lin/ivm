@@ -1,3 +1,4 @@
+import std
 import io
 
 fp = io.file("test/text1")

@@ -1,3 +1,5 @@
+import std
+
 printl = fn list: {
 	loc size = list.size()
 	loc i = 0

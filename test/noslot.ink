@@ -1,3 +1,5 @@
+import std
+
 loc echo = {
 	noslot: fn name: {
 		print(name)

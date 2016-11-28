@@ -1,3 +1,5 @@
+import std
+
 try: "abcdefghi".ord(20)
 catch: print("exception")
 

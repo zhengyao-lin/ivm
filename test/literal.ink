@@ -1,3 +1,5 @@
+import std
+
 print("\\a") // -> "str: \\\\a"
 print("\xe4\xbd\xa0\xe5\xa5\xbd" == "你好") // -> "num: 1"
 
