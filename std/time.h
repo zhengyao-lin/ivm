@@ -50,6 +50,7 @@ IVM_COM_HEADER
 #define ivm_time_getCur() time(IVM_NULL)
 
 #define ivm_time_sleep(sec) ivm_time_msleep((sec) * 1000)
+#define ivm_time_hwclock() ((ivm_long_t)clock())
 
 IVM_COM_END
 
