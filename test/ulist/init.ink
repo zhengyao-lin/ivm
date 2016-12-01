@@ -42,7 +42,7 @@
 		val
 	}
 
-	lp.to_str = fn: {
+	lp.to_s = lp.to_str = fn: {
 		loc r = []
 
 		for loc e in base: {

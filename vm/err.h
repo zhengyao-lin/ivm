@@ -132,6 +132,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_MAX_CID_DELAY(expect)						"maximum collecting id delay reached(should be greater than %ld)", (expect)
 #define IVM_ERROR_MSG_INPUT_READ_EOF							"end-of-file reached in input"
 #define IVM_ERROR_MSG_DIV_MOD_ZERO								"number division or modulo by zero"
+#define IVM_ERROR_MSG_ILLEGAL_TO_S								"illegal to_s method"
 
 IVM_COM_END
 

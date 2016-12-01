@@ -627,6 +627,25 @@ ivm_coro_resume(ivm_coro_t *coro,
 	return ret;
 }
 
+/* no trap */
+IVM_INLINE
+ivm_object_t *
+ivm_coro_resume_n(ivm_coro_t *coro,
+				  ivm_vmstate_t *state,
+				  ivm_object_t *arg)
+{
+	ivm_object_t *ret;
+	ivm_coro_t *orig = ivm_vmstate_curCoro(state);
+
+	ivm_vmstate_setCurCoro(state, coro);
+
+	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
+
+	ivm_vmstate_setCurCoro(state, orig);
+
+	return ret;
+}
+
 /* call function from native code */
 
 ivm_object_t *
@@ -638,7 +657,7 @@ ivm_coro_call_0(ivm_coro_t *coro,
 
 	if (ivm_function_object_invoke(func, state, coro)) {
 		/* non-native */
-		return ivm_coro_resume(coro, state, IVM_NULL);
+		return ivm_coro_resume_n(coro, state, IVM_NULL);
 	}
 
 	ivm_object_t *ret = ivm_function_callNative(
@@ -663,7 +682,7 @@ ivm_coro_call_1(ivm_coro_t *coro,
 
 	if (ivm_function_object_invoke(func, state, coro)) {
 		/* non-native */
-		return ivm_coro_resume(coro, state, arg);
+		return ivm_coro_resume_n(coro, state, arg);
 	}
 
 	ivm_vmstack_push(coro, arg);
@@ -690,7 +709,7 @@ ivm_coro_callBase_0(ivm_coro_t *coro,
 
 	if (ivm_function_object_invokeBase(func, state, coro, base)) {
 		/* non-native */
-		return ivm_coro_resume(coro, state, IVM_NULL);
+		return ivm_coro_resume_n(coro, state, IVM_NULL);
 	}
 
 	// IVM_TRACE("call base: %p %p\n", runtime->bp, runtime->sp);
@@ -720,7 +739,7 @@ ivm_coro_callBase_1(ivm_coro_t *coro,
 
 	if (ivm_function_object_invokeBase(func, state, coro, base)) {
 		/* non-native */
-		return ivm_coro_resume(coro, state, arg);
+		return ivm_coro_resume_n(coro, state, arg);
 	}
 
 	// IVM_TRACE("call base: %p %p\n", runtime->bp, runtime->sp);

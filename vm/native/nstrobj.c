@@ -14,7 +14,9 @@
 
 IVM_NATIVE_FUNC(_string_cons)
 {
-	ivm_object_t *arg;
+	ivm_object_t *arg, *to_s;
+	ivm_object_t *base;
+	ivm_function_object_t *func;
 
 	CHECK_ARG_COUNT(1);
 
@@ -26,6 +28,14 @@ IVM_NATIVE_FUNC(_string_cons)
 		ivm_char_t buf[25];
 		ivm_conv_dtoa(ivm_numeric_getValue(arg), buf);
 		return ivm_string_object_new(NAT_STATE(), ivm_vmstate_constantize_r(NAT_STATE(), buf));
+	} else {
+		to_s = ivm_object_getSlot(arg, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_TO_S));
+		
+		if (to_s && (func = ivm_object_callable(to_s, NAT_STATE(), &base))) {
+			return ivm_coro_callBase_0(NAT_CORO(), NAT_STATE(), func, base ? base : arg);
+		}
+
+		RTM_FATAL(IVM_ERROR_MSG_ILLEGAL_TO_S);
 	}
 
 	RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_CONVERT_STR(IVM_OBJECT_GET(arg, TYPE_NAME)));
