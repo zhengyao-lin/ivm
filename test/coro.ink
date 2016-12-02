@@ -66,6 +66,32 @@ call(fn: try: yield catch: print("failed to yield"))
 
 print("hi?")
 
+loc gen = fn f: {
+	loc c = fork f
+	loc r = fn arg: {
+		resume c with arg
+	}
+
+	r.iter = fn: {
+		next: fn: r()
+	}
+
+	r
+}
+
+loc a = gen {
+	loc val = 0
+	while val < 20: {
+		yield val * val
+		val += 1
+	}
+
+	val * val
+}
+
+for i in a:
+	print(i)
+
 ret
 
 // -> "str: yeah"
@@ -98,4 +124,26 @@ ret
 // -> "num: 4181"
 // -> "num: 6765"
 // -> "str: failed to yield"
-// -> "str: hi\\?"
+// -> "str: hi."
+
+// -> "num: 0"
+// -> "num: 1"
+// -> "num: 4"
+// -> "num: 9"
+// -> "num: 16"
+// -> "num: 25"
+// -> "num: 36"
+// -> "num: 49"
+// -> "num: 64"
+// -> "num: 81"
+// -> "num: 100"
+// -> "num: 121"
+// -> "num: 144"
+// -> "num: 169"
+// -> "num: 196"
+// -> "num: 225"
+// -> "num: 256"
+// -> "num: 289"
+// -> "num: 324"
+// -> "num: 361"
+// -> "num: 400"
