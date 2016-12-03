@@ -23,8 +23,7 @@ TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t),
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _type_to_s));
 
-}, .des = ivm_type_object_destructor,
-   .trav = ivm_type_object_traverser,
+}, .trav = ivm_type_object_traverser,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t),

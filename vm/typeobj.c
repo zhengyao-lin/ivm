@@ -14,7 +14,7 @@ ivm_type_object_traverser(ivm_object_t *obj,
 	ivm_object_t *proto;
 
 	if (!ivm_type_isBuiltin(type)) {
-		// avoid duplicated copy(prototypes of built-in types is in the root)
+		// avoid duplicated copy(prototypes of built-in types can be reached from the root)
 
 		proto = ivm_type_getProto(type);
 		if (proto && !ivm_heap_isIn(arg->heap, proto)) {

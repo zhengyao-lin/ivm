@@ -789,7 +789,7 @@ void
 ivm_coro_object_cloner(ivm_object_t *obj,
 					   ivm_vmstate_t *state)
 {
-	// TODO: you know
+	// TODO
 	IVM_AS(obj, ivm_coro_object_t)->coro = IVM_NULL;
 	return;
 }
