@@ -2,7 +2,7 @@ TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {
 }, .const_bool = IVM_FALSE)
 
 TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t),
-	IVM_GET_NATIVE_FUNC(_object_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _object_cons), {
 
 	ivm_object_t *tmp = ivm_object_new_c(_STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 	ivm_type_setProto(_TYPE, tmp);
@@ -15,7 +15,7 @@ TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t),
 }, .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t),
-	IVM_GET_NATIVE_FUNC(_type_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _type_cons), {
 
 	ivm_object_t *tmp = ivm_type_object_new(_STATE, _TYPE);
 	ivm_type_setProto(_TYPE, tmp);
@@ -27,7 +27,7 @@ TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t),
-	IVM_GET_NATIVE_FUNC(_numeric_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _numeric_cons), {
 	
 	ivm_object_t *tmp = ivm_numeric_new(_STATE, IVM_NUM(0));
 	ivm_type_setProto(_TYPE, tmp);
@@ -50,7 +50,7 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t),
 }, .to_bool = ivm_numeric_isTrue)
 
 TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
-	IVM_GET_NATIVE_FUNC(_string_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _string_cons), {
 	
 	ivm_object_t *tmp = ivm_string_object_new(_STATE, IVM_VMSTATE_CONST(_STATE, C_EMPTY));
 	ivm_type_setProto(_TYPE, tmp);
@@ -67,7 +67,7 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t),
-	IVM_GET_NATIVE_FUNC(_list_cons), {
+	IVM_BUILTIN_WRAP_C(_STATE, _list_cons), {
 	
 	ivm_object_t *tmp = ivm_list_object_new(_STATE, 0);
 	ivm_type_setProto(_TYPE, tmp);
@@ -87,7 +87,7 @@ TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
-	IVM_GET_NATIVE_FUNC(_buffer_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _buffer_cons), {
 
 	ivm_object_t *tmp = ivm_buffer_object_new(_STATE, 1);
 	ivm_type_setProto(_TYPE, tmp);
@@ -102,7 +102,7 @@ TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
-	IVM_GET_NATIVE_FUNC(_function_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _function_cons), {
 	
 	ivm_object_t *tmp = ivm_function_object_new(_STATE, IVM_NULL, IVM_NULL);
 	ivm_type_setProto(_TYPE, tmp);
@@ -114,7 +114,7 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
-	IVM_GET_NATIVE_FUNC(_coro_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _coro_cons), {
 	
 	ivm_object_t *tmp = ivm_coro_object_new(_STATE, IVM_NULL);
 	ivm_type_setProto(_TYPE, tmp);
@@ -126,7 +126,7 @@ TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),
-	IVM_GET_NATIVE_FUNC(_range_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _range_cons), {
 	
 	ivm_object_t *tmp = ivm_range_new(_STATE, 0, 0, 1);
 	ivm_type_setProto(_TYPE, tmp);
@@ -138,7 +138,7 @@ TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),
 }, .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_RANGE_ITER_T, range_iter, sizeof(ivm_range_iter_t),
-	IVM_GET_NATIVE_FUNC(_range_iter_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _range_iter_cons), {
 	
 	ivm_object_t *tmp = ivm_range_iter_new(_STATE, 0, 0, 1);
 	ivm_type_setProto(_TYPE, tmp);
@@ -149,7 +149,7 @@ TYPE_GEN(IVM_RANGE_ITER_T, range_iter, sizeof(ivm_range_iter_t),
 }, .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_LIST_OBJECT_ITER_T, list_iter, sizeof(ivm_list_object_iter_t),
-	IVM_GET_NATIVE_FUNC(_list_iter_cons), {
+	IVM_NATIVE_WRAP_C(_STATE, _list_iter_cons), {
 	
 	ivm_object_t *tmp = ivm_list_object_iter_new(_STATE, 0);
 	ivm_type_setProto(_TYPE, tmp);

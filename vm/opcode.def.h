@@ -731,6 +731,18 @@ OPCODE_GEN(DUP_PREV_BLOCK, "dup_prev_block", I, 1, {
 	NEXT_INSTR_NINT();
 })
 
+/* duplicate the nth element in the 1st previous block, n = 0 means the stack top */
+OPCODE_GEN(DUP_PREV_BLOCK_N, "dup_prev_block_n", I, 1, {
+	_TMP_ARGC = IARG();
+	
+	// RTM_ASSERT(ivm_runtime_hasNBlock(_RUNTIME, _TMP_ARGC), IVM_ERROR_MSG_NO_ENOUGH_BLOCK);
+
+	_TMP_OBJ1 = STACK_PREV_BLOCK_N(_TMP_ARGC);
+	STACK_PUSH(_TMP_OBJ1);
+
+	NEXT_INSTR_NINT();
+})
+
 #if 1
 
 OPCODE_GEN(OUT, "out", S, 0, {
@@ -1248,6 +1260,15 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 /* stack empty => goto the addr */
 OPCODE_GEN(CHECK, "check", A, -1, {
 	if (AVAIL_STACK) {
+		GOTO_SET_INSTR(ADDR_ARG());
+	} else {
+		NEXT_INSTR_NINT();
+	}
+})
+
+/* stack size < 2 => goto the addr */
+OPCODE_GEN(CHECK2, "check2", A, -1, {
+	if (AVAIL_STACK < 2) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
 		NEXT_INSTR_NINT();

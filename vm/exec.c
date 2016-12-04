@@ -220,7 +220,6 @@ ivm_exec_unit_new(ivm_size_t root,
 	ret->root = root;
 	ret->pos = IVM_NULL;
 	ret->execs = execs;
-	ret->offset = 0;
 
 	return ret;
 }
@@ -246,15 +245,8 @@ ivm_exec_unit_mergeToVM(ivm_exec_unit_t *unit,
 	ivm_exec_list_iterator_t eiter;
 	ivm_size_t i = 0, root = unit->root;
 
-	ivm_uint_t offset = unit->offset;
+	ivm_uint_t offset = ivm_vmstate_getLinkOffset(state);
 	ivm_source_pos_t *pos = unit->pos;
-
-	IVM_ASSERT(
-		unit->offset == ivm_vmstate_getLinkOffset(state),
-		IVM_ERROR_MSG_LINK_OFFSET_MISMATCH(
-			ivm_vmstate_getLinkOffset(state), unit->offset
-		)
-	);
 
 	IVM_EXEC_LIST_EACHPTR(unit->execs, eiter) {
 		exec = IVM_EXEC_LIST_ITER_GET(eiter);

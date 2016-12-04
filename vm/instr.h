@@ -77,7 +77,7 @@ ivm_instr_setCache(ivm_instr_t *instr, ivm_uid_t id, ivm_ptr_t data)
 #define IVM_INSTR_TYPE_S_ARG const char *str,		/* string */
 
 #define IVM_INSTR_GEN(o, ...) \
-	(ivm_instr_gen_##o(__VA_ARGS__, -1))
+	(ivm_instr_gen_##o(__VA_ARGS__, 0))
 
 #define IVM_INSTR_GEN_L(l, o, ...) \
 	(ivm_instr_gen_##o(__VA_ARGS__, (l)))

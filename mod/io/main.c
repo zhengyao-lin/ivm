@@ -363,17 +363,6 @@ IVM_NATIVE_FUNC(_io_remove)
 	return IVM_NONE(NAT_STATE());
 }
 
-IVM_PRIVATE
-ivm_type_t
-_io_file_type = IVM_TPTYPE_BUILD(
-	IO_FILE_TYPE_NAME, sizeof(ivm_file_object_t),
-	IO_FILE_TYPE_CONS,
-
-	.des = ivm_file_object_destructor,
-	.clone = ivm_file_object_cloner,
-	.const_bool = IVM_TRUE
-);
-
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
@@ -381,6 +370,15 @@ ivm_mod_main(ivm_vmstate_t *state,
 {
 	ivm_object_t *mod = ivm_object_new(state);
 	ivm_object_t *file_proto;
+
+	ivm_type_t _io_file_type = IVM_TPTYPE_BUILD(
+		IO_FILE_TYPE_NAME, sizeof(ivm_file_object_t),
+		IVM_NATIVE_WRAP_C(state, _io_file),
+
+		.des = ivm_file_object_destructor,
+		.clone = ivm_file_object_cloner,
+		.const_bool = IVM_TRUE
+	);
 
 	/* io.file */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, IO_FILE_TYPE_NAME, &_io_file_type, {

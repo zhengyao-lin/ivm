@@ -29,7 +29,6 @@ typedef struct {
 } IVM_NOALIGN ivm_serial_exec_list_t;
 
 typedef struct {
-	ivm_uint32_t offset;
 	ivm_uint64_t root;
 	ivm_serial_exec_list_t *list;
 } IVM_NOALIGN ivm_serial_exec_unit_t;

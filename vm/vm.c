@@ -17,23 +17,6 @@
 
 #include "type.req.h"
 
-IVM_PRIVATE
-ivm_type_t static_type_list[] = {
-#define TYPE_GEN(t, n, s, c, proto_init, ...) \
-	{                                      \
-		.tag = (t),                        \
-		.name = #n,                        \
-		.size = (s),                       \
-		.cons = (c),                       \
-		.is_builtin = IVM_TRUE,            \
-		__VA_ARGS__                        \
-	},
-
-	#include "type.def.h"
-
-#undef TYPE_GEN
-};
-
 #define SET_TYPE_PROTO(state, tag, obj) \
 	(ivm_type_setProto(ivm_vmstate_getType((state), (tag)), (obj)))
 
@@ -89,6 +72,24 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	ret->except = IVM_NULL;
 	ivm_uid_gen_init(&ret->uid_gen);
+
+#define _STATE ret
+	
+	ivm_type_t static_type_list[] = {
+	#define TYPE_GEN(t, n, s, c, proto_init, ...) \
+		((ivm_type_t) {                        \
+			.tag = (t),                        \
+			.name = #n,                        \
+			.size = (s),                       \
+			.cons = (c),                       \
+			.is_builtin = IVM_TRUE,            \
+			__VA_ARGS__                        \
+		}),
+
+		#include "type.def.h"
+
+	#undef TYPE_GEN
+	};
 
 	for (i = 0, tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++, i++) {

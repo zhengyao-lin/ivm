@@ -3,6 +3,7 @@
 
 #include "pub/err.h"
 #include "pub/obj.h"
+#include "pub/vm.h"
 
 #include "native.h"
 
@@ -74,5 +75,23 @@
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG									("wrong argument")
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(expect, given)				"wrong argument count(expect %d, %d given)", (ivm_int_t)(expect), (ivm_int_t)(given)
 #define IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(i)							"wrong %dth argument", (i)
+
+#define BUILTIN_FUNC(name, instrs) IVM_BUILTIN_FUNC(name) {                   \
+		ivm_exec_t *__exec__;                                                 \
+		ivm_function_t *__ret__;                                              \
+	                                                                          \
+		__exec__ = ivm_exec_new(ivm_vmstate_getConstPool(NAT_STATE()));       \
+		ivm_ref_inc(__exec__);                                                \
+	                                                                          \
+		instrs;                                                               \
+	                                                                          \
+		__ret__ = ivm_function_new(NAT_STATE(), __exec__);                    \
+		ivm_vmstate_registerFunc(NAT_STATE(), __ret__);                       \
+		ivm_exec_free(__exec__);                                              \
+                                                                              \
+		return __ret__;                                                       \
+	}
+
+#define I(...) ivm_exec_addInstr(__exec__, __VA_ARGS__);
 
 #endif

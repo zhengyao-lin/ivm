@@ -107,11 +107,11 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 	ivm_object_t *cons;
 	ivm_type_tag_t i;
 
-	for (i = 0; i < IVM_TYPE_COUNT; i++) {
+	for (i = 1; i < IVM_TYPE_COUNT; i++) {
 		type = IVM_BTTYPE(state, i);
-		cons = ivm_function_object_newNative(state, ivm_type_getCons(type));
-		ivm_object_setProto(cons, state, ivm_type_getProto(type));
 
+		cons = ivm_function_object_new(state, ctx, ivm_type_getCons(type));
+		ivm_object_setProto(cons, state, ivm_type_getProto(type));
 		ivm_context_setSlot_r(ctx, state, ivm_type_getName(type), cons);
 	}
 

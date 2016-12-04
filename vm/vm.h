@@ -607,6 +607,13 @@ ivm_vmstate_getFuncStringPool(ivm_vmstate_t *state)
 	return IVM_NULL;
 }
 
+IVM_INLINE
+ivm_string_pool_t *
+ivm_vmstate_getConstPool(ivm_vmstate_t *state)
+{
+	return state->const_pool;
+}
+
 #define ivm_vmstate_addDesLog(state, obj) (ivm_collector_addDesLog(&(state)->gc, (obj)))
 
 #if 0

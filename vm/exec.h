@@ -29,7 +29,12 @@ ivm_source_pos_new(const ivm_char_t *file);
 void
 ivm_source_pos_free(ivm_source_pos_t *pos);
 
-#define ivm_source_pos_getFile(pos) ((pos)->file)
+IVM_INLINE
+const ivm_char_t *
+ivm_source_pos_getFile(ivm_source_pos_t *pos)
+{
+	return pos ? pos->file : "<untraceable>";
+}
 
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
@@ -189,7 +194,6 @@ typedef struct {
 	ivm_size_t root;
 	ivm_source_pos_t *pos;
 	ivm_exec_list_t *execs;
-	ivm_uint_t offset;
 } ivm_exec_unit_t;
 
 ivm_exec_unit_t *
@@ -201,9 +205,6 @@ ivm_exec_unit_free(ivm_exec_unit_t *unit);
 
 #define ivm_exec_unit_execList(unit) ((unit)->execs)
 #define ivm_exec_unit_root(unit) ((unit)->root)
-#define ivm_exec_unit_offset(unit) ((unit)->offset)
-
-#define ivm_exec_unit_setOffset(unit, ofs) ((unit)->offset = (ofs))
 
 IVM_INLINE
 void
@@ -230,7 +231,7 @@ ivm_size_t
 ivm_exec_unit_registerExec(ivm_exec_unit_t *unit,
 						   ivm_exec_t *exec)
 {
-	return ivm_exec_list_push(unit->execs, exec); // + unit->offset;
+	return ivm_exec_list_push(unit->execs, exec);
 }
 
 struct ivm_function_t_tag * /* root function */

@@ -457,17 +457,6 @@ IVM_NATIVE_FUNC(_struct_array)
 	return obj;
 }
 
-IVM_PRIVATE
-ivm_type_t
-_struct_type = IVM_TPTYPE_BUILD(
-	STRUCT_TYPE_NAME, sizeof(ivm_struct_object_t),
-	STRUCT_TYPE_CONS,
-
-	.des = ivm_struct_object_destructor,
-	.clone = ivm_struct_object_cloner,
-	.const_bool = IVM_TRUE
-);
-
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
@@ -475,6 +464,15 @@ ivm_mod_main(ivm_vmstate_t *state,
 {
 	ivm_object_t *mod = ivm_object_new(state);
 	ivm_object_t *struct_proto;
+
+	ivm_type_t _struct_type = IVM_TPTYPE_BUILD(
+		STRUCT_TYPE_NAME, sizeof(ivm_struct_object_t),
+		IVM_NATIVE_WRAP_C(state, _struct_struct),
+
+		.des = ivm_struct_object_destructor,
+		.clone = ivm_struct_object_cloner,
+		.const_bool = IVM_TRUE
+	);
 
 	/* struct.struct */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, STRUCT_TYPE_NAME, &_struct_type, {

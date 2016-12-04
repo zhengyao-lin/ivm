@@ -107,17 +107,6 @@ IVM_NATIVE_FUNC(_image_bmp_parse)
 	return ivm_image_object_new(NAT_STATE(), img);
 }
 
-IVM_PRIVATE
-ivm_type_t
-_image_type = IVM_TPTYPE_BUILD(
-	IMAGE_TYPE_NAME, sizeof(ivm_image_object_t),
-	IMAGE_TYPE_CONS,
-
-	.des = ivm_image_object_destructor,
-	.clone = ivm_image_object_cloner,
-	.const_bool = IVM_TRUE
-);
-
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
@@ -126,6 +115,15 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_t *mod = ivm_object_new(state);
 	ivm_object_t *image_proto;
 	ivm_object_t *bmp_mod;
+
+	ivm_type_t _image_type = IVM_TPTYPE_BUILD(
+		IMAGE_TYPE_NAME, sizeof(ivm_image_object_t),
+		IVM_NATIVE_WRAP_C(state, _image_image),
+
+		.des = ivm_image_object_destructor,
+		.clone = ivm_image_object_cloner,
+		.const_bool = IVM_TRUE
+	);
 
 	/* image.image */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, IMAGE_TYPE_NAME, &_image_type, {

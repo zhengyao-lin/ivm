@@ -26,6 +26,15 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 #define IVM_NATIVE_WRAP(state, name) \
 	ivm_function_object_newNative((state), IVM_GET_NATIVE_FUNC(name))
 
+#define IVM_BUILTIN_WRAP(state, name) \
+	ivm_function_object_new((state), IVM_NULL, IVM_GET_BUILTIN_FUNC(name)(state))
+
+#define IVM_NATIVE_WRAP_C(state, name) \
+	ivm_function_newNative((state), IVM_GET_NATIVE_FUNC(name))
+
+#define IVM_BUILTIN_WRAP_C(state, name) \
+	IVM_GET_BUILTIN_FUNC(name)(state)
+
 ivm_object_t *
 IVM_NATIVE_WRAP_CONS_c(ivm_vmstate_t *state,
 					   ivm_object_t *proto,

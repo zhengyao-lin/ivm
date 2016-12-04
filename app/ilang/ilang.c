@@ -74,10 +74,7 @@ IVM_NATIVE_FUNC(eval)
 
 	if (!unit) goto FAILED;
 
-	exec_unit = ilang_gen_generateExecUnit_c(
-		unit, ivm_vmstate_getFuncStringPool(NAT_STATE()),
-		ivm_vmstate_getLinkOffset(NAT_STATE())
-	);
+	exec_unit = ilang_gen_generateExecUnit_c(unit, ivm_vmstate_getFuncStringPool(NAT_STATE()));
 
 	if (!exec_unit) goto FAILED;
 	// ivm_dbg_printExecUnit(exec_unit, stderr);
@@ -122,9 +119,7 @@ _parse_source(ivm_vmstate_t *state,
 
 	if (!t_unit) goto FAILED;
 
-	ret = ilang_gen_generateExecUnit_c(
-		t_unit, ivm_vmstate_getFuncStringPool(state), 0
-	);
+	ret = ilang_gen_generateExecUnit_c(t_unit, ivm_vmstate_getFuncStringPool(state));
 
 FAILED:
 	STD_FREE(src);
@@ -156,7 +151,6 @@ ilang_mod_loadSource(const ivm_char_t *path,
 	}
 
 	// set load offset
-	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
 	root = ivm_exec_unit_mergeToVM(unit, state);
 	ivm_exec_unit_free(unit);
 

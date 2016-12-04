@@ -140,7 +140,6 @@ ivm_string_object_multiply(ivm_string_object_t *obj,
 	return IVM_TRUE;
 }
 
-
 IVM_COM_END
 
 #endif

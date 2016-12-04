@@ -177,6 +177,9 @@
 #define STACK_PREV_BLOCK_TOP(n) \
 	(*ivm_coro_getPrevBlockTop(_BLOCK_STACK, tmp_bp, (n)))
 
+#define STACK_PREV_BLOCK_N(n) \
+	(*(ivm_coro_getPrevBlockTop(_BLOCK_STACK, tmp_bp, 1) - (n)))
+
 #define _STACK (tmp_stack)
 
 #if IVM_STACK_CACHE_N_TOS != 0

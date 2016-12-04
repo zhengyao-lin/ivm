@@ -29,6 +29,7 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 	(ivm_function_arg_t){ (base), (argc), (argv) }
 
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
+#define IVM_GET_BUILTIN_FUNC(name) ivm_builtin_function_##name
 
 #define IVM_NATIVE_FUNC(name) \
 	ivm_object_t *IVM_GET_NATIVE_FUNC(name)(struct ivm_vmstate_t_tag *__state__, \
@@ -41,6 +42,9 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 					   struct ivm_coro_t_tag *__coro__, \
 					   ivm_context_t *__context__, \
 					   ivm_function_arg_t __arg__)
+
+#define IVM_BUILTIN_FUNC(name) \
+	ivm_function_t *IVM_GET_BUILTIN_FUNC(name)(struct ivm_vmstate_t_tag *__state__)
 
 #define NAT_STATE() (__state__)
 #define NAT_CORO() (__coro__)
@@ -93,6 +97,7 @@ ivm_function_free(ivm_function_t *func,
 				  struct ivm_vmstate_t_tag *state);
 
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
+#define ivm_function_getNative(func) ((func)->u.native)
 
 #define ivm_function_callNative(func, state, coro, context, arg) \
 	((func)->u.native((state), (coro), (context), (arg)))

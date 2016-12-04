@@ -339,8 +339,7 @@ ilang_gen_list_comp_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "list comprehension expression", flag);
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, 0);
-	comp_expr->expr->eval(comp_expr->expr, FLAG(0), env);
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	comp_expr->expr->eval(comp_expr->expr, FLAG(.is_top_level = IVM_TRUE), env);
 
 	if (flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);

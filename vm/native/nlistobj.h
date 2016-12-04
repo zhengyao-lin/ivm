@@ -7,7 +7,9 @@
 
 IVM_COM_HEADER
 
-IVM_NATIVE_FUNC(_list_cons);
+// IVM_NATIVE_FUNC(_list_cons);
+IVM_BUILTIN_FUNC(_list_cons);
+
 IVM_NATIVE_FUNC(_list_size);
 IVM_NATIVE_FUNC(_list_push);
 IVM_NATIVE_FUNC(_list_pop);

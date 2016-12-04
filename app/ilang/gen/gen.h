@@ -846,14 +846,13 @@ ilang_gen_trans_unit_free(ilang_gen_trans_unit_t *unit)
 
 ivm_exec_unit_t *
 ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
-							 ivm_string_pool_t *str_pool,
-							 ivm_size_t offset);
+							 ivm_string_pool_t *str_pool);
 
 IVM_INLINE
 ivm_exec_unit_t *
 ilang_gen_generateExecUnit(ilang_gen_trans_unit_t *unit)
 {
-	return ilang_gen_generateExecUnit_c(unit, IVM_NULL, 0);
+	return ilang_gen_generateExecUnit_c(unit, IVM_NULL);
 }
 
 IVM_COM_END

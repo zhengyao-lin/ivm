@@ -124,7 +124,6 @@ ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
 
 	IVM_MEMCHECK(ret);
 
-	ret->offset = ivm_exec_unit_offset(unit);
 	ret->root = ivm_exec_unit_root(unit);
 	ret->list = _ivm_serial_serializeExecList(
 		ivm_exec_unit_execList(unit), state
@@ -140,8 +139,6 @@ ivm_serial_unserializeExecUnit(ivm_serial_exec_unit_t *unit)
 		unit->root,
 		_ivm_serial_unserializeExecList(unit->list)
 	);
-
-	ivm_exec_unit_setOffset(ret, unit->offset);
 
 	return ret;
 }
@@ -492,8 +489,6 @@ CLEAN_END:
 /*
  * exec unit format(in bits):
  * ---------------------
- * |    offset: 32     | // load offset
- * ---------------------
  * |     root: 64      |
  * ---------------------
  * |     execs: v      |
@@ -506,7 +501,6 @@ ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
 {
 	ivm_size_t ret = 0;
 
-	ret += ivm_file_write(file, &unit->offset, sizeof(unit->offset), 1);
 	ret += ivm_file_write(file, &unit->root, sizeof(unit->root), 1);
 	ret += _ivm_serial_execListToFile(unit->list, file);
 
@@ -519,10 +513,6 @@ ivm_serial_execUnitFromFile(ivm_file_t *file)
 	ivm_serial_exec_unit_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
 	IVM_MEMCHECK(ret);
-
-	if (!ivm_file_read(file, &ret->offset, sizeof(ret->offset), 1)) {
-		goto CLEAN;
-	}
 
 	if (!ivm_file_read(file, &ret->root, sizeof(ret->root), 1)) {
 		goto CLEAN;
@@ -572,7 +562,6 @@ ivm_serial_mod_loadCache(const ivm_char_t *path,
 		goto END;
 	}
 
-	ivm_exec_unit_setOffset(unit, ivm_vmstate_getLinkOffset(state));
 	root = ivm_exec_unit_mergeToVM(unit, state);
 
 	ivm_exec_unit_free(unit);
