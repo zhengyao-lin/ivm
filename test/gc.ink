@@ -5,7 +5,6 @@ loc B = 2 * 5 * 4 * 4 * 4 + 1
 loc A = 100001
 
 loc new_obj = fn h, seed: {
-
 	loc i = seed
 
 	for loc j in range(10000): {

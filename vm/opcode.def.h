@@ -1275,6 +1275,12 @@ OPCODE_GEN(CHECK2, "check2", A, -1, {
 	}
 })
 
+/* if the number of stack is less than what has expected, an exception will be thrown */
+OPCODE_GEN(CHECK_E, "check_e", I, -1, {
+	RTM_ASSERT(AVAIL_STACK >= IARG(), IVM_ERROR_MSG_TOO_LESS_ARGUMENT(AVAIL_STACK, IARG()));
+	NEXT_INSTR_NINT();
+})
+
 OPCODE_GEN(INTR, "intr", N, 0, {
 	if (IVM_GC_DBG) {
 		ivm_vmstate_doGC(_STATE);

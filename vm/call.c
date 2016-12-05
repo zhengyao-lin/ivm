@@ -7,35 +7,6 @@
 #include "runtime.h"
 #include "instr.h"
 
-#if 0
-
-ivm_instr_t *
-ivm_frame_popToCatch(ivm_frame_t *frame,
-					 ivm_object_t ***sp_p)
-{
-	ivm_instr_t *catc;
-
-	do {
-		catc = ivm_frame_popCurCatch(frame);
-		if (catc) return catc;
-	} while (ivm_frame_popBlock(frame, sp_p));
-
-	return IVM_NULL;
-}
-
-void
-ivm_frame_popAllCatch(ivm_frame_t *frame,
-					  ivm_object_t ***sp_p)
-{
-	do {
-		if (!ivm_frame_popCurCatch(frame)) return;
-	} while (ivm_frame_popBlock(frame, sp_p));
-
-	return;
-}
-
-#endif
-
 void
 ivm_frame_stack_init(ivm_frame_stack_t *stack)
 {

@@ -141,7 +141,7 @@ ivm_ptset_insert(ivm_ptset_t *set, void *val)
 
 IVM_INLINE
 void
-ivm_ptset_rehash(ivm_ptset_t *set, void *val)
+_ivm_ptset_rehash(ivm_ptset_t *set, void *val)
 {
 	void **found;
 
@@ -217,7 +217,7 @@ _ivm_ptset_expand(ivm_ptset_t *set)
 	for (i = orig, end = orig + orig_size;
 		 i != end; i++) {
 		if (*i) {
-			ivm_ptset_rehash(set, *i);
+			_ivm_ptset_rehash(set, *i);
 		}
 	}
 

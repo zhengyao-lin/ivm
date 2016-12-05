@@ -5,7 +5,7 @@
 
 /* triggers of pools */
 #define IVM_USE_FUNCTION_POOL 1
-#define IVM_USE_CORO_POOL 1
+#define IVM_USE_CORO_POOL 0
 #define IVM_USE_INLINE_CACHE 1
 #define IVM_USE_BLOCK_POOL 0
 

@@ -99,6 +99,31 @@ IVM_NATIVE_FUNC(_global_input)
 	return  ret;
 }
 
+BUILTIN_FUNC(_global_map, {
+	I(CHECK_E, 2)
+	I(NEW_LIST, 0)
+
+	I(PUSH_BLOCK)
+	I(DUP_PREV_BLOCK_N, 2)
+	I(GET_SLOT_N, "iter")
+	I(INVOKE_BASE, 0)
+	
+	I(ITER_NEXT, 8)
+	I(INVOKE_BASE, 0)
+	I(RPROT_CAC)
+
+	I(DUP_PREV_BLOCK_N, 1)
+	I(INVOKE, 1)
+
+	I(DUP_PREV_BLOCK_N, 0)
+    I(PUSH_LIST)
+
+    I(JUMP, -7)
+    I(POP_BLOCK)
+
+    I(RETURN)
+})
+
 void
 ivm_native_global_bind(ivm_vmstate_t *state,
 					   ivm_context_t *ctx)
@@ -121,6 +146,8 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 
 	ivm_context_setSlot_r(ctx, state, "typename", IVM_NATIVE_WRAP(state, _global_typename));
 	ivm_context_setSlot_r(ctx, state, "input", IVM_NATIVE_WRAP(state, _global_input));
+
+	ivm_context_setSlot_r(ctx, state, "map", IVM_BUILTIN_WRAP(state, _global_map));
 	
 	ivm_context_setSlot_r(ctx, state, "$import", IVM_NATIVE_WRAP(state, _global_import));
 	// ivm_context_setSlot_r(ctx, state, "$is", IVM_NATIVE_WRAP(state, _global_is));

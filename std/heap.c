@@ -166,6 +166,8 @@ _ivm_heap_addBlock(ivm_heap_t *heap, ivm_size_t size)
 				sizeof(*heap->blocks) * heap->bcount
 			);
 
+			// IVM_TRACE("%d %d\n", heap->btop, heap->bcount);
+
 			cur_block
 			= heap->blocks[heap->btop]
 			= STD_ALLOC(heap->bsize);

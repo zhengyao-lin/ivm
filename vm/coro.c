@@ -42,6 +42,8 @@ ivm_coro_free(ivm_coro_t *coro,
 	ivm_frame_stack_iterator_t fsiter;
 
 	if (coro) {
+		ivm_runtime_dump(&coro->runtime, state);
+
 		IVM_FRAME_STACK_EACHPTR(&coro->frame_st, fsiter) {
 			ivm_frame_dump(IVM_FRAME_STACK_ITER_GET(fsiter), state);
 		}
