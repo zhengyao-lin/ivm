@@ -1,4 +1,5 @@
 import std
+import ulist
 
 printl = fn list: {
 	loc size = list.size()
@@ -23,6 +24,14 @@ t1 = fn a, *va, c: {
 t1("first", "last")
 t1("first", "2", "3", "4", "last")
 
+print([ 1, *[ 2, *[ 3, 4, 5 ], *[ *[ 6, 7 ] ], *[ 8, 9 ] ], 10 ])
+
+r = ref [ a, b, *c ]
+
+deref r = [ 1, 2, 3, 4, 5 ]
+
+print(deref r)
+
 // -> "str: first"
 // -> "str: ### list ###"
 // -> "str: ### end ###"
@@ -34,3 +43,6 @@ t1("first", "2", "3", "4", "last")
 // -> "str: 4"
 // -> "str: ### end ###"
 // -> "str: last"
+
+// -> "list: \\[ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 \\]"
+// -> "list: \\[ 1, 2, 3, 4, 5 \\]"

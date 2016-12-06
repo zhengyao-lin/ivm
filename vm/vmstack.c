@@ -61,7 +61,7 @@ void
 ivm_vmstack_inc(ivm_vmstack_t *stack,
 				ivm_frame_stack_t *fstack)
 {
-	ivm_object_t **nst, **ost, **tmp_bp;
+	ivm_object_t **nst, **ost, **tmp_bp, **tmp_rbp;
 	ivm_frame_stack_iterator_t siter;
 	ivm_frame_t *tmp;
 
@@ -74,7 +74,9 @@ ivm_vmstack_inc(ivm_vmstack_t *stack,
 	IVM_FRAME_STACK_EACHPTR(fstack, siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);
 		tmp_bp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, BP));
+		tmp_rbp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, RBP));
 		IVM_FRAME_SET(tmp, BP, tmp_bp);
+		IVM_FRAME_SET(tmp, RBP, tmp_rbp);
 	}
 
 	stack->bottom = nst;

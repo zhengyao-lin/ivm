@@ -6,25 +6,25 @@ loc f = fn *args: {
 	10011
 }
 
-print(2 + f(expand [ 1, 2, 3 ], expand [ 1, 2 ]))
+print(2 + f(*[ 1, 2, 3 ], *[ 1, 2 ]))
 
 loc a = {
 	f: f
 }
 
-print(4 + a.f(expand [ "wow", "hey" ], expand [ 1, 2, 3 ]))
+print(4 + a.f(*[ "wow", "hey" ], *[ 1, 2, 3 ]))
 
-p = a.f(_, expand [ 1, 2, 3 ], _, expand [ "hi", "wow" ], _, _)
+p = a.f(_, *[ 1, 2, 3 ], _, *[ "hi", "wow" ], _, _)
 
 print(10 + p(1000, 20, 0, 5))
 
-try: f(expand 1)
+try: f(*1)
 catch: print("error")
 
-f(expand [])
+f(*[])
 
 print([ "yeah", 2 ][(for loc i in range(10): {
-	f(1, f(expand [ break ]), 1)
+	f(1, f(*[ break ]), 1)
 }, 0)])
 
 // -> "str: \\[ 1, 2, 3, 1, 2 \\]"

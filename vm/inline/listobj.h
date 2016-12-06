@@ -295,6 +295,22 @@ _ivm_list_object_unpackAll(ivm_list_object_t *list,
 }
 
 IVM_INLINE
+void
+_ivm_list_object_unpackAll_r(ivm_list_object_t *list,
+							 struct ivm_vmstate_t_tag *state,
+							 ivm_object_t **sp)
+{
+	ivm_object_t **end, **cur;
+
+	for (cur = list->lst, end = cur + list->size;
+		 cur != end; cur++) {
+		*sp++ = *cur ? *cur : IVM_NONE(state);
+	}
+
+	return;
+}
+
+IVM_INLINE
 ivm_object_t *
 ivm_list_object_iter_new(ivm_vmstate_t *state,
 						 ivm_list_object_t *list)

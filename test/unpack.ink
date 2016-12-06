@@ -94,6 +94,32 @@ loc n_sum = fn l: {
 [ t, *h, e ] = [ 1 ]
 [ t, h, e ].print()
 
+loc fib = fn n: {
+	iter: fn: {
+		a: 0,
+		b: 0,
+		cur: 0,
+		next: fn: {
+			if n <= base.cur: raise "iter end"
+			else: {
+				loc tmp = base.a + base.b
+				base.a = base.b
+				base.b = tmp
+				base.cur = base.cur + 1
+				
+				if base.b == 0:
+					base.b = 1
+				else:
+					tmp
+			}
+		}
+	}
+}
+
+[ a, b, c, *d ] = fib(15)
+
+print([ a, b, c, d ])
+
 // -> "str: ### list ###"
 // -> "num: 1"
 // -> "num: 2"
@@ -130,3 +156,5 @@ loc n_sum = fn l: {
 // -> "str: \\[ 1, 2, 3, 4 \\]"
 
 // -> "str: \\[ 1, \\[\\], <none> \\]"
+
+// -> "list: \\[ 1, 1, 2, \\[ 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610 \\] \\]"

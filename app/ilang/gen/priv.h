@@ -49,6 +49,7 @@
 #define GEN_ERR_MSG_NOT_IN_ARG(name)								"%s outside an argument list", (name)
 #define GEN_ERR_MSG_NOT_LEFT_VAL(name)								"a %s has to be a left expression", (name)
 #define GEN_ERR_MSG_NOT_IN_LIST(name)								"%s outside a list", (name)
+#define GEN_ERR_MSG_ILLEGAL_VARG									"varg expression used in illegal context"
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -86,6 +87,11 @@
 		GEN_ERR((expr)->pos, GEN_ERR_MSG_NOT_IN_LIST(name)); \
 	}
 
+#define GEN_ASSERT_VARG_ENABLE(expr, flag) \
+	if (!(flag).varg_enable) { \
+		GEN_ERR((expr)->pos, GEN_ERR_MSG_ILLEGAL_VARG); \
+	}
+
 #define GEN_ERR_MULTIPLE_VARG(expr) \
 	GEN_ERR((expr)->pos, GEN_ERR_MSG_MULTIPLE_VARG);
 
@@ -102,5 +108,8 @@ void
 ilang_gen_index_expr_genArg(ilang_gen_expr_t *expr, /* not necessarily an index expr */
 							ilang_gen_expr_list_t *arg,
 							ilang_gen_env_t *env);
+
+#define GEN_NL_BLOCK_START() (env->addr.nl_block++)
+#define GEN_NL_BLOCK_END() (env->addr.nl_block++)
 
 #endif

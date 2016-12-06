@@ -42,7 +42,6 @@ enum token_id_t {
 	T_RAISE,
 	T_YIELD,
 	T_RESUME,
-	T_EXPAND,
 
 	T_WITH,
 	T_TO,
@@ -145,7 +144,6 @@ token_name_table[] = {
 	"keyword `raise`",
 	"keyword `yield`",
 	"keyword `resume`",
-	"keyword `expand`",
 
 	"keyword `with`",
 	"keyword `to`",
@@ -581,7 +579,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("raise", T_RAISE)
 		KEYWORD("yield", T_YIELD)
 		KEYWORD("resume", T_RESUME)
-		KEYWORD("expand", T_EXPAND)
 
 		KEYWORD("with", T_WITH)
 		KEYWORD("to", T_TO)
@@ -1250,20 +1247,11 @@ RULE(primary_expr)
 
 /*
 	arg
-		: 'expand' prefix_expr
-		| prefix_expr
+		: prefix_expr
  */
 RULE(arg)
 {
-	struct token_t *tmp_token;
-
 	SUB_RULE_SET(
-		SUB_RULE(T(T_EXPAND) R(prefix_expr)
-		{
-			tmp_token = TOKEN_AT(0);
-			_RETVAL.expr = ilang_gen_expand_expr_new(_ENV->unit, TOKEN_POS(tmp_token), RULE_RET_AT(0).u.expr);
-		})
-
 		SUB_RULE(R(prefix_expr)
 		{
 			_RETVAL.expr = RULE_RET_AT(0).u.expr;

@@ -226,23 +226,6 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 }
 
 ilang_gen_value_t
-ilang_gen_varg_expr_eval(ilang_gen_expr_t *expr,
-						 ilang_gen_flag_t flag,
-						 ilang_gen_env_t *env)
-{
-	ilang_gen_varg_expr_t *varg = IVM_AS(expr, ilang_gen_varg_expr_t);
-
-	GEN_ASSERT_ONLY_LEFT_VAL(expr, flag, "varg expression");
-	GEN_ASSERT_ONLY_LIST(expr, flag, "varg expression");
-
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_VARG, flag.varg_offset - 1);
-	// IVM_TRACE("%d\n", flag.varg_offset);
-	varg->bondee->eval(varg->bondee, FLAG(.is_left_val = IVM_TRUE), env);
-
-	return NORET();
-}
-
-ilang_gen_value_t
 ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 						 ilang_gen_flag_t flag,
 						 ilang_gen_env_t *env)
@@ -255,27 +238,28 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 	ivm_size_t size, vofs;
 
 	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "list expression", flag);
+	
+	size = ilang_gen_expr_list_size(elems);
+
+	{
+		ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+			tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+			if (ilang_gen_expr_isExpr(tmp_elem, varg_expr)) {
+				if (has_varg && flag.is_left_val) {
+					GEN_ERR_MULTIPLE_VARG(expr)
+				}
+				
+				has_varg = IVM_TRUE;
+			}
+		}
+	}
 
 	if (flag.is_left_val) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), TO_LIST);
 
-		size = ilang_gen_expr_list_size(elems);
-
-		{
-			ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
-				tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-				if (ilang_gen_expr_isExpr(tmp_elem, varg_expr)) {
-					if (has_varg) {
-						GEN_ERR_MULTIPLE_VARG(expr)
-					}
-					
-					has_varg = IVM_TRUE;
-				}
-			}
-		}
-
 		if (has_varg) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK_S1);
+			GEN_NL_BLOCK_START();
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
 		} else {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST, size);
@@ -288,9 +272,9 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 				if (has_varg) {
 					// because of the unpack_list_all instr, we have to ensure that the stack is not empty
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ENSURE_NONE);
-					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs), env);
+					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs, .varg_enable = IVM_TRUE), env);
 				} else {
-					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs), env);
+					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs, .varg_enable = IVM_TRUE), env);
 				}
 				vofs--;
 			}
@@ -298,14 +282,30 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 
 		if (has_varg) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
+			GEN_NL_BLOCK_END();
 		}
 	} else {
-		ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
-			tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-			tmp_elem->eval(tmp_elem, FLAG(0), env);
-		}
+		if (has_varg) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK);
+			GEN_NL_BLOCK_START();
 
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, ilang_gen_expr_list_size(elems));
+			ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+				tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+				tmp_elem->eval(tmp_elem, FLAG(.varg_enable = IVM_TRUE, .varg_reverse = IVM_TRUE), env);
+			}
+
+			// pack up everything
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST_ALL);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK_S1);
+			GEN_NL_BLOCK_END();
+		} else {
+			ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
+				tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
+				tmp_elem->eval(tmp_elem, FLAG(0), env);
+			}
+
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST, ilang_gen_expr_list_size(elems));
+		}
 		
 		if (flag.is_top_level) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);

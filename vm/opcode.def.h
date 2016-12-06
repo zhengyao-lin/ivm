@@ -61,6 +61,15 @@ OPCODE_GEN(NEW_LIST, "new_list", I, 1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(NEW_LIST_ALL, "new_list_all", N, -1, {
+	_TMP_ARGC = AVAIL_STACK;
+
+	_TMP_ARGV = STACK_CUT(_TMP_ARGC);
+	STACK_PUSH(ivm_list_object_new_c(_STATE, _TMP_ARGV, _TMP_ARGC));
+
+	NEXT_INSTR();
+})
+
 /* pack up all elem on the stack except x elems on the bottom */
 OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 	_TMP_ARGC = AVAIL_STACK - IARG();
@@ -150,6 +159,29 @@ OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
 	_TMP_ARGV = STACK_ENSURE(_TMP_ARGC);
 
 	_ivm_list_object_unpackAll(IVM_AS(_TMP_OBJ1, ivm_list_object_t), _STATE, _TMP_ARGV);
+
+	STACK_INC_C(_TMP_ARGC);
+
+	NEXT_INSTR_NINT();
+})
+
+/* reversed unpack */
+OPCODE_GEN(UNPACK_LIST_ALL_R, "unpack_list_all_r", N, 1, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_DEL_VARG);
+
+	RTM_ASSERT(
+		IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
+		IVM_ERROR_MSG_UNPACK_NON_LIST(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))
+	);
+
+	_TMP_ARGC = ivm_list_object_getSize(IVM_AS(_TMP_OBJ1, ivm_list_object_t));
+	_TMP_ARGV = STACK_ENSURE(_TMP_ARGC);
+
+	_ivm_list_object_unpackAll_r(IVM_AS(_TMP_OBJ1, ivm_list_object_t), _STATE, _TMP_ARGV);
 
 	STACK_INC_C(_TMP_ARGC);
 
@@ -720,6 +752,11 @@ OPCODE_GEN(POP_N, "pop_n", I, -1, {
 	NEXT_INSTR_NINT();
 })
 
+OPCODE_GEN(POP_ALL, "pop_all", N, -1, {
+	STACK_SET(0);
+	NEXT_INSTR_NINT();
+})
+
 OPCODE_GEN(DUP_N, "dup_n", I, 1, {
 	_TMP_ARGC = IARG();
 
@@ -1186,6 +1223,8 @@ OPCODE_GEN(JUMP, "jump", A, 0, {
 	GOTO_SET_INSTR(ADDR_ARG());
 })
 
+#if 0
+
 OPCODE_GEN(INT_LOOP, "int_loop", A, 0, {
 	SAVE_STACK();
 	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
@@ -1205,6 +1244,22 @@ OPCODE_GEN(INT_N_LOOP, "int_n_loop", I, 0, {
 	}
 
 	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
+
+	UPDATE_STACK_C();
+
+	NEXT_INSTR();
+})
+
+#endif
+
+OPCODE_GEN(INT_LOOP, "int_loop", I, 0, {
+	SAVE_STACK();
+
+	_TMP_ARGC = IARG();
+
+	while (_TMP_ARGC--) {
+		ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
+	}
 
 	UPDATE_STACK_C();
 

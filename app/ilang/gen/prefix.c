@@ -115,6 +115,34 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 }
 
 ilang_gen_value_t
+ilang_gen_varg_expr_eval(ilang_gen_expr_t *expr,
+						 ilang_gen_flag_t flag,
+						 ilang_gen_env_t *env)
+{
+	ilang_gen_varg_expr_t *varg = IVM_AS(expr, ilang_gen_varg_expr_t);
+
+	// GEN_ASSERT_ONLY_LEFT_VAL(expr, flag, "varg expression");
+	// GEN_ASSERT_ONLY_LIST(expr, flag, "varg expression");
+	GEN_ASSERT_VARG_ENABLE(expr, flag)
+
+	if (flag.is_left_val) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_VARG, flag.varg_offset - 1);
+		varg->bondee->eval(varg->bondee, FLAG(.is_left_val = IVM_TRUE), env);
+	} else {
+		varg->bondee->eval(varg->bondee, FLAG(0), env);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), TO_LIST);
+
+		if (flag.varg_reverse) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL_R);
+		} else {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
+		}
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
 ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 						 ilang_gen_flag_t flag,
 						 ilang_gen_env_t *env)
@@ -143,12 +171,19 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
 
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, env->addr.nl_block);
+				cur = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
+
+				ivm_exec_setArgAt(env->cur_exec, cur, env->addr.continue_addr - cur);
+
+				/*
 				if (env->addr.nl_block) {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_N_LOOP, env->addr.nl_block);
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, env->addr.continue_addr - cur);
 				} else {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, env->addr.continue_addr - cur);
 				}
+				*/
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);
 			}
@@ -161,13 +196,18 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 					GEN_WARN_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_IGNORE_ARG);
 				}
 
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, env->addr.nl_block);
+				cur = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
+
+				/*
 				if (env->addr.nl_block) {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_N_LOOP, env->addr.nl_block);
 					cur = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);
 				} else {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INT_LOOP, 0);
 				}
-
+				*/
+			
 				ilang_gen_addr_list_push(env->addr.break_ref, cur);
 			} else {
 				GEN_ERR_GENERAL(expr, GEN_ERR_MSG_BREAK_OR_CONT_OUTSIDE_LOOP);

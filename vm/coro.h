@@ -255,13 +255,12 @@ ivm_coro_popToCatch(ivm_block_stack_t *bstack,
 	return IVM_NULL;
 }
 
+// pop all blocks with raise protection
 IVM_INLINE
 void
 ivm_coro_popAllCatch(ivm_block_stack_t *bstack,
 					 ivm_runtime_t *runtime)
 {
-
-
 	do {
 		if (!ivm_coro_unsetCurCatch(bstack, runtime)) return;
 	} while (ivm_coro_popBlock(bstack, runtime));

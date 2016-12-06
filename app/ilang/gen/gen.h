@@ -121,6 +121,8 @@ typedef struct {
 	ivm_bool_t is_arg;
 	ivm_int_t pa_argno;
 	ivm_int_t varg_offset; // real offset + 1
+	ivm_bool_t varg_enable; // parent node is aware of the varg expr
+	ivm_bool_t varg_reverse;
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })
@@ -297,16 +299,6 @@ typedef struct {
 
 COMMON_EXPR(pa_expr, "partial applied expression", {
 }, ivm_int_t dummy);
-
-/* expand expr */
-typedef struct {
-	ILANG_GEN_EXPR_HEADER
-	ilang_gen_expr_t *list;
-} ilang_gen_expand_expr_t;
-
-COMMON_EXPR(expand_expr, "expand expression", {
-	ret->list = list;
-}, ilang_gen_expr_t *list);
 
 /* varg expr */
 typedef struct {

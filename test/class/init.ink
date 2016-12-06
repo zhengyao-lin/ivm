@@ -3,7 +3,7 @@ loc class = fn *mixin, init: {
 
 	loc r = fn *args: {
 		loc n = { proto: p }
-		init(n, expand args)
+		init(n, *args)
 		ret n
 	}
 
