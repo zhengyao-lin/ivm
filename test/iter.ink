@@ -2,14 +2,14 @@ import std
 
 list = []
 
-for i in [0, 1, 2, 3, 4, 5]: {
+for i in [ 0, 1, 2, 3, 4, 5 ]: {
 	list.push(loc tmp = [])
-	for j in [0, 1, 2, 3, 4, 5]: {
+	for j in [ 0, 1, 2, 3, 4, 5 ]: {
 		tmp[j] = i * j
 	}
 }
 
-for [a, b, c, d, e, f] in list: {
+for [ a, b, c, d, e, f ] in list: {
 	print(a + ", " + b + ", " + c + ", " + d + ", " + e + ", " + f)
 }
 
@@ -25,6 +25,10 @@ for list[i] in [0, 1, 2, 3, 4, 5]:
 
 for i in list:
 	print(i)
+
+del list_iter.next
+
+try: for i in [ 1, 2 ]: none
 
 // -> "str: 0, 0, 0, 0, 0, 0"
 // -> "str: 0, 1, 2, 3, 4, 5"

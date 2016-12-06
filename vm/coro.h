@@ -260,9 +260,29 @@ void
 ivm_coro_popAllCatch(ivm_block_stack_t *bstack,
 					 ivm_runtime_t *runtime)
 {
+
+
 	do {
 		if (!ivm_coro_unsetCurCatch(bstack, runtime)) return;
 	} while (ivm_coro_popBlock(bstack, runtime));
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_coro_popToFrame(ivm_block_stack_t *bstack,
+					ivm_runtime_t *runtime)
+{
+	ivm_uint_t cur = ivm_block_stack_getCur(bstack);
+	ivm_uint_t to = IVM_RUNTIME_GET(runtime, BCUR);
+
+	IVM_ASSERT(cur >= to, "impossible");
+
+	while (cur != to) {
+		ivm_coro_popBlock(bstack, runtime);
+		cur--;
+	}
 
 	return;
 }

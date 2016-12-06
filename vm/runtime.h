@@ -28,6 +28,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_CONTEXT(runtime) ((runtime)->ctx)
 #define IVM_RUNTIME_GET_IP(runtime) ((runtime)->ip)
 #define IVM_RUNTIME_GET_BP(runtime) ((runtime)->bp)
+#define IVM_RUNTIME_GET_RBP(runtime) ((runtime)->rbp)
 #define IVM_RUNTIME_GET_SP(runtime) ((runtime)->sp)
 #define IVM_RUNTIME_GET_BCUR(runtime) ((runtime)->bcur)
 #define IVM_RUNTIME_GET_OFFSET(runtime) ((runtime)->offset)
@@ -38,6 +39,7 @@ typedef struct ivm_runtime_t_tag {
 
 #define IVM_RUNTIME_SET_IP(runtime, val) ((runtime)->ip = (val))
 #define IVM_RUNTIME_SET_BP(runtime, val) ((runtime)->bp = (val))
+#define IVM_RUNTIME_SET_RBP(runtime, val) ((runtime)->rbp = (val))
 #define IVM_RUNTIME_SET_SP(runtime, val) ((runtime)->sp = (val))
 #define IVM_RUNTIME_SET_BCUR(runtime, val) ((runtime)->bcur = (val))
 #define IVM_RUNTIME_SET_NO_REG(runtime, val) ((runtime)->no_reg = (val))

@@ -133,7 +133,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_INPUT_READ_EOF							"end-of-file reached in input"
 #define IVM_ERROR_MSG_DIV_MOD_ZERO								"number division or modulo by zero"
 #define IVM_ERROR_MSG_ILLEGAL_TO_S								"illegal to_s method"
-#define IVM_ERROR_MSG_TOO_LESS_ARGUMENT(n, expect)				"require at least %d argument(s)(%d given)", (expect), (n)
+#define IVM_ERROR_MSG_TOO_LESS_ARGUMENT(n, expect)				"require at least %d argument(s)(%d given)", (ivm_int_t)(expect), (ivm_int_t)(n)
+#define IVM_ERROR_MSG_DEL_VARG									"cannot delete varg"
 
 IVM_COM_END
 

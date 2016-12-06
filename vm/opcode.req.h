@@ -11,6 +11,8 @@
 
 #include "thread/sched.h"
 
+#include "std/mem.h"
+
 #include "native/native.h"
 
 #include "coro.h"

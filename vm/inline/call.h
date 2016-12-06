@@ -82,11 +82,15 @@ ivm_object_t ** /* new bp */
 ivm_frame_stack_pop(ivm_frame_stack_t *stack,
 					ivm_runtime_t *runtime)
 {
+	ivm_object_t **sp;
+
 	if (stack->top) {
-		runtime->sp = runtime->bp;
+		sp = runtime->rbp;
 
 		STD_MEMCPY(runtime, stack->frames + --stack->top,
 				   IVM_FRAME_HEADER_SIZE);
+
+		runtime->sp = sp;
 
 		return runtime->bp;
 	}

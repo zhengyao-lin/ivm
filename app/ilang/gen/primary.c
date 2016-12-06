@@ -257,6 +257,8 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "list expression", flag);
 
 	if (flag.is_left_val) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), TO_LIST);
+
 		size = ilang_gen_expr_list_size(elems);
 
 		{

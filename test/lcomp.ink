@@ -70,7 +70,7 @@ loc fib = fn n: {
 for i in fib(10):
 	print(i)
 
-[ *d, e ] = exp_list(fib(50))
+[ *d, e ] = list(fib(50))
 print(e)
 
 ret

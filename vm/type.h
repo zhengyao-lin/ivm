@@ -50,8 +50,9 @@ typedef struct ivm_type_t_tag {
 	ivm_uniop_table_t uniops;
 	struct ivm_function_t_tag *def_oops[IVM_OOP_COUNT];
 
+	struct ivm_function_t_tag *cons; // constructor
+
 	ivm_destructor_t des;
-	struct ivm_function_t_tag *cons;
 	ivm_traverser_t trav;
 
 	ivm_bool_converter_t to_bool;

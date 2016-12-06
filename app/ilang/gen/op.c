@@ -33,6 +33,8 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 		env
 	);
 
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(unary_expr), RETURN);
+
 	ivm_exec_setArgAt(env->cur_exec, addr, ivm_exec_cur(env->cur_exec) - addr);
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(unary_expr), DUP);

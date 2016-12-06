@@ -7,7 +7,6 @@ printe = fn e: {
 }
 
 __test = fn: {
-
 	a = 1
 	a.proto = string.proto
 

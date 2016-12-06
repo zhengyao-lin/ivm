@@ -562,7 +562,7 @@ ivm_collector_collect(ivm_collector_t *collector,
 		// IVM_TRACE("skip! %d\n", collector->live_ratio);
 		collector->live_ratio -= IVM_HEAP_GET(heap2, BLOCK_TOP) * collector->bc_weight;
 		collector->skip_time++;
-		IVM_TRACE("hi\n");
+		// IVM_TRACE("hi\n");
 		return;
 	}
 

@@ -15,11 +15,13 @@
 
 IVM_COM_HEADER
 
+/* rbp: real bp(used to return from nested blocks) */
 #define IVM_FRAME_HEADER \
-	struct ivm_context_t_tag *ctx;   \
-	struct ivm_object_t_tag **bp;    \
-	ivm_instr_t *ip;                 \
-	ivm_uint_t offset;               \
+	struct ivm_context_t_tag *ctx;    \
+	struct ivm_object_t_tag **bp;     \
+	struct ivm_object_t_tag **rbp;    \
+	ivm_instr_t *ip;                  \
+	ivm_uint_t offset;                \
 	ivm_uint_t bcur;
 
 #define IVM_FRAME_HEADER_SIZE \
@@ -34,11 +36,13 @@ typedef struct ivm_frame_t_tag {
 } ivm_frame_t;
 
 #define IVM_FRAME_GET_BP(frame) ((frame)->bp)
+#define IVM_FRAME_GET_RBP(frame) ((frame)->rbp)
 #define IVM_FRAME_GET_IP(frame) ((frame)->ip)
 #define IVM_FRAME_GET_CONTEXT(frame) ((frame)->ctx)
 
 #define IVM_FRAME_SET_BCUR(frame, val) ((frame)->bcur = (val))
 #define IVM_FRAME_SET_BP(frame, val) ((frame)->bp = (val))
+#define IVM_FRAME_SET_RBP(frame, val) ((frame)->rbp = (val))
 
 #define IVM_FRAME_GET(obj, member) IVM_GET((obj), IVM_FRAME, member)
 #define IVM_FRAME_SET(obj, member, val) IVM_SET((obj), IVM_FRAME, member, (val))

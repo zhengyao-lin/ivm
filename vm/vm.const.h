@@ -12,3 +12,5 @@ CONST_GEN(C_NOSLOT, "noslot")
 CONST_GEN(C_NEXT, "next")
 CONST_GEN(C_ITER, "iter")
 CONST_GEN(C_EXPAND, "expand")
+
+CONST_GEN(C_LIST, "list")

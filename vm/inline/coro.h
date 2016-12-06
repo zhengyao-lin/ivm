@@ -51,14 +51,8 @@ IVM_INLINE
 ivm_object_t **
 ivm_coro_popFrame(ivm_coro_t *coro)
 {
-	ivm_object_t **bp;
-
-	// IVM_TRACE("prev bcur: %d\n", IVM_RUNTIME_GET(&coro->runtime, BCUR));
-
 	ivm_block_stack_setCur(&coro->bstack, IVM_RUNTIME_GET(&coro->runtime, BCUR));
-	bp = ivm_frame_stack_pop(&coro->frame_st, &coro->runtime);
-
-	return bp;
+	return ivm_frame_stack_pop(&coro->frame_st, &coro->runtime);
 }
 
 IVM_COM_END

@@ -87,7 +87,7 @@ void
 ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 				  ivm_coro_t *coro)
 {
-	ivm_object_t **nst, **ost, **tmp_bp, **tmp_sp;
+	ivm_object_t **nst, **ost, **tmp_bp, **tmp_sp, **tmp_rbp;
 	ivm_frame_stack_iterator_t siter;
 	ivm_frame_t *tmp;
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
@@ -98,16 +98,21 @@ ivm_vmstack_inc_c(ivm_vmstack_t *stack,
 
 	IVM_MEMCHECK(nst);
 
+	// update stack reference
 	IVM_FRAME_STACK_EACHPTR(IVM_CORO_GET(coro, FRAME_STACK), siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);
 		tmp_bp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, BP));
+		tmp_rbp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, RBP));
 		IVM_FRAME_SET(tmp, BP, tmp_bp);
+		IVM_FRAME_SET(tmp, RBP, tmp_rbp);
 	}
 
 	if (runtime) {
 		tmp_bp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, BP));
+		tmp_rbp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, RBP));
 		tmp_sp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, SP));
 		IVM_RUNTIME_SET(runtime, BP, tmp_bp);
+		IVM_RUNTIME_SET(runtime, RBP, tmp_rbp);
 		IVM_RUNTIME_SET(runtime, SP, tmp_sp);
 	}
 
@@ -122,7 +127,7 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 				   ivm_coro_t *coro,
 				   ivm_size_t size)
 {
-	ivm_object_t **nst, **ost, **tmp_bp, **tmp_sp;
+	ivm_object_t **nst, **ost, **tmp_bp, **tmp_sp, **tmp_rbp;
 	ivm_frame_stack_iterator_t siter;
 	ivm_frame_t *tmp;
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
@@ -142,13 +147,17 @@ ivm_vmstack_ensure(ivm_vmstack_t *stack,
 	IVM_FRAME_STACK_EACHPTR(IVM_CORO_GET(coro, FRAME_STACK), siter) {
 		tmp = IVM_FRAME_STACK_ITER_GET(siter);
 		tmp_bp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, BP));
+		tmp_rbp = nst + ivm_vmstack_offset(stack, IVM_FRAME_GET(tmp, RBP));
 		IVM_FRAME_SET(tmp, BP, tmp_bp);
+		IVM_FRAME_SET(tmp, RBP, tmp_rbp);
 	}
 
 	if (runtime) {
 		tmp_bp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, BP));
+		tmp_rbp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, RBP));
 		tmp_sp = nst + ivm_vmstack_offset(stack, IVM_RUNTIME_GET(runtime, SP));
 		IVM_RUNTIME_SET(runtime, BP, tmp_bp);
+		IVM_RUNTIME_SET(runtime, RBP, tmp_rbp);
 		IVM_RUNTIME_SET(runtime, SP, tmp_sp);
 	}
 

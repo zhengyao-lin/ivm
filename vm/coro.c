@@ -580,9 +580,9 @@ ACTION_RETURN:
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
 
 			ivm_runtime_dump(tmp_runtime, state);
-			tmp_bp = ivm_coro_popFrame(coro);
 
-			if (tmp_bp) {
+			if (ivm_coro_popFrame(coro)) {
+				UPDATE_STACK();
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}

@@ -44,4 +44,22 @@ a = {
 del a["val"]
 print(typename(a.val))
 
+a = 1
+b = 2
+c = 10
+
+print(b)
+
+del [ a, [ b, c, a ], c ]
+
+print(b)
+
+try:
+	del [ *a ]
+catch: print("catched")
+
 // -> "str: none"
+
+// -> "num: 2"
+// -> "<none>"
+// -> "str: catched"

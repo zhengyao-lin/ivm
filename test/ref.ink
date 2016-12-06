@@ -1,3 +1,4 @@
+import ulist
 import std
 
 del b
@@ -38,8 +39,15 @@ list_r = ref [ a, [ b, e1, e2, [ v1, v2 ] ], c, , d ]
 
 deref list_r = [ 1, [ 2, "hey", "hello", [ "wow", "lala" ] ], 3, 4, 5 ]
 
-import ulist
-
 [ a, b, c, d, e1, e2, v1, v2 ].print()
 
+loc a = fn *arg: {
+	arg.print()
+}
+
+a(1, (fn: {
+	a[1, (for i in range(1, 2): ret 1024), 2, 3]
+})(), 2)
+
 // -> "str: \\[ 1, 2, 3, 5, hey, hello, wow, lala \\]"
+// -> "str: \\[ 1, 1024, 2 \\]"

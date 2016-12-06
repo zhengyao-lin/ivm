@@ -585,16 +585,18 @@ ivm_vmstate_allocChar(ivm_vmstate_t *state,
 
 #define ivm_vmstate_getType(state, tag) (&(state)->type_list[tag])
 #define ivm_vmstate_getTypeProto(state, tag) \
-	(ivm_type_getProto(ivm_vmstate_getType((state), (tag))))
+	ivm_type_getProto(ivm_vmstate_getType((state), (tag)))
 #define ivm_vmstate_getTypeHeader(state, tag) \
-	(ivm_type_getHeader(ivm_vmstate_getType((state), (tag))))
+	ivm_type_getHeader(ivm_vmstate_getType((state), (tag)))
 #define ivm_vmstate_getTypeName(state, tag) \
-	(ivm_type_getName(ivm_vmstate_getType((state), (tag))))
+	ivm_type_getName(ivm_vmstate_getType((state), (tag)))
+#define ivm_vmstate_getTypeCons(state, tag) \
+	ivm_type_getCons(ivm_vmstate_getType((state), (tag)))
 
-#define ivm_vmstate_registerFunc(state, func) (ivm_func_list_register(&(state)->func_list, (func)))
-#define ivm_vmstate_getFunc(state, id) (ivm_func_list_at(&(state)->func_list, (id)))
-#define ivm_vmstate_getFuncID(state, func) (ivm_func_list_find(&(state)->func_list, (func)))
-#define ivm_vmstate_getLinkOffset(state) (ivm_func_list_size(&(state)->func_list))
+#define ivm_vmstate_registerFunc(state, func) ivm_func_list_register(&(state)->func_list, (func))
+#define ivm_vmstate_getFunc(state, id) ivm_func_list_at(&(state)->func_list, (id))
+#define ivm_vmstate_getFuncID(state, func) ivm_func_list_find(&(state)->func_list, (func))
+#define ivm_vmstate_getLinkOffset(state) ivm_func_list_size(&(state)->func_list)
 
 IVM_INLINE
 ivm_string_pool_t *

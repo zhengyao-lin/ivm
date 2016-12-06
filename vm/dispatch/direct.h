@@ -202,6 +202,8 @@
 	    UPDATE_STACK()                           \
 	  : 0), tmp_sp)
 
+#define STACK_BZERO(i) STD_INIT(tmp_sp, sizeof(*tmp_sp) * (i))
+
 #if IVM_STACK_CACHE_N_TOS == 0
 
 	#define STC_PUSHBACK() 0

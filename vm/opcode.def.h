@@ -86,24 +86,47 @@ OPCODE_GEN(ENSURE_NONE, "ensure_none", N, 1, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(TO_LIST, "to_list", N, 0, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_TOP();
+
+	if (!_TMP_OBJ1) { // del flag detected
+		NEXT_INSTR_NINT();
+	}
+
+	// non-normal list object -> use for to iterate
+	_TMP_FUNC = ivm_vmstate_getTypeCons(_STATE, IVM_LIST_OBJECT_T);
+	STACK_PUSH(ivm_function_object_new(_STATE, IVM_NULL, _TMP_FUNC));
+
+	SET_IARG(1);
+	GOTO_INSTR(INVOKE);
+	// unreachable
+})
+
 OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 	CHECK_STACK(1);
 
 	_TMP_ARGC = IARG();
 
 	_TMP_OBJ1 = STACK_POP();
+
 	RTM_ASSERT(
-		IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
+		!_TMP_OBJ1 /* del */ || IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
 		IVM_ERROR_MSG_UNPACK_NON_LIST(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))
 	);
 
 	if (_TMP_ARGC) {
 		_TMP_ARGV = STACK_ENSURE(_TMP_ARGC);
 
-		_ivm_list_object_unpackTo(
-			IVM_AS(_TMP_OBJ1, ivm_list_object_t),
-			_STATE, _TMP_ARGV, _TMP_ARGC
-		);
+		if (_TMP_OBJ1) {
+			_ivm_list_object_unpackTo(
+				IVM_AS(_TMP_OBJ1, ivm_list_object_t),
+				_STATE, _TMP_ARGV, _TMP_ARGC
+			);
+		} else {
+			STACK_BZERO(_TMP_ARGC);
+		}
 
 		STACK_INC_C(_TMP_ARGC);
 	}
@@ -115,6 +138,9 @@ OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
 	CHECK_STACK(1);
 
 	_TMP_OBJ1 = STACK_POP();
+
+	RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_DEL_VARG);
+
 	RTM_ASSERT(
 		IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_T),
 		IVM_ERROR_MSG_UNPACK_NON_LIST(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))
@@ -1010,6 +1036,7 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 
 	_TMP_OBJ1 = STACK_TOP(); // iter
 	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
+	RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
 
 	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_ITER_T) &&
 		IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_FUNCTION_OBJECT_T) &&
@@ -1043,8 +1070,6 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 		// IVM_TRACE("%ld %p %p\n", AVAIL_STACK, tmp_sp, tmp_bp);
 
 		STACK_PUSH(_TMP_OBJ1);
-
-		RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
 		STACK_PUSH(_TMP_OBJ2); // get iter.next
 
 		NEXT_INSTR_NINT();
@@ -1258,7 +1283,7 @@ OPCODE_GEN(JUMP_FALSE_N, "jump_false_n", A, -1, {
 })
 
 /* stack empty => goto the addr */
-OPCODE_GEN(CHECK, "check", A, -1, {
+OPCODE_GEN(CHECK, "check", A, 0, {
 	if (AVAIL_STACK) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -1267,7 +1292,7 @@ OPCODE_GEN(CHECK, "check", A, -1, {
 })
 
 /* stack size < 2 => goto the addr */
-OPCODE_GEN(CHECK2, "check2", A, -1, {
+OPCODE_GEN(CHECK2, "check2", A, 0, {
 	if (AVAIL_STACK < 2) {
 		GOTO_SET_INSTR(ADDR_ARG());
 	} else {
@@ -1276,9 +1301,25 @@ OPCODE_GEN(CHECK2, "check2", A, -1, {
 })
 
 /* if the number of stack is less than what has expected, an exception will be thrown */
-OPCODE_GEN(CHECK_E, "check_e", I, -1, {
+OPCODE_GEN(CHECK_E, "check_e", I, 0, {
 	RTM_ASSERT(AVAIL_STACK >= IARG(), IVM_ERROR_MSG_TOO_LESS_ARGUMENT(AVAIL_STACK, IARG()));
 	NEXT_INSTR_NINT();
+})
+
+OPCODE_GEN(CHECK_LIST_ITER, "check_list_iter", A, 0, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_TOP();
+	_TMP_OBJ2 = ivm_object_getSlot_cc(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), _INSTR);
+	RTM_ASSERT(_TMP_OBJ2, IVM_ERROR_MSG_NON_ITERABLE);
+
+	if (IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_LIST_OBJECT_ITER_T) &&
+		IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_FUNCTION_OBJECT_T) &&
+		ivm_function_object_checkNative(_TMP_OBJ2, _list_iter_next)) {
+		NEXT_INSTR_NINT();
+	} else {
+		GOTO_SET_INSTR(ADDR_ARG());
+	}
 })
 
 OPCODE_GEN(INTR, "intr", N, 0, {

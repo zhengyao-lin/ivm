@@ -20,7 +20,7 @@ ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 						 ivm_context_t *ctx)
 {
 	runtime->ctx = ivm_context_addRef(ctx);
-	runtime->bp = runtime->sp;
+	runtime->rbp = runtime->bp = runtime->sp;
 	runtime->ip = IVM_NULL;
 	runtime->offset = 0;
 
@@ -35,7 +35,7 @@ ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   const ivm_exec_t *exec)
 {
 	runtime->ctx = ivm_context_addRef(ctx);
-	runtime->bp = runtime->sp;
+	runtime->rbp = runtime->bp = runtime->sp;
 	runtime->ip = ivm_exec_instrPtrStart(exec);
 	runtime->offset = ivm_exec_offset(exec);
 

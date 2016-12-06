@@ -19,13 +19,17 @@
 
 BUILTIN_FUNC(_list_cons, {
 	I(NEW_LIST, 0)
-	I(CHECK2, 12)
+	I(CHECK2, 15)
 
 	I(PUSH_BLOCK)
 	I(DUP_PREV_BLOCK_N, 1)
 	I(GET_SLOT_N, "iter")
 	I(INVOKE_BASE, 0)
-	
+
+	I(CHECK_LIST_ITER, 3)
+	I(DUP_PREV_BLOCK_N, 1)
+	I(RETURN)
+
 	I(ITER_NEXT, 6)
 	I(INVOKE_BASE, 0)
 	I(RPROT_CAC)
@@ -35,6 +39,7 @@ BUILTIN_FUNC(_list_cons, {
 
     I(JUMP, -5)
     I(POP_BLOCK)
+
     I(RETURN)
 })
 
