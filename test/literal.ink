@@ -6,8 +6,6 @@ print("\xe4\xbd\xa0\xe5\xa5\xbd" == "你好") // -> "num: 1"
 print("\e4") // -> "str: e4"
 print("\d33\x21") // -> "str: !!"
 
-print("\xe4\xbd\xa0\xe5\xa5\xbd".len()) // -> "num: 2"
-
 print("\12322") // -> "str: S22"
 print("\o12322") // -> "str: S22"
 print("\x5922") // -> "str: Y22"

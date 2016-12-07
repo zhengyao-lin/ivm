@@ -50,9 +50,8 @@ ivm_strdup_heap(const ivm_char_t *src,
 typedef struct {
 	ivm_ulong_t len;
 
-	ivm_uint_t is_const: 1;
-	ivm_uint_t is_ascii: 1;
-	ivm_uint_t ulen; // length of utf-8 decoded length
+	ivm_bool_t is_const;
+	// ivm_bool_t is_ascii;
 
 	ivm_char_t cont[];
 } IVM_NOALIGN ivm_string_t;
@@ -72,8 +71,7 @@ ivm_string_initHead(ivm_string_t *str,
 					ivm_size_t len)
 {
 	str->is_const = is_const;
-	str->is_ascii = IVM_FALSE;
-	str->ulen = 0;
+	// str->is_ascii = IVM_FALSE;
 
 	str->len = len;
 	
@@ -89,28 +87,6 @@ ivm_string_copyNonConst(const ivm_string_t *str,
 
 #define ivm_string_isConst(str) \
 	((str)->is_const)
-
-IVM_INLINE
-ivm_size_t
-ivm_string_utf8Length(const ivm_string_t *str)
-{
-	ivm_string_t *head = (ivm_string_t *)str;
-	ivm_size_t len;
-
-	if (str->is_ascii ||
-		str->ulen == (ivm_uint_t)-1) {
-		return str->len;
-	} else if (str->ulen) {
-		return str->ulen;
-	}
-
-	// gen cache
-	head->is_ascii = ivm_enc_isAllAscii_n(str->cont, str->len);
-	head->ulen = len = ivm_enc_utf8_strlen_n(str->cont, str->len);
-
-	if (len == -1) return str->len;
-	return len;
-}
 
 #define ivm_string_size(str) \
 	(IVM_STRING_GET_SIZE((str)->len))
