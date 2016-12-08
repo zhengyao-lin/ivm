@@ -82,9 +82,8 @@ _ivm_mod_loadNative(const ivm_char_t *path,
 
 // TODO: need locks
 
-IVM_PRIVATE
 void
-_ivm_mod_addModPath(const ivm_char_t *path)
+ivm_mod_addModPath(const ivm_char_t *path)
 {
 	ivm_size_t len = IVM_STRLEN(path);
 
@@ -162,9 +161,9 @@ _ivm_mod_initModPath()
 	ivm_size_t len;
 
 #if IVM_DEBUG
-	_ivm_mod_addModPath(IVM_LIB_PATH);
+	ivm_mod_addModPath(IVM_LIB_PATH);
 #endif
-	_ivm_mod_addModPath(IVM_MOD_DEFAULT_SEARCH_PATH);
+	ivm_mod_addModPath(IVM_MOD_DEFAULT_SEARCH_PATH);
 
 	if (paths) {
 		for (len = 0, start = end = paths;
@@ -185,8 +184,6 @@ _ivm_mod_initModPath()
 			_ivm_mod_addModPath_l(start, len);
 		}
 	}
-
-	// _ivm_mod_addModPath(".");
 
 	return;
 }

@@ -135,6 +135,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_ILLEGAL_TO_S								"illegal to_s method"
 #define IVM_ERROR_MSG_TOO_LESS_ARGUMENT(n, expect)				"require at least %d argument(s)(%d given)", (ivm_int_t)(expect), (ivm_int_t)(n)
 #define IVM_ERROR_MSG_DEL_VARG									"cannot delete varg"
+#define IVM_ERROR_MSG_MEMORY_ERROR								"memory error"
 
 IVM_COM_END
 

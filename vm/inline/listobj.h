@@ -172,7 +172,12 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 	ivm_object_t **olst;
 	ivm_size_t osize = list->size, oalloc;
 
-	if (size <= list->alloc) {
+	// IVM_TRACE("size: %ld\n", size);
+
+	if (size <= list->size) {
+		list->size = size;
+		return IVM_TRUE;
+	} else if (size <= list->alloc) {
 		list->size = size;
 	} else {
 		oalloc = list->alloc;
@@ -192,12 +197,15 @@ _ivm_list_object_expandTo(ivm_list_object_t *list,
 		}
 	}
 
+	// IVM_TRACE("%ld %ld %ld\n", osize, size, sizeof(*list->lst) * (size - osize));
+
 	STD_INIT(list->lst + osize, sizeof(*list->lst) * (size - osize));
 
 	return IVM_TRUE;
 }
 
 /* return NULL if error */
+/* use ivm_list_realIndex to obtain the real index first */
 IVM_INLINE
 ivm_object_t *
 ivm_list_object_set(ivm_list_object_t *list,

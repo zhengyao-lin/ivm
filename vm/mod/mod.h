@@ -64,6 +64,9 @@ struct ivm_object_t_tag *
 					struct ivm_context_t_tag *context);
 
 void
+ivm_mod_addModPath(const ivm_char_t *path);
+
+void
 ivm_mod_addModSuffix(const ivm_char_t *suffix,
 					 ivm_mod_loader_t loader);
 

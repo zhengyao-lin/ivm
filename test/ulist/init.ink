@@ -49,8 +49,8 @@
 			loc t = typename(e)
 			if t == "numeric" || t == "string":
 				r.push(e)
-			elif t == "list":
-				r.push(e.to_str())
+			elif !(e is none) && e.to_s is function:
+				r.push(string(e))
 			else:
 				r.push("<" + t + ">")
 		}

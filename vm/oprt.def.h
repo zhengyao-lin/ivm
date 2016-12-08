@@ -145,13 +145,15 @@ BINOP_GEN(IVM_LIST_OBJECT_T, IDX, IVM_NUMERIC_T, IVM_FALSE, {
 
 TRIOP_GEN(IVM_LIST_OBJECT_T, IDXA, IVM_NUMERIC_T, {
 	ivm_number_t idx = ivm_numeric_getValue(_OP2);
+	ivm_list_object_t *lobj = IVM_AS(_OP1, ivm_list_object_t);
+	ivm_size_t real_idx;
 
 	CHECK_OVERFLOW(idx);
 
-	if (!ivm_list_object_set(
-		IVM_AS(_OP1, ivm_list_object_t),
-		_STATE, idx, _OP3
-	)) return IVM_NULL;
+	real_idx = ivm_list_realIndex(ivm_list_object_getSize(lobj), idx);
+
+	if (!ivm_list_object_set(lobj, _STATE, real_idx, _OP3))
+		return IVM_NULL;
 
 	return _OP3 ? _OP3 : IVM_NONE(_STATE);
 })
