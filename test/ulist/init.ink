@@ -1,3 +1,5 @@
+import math
+
 (fn: {
 	lp = list.proto
 
@@ -147,5 +149,41 @@
 		for loc v in base:
 			if v == val: ret true
 		false
+	}
+
+	lp.mat = fn: {
+		loc n = base.size()
+		loc m = -1
+
+		for loc e in base: {
+			if !(e is list):
+				ret false
+			if m == -1:
+				m = e.size()
+			elif m != e.size():
+				ret false
+		}
+
+		[ n, m ]
+	}
+
+	lp.choose = fn poss = none: {
+		if poss is list: {
+			loc i = 0
+			loc size = base.size()
+			loc acc = 0
+			loc toss = math.random()
+
+			while i < size: {
+				acc += poss[i]
+				if toss < acc:
+					ret base[i]
+
+				i += 1
+			}
+
+			base[-1]
+		} else:
+			base[math.random(0, base.size()).trunc()]
 	}
 })()
