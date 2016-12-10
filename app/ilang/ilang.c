@@ -362,7 +362,9 @@ CLEAN:
 	// IVM_TRACE("vmstate: %d\n", sizeof(ivm_vmstate_t));
 	// IVM_TRACE("arg: %d\n", sizeof(ivm_opcode_arg_t));
 	// IVM_TRACE("arg: %d\n", sizeof(ivm_instr_cache_t));
-/*
+
+	ivm_object_t *i;
+
 	PSIZE(ivm_vmstate_t);
 	PSIZE(ivm_heap_t);
 	PSIZE(ivm_coro_list_t);
@@ -373,8 +375,11 @@ CLEAN:
 	PSIZE(ivm_binop_table_t);
 	PSIZE(ivm_uniop_table_t);
 	PSIZE(ivm_ptlist_t);
+	PSIZE(ivm_object_t);
+	PSIZE(i->mark);
+	PSIZE(i->mark.copy);
 	IVM_TRACE("op count: %d\n", IVM_BINOP_COUNT);
-*/
+
 #endif
 
 	ivm_env_clean();

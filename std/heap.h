@@ -61,11 +61,20 @@ ivm_heap_isIllegalSize(ivm_heap_t *heap, ivm_size_t size)
 }
 
 IVM_INLINE
+ivm_size_t
+ivm_heap_align4(ivm_size_t size)
+{
+	return size & 3 ? (size & ~((ivm_size_t)3)) + 4 : size;
+}
+
+IVM_INLINE
 void *
 ivm_heap_alloc_c(ivm_heap_t *heap, ivm_size_t size, ivm_bool_t *add_block)
 {
 	// IVM_ASSERT(size, IVM_ERROR_MSG_ILLEGAL_ALLOC_SIZE(size));
 	register void *ret = heap->bcurp;
+
+	size = ivm_heap_align4(size);
 
 	if ((heap->bcurp += size) <= heap->bendp) {
 		return ret;
@@ -81,6 +90,8 @@ void *
 ivm_heap_alloc(ivm_heap_t *heap, ivm_size_t size)
 {
 	register void *ret = heap->bcurp;
+
+	size = ivm_heap_align4(size);
 
 	if ((heap->bcurp += size) <= heap->bendp) {
 		return ret;

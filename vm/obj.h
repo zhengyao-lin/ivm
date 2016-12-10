@@ -32,8 +32,18 @@ typedef struct ivm_object_t_tag {
 #define IVM_OBJECT_GET_TYPE_CONST_BOOL(obj) ((obj)->type->const_bool)
 #define IVM_OBJECT_GET_TYPE_TO_BOOL(obj) ((obj)->type->to_bool)
 #define IVM_OBJECT_GET_SLOTS(obj) ((obj)->slots)
-#define IVM_OBJECT_GET_COPY(obj) \
-	((ivm_object_t *)(((ivm_uptr_t)(obj)->mark.copy << _IVM_MARK_HEADER_BITS) >> _IVM_MARK_HEADER_BITS))
+
+IVM_INLINE
+ivm_object_t *
+IVM_OBJECT_GET_COPY(ivm_object_t *obj)
+{
+	if (IVM_IS64) {
+		return (ivm_object_t *)(((ivm_uptr_t)obj->mark.copy << _IVM_MARK_HEADER_BITS) >> _IVM_MARK_HEADER_BITS);
+	}
+
+	return obj->mark.copy;
+}
+
 #define IVM_OBJECT_GET_WB(obj) ((obj)->mark.sub.wb)
 #define IVM_OBJECT_GET_GEN(obj) ((obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_INC_GEN(obj) (++(obj)->mark.sub.gen)
@@ -47,11 +57,15 @@ void
 IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 					ivm_object_t *copy)
 {
-	obj->mark.copy = (ivm_object_t *)
-					 ((((ivm_uptr_t)obj->mark.copy
-					 	>> (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
-					 	<< (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
-					 	| (ivm_uptr_t)copy);
+	if (IVM_IS64) {
+		obj->mark.copy = (ivm_object_t *)
+						 ((((ivm_uptr_t)obj->mark.copy
+						 	>> (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
+						 	<< (sizeof(ivm_ptr_t) * 8 - _IVM_MARK_HEADER_BITS))
+						 	| (ivm_uptr_t)copy);
+	} else {
+		obj->mark.copy = copy;
+	}
 
 	return;
 }

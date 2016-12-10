@@ -49,8 +49,8 @@ typedef struct ivm_slot_table_t_tag {
 	struct ivm_object_t_tag **oops;
 	union {
 		struct {
-			ivm_int_t dummy1: sizeof(ivm_sint64_t) / 2 * 8;
-			ivm_int_t dummy2: sizeof(ivm_sint64_t) / 2 * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
+			ivm_int_t dummy1;
+			ivm_int_t dummy2: 32 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
 			ivm_uint_t oop_count: 6; // max 64
 			ivm_uint_t is_hash: 1;
 			ivm_uint_t is_linked: 1; // assert(is_linked & is_shared != 1)
@@ -63,21 +63,34 @@ typedef struct ivm_slot_table_t_tag {
 	ivm_uid_t uid;
 } ivm_slot_table_t;
 
-#define ivm_slot_table_getCopy(table) \
-	((ivm_slot_table_t *)((((ivm_uptr_t)(table)->mark.copy)        \
-							<< _IVM_SLOT_TABLE_MARK_HEADER_BITS)   \
-							>> _IVM_SLOT_TABLE_MARK_HEADER_BITS))
+IVM_INLINE
+ivm_slot_table_t *
+ivm_slot_table_getCopy(ivm_slot_table_t *table)
+{
+	if (IVM_IS64) {
+		return (ivm_slot_table_t *)((((ivm_uptr_t)table->mark.copy)
+									  << _IVM_SLOT_TABLE_MARK_HEADER_BITS)
+									  >> _IVM_SLOT_TABLE_MARK_HEADER_BITS);
+	}
+
+	return table->mark.copy;
+}
 
 IVM_INLINE
 void
 ivm_slot_table_setCopy(ivm_slot_table_t *table,
 					   ivm_slot_table_t *copy)
 {
-	table->mark.copy = (ivm_slot_table_t *)
-					   ((((ivm_uptr_t)table->mark.copy
-					   	>> (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
-						<< (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
-						| (ivm_uptr_t)copy);
+	if (IVM_IS64) {
+		table->mark.copy = (ivm_slot_table_t *)
+						   ((((ivm_uptr_t)table->mark.copy
+						   	>> (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
+							<< (sizeof(ivm_ptr_t) * 8 - _IVM_SLOT_TABLE_MARK_HEADER_BITS))
+							| (ivm_uptr_t)copy);
+	} else {
+		table->mark.copy = copy;
+	}
+
 	return;
 }
 

@@ -21,10 +21,8 @@ IVM_COM_HEADER
 	ivm_slot_table_t *slots;                                   \
 	union {                                                    \
 		struct {                                               \
-			ivm_int_t dummy1: sizeof(ivm_sint64_t) / 2 * 8;    \
-			ivm_int_t dummy2:                                  \
-				sizeof(ivm_sint64_t) / 2 * 8 -                 \
-				_IVM_MARK_HEADER_BITS;                         \
+			ivm_int_t dummy1;                                  \
+			ivm_int_t dummy2: 32 - _IVM_MARK_HEADER_BITS;      \
 			/* ivm_uint_t oop: IVM_OOP_COUNT; */               \
 			/* need or not to check oop */                     \
 			ivm_uint_t oop: 1;                                 \

@@ -38,6 +38,8 @@ typedef char					ivm_char_t;
 typedef unsigned char			ivm_uchar_t;
 typedef signed char				ivm_schar_t;
 
+#define IVM_IS64				(sizeof(ivm_ptr_t) == 8)
+
 #define IVM_NULL				((void *)0)
 #define IVM_FALSE				0 // false
 #define IVM_TRUE				1 // true
