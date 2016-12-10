@@ -11,6 +11,31 @@ project(ivm)
 set(IVM_PUB_HEAD_DIR ${PROJECT_SOURCE_DIR})
 set(PROJECT_BINARY_DIR ${PROJECT_SOURCE_DIR}/build)
 
+# cross compilation
+
+file(GLOB plat_list "platform/*")
+foreach(dir ${plat_list})
+	if(dir MATCHES "(.*)(/|\\\\)CMakePlatform(.*)\\.txt")
+		message(STATUS "Find platform ${CMAKE_MATCH_3}")
+		set(PLATFORMS "${CMAKE_MATCH_3}" ${PLATFORMS})
+	endif()
+endforeach(dir ${plat_list})
+
+# message(STATUS "${PLATFORMS}")
+
+# Kindle
+if(DEFINED PLATFORM)
+	list(FIND PLATFORMS "${PLATFORM}" idx)
+	# message(STATUS "${idx}")
+
+	if(NOT idx EQUAL -1)
+		message(STATUS "Target platform ${PLATFORM}")
+		include(platform/CMakePlatform${PLATFORM}.txt)
+	else()
+		message(FATAL_ERROR "Unrecognized PLATFORM ${PLATFORM}")
+	endif()
+endif()
+
 # set basic compile flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
 
@@ -22,7 +47,7 @@ if(CMAKE_C_COMPILER MATCHES "clang")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-gnu-label-as-value")
 endif()
 
-if(CMAKE_C_COMPILER MATCHES "gcc")
+if(CMAKE_C_COMPILER MATCHES "gcc" AND NOT CMAKE_C_COMPILER MATCHES "arm")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mno-ms-bitfields")
 endif()
 
@@ -85,7 +110,11 @@ else()
 	set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${LIBRARY_OUTPUT_PATH}\\\"")
+if(NOT DEFINED LIB_PATH)
+	set(LIB_PATH ${LIBRARY_OUTPUT_PATH})
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIVM_LIB_PATH=\\\"${LIB_PATH}\\\"")
 
 # add include files
 include_directories(${IVM_PUB_HEAD_DIR})

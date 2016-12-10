@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <wchar.h>
+/* #include <wchar.h> */
 #include <float.h>
 
 #include "pub/com.h"
@@ -32,7 +32,8 @@ typedef unsigned long			ivm_ulong_t;
 typedef float					ivm_single_t;
 typedef double					ivm_double_t;
 
-typedef wchar_t					ivm_wchar_t;
+/* typedef wchar_t					ivm_wchar_t; */
+
 typedef char					ivm_char_t;
 typedef unsigned char			ivm_uchar_t;
 typedef signed char				ivm_schar_t;
