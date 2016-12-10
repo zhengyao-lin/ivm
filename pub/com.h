@@ -6,19 +6,18 @@
 
 #ifdef __GNUC__
 	#if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1))
-		#define IVM_INLINE __inline__ __attribute__((always_inline))
+		#define IVM_INLINE IVM_PRIVATE __inline__ __attribute__((always_inline))
 	#else
-		#define IVM_INLINE __inline__
+		#define IVM_INLINE IVM_PRIVATE __inline__
 	#endif
 #elif defined(_MSC_VER)
-	#define IVM_INLINE __forceinline
+	#define IVM_INLINE IVM_PRIVATE __forceinline
 #elif (defined(__BORLANDC__) || defined(__WATCOMC__))
-	#define IVM_INLINE __inline
+	#define IVM_INLINE IVM_PRIVATE __inline
 #else
-	#define IVM_INLINE inline
+	#define IVM_INLINE IVM_PRIVATE inline
 #endif
 
-// #define IVM_INLINE inline __attribute__((always_inline))
 #define IVM_NOALIGN __attribute__((packed))
 
 #define IVM_STRICT strict

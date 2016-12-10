@@ -104,7 +104,6 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_object_t *
 _ivm_object_searchProtoSlot(ivm_object_t *obj,
@@ -131,7 +130,6 @@ _ivm_object_searchProtoSlot(ivm_object_t *obj,
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_object_t *
 _ivm_object_searchProtoSlot_cc(ivm_object_t *obj,

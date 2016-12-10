@@ -113,7 +113,6 @@ ivm_heap_compact(ivm_heap_t *heap)
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void *
 _ivm_heap_addLargeBlock(ivm_heap_t *heap, ivm_size_t size)

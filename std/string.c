@@ -266,7 +266,6 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		}                                                                       \
 	} int dummy()
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_string_t *
 _ivm_string_copy_heap(const ivm_string_t *str,
@@ -283,7 +282,6 @@ _ivm_string_copy_heap(const ivm_string_t *str,
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_string_t *
 _ivm_string_new_heap(ivm_bool_t is_const,
@@ -305,7 +303,6 @@ _ivm_string_new_heap(ivm_bool_t is_const,
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_string_t *
 _ivm_string_new_heap_n(ivm_bool_t is_const,

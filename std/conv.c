@@ -142,7 +142,6 @@ ivm_uint64_t tens[] = {
 	10U, 1U
 };
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_uint64_t
 _get_dbits(ivm_double_t d)

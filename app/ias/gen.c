@@ -41,7 +41,6 @@ ias_gen_env_new(ias_gen_block_list_t *block_list)
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ias_gen_env_cleanJumpTable(ias_gen_env_t *env)

@@ -222,7 +222,6 @@ IVM_PRIVATE
 volatile
 ivm_bool_t _coro_csl = IVM_FALSE;
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_coro_lockGIL()
@@ -231,7 +230,6 @@ _ivm_coro_lockGIL()
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_coro_unlockGIL()
@@ -335,7 +333,6 @@ ivm_coro_setInt(ivm_coro_int_t flag)
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_bool_t
 _ivm_coro_hasInt()
@@ -343,7 +340,6 @@ _ivm_coro_hasInt()
 	return _coro_int_next != _coro_int_head;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_coro_int_t
 _ivm_coro_popInt()
@@ -367,7 +363,6 @@ _ivm_coro_popInt()
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_bool_t
 _ivm_coro_otherInt(ivm_coro_int_t intr)

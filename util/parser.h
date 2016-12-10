@@ -159,7 +159,6 @@ PARSER_ERR_EM(struct err_msg_t *err)
 #define PARSER_ERR_MSG_UNEXPECTED_CHAR(c, state)					"unexpected character '%c' in state %d", (c), (state)
 #define PARSER_ERR_MSG_UNEXPECTED_ENDING(state)						"unexpected ending(still in state %d)", (state)
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_bool_t
 _is_match(const char c,
@@ -184,7 +183,6 @@ _is_match(const char c,
 	return IVM_FALSE;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_parser_dumpToken(ivm_list_t *tokens)
@@ -203,7 +201,6 @@ _ivm_parser_dumpToken(ivm_list_t *tokens)
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_parser_dumpToken_r(struct token_t *from, struct token_t *to) // [from, to)
@@ -221,7 +218,6 @@ _ivm_parser_dumpToken_r(struct token_t *from, struct token_t *to) // [from, to)
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_list_t *
 _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IVM_COMMON_PARSER_MAX_TOKEN_RULE])

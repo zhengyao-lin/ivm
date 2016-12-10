@@ -15,8 +15,6 @@
 #include "slot.h"
 #include "obj.h"
 
-
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_slot_table_init(ivm_slot_table_t *table,

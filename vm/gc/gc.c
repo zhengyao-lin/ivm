@@ -113,7 +113,6 @@ ivm_collector_dump(ivm_collector_t *collector,
 #define ADD_EMPTY_LIST(collector, obj) \
 	(ivm_destruct_list_add(&(collector)->des_log[1], (obj)))
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_checkIfDestruct(ivm_collector_t *collector,
@@ -136,7 +135,6 @@ ivm_collector_checkIfDestruct(ivm_collector_t *collector,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_triggerDestructor(ivm_collector_t *collector,
@@ -289,7 +287,6 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 	return ret;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_object_t *
 ivm_collector_copyObject_ng(ivm_object_t *obj,
@@ -319,7 +316,6 @@ ivm_collector_copyObject_ng(ivm_object_t *obj,
 	return obj;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_updateObject(ivm_object_t **obj,
@@ -329,7 +325,6 @@ ivm_collector_updateObject(ivm_object_t **obj,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travSingleContext(ivm_context_t *ctx,
@@ -367,7 +362,6 @@ ivm_collector_travContext(ivm_context_t *ctx,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travFrame(ivm_frame_t *frame,
@@ -380,7 +374,6 @@ ivm_collector_travFrame(ivm_frame_t *frame,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travRuntime(ivm_runtime_t *runtime,
@@ -393,7 +386,6 @@ ivm_collector_travRuntime(ivm_runtime_t *runtime,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travCoro(ivm_coro_t *coro,
@@ -434,7 +426,6 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travType(ivm_type_t *type,
@@ -444,7 +435,6 @@ ivm_collector_travType(ivm_type_t *type,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_travState(ivm_vmstate_t *state,
@@ -486,7 +476,6 @@ ivm_collector_travState(ivm_vmstate_t *state,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 ivm_collector_checkWriteBarrier(ivm_collector_t *collector,

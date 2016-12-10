@@ -151,7 +151,6 @@ ivm_mod_addModSuffix(const ivm_char_t *suffix,
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_mod_initModPath()
@@ -224,7 +223,6 @@ ivm_mod_clean()
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_size_t
 _get_max_buf_size(ivm_size_t mod_name_len)
@@ -233,7 +231,6 @@ _get_max_buf_size(ivm_size_t mod_name_len)
 }
 
 /* buffer guaranteed to have enough size */
-IVM_PRIVATE
 IVM_INLINE
 ivm_mod_loader_t
 _ivm_mod_search_c(const ivm_char_t *mod_name,

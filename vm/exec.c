@@ -34,7 +34,6 @@ ivm_source_pos_free(ivm_source_pos_t *pos)
 	return;
 }
 
-IVM_PRIVATE
 IVM_INLINE
 void
 _ivm_exec_init(ivm_exec_t *exec,

@@ -95,7 +95,6 @@ FAILED:
 	return ret ? ret : IVM_NONE(NAT_STATE());
 }
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_exec_unit_t *
 _parse_source(ivm_vmstate_t *state,

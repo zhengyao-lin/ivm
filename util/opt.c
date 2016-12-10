@@ -57,6 +57,7 @@ _is_jump(ivm_opt_instr_t *instr)
 	return ivm_opcode_table_isJump(instr->opc);
 }
 
+/*
 IVM_INLINE
 ivm_bool_t
 _has_loop(ivm_opt_instr_t *instr)
@@ -70,6 +71,7 @@ _has_loop(ivm_opt_instr_t *instr)
 
 	return IVM_FALSE;
 }
+*/
 
 ivm_opt_il_t *
 ivm_opt_il_convertFromExec(ivm_exec_t *exec)

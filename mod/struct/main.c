@@ -35,7 +35,6 @@ enum {
 	IVM_STRUCT_TYPE_COUNT
 };
 
-IVM_PRIVATE
 IVM_INLINE
 ivm_bool_t
 _is_legal_type(ivm_uint_t t)
