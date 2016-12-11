@@ -127,7 +127,7 @@ loc CorePlate = fn
 		//   2. left
 		//   3. right
 		slide: fn dir: {
-			print([ "up", "down", "left", "right" ][dir])
+			io.stdout.write([ "up", "down", "left", "right" ][dir] + "\n")
 
 			loc corner = [
 				c_ru, c_ld, c_ld, c_ru
@@ -217,17 +217,32 @@ loc CorePlate = fn
 		},
 
 		start: fn: {
-			loc dir_map = {
-				w: 0, // up
-				s: 1, // down
-				a: 2, // left
-				d: 3,  // right
-				stop: -1
+			loc get_dir = if io.kbhit: fn: {
+				io.stdout.write("(press the direction key or q to exit) ")
+				io.stdout.flush()
+				loc key = io.kbhit()
+
+				if key == 1792833: 0
+				elif key == 1792834: 1
+				elif key == 1792836: 2
+				elif key == 1792835: 3
+				elif key == 113: -1
+				else: none
+			} else: fn: {
+				loc dir_map = {
+					w: 0, // up
+					s: 1, // down
+					a: 2, // left
+					d: 3,  // right
+					exit: -1
+				}
+				loc act = input("a direction or 'exit' to exit: ")
+				loc dir = dir_map[act]
 			}
 
 			while 1: {
-				loc act = input("a direction or 'stop' to exit: ")
-				loc dir = dir_map[act]
+				loc dir = get_dir()
+
 				if dir is numeric: {
 					if dir == -1:
 						break

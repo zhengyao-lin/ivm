@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "pub/com.h"
 #include "pub/type.h"
 #include "pub/vm.h"
 #include "pub/obj.h"
@@ -7,9 +8,22 @@
 
 #include "std/io.h"
 #include "std/string.h"
+#include "std/time.h"
 
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
+
+#if IVM_OS_LINUX || IVM_OS_MAC
+
+	#include "termios.h"
+	#include "unistd.h"
+	#include "fcntl.h"
+
+	#define IO_USE_TERMIOS 1
+
+#else
+	#define IO_USE_TERMIOS 0
+#endif
 
 #define IO_FILE_TYPE_NAME "io.file"
 #define IO_FILE_TYPE_CONS IVM_GET_NATIVE_FUNC(_io_file)
@@ -349,6 +363,20 @@ IVM_NATIVE_FUNC(_io_file_cur)
 	return ivm_numeric_new(NAT_STATE(), ivm_file_curPos(fobj->fp));
 }
 
+IVM_NATIVE_FUNC(_io_file_flush)
+{
+	ivm_file_object_t *fobj;
+
+	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+
+	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
+	CHECK_INIT_FP(fobj);
+
+	ivm_file_flush(fobj->fp);
+
+	return IVM_NONE(NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_io_remove)
 {
 	const ivm_string_t *str;
@@ -362,6 +390,43 @@ IVM_NATIVE_FUNC(_io_remove)
 
 	return IVM_NONE(NAT_STATE());
 }
+
+#if IO_USE_TERMIOS
+
+IVM_NATIVE_FUNC(_io_kbhit)
+{
+	struct termios orig, cur;
+	ivm_int_t ch, tmp;
+	ivm_int_t oldf;
+
+	tcgetattr(STDIN_FILENO, &orig);
+	
+	// set no buffer
+	cur = orig;
+	cur.c_lflag &= ~(ICANON | ECHO);
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &cur);
+
+	oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+	fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+	while ((ch = fgetc(stdin)) == EOF) {
+		ivm_time_msleep(10);
+	}
+
+	// key pressed
+	while ((tmp = fgetc(stdin)) != EOF) {
+		ch = ch << 8 | tmp;
+	}
+	// key released
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &orig);
+	fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+	return ivm_numeric_new(NAT_STATE(), ch);
+}
+
+#endif
 
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
@@ -399,11 +464,17 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_object_setSlot_r(file_proto, state, "lines", IVM_NATIVE_WRAP(state, _io_file_lines));
 		ivm_object_setSlot_r(file_proto, state, "seek", IVM_NATIVE_WRAP(state, _io_file_seek));
 		ivm_object_setSlot_r(file_proto, state, "cur", IVM_NATIVE_WRAP(state, _io_file_cur));
+
+		ivm_object_setSlot_r(file_proto, state, "flush", IVM_NATIVE_WRAP(state, _io_file_flush));
 	});
 
 	/* io */
 	ivm_object_setSlot_r(mod, state, "file", IVM_NATIVE_WRAP_CONS(state, file_proto, _io_file));
 	ivm_object_setSlot_r(mod, state, "remove", IVM_NATIVE_WRAP(state, _io_remove));
+
+#if IO_USE_TERMIOS
+	ivm_object_setSlot_r(mod, state, "kbhit", IVM_NATIVE_WRAP(state, _io_kbhit));
+#endif
 
 	ivm_object_setSlot_r(mod, state, "stdin", ivm_file_object_new(state, ivm_file_new_c(stdin)));
 	ivm_object_setSlot_r(mod, state, "stdout", ivm_file_object_new(state, ivm_file_new_c(stdout)));

@@ -143,6 +143,7 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 	ivm_context_setSlot_r(ctx, state, "none", IVM_NONE(state));
 	ivm_context_setSlot_r(ctx, state, "true", ivm_bool_new(state, IVM_TRUE));
 	ivm_context_setSlot_r(ctx, state, "false", ivm_bool_new(state, IVM_FALSE));
+	ivm_context_setSlot_r(ctx, state, "eof", ivm_numeric_new(state, EOF));
 
 	ivm_context_setSlot_r(ctx, state, "typename", IVM_NATIVE_WRAP(state, _global_typename));
 	ivm_context_setSlot_r(ctx, state, "input", IVM_NATIVE_WRAP(state, _global_input));

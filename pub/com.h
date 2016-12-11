@@ -47,14 +47,14 @@
 #endif
 
 #if defined(__linux__) || defined(__linux)
-	#define IVM_OS_LINUX
+	#define IVM_OS_LINUX 1
 #elif defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
-	#define IVM_OS_WIN32
-	#define IVM_OS_WIN64
+	#define IVM_OS_WIN32 1
+	#define IVM_OS_WIN64 1
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-	#define IVM_OS_WIN32
+	#define IVM_OS_WIN32 1
 #elif (defined(__APPLE__) && defined(__GNUC__)) || defined(__MACOSX__) || defined(macintosh)
-	#define IVM_OS_MAC
+	#define IVM_OS_MAC 1
 #endif
 
 #ifndef IVM_LIB_PATH

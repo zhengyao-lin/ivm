@@ -146,8 +146,8 @@ endforeach(dir ${app_list})
 add_executable(testbed test.c)
 target_link_libraries(testbed ivm-vm ivm-util)
 
-add_library(testmod SHARED testmod.c)
-target_link_libraries(testmod ivm-vm)
+# add_library(testmod SHARED testmod.c)
+# target_link_libraries(testmod ivm-vm)
 
 if(DEFINED MEMCHECK AND (MEMCHECK STREQUAL "yes"))
 	message(STATUS "Memory check enabled")

@@ -1,3 +1,9 @@
+import io
+
+print(io.kbhit())
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
@@ -58,7 +64,6 @@ __test = fn: {
 	print(变量1)
 
 	sort = $import("test/sort")
-	mod = $import("testmod")
 
 	try: $import("build/lib/wrongmod")
 	catch err: printe(err)
@@ -73,7 +78,6 @@ __test = fn: {
 	catch err: printe(err)
 
 	sort.bubble([5, 4, 3, 2, 1]).print()
-	mod.test()
 
 	b = "no"
 

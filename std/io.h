@@ -80,6 +80,8 @@ ivm_file_readAll_c(ivm_file_t *file,
 
 #define ivm_file_readAll(file) ivm_file_readAll_c((file), IVM_TRUE)
 
+#define ivm_file_flush(file) IVM_FFLUSH((file)->fp)
+
 ivm_char_t *
 ivm_file_read_n(ivm_file_t *file,
 				ivm_size_t len,

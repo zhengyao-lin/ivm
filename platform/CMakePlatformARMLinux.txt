@@ -1,3 +1,5 @@
+# ARMLinux
+
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
 set(LIB_PATH "/usr/lib")
