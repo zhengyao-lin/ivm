@@ -396,8 +396,9 @@ IVM_NATIVE_FUNC(_io_remove)
 IVM_NATIVE_FUNC(_io_kbhit)
 {
 	struct termios orig, cur;
-	ivm_int_t ch, tmp;
+	ivm_int_t ch;
 	ivm_int_t oldf;
+	ivm_schar_t tmp;
 
 	tcgetattr(STDIN_FILENO, &orig);
 	
@@ -416,7 +417,7 @@ IVM_NATIVE_FUNC(_io_kbhit)
 
 	// key pressed
 	while ((tmp = fgetc(stdin)) != EOF) {
-		ch = ch << 8 | tmp;
+		ch = (ch << 8) + tmp;
 	}
 	// key released
 

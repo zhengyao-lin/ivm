@@ -24,7 +24,7 @@ loc CorePlate = fn
 		[ [ 0 for loc j in range(m) ] for loc i in range(n) ]
 	},
 	rd = [ 2, 4 ] /* random init number */,
-	rd_poss = [ 0.8, 0.2 ],
+	rd_poss = [ 0.9, 0.1 ],
 	init_n = 2: {
 
 	plate.to_s = fn: {
@@ -220,14 +220,30 @@ loc CorePlate = fn
 			loc get_dir = if io.kbhit: fn: {
 				io.stdout.write("(press the direction key or q to exit) ")
 				io.stdout.flush()
+				
 				loc key = io.kbhit()
+				loc hig = (key & 0b111111110000000000000000) >> 16
+				loc mid = (key & 0b000000001111111100000000) >> 8
+				loc low = key & 0b000000000000000011111111
 
-				if key == 1792833: 0
-				elif key == 1792834: 1
-				elif key == 1792836: 2
-				elif key == 1792835: 3
-				elif key == 113: -1
-				else: none
+				// print(hig)
+				// print(mid)
+				// print(low)
+
+				if hig == 27 && (mid == 91 || mid == 79): { // esc
+					if low == 65: 0
+					elif low == 66: 1
+					elif low == 68: 2
+					elif low == 67: 3
+					else: none
+				} elif hig == 0 && mid == 0: {
+					if low == 113: -1
+					elif low == 119: 0
+					elif low == 115: 1
+					elif low == 97: 2
+					elif low == 100: 3
+					else: none
+				} else: none
 			} else: fn: {
 				loc dir_map = {
 					w: 0, // up
