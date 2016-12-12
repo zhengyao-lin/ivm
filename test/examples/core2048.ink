@@ -221,7 +221,7 @@ loc CorePlate = fn
 				io.stdout.write("(press the direction key or q to exit) ")
 				io.stdout.flush()
 				
-				loc key = io.kbhit()
+				loc key = io.kbhit() // no echo
 				loc hig = (key & 0b111111110000000000000000) >> 16
 				loc mid = (key & 0b000000001111111100000000) >> 8
 				loc low = key & 0b000000000000000011111111

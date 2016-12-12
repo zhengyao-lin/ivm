@@ -399,12 +399,21 @@ IVM_NATIVE_FUNC(_io_kbhit)
 	ivm_int_t ch;
 	ivm_int_t oldf;
 	ivm_schar_t tmp;
+	ivm_number_t echo = IVM_FALSE;
+
+	MATCH_ARG("*n", &echo);
 
 	tcgetattr(STDIN_FILENO, &orig);
 	
 	// set no buffer
 	cur = orig;
-	cur.c_lflag &= ~(ICANON | ECHO);
+
+	if (echo) {
+		cur.c_lflag &= ~ICANON;
+		cur.c_lflag |= ECHO;
+	} else {
+		cur.c_lflag &= ~(ICANON | ECHO);
+	}
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &cur);
 
