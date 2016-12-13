@@ -1,3 +1,4 @@
+/*
 import time
 import curses
 import io
@@ -17,6 +18,7 @@ print(line)
 print(col)
 
 ret
+*/
 
 printe = fn e: {
 	loc file = e.file || "<unknown>"
