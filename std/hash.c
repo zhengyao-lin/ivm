@@ -5,10 +5,10 @@
 #include "hash.h"
 
 void
-ivm_ptset_init(ivm_ptset_t *set)
+ivm_pthash_init(ivm_pthash_t *set)
 {
-	set->size = IVM_DEFAULT_PTSET_BUFFER_SIZE;
-	set->table = STD_ALLOC_INIT(sizeof(*set->table) * IVM_DEFAULT_PTSET_BUFFER_SIZE);
+	set->size = IVM_DEFAULT_PTHASH_BUFFER_SIZE;
+	set->table = STD_ALLOC_INIT(sizeof(*set->table) * IVM_DEFAULT_PTHASH_BUFFER_SIZE);
 
 	IVM_MEMCHECK(set->table);
 
@@ -16,7 +16,7 @@ ivm_ptset_init(ivm_ptset_t *set)
 }
 
 void
-ivm_ptset_dump(ivm_ptset_t *set)
+ivm_pthash_dump(ivm_pthash_t *set)
 {
 	if (set) {
 		STD_FREE(set->table);

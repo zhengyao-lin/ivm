@@ -75,40 +75,47 @@ ivm_hash_fromString_n(const ivm_char_t *key,
 }
 
 typedef struct {
-	void **table;
+	void *k;
+	void *v;
+} ivm_pthash_pair_t;
+
+typedef struct {
+	ivm_pthash_pair_t *table;
 	ivm_size_t size;
-} ivm_ptset_t;
+} ivm_pthash_t;
 
 void
-ivm_ptset_init(ivm_ptset_t *set);
+ivm_pthash_init(ivm_pthash_t *set);
 
 void
-ivm_ptset_dump(ivm_ptset_t *set);
+ivm_pthash_dump(ivm_pthash_t *set);
 
 IVM_INLINE
 void
-_ivm_ptset_expand(ivm_ptset_t *set);
+_ivm_pthash_expand(ivm_pthash_t *set);
 
 IVM_INLINE
-void **
-ivm_ptset_find(ivm_ptset_t *set,
-			   void *val)
+ivm_pthash_pair_t *
+ivm_pthash_find(ivm_pthash_t *set,
+				void *key)
 {
 	ivm_hash_val_t hash;
-	register void **end, **tmp, **i;
-	hash = ivm_hash_fromPointer(val);
+	register ivm_pthash_pair_t *end, *tmp, *i;
+	hash = ivm_hash_fromPointer(key);
+
+	if (!key) return IVM_NULL;
 
 	end = set->table + set->size;
 	tmp = set->table + (hash & (set->size - 1));
 	
 	for (i = tmp; i != end; i++) {
-		if (!*i || *i == val) {
+		if (!i->k || i->k == key) {
 			return i;
 		}
 	}
 	
 	for (i = set->table; i != tmp; i++) {
-		if (!*i || *i == val) {
+		if (!i->k || i->k == key) {
 			return i;
 		}
 	}
@@ -118,21 +125,26 @@ ivm_ptset_find(ivm_ptset_t *set,
 
 IVM_INLINE
 void
-ivm_ptset_insert(ivm_ptset_t *set, void *val)
+ivm_pthash_insert(ivm_pthash_t *set,
+				  void *key, void *val)
 {
-	void **found;
+	ivm_pthash_pair_t *found;
+
+	if (!key) return;
 
 	while (1) {
-		found = ivm_ptset_find(set, val);
+		found = ivm_pthash_find(set, key);
 
 		if (found) {
-			if (!*found) {
-				*found = val;
+			if (!found->k) {
+				found->k = key;
 			}
+
+			found->v = val;
 
 			return;
 		} else {
-			_ivm_ptset_expand(set);
+			_ivm_pthash_expand(set);
 		}
 	}
 
@@ -141,30 +153,36 @@ ivm_ptset_insert(ivm_ptset_t *set, void *val)
 
 IVM_INLINE
 void
-_ivm_ptset_rehash(ivm_ptset_t *set, void *val)
+_ivm_pthash_rehash(ivm_pthash_t *set,
+				   void *key,
+				   void *val)
 {
-	void **found;
+	ivm_pthash_pair_t *found;
 
-	found = ivm_ptset_find(set, val);
+	found = ivm_pthash_find(set, val);
 
-	IVM_ASSERT(found, "impossible");
-	*found = val;
+	if (!found) {
+		IVM_FATAL("impossible");
+	}
+
+	found->k = key;
+	found->v = val;
 
 	return;
 }
 
 IVM_INLINE
 ivm_bool_t /* found the ptr? */
-ivm_ptset_remove(ivm_ptset_t *set,
-				 void *val)
+ivm_pthash_remove(ivm_pthash_t *set,
+				  void *key)
 {
-	void **found = ivm_ptset_find(set, val);
-	void **table, **end, **i;
+	ivm_pthash_pair_t *found = ivm_pthash_find(set, key);
+	ivm_pthash_pair_t *table, *end, *i;
 	ivm_size_t mask;
 	ivm_hash_val_t hash;
 
-	if (found && *found) {
-		*found = IVM_NULL;
+	if (found && found->k) {
+		found->k = IVM_NULL;
 
 		table = set->table;
 		end = table + set->size;
@@ -172,9 +190,9 @@ ivm_ptset_remove(ivm_ptset_t *set,
 
 		while (1) {
 			for (i = found + 1; i != end; i++) {
-				if (!*i) return IVM_TRUE; // next gap: no influence
+				if (!i->k) return IVM_TRUE; // next gap: no influence
 				
-				hash = ivm_hash_fromPointer(*i) & mask;
+				hash = ivm_hash_fromPointer(i->k) & mask;
 				
 				if (table + hash <= found ||
 					table + hash > i) {
@@ -183,9 +201,9 @@ ivm_ptset_remove(ivm_ptset_t *set,
 			}
 
 			for (i = table; i != found; i++) {
-				if (!*i) return IVM_TRUE; // next gap: no influence
+				if (!i->k) return IVM_TRUE; // next gap: no influence
 				
-				hash = ivm_hash_fromPointer(*i) & mask;
+				hash = ivm_hash_fromPointer(i->k) & mask;
 				
 				if (table + hash > i) {
 					goto FILL; // found a filling element
@@ -195,7 +213,7 @@ ivm_ptset_remove(ivm_ptset_t *set,
 		FILL:
 			*found = *i;
 			found = i;
-			*found = IVM_NULL;
+			found->k = IVM_NULL;
 		}
 
 	} else return IVM_FALSE;
@@ -203,11 +221,10 @@ ivm_ptset_remove(ivm_ptset_t *set,
 
 IVM_INLINE
 void
-_ivm_ptset_expand(ivm_ptset_t *set)
+_ivm_pthash_expand(ivm_pthash_t *set)
 {
 	ivm_size_t orig_size = set->size;
-	void **orig = set->table,
-		 **i, **end;
+	ivm_pthash_pair_t *orig = set->table, *i, *end;
 
 	set->size <<= 1;
 	set->table = STD_ALLOC_INIT(sizeof(*set->table) * set->size);
@@ -216,22 +233,23 @@ _ivm_ptset_expand(ivm_ptset_t *set)
 
 	for (i = orig, end = orig + orig_size;
 		 i != end; i++) {
-		if (*i) {
-			_ivm_ptset_rehash(set, *i);
+		if (i->k) {
+			_ivm_pthash_rehash(set, i->k, i->v);
 		}
 	}
 
 	return;
 }
 
-typedef void **ivm_ptset_iterator_t;
+typedef ivm_pthash_pair_t *ivm_pthash_iterator_t;
 
-#define IVM_PTSET_ITER_TYPE(elem_type) elem_type *
-#define IVM_PTSET_ITER_GET(iter) (*(iter))
-#define IVM_PTSET_EACHPTR(ptset, iter, type) \
+#define IVM_PTHASH_ITER_TYPE(elem_type) elem_type *
+#define IVM_PTHASH_ITER_GET_KEY(iter) ((iter)->k)
+#define IVM_PTHASH_ITER_GET_VAL(iter) ((iter)->v)
+#define IVM_PTHASH_EACHPTR(pthash, iter, type) \
 	type *__ps_end_##iter##__; \
-	for ((iter) = (type *)((ptset)->table), \
-		 __ps_end_##iter##__ = (iter) + (ptset)->size; \
+	for ((iter) = (type *)((pthash)->table), \
+		 __ps_end_##iter##__ = (iter) + (pthash)->size; \
 		 (iter) != __ps_end_##iter##__; \
 		 (iter)++)
 
