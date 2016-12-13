@@ -18,6 +18,9 @@
 #define WINDOW_TYPE_CONS IVM_GET_NATIVE_FUNC(_curses_window)
 
 #define CURSES_ERROR_MSG_FAILED(sth)									("failed to " sth)
+#define CURSES_ERROR_MSG_UNINIT_WIN										"uninitialized window"
+
+#define CHECK_WIN_INIT(wobj) RTM_ASSERT((wobj)->win, CURSES_ERROR_MSG_UNINIT_WIN)
 
 typedef struct {
 	IVM_OBJECT_HEADER
@@ -40,6 +43,26 @@ IVM_NATIVE_FUNC(_curses_window)
 {
 	CHECK_ARG_1_TP(WINDOW_TYPE_CONS);
 	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_curses_window_size)
+{
+	ivm_curses_window_t *wobj;
+	ivm_int_t miny, minx, maxy, maxx;
+	ivm_object_t *ret[2];
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_WIN_INIT(wobj);
+
+	getbegyx(wobj->win, miny, minx);
+	getmaxyx(wobj->win, maxy, maxx);
+
+	ret[0] = ivm_numeric_new(NAT_STATE(), maxy - miny);
+	ret[1] = ivm_numeric_new(NAT_STATE(), maxx - minx);
+
+	return ivm_list_object_new_c(NAT_STATE(), ret, 2);
 }
 
 IVM_NATIVE_FUNC(_curses_initscr)
@@ -69,6 +92,12 @@ IVM_NATIVE_FUNC(_curses_endwin)
 	return IVM_NONE(NAT_STATE());
 }
 
+IVM_NATIVE_FUNC(_curses_stdscr)
+{
+	RTM_ASSERT(stdscr, CURSES_ERROR_MSG_UNINIT_WIN);
+	return ivm_curses_window_new(NAT_STATE(), stdscr);
+}
+
 ivm_object_t *
 ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_coro_t *coro,
@@ -90,13 +119,15 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_type_setProto(_TYPE, win_proto);
 		ivm_object_setProto(win_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 
-		// ivm_object_setSlot_r(win_proto, state, "width", IVM_NATIVE_WRAP(state, _curses_window));
+		ivm_object_setSlot_r(win_proto, state, "size", IVM_NATIVE_WRAP(state, _curses_window_size));
 	});
 
 	ivm_object_setSlot_r(mod, state, "initscr", IVM_NATIVE_WRAP(state, _curses_initscr));
 	ivm_object_setSlot_r(mod, state, "clear", IVM_NATIVE_WRAP(state, _curses_clear));
 	ivm_object_setSlot_r(mod, state, "refresh", IVM_NATIVE_WRAP(state, _curses_refresh));
 	ivm_object_setSlot_r(mod, state, "endwin", IVM_NATIVE_WRAP(state, _curses_endwin));
+
+	ivm_object_setSlot_r(mod, state, "stdscr", IVM_NATIVE_WRAP(state, _curses_stdscr));
 
 	return mod;
 }

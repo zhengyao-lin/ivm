@@ -1,3 +1,23 @@
+import time
+import curses
+import io
+
+try: {
+	
+	curses.initscr()
+	curses.clear()
+	curses.refresh()
+	time.msleep(1000)
+
+} final: curses.endwin()
+
+[ line, col ] = curses.stdscr().size()
+
+print(line)
+print(col)
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1

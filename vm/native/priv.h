@@ -64,6 +64,8 @@
 		RTM_ASSERT(!__match_ret__, IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(__match_ret__));   \
 	}
 
+#define GET_BASE_AS(type) IVM_AS(NAT_BASE(), type)
+
 #define CHECK_ARG_COUNT(count) \
 	RTM_ASSERT(NAT_ARGC() >= (count),                                       \
 			   IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((count), NAT_ARGC()))
