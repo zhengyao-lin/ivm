@@ -1,5 +1,5 @@
 # ivm
-ivm is a virtual machine built aiming to improve the performance of a prototype-based language [ink](https://github.com/rod-lin/ink "ink")
+ivm is a simple vm built for a prototype-based language [ink](https://github.com/rod-lin/ink "ink")
 
 ## dependencies
     cmake >= 2.8
@@ -8,18 +8,9 @@ ivm is a virtual machine built aiming to improve the performance of a prototype-
 ## build
 Build using cmake
 
-    cmake ./
-    
-or
-
     cmake -DVERSION=release
-    
-for the faster releasing version
-
-Then use make to compile & test
-
-    make
-    make test
+    make
+    make test
 
 ## executable files(in build/bin in default)
 
