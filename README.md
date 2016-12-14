@@ -3,14 +3,14 @@ ivm is a simple vm built for a prototype-based language [ink](https://github.com
 
 ## dependencies
     cmake >= 2.8
-    gcc >= 4.8.4 or clang >= 3.4
+	gcc >= 4.8.4 or clang >= 3.4
 
 ## build
 Build using cmake
- 
-    cmake -DVERSION=release
-    make
-    make test
+
+	cmake -DVERSION=release
+	make
+	make test
 
 Further build options can be found in CMakefile.txt
 
