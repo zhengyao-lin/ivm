@@ -7,10 +7,12 @@ ivm is a simple vm built for a prototype-based language [ink](https://github.com
 
 ## build
 Build using cmake
-
-    cmake -DVERSION=release
+ 
+    cmake -DVERSION=release
     make
     make test
+
+Further build options can be found in CMakefile.txt
 
 ## executable files(in build/bin in default)
 
