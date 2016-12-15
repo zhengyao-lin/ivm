@@ -12,13 +12,10 @@ Build using cmake
 	make
 	make test
 
-Further build options can be found in CMakefile.txt
+Further build options can be found in CMakefile.txt(e.g. -DPLATFORM)
 
 ## executable files(in build/bin in default)
 
     build/bin/ias      execute .ias file
     build/bin/ilang    execute .ink file
     bulid/bin/testbed  general tests
-
-<br><br>
-ivm is still under development. orz
