@@ -22,6 +22,9 @@
 
 #define CHECK_WIN_INIT(wobj) RTM_ASSERT((wobj)->win, CURSES_ERROR_MSG_UNINIT_WIN)
 
+#define CHECK_PTR_ERR(call, sth) RTM_ASSERT((call) != IVM_NULL, CURSES_ERROR_MSG_FAILED(sth))
+#define CHECK_INT_ERR(call, sth) RTM_ASSERT((call) != ERR, CURSES_ERROR_MSG_FAILED(sth))
+
 typedef struct {
 	IVM_OBJECT_HEADER
 	WINDOW *win;
@@ -65,6 +68,21 @@ IVM_NATIVE_FUNC(_curses_window_size)
 	return ivm_list_object_new_c(NAT_STATE(), ret, 2);
 }
 
+IVM_NATIVE_FUNC(_curses_window_keypad)
+{
+	ivm_curses_window_t *wobj;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_ARG_1(IVM_NUMERIC_T);
+	
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_WIN_INIT(wobj);
+
+	CHECK_INT_ERR(keypad(wobj->win, (ivm_bool_t)ivm_numeric_getValue(NAT_ARG_AT(1))), "set keypad");
+
+	return IVM_NONE(NAT_STATE());
+}
+
 IVM_NATIVE_FUNC(_curses_initscr)
 {
 	WINDOW *win = initscr();
@@ -74,21 +92,55 @@ IVM_NATIVE_FUNC(_curses_initscr)
 	return ivm_curses_window_new(NAT_STATE(), win);
 }
 
-IVM_NATIVE_FUNC(_curses_clear)
+#define INT_RET_ROUTINE(name, sth) \
+	IVM_NATIVE_FUNC(_curses_##name)     \
+	{                                   \
+		CHECK_INT_ERR((name)(), sth);   \
+		return IVM_NONE(NAT_STATE());   \
+	}
+
+#define VOID_ROUTINE(name, sth) \
+	IVM_NATIVE_FUNC(_curses_##name)     \
+	{                                   \
+		(name)();                       \
+		return IVM_NONE(NAT_STATE());   \
+	}
+
+INT_RET_ROUTINE(clear, "clear window")
+INT_RET_ROUTINE(refresh, "refresh window")
+INT_RET_ROUTINE(endwin, "end window")
+
+INT_RET_ROUTINE(cbreak, "character break")
+
+INT_RET_ROUTINE(noecho, "unset echo")
+INT_RET_ROUTINE(echo, "set echo")
+
+INT_RET_ROUTINE(nonl, "unset newline")
+INT_RET_ROUTINE(nl, "set newline")
+
+INT_RET_ROUTINE(noraw, "unset raw mode")
+INT_RET_ROUTINE(raw, "set raw mode")
+
+VOID_ROUTINE(noqiflush, "unset quit interruptions")
+VOID_ROUTINE(qiflush, "set quit interruptions")
+
+IVM_NATIVE_FUNC(_curses_timeout)
 {
-	RTM_ASSERT(clear() == OK, CURSES_ERROR_MSG_FAILED("clear window"));
+	CHECK_ARG_1(IVM_NUMERIC_T);
+
+	timeout((ivm_int_t)ivm_numeric_getValue(NAT_ARG_AT(1)));
+
 	return IVM_NONE(NAT_STATE());
 }
 
-IVM_NATIVE_FUNC(_curses_refresh)
+IVM_NATIVE_FUNC(_curses_intrflush)
 {
-	RTM_ASSERT(refresh() == OK, CURSES_ERROR_MSG_FAILED("refresh window"));
-	return IVM_NONE(NAT_STATE());
-}
+	CHECK_ARG_1(IVM_NUMERIC_T);
 
-IVM_NATIVE_FUNC(_curses_endwin)
-{
-	RTM_ASSERT(endwin() == OK, CURSES_ERROR_MSG_FAILED("end window"));
+	RTM_ASSERT(stdscr, CURSES_ERROR_MSG_UNINIT_WIN);
+	
+	CHECK_INT_ERR(intrflush(stdscr, (ivm_bool_t)ivm_numeric_getValue(NAT_ARG_AT(1))), "set flush action on interruption");
+
 	return IVM_NONE(NAT_STATE());
 }
 
@@ -120,14 +172,35 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_object_setProto(win_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 
 		ivm_object_setSlot_r(win_proto, state, "size", IVM_NATIVE_WRAP(state, _curses_window_size));
+		ivm_object_setSlot_r(win_proto, state, "keypad", IVM_NATIVE_WRAP(state, _curses_window_keypad));
 	});
 
 	ivm_object_setSlot_r(mod, state, "initscr", IVM_NATIVE_WRAP(state, _curses_initscr));
-	ivm_object_setSlot_r(mod, state, "clear", IVM_NATIVE_WRAP(state, _curses_clear));
-	ivm_object_setSlot_r(mod, state, "refresh", IVM_NATIVE_WRAP(state, _curses_refresh));
-	ivm_object_setSlot_r(mod, state, "endwin", IVM_NATIVE_WRAP(state, _curses_endwin));
 
-	ivm_object_setSlot_r(mod, state, "stdscr", IVM_NATIVE_WRAP(state, _curses_stdscr));
+#define SET_FUNC(name) \
+	ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _curses_##name));
+
+	SET_FUNC(clear);
+	SET_FUNC(refresh);
+	SET_FUNC(endwin);
+
+	SET_FUNC(cbreak);
+
+	SET_FUNC(noecho);
+	SET_FUNC(echo);
+
+	SET_FUNC(nonl);
+	SET_FUNC(nl);
+
+	SET_FUNC(noraw);
+	SET_FUNC(raw);
+
+	SET_FUNC(noqiflush);
+	SET_FUNC(qiflush);
+
+	SET_FUNC(timeout);
+	SET_FUNC(intrflush);
+	SET_FUNC(stdscr);
 
 	return mod;
 }
