@@ -20,15 +20,21 @@
 #define CURSES_ERROR_MSG_FAILED(sth)									("failed to " sth)
 #define CURSES_ERROR_MSG_UNINIT_WIN										"uninitialized window"
 
-#define CHECK_WIN_INIT(wobj) RTM_ASSERT((wobj)->win, CURSES_ERROR_MSG_UNINIT_WIN)
-
 #define CHECK_PTR_ERR(call, sth) RTM_ASSERT((call) != IVM_NULL, CURSES_ERROR_MSG_FAILED(sth))
 #define CHECK_INT_ERR(call, sth) RTM_ASSERT((call) != ERR, CURSES_ERROR_MSG_FAILED(sth))
 
 typedef struct {
 	IVM_OBJECT_HEADER
 	WINDOW *win;
+	ivm_bool_t is_stdscr;
 } ivm_curses_window_t;
+
+IVM_INLINE
+WINDOW *
+ivm_curses_window_getWin(ivm_curses_window_t *win)
+{
+	return win->is_stdscr ? stdscr : win->win;
+}
 
 ivm_object_t *
 ivm_curses_window_new(ivm_vmstate_t *state, WINDOW *win)
@@ -38,9 +44,27 @@ ivm_curses_window_new(ivm_vmstate_t *state, WINDOW *win)
 	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_NAME));
 
 	ret->win = win;
+	ret->is_stdscr = IVM_FALSE;
 
 	return IVM_AS_OBJ(ret);
 }
+
+ivm_object_t *
+ivm_curses_window_newStd(ivm_vmstate_t *state)
+{
+	ivm_curses_window_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_NAME));
+
+	ret->win = IVM_NULL;
+	ret->is_stdscr = IVM_TRUE;
+
+	return IVM_AS_OBJ(ret);
+}
+
+#define CHECK_GET_WIN(wobj, to) \
+	RTM_ASSERT(ivm_curses_window_getWin(wobj), CURSES_ERROR_MSG_UNINIT_WIN); \
+	(to) = ivm_curses_window_getWin(wobj);
 
 IVM_NATIVE_FUNC(_curses_window)
 {
@@ -51,16 +75,17 @@ IVM_NATIVE_FUNC(_curses_window)
 IVM_NATIVE_FUNC(_curses_window_size)
 {
 	ivm_curses_window_t *wobj;
+	WINDOW *raw;
 	ivm_int_t miny, minx, maxy, maxx;
 	ivm_object_t *ret[2];
 
 	CHECK_BASE_TP(WINDOW_TYPE_CONS);
 	
 	wobj = GET_BASE_AS(ivm_curses_window_t);
-	CHECK_WIN_INIT(wobj);
+	CHECK_GET_WIN(wobj, raw);
 
-	getbegyx(wobj->win, miny, minx);
-	getmaxyx(wobj->win, maxy, maxx);
+	getbegyx(raw, miny, minx);
+	getmaxyx(raw, maxy, maxx);
 
 	ret[0] = ivm_numeric_new(NAT_STATE(), maxy - miny);
 	ret[1] = ivm_numeric_new(NAT_STATE(), maxx - minx);
@@ -68,17 +93,38 @@ IVM_NATIVE_FUNC(_curses_window_size)
 	return ivm_list_object_new_c(NAT_STATE(), ret, 2);
 }
 
+IVM_NATIVE_FUNC(_curses_window_pos)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+	ivm_int_t y, x;
+	ivm_object_t *ret[2];
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	getbegyx(raw, y, x);
+
+	ret[0] = ivm_numeric_new(NAT_STATE(), y);
+	ret[1] = ivm_numeric_new(NAT_STATE(), x);
+
+	return ivm_list_object_new_c(NAT_STATE(), ret, 2);
+}
+
 IVM_NATIVE_FUNC(_curses_window_keypad)
 {
 	ivm_curses_window_t *wobj;
+	WINDOW *raw;
 
 	CHECK_BASE_TP(WINDOW_TYPE_CONS);
 	CHECK_ARG_1(IVM_NUMERIC_T);
 	
 	wobj = GET_BASE_AS(ivm_curses_window_t);
-	CHECK_WIN_INIT(wobj);
+	CHECK_GET_WIN(wobj, raw);
 
-	CHECK_INT_ERR(keypad(wobj->win, (ivm_bool_t)ivm_numeric_getValue(NAT_ARG_AT(1))), "set keypad");
+	CHECK_INT_ERR(keypad(raw, (ivm_bool_t)ivm_numeric_getValue(NAT_ARG_AT(1))), "set keypad");
 
 	return IVM_NONE(NAT_STATE());
 }
@@ -99,7 +145,7 @@ IVM_NATIVE_FUNC(_curses_initscr)
 		return IVM_NONE(NAT_STATE());   \
 	}
 
-#define VOID_ROUTINE(name, sth) \
+#define VOID_ROUTINE(name) \
 	IVM_NATIVE_FUNC(_curses_##name)     \
 	{                                   \
 		(name)();                       \
@@ -121,8 +167,11 @@ INT_RET_ROUTINE(nl, "set newline")
 INT_RET_ROUTINE(noraw, "unset raw mode")
 INT_RET_ROUTINE(raw, "set raw mode")
 
-VOID_ROUTINE(noqiflush, "unset quit interruptions")
-VOID_ROUTINE(qiflush, "set quit interruptions")
+VOID_ROUTINE(noqiflush)
+VOID_ROUTINE(qiflush)
+
+VOID_ROUTINE(beep)
+VOID_ROUTINE(flash)
 
 IVM_NATIVE_FUNC(_curses_timeout)
 {
@@ -144,10 +193,9 @@ IVM_NATIVE_FUNC(_curses_intrflush)
 	return IVM_NONE(NAT_STATE());
 }
 
-IVM_NATIVE_FUNC(_curses_stdscr)
+IVM_NATIVE_FUNC(_curses_getch)
 {
-	RTM_ASSERT(stdscr, CURSES_ERROR_MSG_UNINIT_WIN);
-	return ivm_curses_window_new(NAT_STATE(), stdscr);
+	return ivm_numeric_new(NAT_STATE(), getch());
 }
 
 ivm_object_t *
@@ -165,20 +213,27 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	setlocale(LC_ALL, "");
 
+#define SET_FUNC(name) \
+	ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _curses_##name))
+
+#define SET_CONST(name, val) \
+	ivm_object_setSlot_r(mod, state, #name, (val))
+
+#define SET_WIN_METHOD(name) \
+	ivm_object_setSlot_r(win_proto, state, #name, IVM_NATIVE_WRAP(state, _curses_window_##name))
+
 	/* curses.window */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, WINDOW_TYPE_NAME, &_window_type, {
 		win_proto = ivm_curses_window_new(state, IVM_NULL);
 		ivm_type_setProto(_TYPE, win_proto);
 		ivm_object_setProto(win_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 
-		ivm_object_setSlot_r(win_proto, state, "size", IVM_NATIVE_WRAP(state, _curses_window_size));
-		ivm_object_setSlot_r(win_proto, state, "keypad", IVM_NATIVE_WRAP(state, _curses_window_keypad));
+		SET_WIN_METHOD(size);
+		SET_WIN_METHOD(pos);
+		SET_WIN_METHOD(keypad);
 	});
 
-	ivm_object_setSlot_r(mod, state, "initscr", IVM_NATIVE_WRAP(state, _curses_initscr));
-
-#define SET_FUNC(name) \
-	ivm_object_setSlot_r(mod, state, #name, IVM_NATIVE_WRAP(state, _curses_##name));
+	SET_FUNC(initscr);
 
 	SET_FUNC(clear);
 	SET_FUNC(refresh);
@@ -198,9 +253,14 @@ ivm_mod_main(ivm_vmstate_t *state,
 	SET_FUNC(noqiflush);
 	SET_FUNC(qiflush);
 
+	SET_FUNC(beep);
+	SET_FUNC(flash);
+
 	SET_FUNC(timeout);
 	SET_FUNC(intrflush);
-	SET_FUNC(stdscr);
+	SET_FUNC(getch);
+
+	SET_CONST(stdscr, ivm_curses_window_newStd(state));
 
 	return mod;
 }

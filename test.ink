@@ -20,6 +20,35 @@ print(col)
 ret
 */
 
+import io
+loc.merge(import curses)
+
+try: {
+
+	initscr()
+
+	cbreak()
+	// noecho()
+
+	noqiflush()
+
+	intrflush(false)
+	stdscr.keypad(true)
+
+	clear()
+
+	refresh()
+
+	[ y, x ] = stdscr.pos()
+
+	while 1: print(getch())
+
+} catch e: {
+	print(e.line + ": " + e.msg)
+} final: endwin()
+
+ret
+
 printe = fn e: {
 	loc file = e.file || "<unknown>"
 	loc line = e.line || -1
