@@ -34,11 +34,21 @@ try: {
 	noqiflush()
 
 	intrflush(false)
-	stdscr.keypad(true)
+	// stdscr.keypad(true)
 
 	clear()
 
+	loc w1 = window(5, 5, 5, 5)
+	w1.addbg(attr.reverse)
+	w1.addch("h")
+
+	loc w2 = window(5, 5, 10, 10)
+	w2.addbg(attr.reverse)
+	w2.addch("h")
+
 	refresh()
+
+	time.msleep(3000)
 
 	[ y, x ] = stdscr.pos()
 
@@ -68,7 +78,9 @@ try: {
 
 } catch e: {
 	print(e.line + ": " + e.msg)
-} final: endwin()
+} final: {
+	endwin()
+}
 
 ret
 

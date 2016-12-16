@@ -46,6 +46,10 @@ ivm_curses_window_new(ivm_vmstate_t *state, WINDOW *win)
 	ret->win = win;
 	ret->is_stdscr = IVM_FALSE;
 
+	if (win) {
+		ivm_vmstate_addDesLog(state, ret);
+	}
+
 	return IVM_AS_OBJ(ret);
 }
 
@@ -62,14 +66,49 @@ ivm_curses_window_newStd(ivm_vmstate_t *state)
 	return IVM_AS_OBJ(ret);
 }
 
+void
+ivm_curses_window_cloner(ivm_object_t *obj,
+						 ivm_vmstate_t *state)
+{
+	ivm_curses_window_t *wobj = IVM_AS(obj, ivm_curses_window_t);
+
+	wobj->win = dupwin(wobj->win);
+	ivm_vmstate_addDesLog(state, obj);
+
+	return;
+}
+
+void
+ivm_curses_window_destructor(ivm_object_t *obj,
+							 ivm_vmstate_t *state)
+{
+	ivm_curses_window_t *wobj = IVM_AS(obj, ivm_curses_window_t);
+
+	delwin(wobj->win);
+
+	return;
+}
+
 #define CHECK_GET_WIN(wobj, to) \
 	RTM_ASSERT(ivm_curses_window_getWin(wobj), CURSES_ERROR_MSG_UNINIT_WIN); \
 	(to) = ivm_curses_window_getWin(wobj);
 
 IVM_NATIVE_FUNC(_curses_window)
 {
-	CHECK_ARG_1_TP(WINDOW_TYPE_CONS);
-	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	WINDOW *raw;
+	ivm_number_t line, col, y, x;
+
+	if (NAT_ARGC() < 4) {
+		CHECK_ARG_1_TP(WINDOW_TYPE_CONS);
+		return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
+	}
+
+	MATCH_ARG("nnnn", &line, &col, &y, &x);
+
+	raw = subwin(stdscr, line, col, y, x);
+	RTM_ASSERT(raw, CURSES_ERROR_MSG_FAILED("create new window"));
+
+	return ivm_curses_window_new(NAT_STATE(), raw);
 }
 
 IVM_NATIVE_FUNC(_curses_window_size)
@@ -406,7 +445,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_type_t _window_type = IVM_TPTYPE_BUILD(
 		WINDOW_TYPE_NAME, sizeof(ivm_curses_window_t),
 		IVM_NATIVE_WRAP_C(state, _curses_window),
-		.const_bool = IVM_TRUE
+		.const_bool = IVM_TRUE,
+		.des = ivm_curses_window_destructor
 	);
 	ivm_int_t i;
 
@@ -443,6 +483,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 		SET_WIN_METHOD(addbg);
 		SET_WIN_METHOD(delbg);
 	});
+
+	SET_FUNC(window);
 
 	SET_FUNC(initscr);
 
