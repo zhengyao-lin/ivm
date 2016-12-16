@@ -129,6 +129,175 @@ IVM_NATIVE_FUNC(_curses_window_keypad)
 	return IVM_NONE(NAT_STATE());
 }
 
+IVM_PRIVATE
+struct {
+	chtype a;
+	const ivm_char_t *name;
+} _attr_map[] = {
+	{ A_NORMAL, "normal" },
+	{ A_ATTRIBUTES, "attributes" },
+	{ A_CHARTEXT, "chartext" },
+	{ A_COLOR, "color" },
+	{ A_STANDOUT, "standout" },
+	{ A_UNDERLINE, "underline" },
+	{ A_REVERSE, "reverse" },
+	{ A_BLINK, "blink" },
+	{ A_DIM, "dim" },
+	{ A_BOLD, "bold" },
+	{ A_ALTCHARSET, "altcharset" },
+	{ A_INVIS, "invis" },
+	{ A_PROTECT, "protect" },
+	{ A_HORIZONTAL, "horizontal" },
+	{ A_LEFT, "left" },
+	{ A_LOW, "low" },
+	{ A_RIGHT, "right" },
+	{ A_TOP, "top" },
+	{ A_VERTICAL, "vertical" },
+	{ A_ITALIC, "italic" }
+};
+
+IVM_INLINE
+chtype
+_get_attr(ivm_ulong_t a)
+{
+	ivm_int_t i;
+	chtype ret = 0;
+
+	for (i = 0; a; i++) {
+		if (a & 1) {
+			ret |= _attr_map[i].a;
+		}
+		a >>= 1;
+	}
+
+	return ret;
+}
+
+IVM_NATIVE_FUNC(_curses_window_clear)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	CHECK_INT_ERR(wclear(raw), "clear window");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_curses_window_refresh)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	CHECK_INT_ERR(wrefresh(raw), "refresh window");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_curses_window_getch)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	return ivm_numeric_new(NAT_STATE(), wgetch(raw));
+}
+
+IVM_NATIVE_FUNC(_curses_window_move)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+	ivm_number_t y, x;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	MATCH_ARG("nn", &y, &x);
+
+	CHECK_INT_ERR(wmove(raw, y, x), "move cursor");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+#define WIN_CHAR_ROUTINE(name, func, desc) \
+	IVM_NATIVE_FUNC(_curses_window_##name)                                               \
+	{                                                                                    \
+		ivm_curses_window_t *wobj;                                                       \
+		WINDOW *raw;                                                                     \
+                                                                                         \
+		const ivm_string_t *ch;                                                          \
+		ivm_number_t attr = 0;                                                           \
+                                                                                         \
+		CHECK_BASE_TP(WINDOW_TYPE_CONS);                                                 \
+		wobj = GET_BASE_AS(ivm_curses_window_t);                                         \
+		CHECK_GET_WIN(wobj, raw);                                                        \
+                                                                                         \
+		MATCH_ARG("s*n", &ch, &attr);                                                    \
+		RTM_ASSERT(ivm_string_length(ch) >= 1, IVM_ERROR_MSG_NOT_CHAR);                  \
+		CHECK_INT_ERR((func)(raw, ivm_string_trimHead(ch)[0] | _get_attr(attr)), desc);  \
+                                                                                         \
+		return IVM_NONE(NAT_STATE());                                                    \
+	}
+
+WIN_CHAR_ROUTINE(addch, waddch, "add character")
+WIN_CHAR_ROUTINE(echoch, wechochar, "echo character")
+WIN_CHAR_ROUTINE(insch, winsch, "insert character")
+
+IVM_NATIVE_FUNC(_curses_window_addbg)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+	ivm_ulong_t attr;
+	chtype nattr;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	CHECK_ARG_1(IVM_NUMERIC_T);
+
+	attr = ivm_numeric_getValue(NAT_ARG_AT(1));
+	nattr = getbkgd(raw) | _get_attr(attr);
+
+	CHECK_INT_ERR(wbkgd(raw, nattr), "move cursor");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+IVM_NATIVE_FUNC(_curses_window_delbg)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+	ivm_ulong_t attr;
+	chtype nattr;
+
+	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	CHECK_ARG_1(IVM_NUMERIC_T);
+
+	attr = ivm_numeric_getValue(NAT_ARG_AT(1));
+	nattr = getbkgd(raw) & (~_get_attr(attr));
+
+	CHECK_INT_ERR(wbkgd(raw, nattr), "move cursor");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
 IVM_NATIVE_FUNC(_curses_initscr)
 {
 	WINDOW *win = initscr();
@@ -182,6 +351,34 @@ IVM_NATIVE_FUNC(_curses_timeout)
 	return IVM_NONE(NAT_STATE());
 }
 
+IVM_NATIVE_FUNC(_curses_move)
+{
+	ivm_number_t y, x;
+
+	MATCH_ARG("nn", &y, &x);
+
+	CHECK_INT_ERR(move(y, x), "move cursor");
+
+	return IVM_NONE(NAT_STATE());
+}
+
+#define CHAR_ROUTINE(name, func, desc) \
+	IVM_NATIVE_FUNC(_curses_##name)                                                 \
+	{                                                                               \
+		const ivm_string_t *ch;                                                     \
+		ivm_number_t attr = 0;                                                      \
+                                                                                    \
+		MATCH_ARG("s*n", &ch, &attr);                                               \
+		RTM_ASSERT(ivm_string_length(ch) >= 1, IVM_ERROR_MSG_NOT_CHAR);             \
+		CHECK_INT_ERR((func)(ivm_string_trimHead(ch)[0] | _get_attr(attr)), desc);  \
+                                                                                    \
+		return IVM_NONE(NAT_STATE());                                               \
+	}
+
+CHAR_ROUTINE(addch, addch, "add character")
+CHAR_ROUTINE(echoch, echochar, "echo character")
+CHAR_ROUTINE(insch, insch, "insert character")
+
 IVM_NATIVE_FUNC(_curses_intrflush)
 {
 	CHECK_ARG_1(IVM_NUMERIC_T);
@@ -205,11 +402,13 @@ ivm_mod_main(ivm_vmstate_t *state,
 {
 	ivm_object_t *mod = ivm_object_new(state);
 	ivm_object_t *win_proto;
+	ivm_object_t *keys, *attrs;
 	ivm_type_t _window_type = IVM_TPTYPE_BUILD(
 		WINDOW_TYPE_NAME, sizeof(ivm_curses_window_t),
 		IVM_NATIVE_WRAP_C(state, _curses_window),
 		.const_bool = IVM_TRUE
 	);
+	ivm_int_t i;
 
 	setlocale(LC_ALL, "");
 
@@ -231,6 +430,18 @@ ivm_mod_main(ivm_vmstate_t *state,
 		SET_WIN_METHOD(size);
 		SET_WIN_METHOD(pos);
 		SET_WIN_METHOD(keypad);
+
+		SET_WIN_METHOD(clear);
+		SET_WIN_METHOD(move);
+		SET_WIN_METHOD(refresh);
+		SET_WIN_METHOD(getch);
+
+		SET_WIN_METHOD(addch);
+		SET_WIN_METHOD(echoch);
+		SET_WIN_METHOD(insch);
+
+		SET_WIN_METHOD(addbg);
+		SET_WIN_METHOD(delbg);
 	});
 
 	SET_FUNC(initscr);
@@ -260,7 +471,28 @@ ivm_mod_main(ivm_vmstate_t *state,
 	SET_FUNC(intrflush);
 	SET_FUNC(getch);
 
+	SET_FUNC(move);
+
+	SET_FUNC(addch);
+	SET_FUNC(echoch);
+	SET_FUNC(insch);
+
 	SET_CONST(stdscr, ivm_curses_window_newStd(state));
+
+	keys = ivm_object_new_c(state, 128);
+	SET_CONST(key, keys);
+
+#define SET_KEY(name, val) \
+	ivm_object_setSlot_r(keys, state, name, ivm_numeric_new(state, (val)))
+
+	#include "keys.h"
+
+	attrs = ivm_object_new_c(state, 24);
+	SET_CONST(attr, attrs);
+
+	for (i = 0; i < IVM_ARRLEN(_attr_map); i++) {
+		ivm_object_setSlot_r(attrs, state, _attr_map[i].name, ivm_numeric_new(state, 1 << i));
+	}
 
 	return mod;
 }

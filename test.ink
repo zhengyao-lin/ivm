@@ -20,6 +20,7 @@ print(col)
 ret
 */
 
+import time
 import io
 loc.merge(import curses)
 
@@ -41,7 +42,29 @@ try: {
 
 	[ y, x ] = stdscr.pos()
 
-	while 1: print(getch())
+	loc a = attr.bold | attr.underline
+
+	move(5, 6)
+	for i in range(10): {
+		echoch("h", a)
+		a ^= attr.underline
+	}
+
+	loc a = attr.reverse
+
+	for i in range(5): {
+		stdscr.addbg(a)
+		refresh()
+		time.msleep(300)
+
+		stdscr.delbg(a)
+		refresh()
+		time.msleep(300)
+	}
+	
+	refresh()
+
+	getch()
 
 } catch e: {
 	print(e.line + ": " + e.msg)
