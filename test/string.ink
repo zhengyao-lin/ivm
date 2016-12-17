@@ -20,7 +20,7 @@ print("y" * 2)
 print("y" * 0)
 print("y" * 1)
 print("y" * -100)
-try: print("y" * 10000000000)
+try: print("y" * 10000000000000000)
 catch: print("yep")
 
 ret

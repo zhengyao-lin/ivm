@@ -20,6 +20,13 @@ print(col)
 ret
 */
 
+l = []
+
+while 1:
+	l.push([ 1, 2, 3 ])
+
+ret
+
 import time
 import io
 loc.merge(import curses)
