@@ -396,9 +396,8 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 						ilang_gen_env_t *env)
 {
 	ilang_gen_try_expr_t *try_expr = IVM_AS(expr, ilang_gen_try_expr_t);
+	ilang_gen_expr_t *tmp_expr;
 	ivm_size_t addr1, addr2;
-	ivm_char_t *tmp_str;
-	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "try expression", flag);
 
@@ -436,19 +435,9 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	/* catch body */
 	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
-	if (!ilang_gen_token_value_isEmpty(try_expr->catch_body.arg)) {
-		tmp_str = ivm_parser_parseStr_heap(
-			env->heap,
-			try_expr->catch_body.arg.val,
-			try_expr->catch_body.arg.len,
-			&err
-		);
-
-		if (!tmp_str) {
-			GEN_ERR_FAILED_PARSE_STRING(expr, err);
-		}
-
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_ARG, tmp_str);
+	if (try_expr->catch_body.arg) {
+		tmp_expr = try_expr->catch_body.arg;
+		tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
 	} else {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	}
@@ -458,7 +447,7 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 
 	if (try_expr->catch_body.body) {
 		try_expr->catch_body.body->eval(try_expr->catch_body.body, FLAG(.is_top_level = IVM_TRUE), env);
-	}
+	};
 	// addr1 = ivm_exec_addInstr_l(env->cur_exec, JUMP, 0);
 	/* fallthrough */
 

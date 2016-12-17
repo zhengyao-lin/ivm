@@ -20,10 +20,13 @@ print(col)
 ret
 */
 
-l = []
-
-while 1:
-	l.push([ 1, 2, 3 ])
+try: {
+	raise [ 1, 2, {} ]
+} catch [ a, b, c ]: {
+	print(a)
+	print(b)
+	print(c)
+}
 
 ret
 
@@ -34,6 +37,7 @@ loc.merge(import curses)
 try: {
 
 	initscr()
+	raise exception()
 
 	cbreak()
 	// noecho()
@@ -84,7 +88,7 @@ try: {
 	getch()
 
 } catch e: {
-	print(e.line + ": " + e.msg)
+	print(e)
 } final: {
 	endwin()
 }

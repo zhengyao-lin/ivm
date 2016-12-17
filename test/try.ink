@@ -1,3 +1,4 @@
+import ulist
 import std
 
 err_func = fn: {
@@ -15,8 +16,13 @@ try: {
 	catch: print("inner")
 	print("mid")
 	1 + {}
+} catch: print("outer")
+
+try: {
+	raise list(range(100))
+} catch [ a, b, c ]: {
+	print([ a, b, c ])
 }
-catch: print("outer")
 
 print("passed")
 
@@ -24,4 +30,5 @@ print("passed")
 // -> "str: inner"
 // -> "str: mid"
 // -> "str: outer"
+// -> "list: \\[ 0, 1, 2 \\]"
 // -> "str: passed"

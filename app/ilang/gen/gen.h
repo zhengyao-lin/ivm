@@ -700,7 +700,7 @@ COMMON_EXPR(for_expr, "for expression", {
 
 /* try expr */
 typedef struct {
-	ilang_gen_token_value_t arg;
+	ilang_gen_expr_t *arg;
 	ilang_gen_expr_t *body;
 } ilang_gen_catch_branch_t;
 

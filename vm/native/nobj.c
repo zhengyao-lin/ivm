@@ -53,6 +53,24 @@ IVM_NATIVE_FUNC(_object_call)
 	return ivm_coro_callBase_0(NAT_CORO(), NAT_STATE(), func, NAT_BASE());
 }
 
+IVM_NATIVE_FUNC(_object_to_s)
+{
+	ivm_object_t *obj;
+	ivm_char_t buf[128];
+
+	CHECK_BASE_EXIST();
+
+	obj = NAT_BASE();
+
+	if (IVM_IS_BTTYPE(obj, NAT_STATE(), IVM_OBJECT_T)) {
+		IVM_SNPRINTF(buf, IVM_ARRLEN(buf), "<object at %p>", (void *)obj);
+	} else {
+		IVM_SNPRINTF(buf, IVM_ARRLEN(buf), "<%s object at %p>", IVM_OBJECT_GET(obj, TYPE_NAME), (void *)obj);
+	}
+
+	return ivm_string_object_new_r(NAT_STATE(), buf);
+}
+
 /*
 IVM_NATIVE_FUNC(_object_type)
 {

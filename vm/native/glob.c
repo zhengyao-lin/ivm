@@ -124,6 +124,32 @@ BUILTIN_FUNC(_global_map, {
     I(RETURN)
 })
 
+IVM_NATIVE_FUNC(_global_print)
+{
+	ivm_object_t *obj, *to_s, *base, *ret;
+	ivm_function_object_t *func;
+
+	CHECK_ARG_COUNT(1);
+
+	obj = NAT_ARG_AT(1);
+	to_s = ivm_object_getSlot(obj, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_TO_S));
+			
+	if (to_s && (func = ivm_object_callable(to_s, NAT_STATE(), &base))) {
+		ret = ivm_coro_callBase_0(NAT_CORO(), NAT_STATE(), func, base ? base : obj);
+
+		if (!ret) return IVM_NULL;
+
+		if (IVM_IS_BTTYPE(ret, NAT_STATE(), IVM_STRING_OBJECT_T)) {
+			IVM_TRACE("%s\n", ivm_string_trimHead(ivm_string_object_getValue(ret)));
+			return IVM_NONE(NAT_STATE());
+		}
+	}
+
+	RTM_FATAL(IVM_ERROR_MSG_ILLEGAL_TO_S);
+
+	return IVM_NONE(NAT_STATE());
+}
+
 void
 ivm_native_global_bind(ivm_vmstate_t *state,
 					   ivm_context_t *ctx)
@@ -147,6 +173,7 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 
 	ivm_context_setSlot_r(ctx, state, "typename", IVM_NATIVE_WRAP(state, _global_typename));
 	ivm_context_setSlot_r(ctx, state, "input", IVM_NATIVE_WRAP(state, _global_input));
+	ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, _global_print));
 
 	ivm_context_setSlot_r(ctx, state, "map", IVM_BUILTIN_WRAP(state, _global_map));
 	

@@ -2742,7 +2742,7 @@ RULE(leftval)
 		); \
 	})
 
-RULE(assign_left_side)
+RULE(assign_right_side)
 {
 	struct token_t *tmp_token;
 
@@ -2786,7 +2786,7 @@ RULE(assign_expr)
 	ilang_gen_expr_t *tmp_expr;
 
 	SUB_RULE_SET(
-		SUB_RULE(R(leftval) R(assign_left_side)
+		SUB_RULE(R(leftval) R(assign_right_side)
 		{
 			tmp_expr = _RETVAL.expr = RULE_RET_AT(1).u.expr;
 			SET_OPERAND(tmp_expr, 1, RULE_RET_AT(0).u.expr);
@@ -2989,32 +2989,28 @@ RULE(final_branch_opt)
 
 /*
 	catch_branch_opt
-		: 'catch' nllo id nllo ':' nllo prefix_expr
+		: 'catch' nllo leftval nllo ':' nllo prefix_expr
 		| 'catch' nllo ':' nllo prefix_expr
 		| %empty
  */
 RULE(catch_branch_opt)
 {
-	struct token_t *tmp_token;
-
 	SUB_RULE_SET(
 		SUB_RULE(R(nllo) T(T_CATCH) R(nllo)
-				 T(T_ID) R(nllo)
+				 R(leftval) R(nllo)
 				 T(T_COLON) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("catch branch"))
 		{
-			tmp_token = TOKEN_AT(1);
 			_RETVAL.catch_branch = ilang_gen_catch_branch_build(
-				TOKEN_VAL(tmp_token), RULE_RET_AT(4).u.expr
+				RULE_RET_AT(2).u.expr, RULE_RET_AT(5).u.expr
 			);
 		})
 		SUB_RULE(R(nllo) T(T_CATCH) R(nllo)
 				 T(T_COLON) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("catch branch(no arg)"))
 		{
-			tmp_token = TOKEN_AT(1);
 			_RETVAL.catch_branch = ilang_gen_catch_branch_build(
-				TOKEN_VAL_EMPTY(), RULE_RET_AT(3).u.expr
+				IVM_NULL, RULE_RET_AT(3).u.expr
 			);
 		})
 		SUB_RULE()

@@ -21,31 +21,6 @@
 #include "gen/gen.h"
 #include "parser.h"
 
-IVM_NATIVE_FUNC(print)
-{
-	ivm_object_t *obj;
-	ivm_char_t buf[25];
-
-	CHECK_ARG_COUNT(1);
-
-	obj = NAT_ARG_AT(1);
-
-	switch (IVM_TYPE_TAG_OF(obj)) {
-		case IVM_NUMERIC_T:
-			ivm_conv_dtoa(ivm_numeric_getValue(obj), buf);
-			IVM_TRACE("num: %s\n", buf);
-			break;
-		case IVM_STRING_OBJECT_T:
-			IVM_TRACE("str: %s\n", ivm_string_trimHead(ivm_string_object_getValue(obj)));
-			break;
-		default:
-			IVM_TRACE("unable to print the object of type <%s>\n",
-					  IVM_OBJECT_GET(obj, TYPE_NAME));
-	}
-
-	return IVM_NONE(NAT_STATE());
-}
-
 IVM_NATIVE_FUNC(call)
 {
 	ivm_function_object_t *func;
@@ -330,7 +305,7 @@ int main(int argc, const char **argv)
 
 		ctx = ivm_coro_getRuntimeGlobal(ivm_vmstate_curCoro(state));
 
-		ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
+		// ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
 		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));
 		ivm_context_setSlot_r(ctx, state, "eval", IVM_NATIVE_WRAP(state, eval));
 
