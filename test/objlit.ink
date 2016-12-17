@@ -2,13 +2,12 @@
 
 import std
 import ulist
-import exc
 
 _idxa_back = object.proto.[=]
 object.proto.[=] = fn i, a: {
 	if i is list: {
 		if !(a is list):
-			raise Exception("failed to bond")
+			raise exception("failed to bond")
 		for [ loc key, loc val ] in i.zip(a): base[key] = val
 	} else: {
 		_back = object.proto.[=]

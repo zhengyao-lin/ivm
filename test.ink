@@ -82,14 +82,8 @@ try: {
 	endwin()
 }
 
-ret
-
 printe = fn e: {
-	loc file = e.file || "<unknown>"
-	loc line = e.line || -1
-	loc msg = e.msg || "unknown error"
-
-	print("ERROR: " + file + ": line " + line + ": " + msg)
+	print("ERROR: " + string(e))
 }
 
 __test = fn: {
@@ -112,10 +106,9 @@ __test = fn: {
 	catch: print("parse error")
 
 	import test.ulist
-	loc.merge(import test.exc)
 
 	try: (fn: {
-		raise Exception("cannot find myself!")
+		raise exception("cannot find myself!")
 	})()
 	catch err: printe(err)
 

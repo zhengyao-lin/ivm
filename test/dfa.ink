@@ -1,7 +1,6 @@
 import std
 // import ulist
 import math
-loc merge(import exc)
 
 // rule: [ from, char, next ]
 loc dfa = fn rules, fin_node = [], init = 0: {
@@ -145,7 +144,7 @@ loc num_parse = fn str: {
 	loc c2i = fn c: c.ord() - "0".ord()
 
 	if !rule.accept(str):
-		raise Exception("failed to parse")
+		raise exception("failed to parse")
 
 	for i in range(str.len()): {
 		if str[i] == ".":

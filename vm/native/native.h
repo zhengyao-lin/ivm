@@ -7,6 +7,7 @@
 
 #include "ncoro.h"
 #include "nbuf.h"
+#include "nexc.h"
 #include "nrange.h"
 #include "nlistobj.h"
 #include "nstrobj.h"

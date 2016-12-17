@@ -6,7 +6,7 @@ a.* = "hi"
 
 print(a + 5)
 try: a * 5
-catch err: print(err.msg)
+catch err: print("failed")
 
 res = 1
 
@@ -105,7 +105,7 @@ a = { f: f, val: "no!" }
 a.f.()()
 
 // -> "num: 5"
-// -> "str: unable to invoke object of type <string>"
+// -> "str: failed"
 // -> "str: yes!"
 // -> "str: yes!"
 // 

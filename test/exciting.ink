@@ -1,10 +1,9 @@
 import std
 import ulist
-loc.merge(import exc)
 
 list.proto.need = fn count: {
 	if base.size() < count:
-		raise Exception("too small stack")
+		raise exception("too small stack")
 }
 
 loc binop = fn stack, op: {

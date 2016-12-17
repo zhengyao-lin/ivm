@@ -11,6 +11,7 @@
 #include "call.h"
 #include "runtime.h"
 #include "block.h"
+#include "exc.h"
 
 IVM_COM_HEADER
 

@@ -137,6 +137,18 @@ TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),
 
 }, .const_bool = IVM_TRUE)
 
+TYPE_GEN(IVM_EXCEPTION_T, exception, sizeof(ivm_exception_t),
+	IVM_NATIVE_WRAP_C(_STATE, _exception_cons), {
+	
+	ivm_object_t *tmp = ivm_exception_new(_STATE, IVM_NULL, IVM_NULL, 0);
+	ivm_type_setProto(_TYPE, tmp);
+	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _exception_to_s));
+	// ivm_object_setOop(tmp, _STATE, IVM_OOP_ID(CALL), IVM_NATIVE_WRAP(_STATE, _range_call));
+
+}, .const_bool = IVM_TRUE)
+
 TYPE_GEN(IVM_RANGE_ITER_T, range_iter, sizeof(ivm_range_iter_t),
 	IVM_NATIVE_WRAP_C(_STATE, _range_iter_cons), {
 	

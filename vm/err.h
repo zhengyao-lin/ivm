@@ -84,7 +84,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT							("root function of coroutine cannot be native")
 #define IVM_ERROR_MSG_OPT_NO_GEN_FOR_JMPTO						("no code generated for target address")
 #define IVM_ERROR_MSG_NO_ALIVE_CORO_TO_SCHEDULE					("one-round scheduler require at least one alive coroutine")
-#define IVM_ERROR_MSG_CORO_EXCEPTION(coro, file, line, msg)		"coro %p exception trapped: %s: line %ld: %s", (void *)(coro), (file), (line), (msg)
+#define IVM_ERROR_MSG_EXCEPTION(file, line, msg)				"%s: line %ld: %s", (file), (line), (msg)
 #define IVM_ERROR_MSG_CIRCULAR_PROTO_REF						("circular prototype reference detected")
 #define IVM_ERROR_MSG_ILLEGAL_GID_TYPE(type)					"illegal group id with type <%s>", (type)
 #define IVM_ERROR_MSG_GROUP_ID_OVERFLOW							("group id overflow")

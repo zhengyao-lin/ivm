@@ -14,3 +14,6 @@ CONST_GEN(C_ITER, "iter")
 CONST_GEN(C_EXPAND, "expand")
 
 CONST_GEN(C_LIST, "list")
+
+CONST_GEN(C_UNTRACE, "<untraceable>")
+CONST_GEN(C_NOMSG, "<no message>")

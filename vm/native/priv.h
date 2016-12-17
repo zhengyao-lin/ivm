@@ -35,6 +35,9 @@
 #define CHECK_ARG_1(type) \
 	RTM_ASSERT(NAT_ARGC() && IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
+#define CHECK_ARG_1_C(type) \
+	(NAT_ARGC() >= 1 && IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)))
+
 #define CHECK_ARG_1_TP(cons) \
 	RTM_ASSERT(NAT_ARGC() && ivm_type_checkCons(IVM_TYPE_OF(NAT_ARG_AT(1)), (cons)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 

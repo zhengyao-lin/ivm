@@ -64,23 +64,29 @@ _ivm_coro_setExceptionPos(ivm_vmstate_t *state,
 						  ivm_object_t *obj,
 						  ivm_instr_t *ip)
 {
-	ivm_long_t line = -1;
+	ivm_long_t line = 0;
 	const ivm_char_t *file = "<untraceable>";
+	ivm_exception_t *exc;
 
 	if (ip) {
 		file = ivm_source_pos_getFile(ivm_instr_pos(ip));
 		line = ivm_instr_lineno(ip);
 	}
 
-	ivm_object_setSlot(obj, state,
-		IVM_VMSTATE_CONST(state, C_FILE),
-		ivm_string_object_new(state, IVM_CSTR(state, file))
-	);
+	if (IVM_IS_BTTYPE(obj, state, IVM_EXCEPTION_T)) {
+		exc = IVM_AS(obj, ivm_exception_t);
+		ivm_exception_setPos(exc, state, file, line);
+	} else {
+		ivm_object_setSlot(obj, state,
+			IVM_VMSTATE_CONST(state, C_FILE),
+			ivm_string_object_new(state, IVM_CSTR(state, file))
+		);
 
-	ivm_object_setSlot(obj, state,
-		IVM_VMSTATE_CONST(state, C_LINE),
-		ivm_numeric_new(state, line)
-	);
+		ivm_object_setSlot(obj, state,
+			IVM_VMSTATE_CONST(state, C_LINE),
+			ivm_numeric_new(state, line)
+		);
+	}
 
 	return;
 }
@@ -110,8 +116,7 @@ ivm_coro_newStringException(ivm_coro_t *coro,
 
 	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
 
-	ret = _ivm_coro_newException_c(state, ivm_string_object_new(state, IVM_CSTR(state, msg)));
-
+	ret = ivm_exception_new(state, msg, IVM_NULL, 0);
 	_ivm_coro_setExceptionPos(state, ret, tmp_ip);
 
 	return ret;
@@ -145,45 +150,26 @@ ivm_coro_newStringException(ivm_coro_t *coro,
 void
 ivm_coro_printException(ivm_coro_t *coro,
 						ivm_vmstate_t *state,
-						ivm_object_t *except)
+						ivm_object_t *obj)
 {
-	ivm_object_t *msg_obj, *file_obj, *line_obj;
-	const ivm_char_t *msg = "custom exception",
-					 *file = "<unknown file>";
-	ivm_long_t line = -1;
+	const ivm_char_t *msg, *file;
+	ivm_long_t line;
+	ivm_exception_t *exc;
 
-	if (except) {
-		msg_obj = ivm_object_getSlot(
-			except, state,
-			IVM_VMSTATE_CONST(state, C_MSG)
-		);
+	if (obj && IVM_IS_BTTYPE(obj, state, IVM_EXCEPTION_T)) {
+		exc = IVM_AS(obj, ivm_exception_t);
 
-		file_obj = ivm_object_getSlot(
-			except, state,
-			IVM_VMSTATE_CONST(state, C_FILE)
-		);
-
-		line_obj = ivm_object_getSlot(
-			except, state,
-			IVM_VMSTATE_CONST(state, C_LINE)
-		);
-
-		if (msg_obj && IVM_IS_BTTYPE(msg_obj, state, IVM_STRING_OBJECT_T)) {
-			msg = ivm_string_trimHead(ivm_string_object_getValue(msg_obj));
-		}
-
-		if (file_obj && IVM_IS_BTTYPE(msg_obj, state, IVM_STRING_OBJECT_T)) {
-			file = ivm_string_trimHead(ivm_string_object_getValue(file_obj));
-		}
-
-		if (line_obj && IVM_IS_BTTYPE(line_obj, state, IVM_NUMERIC_T)) {
-			line = ivm_numeric_getValue(line_obj);
-		}
+		msg = ivm_exception_getMsg_r(exc);
+		file = ivm_exception_getFile_r(exc);
+		line = ivm_exception_getLine(exc);
 	} else {
-		msg = "unknown exception";
+		msg = "custom exception";
+		file = "<unknown>";
+		line = 0;
 	}
 
-	IVM_TRACE(IVM_ERROR_MSG_CORO_EXCEPTION(coro, file, line, msg));
+	IVM_TRACE("coro %p exception trapped: ", (void *)coro);
+	IVM_TRACE(IVM_ERROR_MSG_EXCEPTION(file, line, msg));
 	IVM_TRACE("\n");
 
 	return;
