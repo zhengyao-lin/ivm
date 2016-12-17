@@ -192,7 +192,10 @@ struct {
 	{ A_RIGHT, "right" },
 	{ A_TOP, "top" },
 	{ A_VERTICAL, "vertical" },
+
+#ifdef A_ITALIC
 	{ A_ITALIC, "italic" }
+#endif
 };
 
 IVM_INLINE
