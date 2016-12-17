@@ -2989,8 +2989,9 @@ RULE(final_branch_opt)
 
 /*
 	catch_branch_opt
-		: 'catch' nllo leftval nllo ':' nllo prefix_expr
-		| 'catch' nllo ':' nllo prefix_expr
+		: nllo 'catch' nllo leftval nllo ':' nllo prefix_expr
+		| nllo 'catch' nllo ':' nllo prefix_expr
+		| nllo 'catch'
 		| %empty
  */
 RULE(catch_branch_opt)
@@ -3005,6 +3006,7 @@ RULE(catch_branch_opt)
 				RULE_RET_AT(2).u.expr, RULE_RET_AT(5).u.expr
 			);
 		})
+
 		SUB_RULE(R(nllo) T(T_CATCH) R(nllo)
 				 T(T_COLON) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("catch branch(no arg)"))
@@ -3013,6 +3015,14 @@ RULE(catch_branch_opt)
 				IVM_NULL, RULE_RET_AT(3).u.expr
 			);
 		})
+
+		SUB_RULE(R(nllo) T(T_CATCH)
+		{
+			_RETVAL.catch_branch = ilang_gen_catch_branch_build(
+				IVM_NULL, NONE_EXPR()
+			);
+		})
+		
 		SUB_RULE()
 	);
 

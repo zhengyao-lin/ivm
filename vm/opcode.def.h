@@ -1153,6 +1153,12 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 	RAISE(_TMP_OBJ1);
 })
 
+OPCODE_GEN(POP_EXC, "pop_exc", N, -1, {
+	CHECK_STACK(1);
+	ivm_coro_printException(_CORO, _STATE, STACK_POP());
+	NEXT_INSTR_NINT();
+})
+
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {
 	SAVE_STACK();
 	// SET_BP(ivm_runtime_pushBlock(_RUNTIME, _STATE, AVAIL_STACK));

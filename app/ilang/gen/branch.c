@@ -438,8 +438,10 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	if (try_expr->catch_body.arg) {
 		tmp_expr = try_expr->catch_body.arg;
 		tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
-	} else {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	}
+
+	if (!try_expr->catch_body.body) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_EXC);
 	}
 
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
@@ -447,7 +449,8 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 
 	if (try_expr->catch_body.body) {
 		try_expr->catch_body.body->eval(try_expr->catch_body.body, FLAG(.is_top_level = IVM_TRUE), env);
-	};
+	}
+
 	// addr1 = ivm_exec_addInstr_l(env->cur_exec, JUMP, 0);
 	/* fallthrough */
 
