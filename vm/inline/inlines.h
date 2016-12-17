@@ -11,7 +11,6 @@
 #include "vm/inline/vmstack.h"
 #include "vm/inline/coro.h"
 #include "vm/inline/func.h"
-#include "vm/inline/type.h"
 
 #include "vm/inline/typeobj.h"
 #include "vm/inline/num.h"

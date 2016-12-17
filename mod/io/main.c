@@ -25,8 +25,10 @@
 	#define IO_USE_TERMIOS 0
 #endif
 
-#define IO_FILE_TYPE_NAME "io.file"
-#define IO_FILE_TYPE_CONS IVM_GET_NATIVE_FUNC(_io_file)
+IVM_PRIVATE
+ivm_int_t _type_uid;
+
+#define IO_FILE_TYPE_UID (&_type_uid)
 
 #define IO_ERROR_MSG_FAILED_TO_OPEN_FILE(file)							"failed to open file '%s'", (file)
 #define IO_ERROR_MSG_UNINIT_FILE_POINTER								"uninitialized file pointer"
@@ -52,7 +54,7 @@ ivm_file_object_new(ivm_vmstate_t *state,
 {
 	ivm_file_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, IO_FILE_TYPE_NAME));
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, IO_FILE_TYPE_UID));
 
 	ret->fp = fp;
 
@@ -103,7 +105,7 @@ IVM_NATIVE_FUNC(_io_file_close)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -122,7 +124,7 @@ IVM_NATIVE_FUNC(_io_file_read)
 	ivm_number_t arg = -1, save_pos = IVM_FALSE;
 	ivm_long_t flen, len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("*nn", &arg, &save_pos);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -162,7 +164,7 @@ IVM_NATIVE_FUNC(_io_file_readBuffer)
 	ivm_number_t arg = -1, save_pos = IVM_FALSE;
 	ivm_long_t flen, len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("*nn", &arg, &save_pos);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -200,7 +202,7 @@ IVM_NATIVE_FUNC(_io_file_readToBuffer)
 	ivm_size_t bsize;
 	ivm_long_t flen, len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("b*nn", &buf_obj, &arg, &save_pos);
 
 	// read length:
@@ -245,7 +247,7 @@ IVM_NATIVE_FUNC(_io_file_write)
 	const ivm_string_t *str;
 	ivm_size_t len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("s", &str);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -264,7 +266,7 @@ IVM_NATIVE_FUNC(_io_file_writeBuffer)
 	ivm_buffer_object_t *buf_obj;
 	ivm_size_t len;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("b", &buf_obj);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -281,7 +283,7 @@ IVM_NATIVE_FUNC(_io_file_len)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -297,7 +299,7 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	ivm_size_t len;
 	const ivm_char_t *i, *end, *head;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -340,7 +342,7 @@ IVM_NATIVE_FUNC(_io_file_seek)
 	ivm_file_object_t *fobj;
 	ivm_number_t pos = 0;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 	MATCH_ARG("*n", &pos);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
@@ -355,7 +357,7 @@ IVM_NATIVE_FUNC(_io_file_cur)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -367,7 +369,7 @@ IVM_NATIVE_FUNC(_io_file_flush)
 {
 	ivm_file_object_t *fobj;
 
-	CHECK_BASE_TP(IO_FILE_TYPE_CONS);
+	CHECK_BASE_TP(IO_FILE_TYPE_UID);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
@@ -447,8 +449,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_t *file_proto;
 
 	ivm_type_t _io_file_type = IVM_TPTYPE_BUILD(
-		IO_FILE_TYPE_NAME, sizeof(ivm_file_object_t),
+		"io.file", sizeof(ivm_file_object_t),
 		IVM_NATIVE_WRAP_C(state, _io_file),
+		IO_FILE_TYPE_UID,
 
 		.des = ivm_file_object_destructor,
 		.clone = ivm_file_object_cloner,
@@ -456,7 +459,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* io.file */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, IO_FILE_TYPE_NAME, &_io_file_type, {
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_io_file_type, {
 		file_proto = ivm_file_object_new(state, IVM_NULL);
 		ivm_type_setProto(_TYPE, file_proto);
 		ivm_object_setProto(file_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));

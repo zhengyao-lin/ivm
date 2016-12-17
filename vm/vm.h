@@ -82,18 +82,16 @@ typedef struct ivm_vmstate_t_tag {
 // is builtin type
 #define IVM_IS_BTTYPE(obj, state, type) (IVM_TYPE_OF(obj) == IVM_BTTYPE((state), (type)))
 
-IVM_INLINE
-ivm_type_t *
-IVM_TPTYPE(ivm_vmstate_t *state,
-		   const ivm_char_t *name)
-{
-	return ivm_type_pool_get(&state->type_pool, name);
-}
+#define IVM_TPTYPE(state, key) ivm_type_pool_get(&(state)->type_pool, (key))
 
-#define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, name, init, ...) \
+#define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, init, ...) \
 	{                                                                                       \
-		ivm_type_t *_TYPE = ivm_type_pool_register(&(state)->type_pool, (name), (init));    \
-		RTM_ASSERT_C((coro), (state), _TYPE, IVM_ERROR_MSG_REDEF_TP_TYPE(name));            \
+		ivm_type_t *_TYPE =                                                                 \
+		ivm_type_pool_register(&(state)->type_pool, ivm_type_getUID(init), (init));         \
+		RTM_ASSERT_C(                                                                       \
+			(coro), (state), _TYPE,                                                         \
+			IVM_ERROR_MSG_REDEF_TP_TYPE(ivm_type_getName(init))                             \
+		);                                                                                  \
 		__VA_ARGS__;                                                                        \
 	}
 

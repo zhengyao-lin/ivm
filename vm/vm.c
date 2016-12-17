@@ -77,13 +77,14 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	
 	ivm_type_t static_type_list[] = {
 	#define TYPE_GEN(t, n, s, c, proto_init, ...) \
-		((ivm_type_t) {                        \
-			.tag = (t),                        \
-			.name = #n,                        \
-			.size = (s),                       \
-			.cons = (c),                       \
-			.is_builtin = IVM_TRUE,            \
-			__VA_ARGS__                        \
+		((ivm_type_t) {                          \
+			.tag = (t),                          \
+			.name = #n,                          \
+			.size = (s),                         \
+			.cons = (c),                         \
+			.uid = (ivm_int_t *)(ivm_ptr_t)(t),  \
+			.is_builtin = IVM_TRUE,              \
+			__VA_ARGS__                          \
 		}),
 
 		#include "type.def.h"

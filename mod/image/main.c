@@ -13,8 +13,10 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
-#define IMAGE_TYPE_NAME "image.image"
-#define IMAGE_TYPE_CONS IVM_GET_NATIVE_FUNC(_image_image)
+IVM_PRIVATE
+ivm_int_t _type_uid;
+
+#define IMAGE_TYPE_UID (&_type_uid)
 
 #define IMAGE_ERROR_MSG_UNINIT_IMAGE							"uninitialized image data"
 
@@ -28,7 +30,7 @@ ivm_image_object_new(ivm_vmstate_t *state, ivm_image_t *img)
 {
 	ivm_image_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, IMAGE_TYPE_NAME));
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, IMAGE_TYPE_UID));
 
 	ret->dat = img;
 
@@ -63,7 +65,7 @@ ivm_image_object_cloner(ivm_object_t *obj,
 
 IVM_NATIVE_FUNC(_image_image)
 {
-	CHECK_ARG_1_TP(IMAGE_TYPE_CONS);
+	CHECK_ARG_1_TP(IMAGE_TYPE_UID);
 	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
 }
 
@@ -71,7 +73,7 @@ IVM_NATIVE_FUNC(_image_image_width)
 {
 	ivm_image_object_t *img;
 
-	CHECK_BASE_TP(IMAGE_TYPE_CONS);
+	CHECK_BASE_TP(IMAGE_TYPE_UID);
 
 	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
 	RTM_ASSERT(img->dat, IMAGE_ERROR_MSG_UNINIT_IMAGE);
@@ -83,7 +85,7 @@ IVM_NATIVE_FUNC(_image_image_height)
 {
 	ivm_image_object_t *img;
 
-	CHECK_BASE_TP(IMAGE_TYPE_CONS);
+	CHECK_BASE_TP(IMAGE_TYPE_UID);
 
 	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
 	RTM_ASSERT(img->dat, IMAGE_ERROR_MSG_UNINIT_IMAGE);
@@ -117,8 +119,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_t *bmp_mod;
 
 	ivm_type_t _image_type = IVM_TPTYPE_BUILD(
-		IMAGE_TYPE_NAME, sizeof(ivm_image_object_t),
+		"image.image", sizeof(ivm_image_object_t),
 		IVM_NATIVE_WRAP_C(state, _image_image),
+		IMAGE_TYPE_UID,
 
 		.des = ivm_image_object_destructor,
 		.clone = ivm_image_object_cloner,
@@ -126,7 +129,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* image.image */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, IMAGE_TYPE_NAME, &_image_type, {
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_image_type, {
 		image_proto = ivm_image_object_new(state, IVM_NULL);
 		ivm_type_setProto(_TYPE, image_proto);
 		ivm_object_setProto(image_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));

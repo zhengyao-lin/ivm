@@ -441,7 +441,7 @@ ivm_collector_travState(ivm_vmstate_t *state,
 						ivm_traverser_arg_t *arg)
 {
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
-	ivm_type_list_iterator_t titer;
+	ivm_type_pool_iterator_t titer;
 	ivm_coro_t *tmp_coro;
 
 	// ivm_vmstate_travAndCompactCGroup(state, arg);

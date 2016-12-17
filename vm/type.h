@@ -49,6 +49,7 @@ typedef struct ivm_type_t_tag {
 	struct ivm_function_t_tag *def_oops[IVM_OOP_COUNT];
 
 	struct ivm_function_t_tag *cons; // constructor
+	ivm_int_t *uid;
 
 	ivm_destructor_t des;
 	ivm_traverser_t trav;
@@ -94,6 +95,9 @@ ivm_type_dump(ivm_type_t *type);
 #define ivm_type_setDefaultOop(type, op, func) ((type)->def_oops[op] = (func))
 
 #define ivm_type_getCons(type) ((type)->cons)
+#define ivm_type_getUID(type) ((type)->uid)
+
+#define ivm_type_checkUID(type, id) ((type)->uid = (id))
 
 #define ivm_type_isBuiltin(type) ((type)->is_builtin)
 
@@ -104,12 +108,13 @@ ivm_type_dump(ivm_type_t *type);
 #define ivm_type_getUniopTable(type) ((type)->uniops)
 
 /* use in static initialization */
-#define IVM_TPTYPE_BUILD(n, s, c, ...) \
+#define IVM_TPTYPE_BUILD(n, s, c, u, ...) \
 	{                                       \
 		.tag = -1,                          \
 		.name = (n),                        \
 		.size = (s),                        \
 		.cons = (c),                        \
+		.uid = (u),                         \
 		.is_builtin = IVM_FALSE,            \
 		__VA_ARGS__                         \
 	}
@@ -133,55 +138,36 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_type_t *) ivm_type_list_iterator_t;
 #define IVM_TYPE_LIST_ITER_GET(iter) ((ivm_type_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_TYPE_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_type_t *)
 
-typedef struct {
-	ivm_string_pool_t tnames;
-	ivm_type_list_t types;
-} ivm_type_pool_t;
+typedef ivm_pthash_t ivm_type_pool_t;
+typedef ivm_pthash_iterator_t ivm_type_pool_iterator_t;
 
-void
-ivm_type_pool_init(ivm_type_pool_t *pool);
+#define ivm_type_pool_init(pool) ivm_pthash_init(pool)
+#define ivm_type_pool_dump(pool) ivm_pthash_dump(pool)
 
-void
-ivm_type_pool_dump(ivm_type_pool_t *pool);
+#define ivm_type_pool_register(pool, key, type) \
+	ivm_type_pool_register_c((pool), (void *)(key), (type))
 
 IVM_INLINE
 ivm_type_t *
-ivm_type_pool_register(ivm_type_pool_t *pool,
-					   const ivm_char_t *name,
-					   ivm_type_t *init)
+ivm_type_pool_register_c(ivm_type_pool_t *pool,
+						 void *key,
+						 ivm_type_t *type)
 {
-	ivm_string_id_t id = ivm_string_pool_registerRaw_i(&pool->tnames, name);
-	ivm_type_t *copy;
+	ivm_type_t *copy = ivm_type_new(*type);
 
-	if (ivm_type_list_has(&pool->types, id) &&
-		ivm_type_list_at(&pool->types, id)) {
-		// conflict types
+	if (!ivm_pthash_insertEmpty(pool, key, (void *)copy)) {
+		ivm_type_free(copy);
 		return IVM_NULL;
 	}
-
-	copy = ivm_type_new(*init);
-	ivm_type_list_insert(&pool->types, id, copy);
 
 	return copy;
 }
 
-IVM_INLINE
-ivm_type_t *
-ivm_type_pool_get(ivm_type_pool_t *pool,
-				  const ivm_char_t *name)
-{
-	ivm_string_id_t id = ivm_string_pool_registerRaw_i(&pool->tnames, name);
+#define ivm_type_pool_get(pool, key) ivm_pthash_find((pool), (void *)(key))
 
-	if (ivm_type_list_has(&pool->types, id)) {
-		return ivm_type_list_at(&pool->types, id);
-	}
-
-	return IVM_NULL;
-}
-
-#define IVM_TYPE_POOL_ITER_SET IVM_TYPE_LIST_ITER_SET
-#define IVM_TYPE_POOL_ITER_GET IVM_TYPE_LIST_ITER_GET
-#define IVM_TYPE_POOL_EACHPTR(pool, iter) IVM_PTLIST_EACHPTR(&(pool)->types, iter, ivm_type_t *)
+#define IVM_TYPE_POOL_ITER_SET(iter, val) (IVM_PTHASH_ITER_SET_VAL((iter), (void *)(val)))
+#define IVM_TYPE_POOL_ITER_GET(iter) ((ivm_type_t *)IVM_PTHASH_ITER_GET_VAL(iter))
+#define IVM_TYPE_POOL_EACHPTR(pool, iter) IVM_PTHASH_EACHPTR((pool), iter)
 
 IVM_COM_END
 

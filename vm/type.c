@@ -70,26 +70,3 @@ ivm_type_dump(ivm_type_t *type)
 
 	return;
 }
-
-void
-ivm_type_pool_init(ivm_type_pool_t *pool)
-{
-	ivm_string_pool_init(&pool->tnames);
-	ivm_type_list_init(&pool->types);
-	return;
-}
-
-void
-ivm_type_pool_dump(ivm_type_pool_t *pool)
-{
-	ivm_type_list_iterator_t iter;
-
-	ivm_string_pool_dump(&pool->tnames);
-	
-	IVM_TYPE_LIST_EACHPTR(&pool->types, iter) {
-		ivm_type_free(IVM_TYPE_LIST_ITER_GET(iter));
-	}
-	ivm_type_list_dump(&pool->types);
-
-	return;
-}

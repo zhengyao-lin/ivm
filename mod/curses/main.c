@@ -14,8 +14,10 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
-#define WINDOW_TYPE_NAME "curses.window"
-#define WINDOW_TYPE_CONS IVM_GET_NATIVE_FUNC(_curses_window)
+IVM_PRIVATE
+ivm_int_t _type_uid;
+
+#define WINDOW_TYPE_UID (&_type_uid)
 
 #define CURSES_ERROR_MSG_FAILED(sth)									("failed to " sth)
 #define CURSES_ERROR_MSG_UNINIT_WIN										"uninitialized window"
@@ -41,7 +43,7 @@ ivm_curses_window_new(ivm_vmstate_t *state, WINDOW *win)
 {
 	ivm_curses_window_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_NAME));
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_UID));
 
 	ret->win = win;
 	ret->is_stdscr = IVM_FALSE;
@@ -58,7 +60,7 @@ ivm_curses_window_newStd(ivm_vmstate_t *state)
 {
 	ivm_curses_window_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_NAME));
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, WINDOW_TYPE_UID));
 
 	ret->win = IVM_NULL;
 	ret->is_stdscr = IVM_TRUE;
@@ -99,7 +101,7 @@ IVM_NATIVE_FUNC(_curses_window)
 	ivm_number_t line, col, y, x;
 
 	if (NAT_ARGC() < 4) {
-		CHECK_ARG_1_TP(WINDOW_TYPE_CONS);
+		CHECK_ARG_1_TP(WINDOW_TYPE_UID);
 		return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
 	}
 
@@ -118,7 +120,7 @@ IVM_NATIVE_FUNC(_curses_window_size)
 	ivm_int_t miny, minx, maxy, maxx;
 	ivm_object_t *ret[2];
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
@@ -139,7 +141,7 @@ IVM_NATIVE_FUNC(_curses_window_pos)
 	ivm_int_t y, x;
 	ivm_object_t *ret[2];
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
@@ -157,7 +159,7 @@ IVM_NATIVE_FUNC(_curses_window_keypad)
 	ivm_curses_window_t *wobj;
 	WINDOW *raw;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	CHECK_ARG_1(IVM_NUMERIC_T);
 	
 	wobj = GET_BASE_AS(ivm_curses_window_t);
@@ -220,7 +222,7 @@ IVM_NATIVE_FUNC(_curses_window_clear)
 	ivm_curses_window_t *wobj;
 	WINDOW *raw;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -234,7 +236,7 @@ IVM_NATIVE_FUNC(_curses_window_refresh)
 	ivm_curses_window_t *wobj;
 	WINDOW *raw;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -248,7 +250,7 @@ IVM_NATIVE_FUNC(_curses_window_getch)
 	ivm_curses_window_t *wobj;
 	WINDOW *raw;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -261,7 +263,7 @@ IVM_NATIVE_FUNC(_curses_window_move)
 	WINDOW *raw;
 	ivm_number_t y, x;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -281,7 +283,7 @@ IVM_NATIVE_FUNC(_curses_window_move)
 		const ivm_string_t *ch;                                                          \
 		ivm_number_t attr = 0;                                                           \
                                                                                          \
-		CHECK_BASE_TP(WINDOW_TYPE_CONS);                                                 \
+		CHECK_BASE_TP(WINDOW_TYPE_UID);                                                 \
 		wobj = GET_BASE_AS(ivm_curses_window_t);                                         \
 		CHECK_GET_WIN(wobj, raw);                                                        \
                                                                                          \
@@ -303,7 +305,7 @@ IVM_NATIVE_FUNC(_curses_window_addbg)
 	ivm_ulong_t attr;
 	chtype nattr;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -324,7 +326,7 @@ IVM_NATIVE_FUNC(_curses_window_delbg)
 	ivm_ulong_t attr;
 	chtype nattr;
 
-	CHECK_BASE_TP(WINDOW_TYPE_CONS);
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
 	wobj = GET_BASE_AS(ivm_curses_window_t);
 	CHECK_GET_WIN(wobj, raw);
 
@@ -446,8 +448,10 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_t *win_proto;
 	ivm_object_t *keys, *attrs;
 	ivm_type_t _window_type = IVM_TPTYPE_BUILD(
-		WINDOW_TYPE_NAME, sizeof(ivm_curses_window_t),
+		"curses.window", sizeof(ivm_curses_window_t),
 		IVM_NATIVE_WRAP_C(state, _curses_window),
+		WINDOW_TYPE_UID,
+
 		.const_bool = IVM_TRUE,
 		.des = ivm_curses_window_destructor
 	);
@@ -465,7 +469,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_setSlot_r(win_proto, state, #name, IVM_NATIVE_WRAP(state, _curses_window_##name))
 
 	/* curses.window */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, WINDOW_TYPE_NAME, &_window_type, {
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_window_type, {
 		win_proto = ivm_curses_window_new(state, IVM_NULL);
 		ivm_type_setProto(_TYPE, win_proto);
 		ivm_object_setProto(win_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));

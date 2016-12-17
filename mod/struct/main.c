@@ -12,8 +12,10 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
-#define STRUCT_TYPE_NAME "struct.struct"
-#define STRUCT_TYPE_CONS IVM_GET_NATIVE_FUNC(_struct_struct)
+IVM_PRIVATE
+ivm_int_t _type_uid;
+
+#define STRUCT_TYPE_UID (&_type_uid)
 
 #define STRUCT_ERROR_MSG_NO_DEFINED_FIELD							"no field is found"
 #define STRUCT_ERROR_MSG_UNKNOWN_FIELD_TYPE(n)						"unknown field type for the %ldth field", (n)
@@ -69,7 +71,7 @@ ivm_struct_object_new(ivm_vmstate_t *state,
 {
 	ivm_struct_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
-	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, STRUCT_TYPE_NAME));
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, STRUCT_TYPE_UID));
 
 	ret->rsize = rsize;
 	ret->fcount = fcount;
@@ -214,7 +216,7 @@ IVM_NATIVE_FUNC(_struct_struct)
 
 IVM_NATIVE_FUNC(_struct_struct_size)
 {
-	CHECK_BASE_TP(STRUCT_TYPE_CONS);
+	CHECK_BASE_TP(STRUCT_TYPE_UID);
 	return ivm_numeric_new(NAT_STATE(), IVM_AS(NAT_BASE(), ivm_struct_object_t)->rsize);
 }
 
@@ -307,7 +309,7 @@ IVM_NATIVE_FUNC(_struct_struct_pack)
 	ivm_list_object_t *arr;
 	ivm_list_object_iterator_t liter;
 
-	CHECK_BASE_TP(STRUCT_TYPE_CONS);
+	CHECK_BASE_TP(STRUCT_TYPE_UID);
 
 	strc = IVM_AS(NAT_BASE(), ivm_struct_object_t);
 
@@ -339,7 +341,7 @@ IVM_NATIVE_FUNC(_struct_struct_packto)
 	ivm_list_object_t *arr;
 	ivm_list_object_iterator_t liter;
 
-	CHECK_BASE_TP(STRUCT_TYPE_CONS);
+	CHECK_BASE_TP(STRUCT_TYPE_UID);
 
 	strc = IVM_AS(NAT_BASE(), ivm_struct_object_t);
 
@@ -371,7 +373,7 @@ IVM_NATIVE_FUNC(_struct_struct_unpack)
 	ivm_byte_t *raw, *cur;
 	ivm_list_object_t *ret;
 
-	CHECK_BASE_TP(STRUCT_TYPE_CONS);
+	CHECK_BASE_TP(STRUCT_TYPE_UID);
 	MATCH_ARG("b", &buf);
 
 	strc = IVM_AS(NAT_BASE(), ivm_struct_object_t);
@@ -465,8 +467,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_t *struct_proto;
 
 	ivm_type_t _struct_type = IVM_TPTYPE_BUILD(
-		STRUCT_TYPE_NAME, sizeof(ivm_struct_object_t),
+		"struct.struct", sizeof(ivm_struct_object_t),
 		IVM_NATIVE_WRAP_C(state, _struct_struct),
+		STRUCT_TYPE_UID,
 
 		.des = ivm_struct_object_destructor,
 		.clone = ivm_struct_object_cloner,
@@ -474,7 +477,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* struct.struct */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, STRUCT_TYPE_NAME, &_struct_type, {
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_struct_type, {
 		struct_proto = ivm_struct_object_new(state, 0, 0, IVM_NULL);
 		ivm_type_setProto(_TYPE, struct_proto);
 		ivm_object_setProto(struct_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));

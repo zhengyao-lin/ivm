@@ -20,16 +20,6 @@ print(col)
 ret
 */
 
-try: {
-	raise [ 1, 2, {} ]
-} catch [ a, b, c ]: {
-	print(a)
-	print(b)
-	print(c)
-}
-
-ret
-
 import time
 import io
 loc.merge(import curses)
@@ -37,7 +27,7 @@ loc.merge(import curses)
 try: {
 
 	initscr()
-	raise exception()
+	// raise exception()
 
 	cbreak()
 	// noecho()

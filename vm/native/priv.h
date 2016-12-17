@@ -23,11 +23,11 @@
 	RTM_ASSERT(NAT_BASE() && IVM_IS_BTTYPE(NAT_BASE(), NAT_STATE(), (expect)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
-#define CHECK_BASE_CONS(cons) \
-	RTM_ASSERT(NAT_BASE() && ivm_type_checkCons(IVM_TYPE_OF(NAT_BASE()), (cons)), \
+#define CHECK_BASE_UID(uid) \
+	RTM_ASSERT(NAT_BASE() && ivm_type_checkUID(IVM_TYPE_OF(NAT_BASE()), (uid)), \
 			   IVM_NATIVE_ERROR_MSG_WRONG_BASE(NAT_BASE() ? IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME) : "(nil)"))
 
-#define CHECK_BASE_TP(cons) CHECK_BASE_CONS(cons)
+#define CHECK_BASE_TP(uid) CHECK_BASE_UID(uid)
 
 #define CHECK_BASE_EXIST() \
 	RTM_ASSERT(NAT_BASE(), IVM_NATIVE_ERROR_MSG_WRONG_BASE("(nil)"))
@@ -38,8 +38,8 @@
 #define CHECK_ARG_1_C(type) \
 	(NAT_ARGC() >= 1 && IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)))
 
-#define CHECK_ARG_1_TP(cons) \
-	RTM_ASSERT(NAT_ARGC() && ivm_type_checkCons(IVM_TYPE_OF(NAT_ARG_AT(1)), (cons)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
+#define CHECK_ARG_1_TP(uid) \
+	RTM_ASSERT(NAT_ARGC() && ivm_type_checkUID(IVM_TYPE_OF(NAT_ARG_AT(1)), (uid)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
 
 #define CHECK_ARG_2(t1, t2) \
 	RTM_ASSERT(NAT_ARGC() >= 2 &&                                      \
