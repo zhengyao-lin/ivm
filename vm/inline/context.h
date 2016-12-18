@@ -157,6 +157,18 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 	((ctx)->slots)
 
 IVM_INLINE
+ivm_object_t *
+ivm_context_getLinkedObject(ivm_context_t *ctx,
+							ivm_vmstate_t *state)
+{
+	if (!ctx->slots) {
+		ctx->slots = ivm_slot_table_new(state);
+	}
+
+	return ivm_object_new_t(state, ctx->slots);
+}
+
+IVM_INLINE
 void
 ivm_context_linkToObject(ivm_context_t *ctx,
 						 ivm_vmstate_t *state,
@@ -165,7 +177,7 @@ ivm_context_linkToObject(ivm_context_t *ctx,
 	ivm_slot_table_t *slots;
 
 	if (obj) {
-		slots = ivm_slot_table_copyOnWrite(IVM_OBJECT_GET(obj, SLOTS), state);
+		slots = ivm_slot_table_copyOnWrite(ivm_object_setLinkable(obj, state), state);
 		IVM_OBJECT_SET(obj, SLOTS, slots);
 		IVM_WBCTX(state, ctx, ctx->slots = slots);
 	} else {

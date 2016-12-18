@@ -1,8 +1,25 @@
 import std
 
+loc b = 1
+
+a = fn: {
+	loc = b
+	b.val = 10
+	print(val)
+}
+
+a()
+
+a = fn: {
+	loc.merge({ val: 1 })
+	print(val)
+}
+
+a()
+
 a = fn: {
 	ret fn: {
-		print(the_msg) // -> "str: hey"
+		print(the_msg)
 	}
 }
 
@@ -21,7 +38,7 @@ a()
 
 a = fn: {
 	a = (fn: {
-		ret fn: print(hello) // -> "str: hi"
+		ret fn: print(hello)
 	})()
 	hello = "hi"
 	a()
@@ -38,7 +55,7 @@ a = local.clone()
 
 local.what = "yes"
 
-print(what) // -> "str: yes"
+print(what)
 
 loc.+ = fn b: {
 	print("loc add " + b)
@@ -85,6 +102,13 @@ print(typename(b.proto))
 
 	print(typename(val))
 })()
+
+// -> "num: 10"
+// -> "num: 1"
+
+// -> "str: hey"
+// -> "str: hi"
+// -> "str: yes"
 
 // -> "str: loc add 10"
 // -> "str: no ret"

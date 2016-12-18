@@ -542,10 +542,7 @@ OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, -1, {
 
 /* loc object in ink */
 OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
-	_TMP_OBJ1 = ivm_object_new_t(
-		_STATE,
-		ivm_context_getSlotTable(_CONTEXT)
-	);
+	_TMP_OBJ1 = ivm_context_getLinkedObject(_CONTEXT, _STATE);
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR_NINT();
@@ -559,10 +556,7 @@ OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 
 /* top object in ink */
 OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
-	_TMP_OBJ1 = ivm_object_new_t(
-		_STATE,
-		ivm_context_getSlotTable(ivm_context_getGlobal(_CONTEXT))
-	);
+	_TMP_OBJ1 = ivm_context_getLinkedObject(ivm_context_getGlobal(_CONTEXT), _STATE);
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR_NINT();

@@ -102,6 +102,16 @@ ivm_object_initSlots(ivm_object_t *obj,
 }
 
 IVM_INLINE
+ivm_slot_table_t *
+ivm_object_setLinkable(ivm_object_t *obj,
+					   ivm_vmstate_t *state)
+{
+	if (!obj->slots)
+		return obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
+	return obj->slots;
+}
+
+IVM_INLINE
 ivm_object_t *
 ivm_none_new(ivm_vmstate_t *state)
 {
