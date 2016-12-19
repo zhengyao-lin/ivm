@@ -35,7 +35,7 @@ try: {
 	noqiflush()
 
 	intrflush(false)
-	// stdscr.keypad(true)
+	stdscr.keypad(true)
 
 	clear()
 

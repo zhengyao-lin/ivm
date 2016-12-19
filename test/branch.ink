@@ -12,6 +12,14 @@ a = 1 && 1 ? a ? "hey" : "no" : 0
 
 print(a)
 
+loc a = 10
+
+if a == 1: print("what")
+elif a == 101: print("1")
+elif a == 10: print("yes")
+elif a == 10: print("3")
+elif a == 10: print("no")
+
 ret
 
 // -> "num: 0"
@@ -19,3 +27,5 @@ ret
 // -> "str: yes"
 // -> "str: yes"
 // -> "str: hey"
+
+// -> "str: yes"

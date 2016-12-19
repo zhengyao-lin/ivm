@@ -143,7 +143,7 @@ ilang_gen_if_expr_eval(ilang_gen_expr_t *expr,
 				env
 			);
 
-			if (!ILANG_GEN_BRANCH_LIST_ITER_IS_LAST(elifs, biter) ||
+			if (!ILANG_GEN_BRANCH_LIST_ITER_IS_FIRST(elifs, biter) /* the whole list is reversed */ ||
 				last_br.body) {
 				// has branch(es) following
 				*cur_end_jmp++ = ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), JUMP, 0);

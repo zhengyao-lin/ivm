@@ -21,6 +21,7 @@ ivm_int_t _type_uid;
 
 #define CURSES_ERROR_MSG_FAILED(sth)									("failed to " sth)
 #define CURSES_ERROR_MSG_UNINIT_WIN										"uninitialized window"
+#define CURSES_ERROR_MSG_REMOVE_STDSCR									"cannot remove standard screen"
 
 #define CHECK_PTR_ERR(call, sth) RTM_ASSERT((call) != IVM_NULL, CURSES_ERROR_MSG_FAILED(sth))
 #define CHECK_INT_ERR(call, sth) RTM_ASSERT((call) != ERR, CURSES_ERROR_MSG_FAILED(sth))
@@ -170,6 +171,24 @@ IVM_NATIVE_FUNC(_curses_window_keypad)
 	return IVM_NONE(NAT_STATE());
 }
 
+IVM_NATIVE_FUNC(_curses_window_remove)
+{
+	ivm_curses_window_t *wobj;
+	WINDOW *raw;
+
+	CHECK_BASE_TP(WINDOW_TYPE_UID);
+
+	wobj = GET_BASE_AS(ivm_curses_window_t);
+	CHECK_GET_WIN(wobj, raw);
+
+	RTM_ASSERT(!wobj->is_stdscr, CURSES_ERROR_MSG_REMOVE_STDSCR);
+
+	CHECK_INT_ERR(delwin(raw), "remove window");
+	wobj->win = IVM_NULL;
+
+	return IVM_NONE(NAT_STATE());
+}
+
 IVM_PRIVATE
 struct {
 	chtype a;
@@ -283,7 +302,7 @@ IVM_NATIVE_FUNC(_curses_window_move)
 		const ivm_string_t *ch;                                                          \
 		ivm_number_t attr = 0;                                                           \
                                                                                          \
-		CHECK_BASE_TP(WINDOW_TYPE_UID);                                                 \
+		CHECK_BASE_TP(WINDOW_TYPE_UID);                                                  \
 		wobj = GET_BASE_AS(ivm_curses_window_t);                                         \
 		CHECK_GET_WIN(wobj, raw);                                                        \
                                                                                          \
@@ -294,9 +313,31 @@ IVM_NATIVE_FUNC(_curses_window_move)
 		return IVM_NONE(NAT_STATE());                                                    \
 	}
 
+#define WIN_NSTR_ROUTINE(name, func, desc) \
+	IVM_NATIVE_FUNC(_curses_window_##name)                                               \
+	{                                                                                    \
+		ivm_curses_window_t *wobj;                                                       \
+		WINDOW *raw;                                                                     \
+		const ivm_string_t *str;                                                         \
+                                                                                         \
+		CHECK_BASE_TP(WINDOW_TYPE_UID);                                                  \
+		wobj = GET_BASE_AS(ivm_curses_window_t);                                         \
+		CHECK_GET_WIN(wobj, raw);                                                        \
+                                                                                         \
+		MATCH_ARG("s", &str);                                                            \
+		CHECK_INT_ERR((func)(                                                            \
+			raw, ivm_string_trimHead(str), ivm_string_length(str)), desc                 \
+		);                                                                               \
+                                                                                         \
+		return IVM_NONE(NAT_STATE());                                                    \
+	}
+
 WIN_CHAR_ROUTINE(addch, waddch, "add character")
 WIN_CHAR_ROUTINE(echoch, wechochar, "echo character")
 WIN_CHAR_ROUTINE(insch, winsch, "insert character")
+
+WIN_NSTR_ROUTINE(addstr, waddnstr, "add string")
+WIN_NSTR_ROUTINE(insstr, winsnstr, "insert string")
 
 IVM_NATIVE_FUNC(_curses_window_addbg)
 {
@@ -487,8 +528,13 @@ ivm_mod_main(ivm_vmstate_t *state,
 		SET_WIN_METHOD(echoch);
 		SET_WIN_METHOD(insch);
 
+		SET_WIN_METHOD(addstr);
+		SET_WIN_METHOD(insstr);
+
 		SET_WIN_METHOD(addbg);
 		SET_WIN_METHOD(delbg);
+
+		SET_WIN_METHOD(remove);
 	});
 
 	SET_FUNC(window);

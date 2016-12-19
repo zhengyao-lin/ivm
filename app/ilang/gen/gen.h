@@ -631,6 +631,7 @@ ilang_gen_branch_list_new(ilang_gen_trans_unit_t *unit)
 #define ILANG_GEN_BRANCH_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_ITER_IS_LAST(list, iter) IVM_LIST_ITER_IS_LAST((list), (iter), ilang_gen_branch_t)
+#define ILANG_GEN_BRANCH_LIST_ITER_IS_FIRST(list, iter) IVM_LIST_ITER_IS_FIRST((list), (iter), ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ilang_gen_branch_t)
 #define ILANG_GEN_BRANCH_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ilang_gen_branch_t)
 

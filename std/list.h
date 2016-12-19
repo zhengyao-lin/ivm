@@ -367,7 +367,7 @@ ivm_list_pop(ivm_list_t *list)
 #define IVM_LIST_ITER_GET(iter, type) (*((type *)(iter)))
 #define IVM_LIST_ITER_GET_PTR(iter, type) ((type *)(iter))
 #define IVM_LIST_ITER_IS_LAST(list, iter, type) ((type *)(iter) + 1 == (type *)(list)->lst + (list)->cur)
-#define IVM_LIST_ITER_IS_FIRST(list, iter, type) (iter == (list)->lst)
+#define IVM_LIST_ITER_IS_FIRST(list, iter, type) ((type *)(iter) == (type *)(list)->lst)
 #define IVM_LIST_EACHPTR(list, iter, type) \
 	type *__l_end_##iter##__; \
 	for ((iter) = (type *)((list)->lst), \

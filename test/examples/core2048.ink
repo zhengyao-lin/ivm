@@ -127,7 +127,7 @@ loc CorePlate = fn
 		//   2. left
 		//   3. right
 		slide: fn dir: {
-			io.stdout.write([ "up", "down", "left", "right" ][dir] + "\n")
+			// io.stdout.write([ "up", "down", "left", "right" ][dir] + "\n")
 
 			loc corner = [
 				c_ru, c_ld, c_ld, c_ru
@@ -216,6 +216,23 @@ loc CorePlate = fn
 			// print(plate)
 		},
 
+		toss: toss,
+		check_end: check_end,
+
+		// return: if continue
+		next_turn: fn dir: {
+			base.slide(dir)
+			if !toss(): {
+				if check_end(): {
+					ret false
+				}
+			}
+
+			true
+		},
+
+		get: fn r, c: plate[r][c],
+
 		start: fn: {
 			loc get_dir = if io.kbhit: fn: {
 				io.stdout.write("(press the direction key or q to exit) ")
@@ -285,24 +302,5 @@ loc CorePlate = fn
 		}
 	}
 }
-
-/*
-loc p = CorePlate(3, 3, [
-	[ 2, 2, 2, 2 ],
-	[ 2, 0, 2, 0 ],
-	[ 2, 2, 0, 0 ],
-	[ 0, 2, 2, 4 ],
-	[ 0, 0, 0, 0 ]
-])
-
-p.slide(1)
-p.slide(2)
-p.slide(2)
-*/
-
-loc p = CorePlate(4, 4)
-
-p.print()
-p.start()
 
 ret
