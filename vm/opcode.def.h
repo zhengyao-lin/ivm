@@ -1114,6 +1114,7 @@ OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	--------------  
  */
 OPCODE_GEN(PUSH_LIST, "push_list", N, -2, {
+	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
 	_TMP_OBJ2 = STACK_POP();

@@ -1,5 +1,5 @@
-#ifndef _IVM_VM_DISPATCH_DIRECT_H_
-#define _IVM_VM_DISPATCH_DIRECT_H_
+#ifndef _IVM_VM_OPCODE_DISPATCH_H_
+#define _IVM_VM_OPCODE_DISPATCH_H_
 
 #define _CORO (coro)
 #define _RUNTIME (tmp_runtime)
@@ -142,6 +142,18 @@
 	_TMP_CATCH = ivm_coro_unsetCurCatch(_BLOCK_STACK, _RUNTIME);  \
 	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);                 \
 	_ivm_coro_setExceptionPos(_STATE, _TMP_OBJ1, tmp_ip);         \
+	if (_TMP_CATCH) {                                             \
+		STACK_PUSH(_TMP_OBJ1);                                    \
+		GOTO_SET_INSTR(_TMP_CATCH);                               \
+	} else {                                                      \
+		/* no raise protection -> fall back */                    \
+		goto ACTION_EXCEPTION;                                    \
+	}
+
+/* native exception */
+#define EXCEPTION_N() \
+	_TMP_CATCH = ivm_coro_unsetCurCatch(_BLOCK_STACK, _RUNTIME);  \
+	_TMP_OBJ1 = ivm_vmstate_getException(_STATE);                 \
 	if (_TMP_CATCH) {                                             \
 		STACK_PUSH(_TMP_OBJ1);                                    \
 		GOTO_SET_INSTR(_TMP_CATCH);                               \

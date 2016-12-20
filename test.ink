@@ -20,6 +20,10 @@ print(col)
 ret
 */
 
+print()
+
+ret
+
 import time
 import io
 loc.merge(import curses)

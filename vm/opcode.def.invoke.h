@@ -46,7 +46,7 @@
 			if (_TMP_OBJ1) { \
 				RETURN(); \
 			} else { \
-				EXCEPTION(); \
+				EXCEPTION_N(); \
 			} \
 		} \
 	} else { \
@@ -119,6 +119,6 @@
 		if (_TMP_OBJ1) { \
 			RETURN(); \
 		} else { \
-			EXCEPTION(); \
+			EXCEPTION_N(); \
 		} \
 	}

@@ -196,7 +196,7 @@ STACK_FILLIN(ivm_object_t **start,
 }
 
 #if IVM_DISPATCH_METHOD_DIRECT_THREAD
-	#include "dispatch/direct.h"
+	#include "opcode.dispatch.h"
 #endif
 
 #endif

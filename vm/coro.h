@@ -87,8 +87,9 @@ ivm_coro_printException(ivm_coro_t *coro,
 		IVM_ARRLEN(__rtm_assert_buf__),       \
 		__VA_ARGS__                           \
 	);                                        \
-	exc = ivm_coro_newStringException(        \
-		(coro), (state), __rtm_assert_buf__   \
+	exc = ivm_exception_new(                  \
+		(state), __rtm_assert_buf__,          \
+		__func__, 0                           \
 	);                                        \
 	ivm_vmstate_setException((state), exc);
 
