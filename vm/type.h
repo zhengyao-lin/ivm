@@ -142,7 +142,6 @@ typedef ivm_pthash_t ivm_type_pool_t;
 typedef ivm_pthash_iterator_t ivm_type_pool_iterator_t;
 
 #define ivm_type_pool_init(pool) ivm_pthash_init(pool)
-#define ivm_type_pool_dump(pool) ivm_pthash_dump(pool)
 
 #define ivm_type_pool_register(pool, key, type) \
 	ivm_type_pool_register_c((pool), (void *)(key), (type))
@@ -168,6 +167,23 @@ ivm_type_pool_register_c(ivm_type_pool_t *pool,
 #define IVM_TYPE_POOL_ITER_SET(iter, val) (IVM_PTHASH_ITER_SET_VAL((iter), (void *)(val)))
 #define IVM_TYPE_POOL_ITER_GET(iter) ((ivm_type_t *)IVM_PTHASH_ITER_GET_VAL(iter))
 #define IVM_TYPE_POOL_EACHPTR(pool, iter) IVM_PTHASH_EACHPTR((pool), iter)
+
+IVM_INLINE
+void
+ivm_type_pool_dump(ivm_type_pool_t *pool)
+{
+	ivm_type_pool_iterator_t iter;
+	ivm_type_t *type;
+
+	IVM_TYPE_POOL_EACHPTR(pool, iter) {
+		type = IVM_TYPE_POOL_ITER_GET(iter);
+		ivm_type_free(type);
+	}
+
+	ivm_pthash_dump(pool);
+
+	return;
+}
 
 IVM_COM_END
 

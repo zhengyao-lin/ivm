@@ -29,6 +29,8 @@ try: {
 	initscr()
 	// raise exception()
 
+	raise {}
+
 	cbreak()
 	// noecho()
 
@@ -294,7 +296,8 @@ __test = fn: {
 	catch err: printe(err)
 
 	try: print()
-	catch err: try: print()
+	catch err:
+		try: print()
 
 	// a = i[1]
 	a = 10
@@ -356,7 +359,8 @@ __test = fn: {
 		printe(err)
 	}
 
-	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()()) == none)
+	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()() catch) == none)
+
 	print("hello" == "hello")
 	try: (fn:fn:fn:fn:raise "right!")()()()()
 	catch err: print(err)

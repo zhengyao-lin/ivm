@@ -339,6 +339,22 @@ _to_reg_op(ivm_opcode_t cmp)
 	return IVM_OPCODE(NOP);
 }
 
+IVM_INLINE
+ivm_bool_t
+_is_iso_ins(ivm_opt_instr_t *instr)
+{
+	return (!instr->refs || ivm_ptlist_size(instr->refs) == 0) &&
+		   !instr->jmpto;
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_suc_ins(ivm_opt_instr_t *i1,
+			ivm_opt_instr_t *i2) // successive instruction
+{
+	return _is_iso_ins(i1) && _is_iso_ins(i2);
+}
+
 IVM_PRIVATE
 void
 _ivm_opt_cmpOpt(ivm_opt_il_t *il)
@@ -350,9 +366,45 @@ _ivm_opt_cmpOpt(ivm_opt_il_t *il)
 	IVM_OPT_INSTR_LIST_EACHPTR(instrs, iter) {
 		cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
 		if (_is_raw_cmp(cur->opc) &&
-			_is_raw_jump((cur + 1)->opc)) {
+			_is_raw_jump((cur + 1)->opc) &&
+			_is_suc_ins(cur, cur + 1)) {
 			cur->opc = _to_reg_op(cur->opc);
 			(cur + 1)->opc = _to_reg_op((cur + 1)->opc);
+		}
+	}
+
+	return;
+}
+
+IVM_INLINE
+ivm_bool_t
+_is_new_no_se(ivm_opcode_t opc) // no side-effect new instruction e.g. new_num_i
+{
+	return opc == IVM_OPCODE(NEW_NIL) ||
+		   opc == IVM_OPCODE(NEW_NONE) ||
+		   opc == IVM_OPCODE(NEW_OBJ) ||
+		   opc == IVM_OPCODE(NEW_OBJ_T) ||
+		   opc == IVM_OPCODE(NEW_NUM_I) ||
+		   opc == IVM_OPCODE(NEW_NUM_F) ||
+		   opc == IVM_OPCODE(NEW_STR) ||
+		   opc == IVM_OPCODE(NEW_FUNC);
+}
+
+IVM_PRIVATE
+void
+_ivm_opt_elimDupPop(ivm_opt_il_t *il)
+{
+	ivm_opt_instr_list_t *instrs = il->instrs;
+	ivm_opt_instr_list_iterator_t iter;
+	ivm_opt_instr_t *cur;
+
+	IVM_OPT_INSTR_LIST_EACHPTR(instrs, iter) {
+		cur = IVM_OPT_INSTR_LIST_ITER_GET(iter);
+		if (_is_new_no_se(cur->opc) &&
+			(cur + 1)->opc == IVM_OPCODE(POP) &&
+			_is_suc_ins(cur, cur + 1)) {
+			cur->opc = IVM_OPCODE(NOP);
+			(cur + 1)->opc = IVM_OPCODE(NOP);
 		}
 	}
 
@@ -368,6 +420,7 @@ ivm_opt_optExec(ivm_exec_t *exec)
 
 	_ivm_opt_jumpReduce(il);
 	_ivm_opt_cmpOpt(il);
+	_ivm_opt_elimDupPop(il);
 
 	ivm_opt_il_generateExec(il, exec);
 	ivm_opt_il_free(il);

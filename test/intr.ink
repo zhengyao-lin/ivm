@@ -35,7 +35,7 @@ print(a[{
 		catch:
 			print("inner")
 		print("here")
-	} final: 0
+	} catch final: 0
 }])
 
 loc wrong = fn: 1 + {}
@@ -51,6 +51,7 @@ try: try: try: try: try: try: try: try: try: {
 catch err: (print("first"), {} + 1)
 catch err: (print("second"), 1 + {})
 catch err: print("third")
+catch catch catch catch catch catch
 
 print(a[
 	a[(while 0: cont, 2)]

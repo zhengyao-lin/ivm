@@ -1148,9 +1148,11 @@ OPCODE_GEN(RAISE, "raise", N, -1, {
 })
 
 OPCODE_GEN(POP_EXC, "pop_exc", N, -1, {
-	CHECK_STACK(1);
-	ivm_coro_printException(_CORO, _STATE, STACK_POP());
-	NEXT_INSTR_NINT();
+	if (AVAIL_STACK) {
+		_TMP_OBJ1 = STACK_POP();
+		RAISE(_TMP_OBJ1);
+		NEXT_INSTR_NINT();
+	}
 })
 
 OPCODE_GEN(PUSH_BLOCK, "push_block", N, 0, {

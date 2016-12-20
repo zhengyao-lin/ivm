@@ -398,6 +398,7 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_try_expr_t *try_expr = IVM_AS(expr, ilang_gen_try_expr_t);
 	ilang_gen_expr_t *tmp_expr;
 	ivm_size_t addr1, addr2;
+	ivm_bool_t raise_at_end = IVM_FALSE;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "try expression", flag);
 
@@ -435,20 +436,22 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 	/* catch body */
 	ivm_exec_setArgAt(env->cur_exec, addr1, ivm_exec_cur(env->cur_exec) - addr1);
 
-	if (try_expr->catch_body.arg) {
-		tmp_expr = try_expr->catch_body.arg;
-		tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
-	}
-
-	if (!try_expr->catch_body.body) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_EXC);
-	}
-
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
-	GEN_NL_BLOCK_END();
-
 	if (try_expr->catch_body.body) {
+		if (try_expr->catch_body.arg) {
+			tmp_expr = try_expr->catch_body.arg;
+			tmp_expr->eval(tmp_expr, FLAG(.is_left_val = IVM_TRUE), env);
+		}
+
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK);
+		GEN_NL_BLOCK_END();
+
 		try_expr->catch_body.body->eval(try_expr->catch_body.body, FLAG(.is_top_level = IVM_TRUE), env);
+		
+		// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_EXC);
+	} else {
+		raise_at_end = IVM_TRUE;
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_BLOCK_S1);
+		GEN_NL_BLOCK_END();
 	}
 
 	// addr1 = ivm_exec_addInstr_l(env->cur_exec, JUMP, 0);
@@ -463,6 +466,14 @@ ilang_gen_try_expr_eval(ilang_gen_expr_t *expr,
 		try_expr->final_body->eval(try_expr->final_body, FLAG(.is_top_level = flag.is_top_level), env);
 	} else if (!flag.is_top_level) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_NONE);
+	}
+
+	if (raise_at_end) {
+		if (!flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+		}
+
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP_EXC);
 	}
 
 	return NORET();
