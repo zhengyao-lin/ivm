@@ -4,7 +4,7 @@
 
 #include "std/sys.h"
 
-#include "thread/sched.h"
+// #include "thread/sched.h"
 
 #include "mod/mod.h"
 
@@ -28,7 +28,7 @@ void
 ivm_env_clean()
 {
 	ivm_mod_clean();
-	ivm_thread_clean();
+	// ivm_thread_clean();
 
 	return;
 }

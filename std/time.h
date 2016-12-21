@@ -1,8 +1,6 @@
 #ifndef _IVM_STD_TIME_H_
 #define _IVM_STD_TIME_H_
 
-#define __USE_POSIX199309 1
-#define _POSIX_C_SOURCE 199309L
 #include <time.h>
 
 #include "pub/type.h"
@@ -24,7 +22,12 @@ IVM_COM_HEADER
 
 #else
 
-	#include <unistd.h>
+	struct timespec {
+		time_t tv_sec;
+		long tv_nsec;
+	};
+
+	int nanosleep(const struct timespec *req, struct timespec *rem);
 
 	// millisecond
 	IVM_INLINE

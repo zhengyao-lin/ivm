@@ -1386,11 +1386,11 @@ OPCODE_GEN(INTR, "intr", N, 0, {
 		INT_RET();
 	}
 
-	_TMP_INT = _ivm_coro_popInt();
+	_TMP_INT = ivm_vmstate_popInt(_STATE);
 
 	if (_TMP_INT == IVM_CORO_INT_GC) {
 		ivm_vmstate_doGC(_STATE);
-	} else if (!_ivm_coro_otherInt(_TMP_INT)) {
+	} else if (!_ivm_coro_otherInt(_STATE, _TMP_INT)) {
 		RTM_FATAL(IVM_ERROR_MSG_BAD_INT_FLAG(_TMP_INT));
 	}
 

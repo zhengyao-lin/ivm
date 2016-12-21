@@ -5,6 +5,9 @@
 #include "pub/const.h"
 #include "pub/type.h"
 
+#include "std/hash.h"
+#include "std/list.h"
+
 #include "obj.h"
 #include "vmstack.h"
 #include "func.h"
@@ -118,8 +121,8 @@ ivm_coro_resume(ivm_coro_t *coro,
 				struct ivm_vmstate_t_tag *state,
 				ivm_object_t *arg);
 
-void
-ivm_coro_setInt(ivm_coro_int_t flag);
+// void
+// ivm_coro_setInt(ivm_coro_int_t flag);
 
 void
 ivm_coro_setRoot(ivm_coro_t *coro,
@@ -374,6 +377,20 @@ typedef IVM_PTLIST_ITER_TYPE(ivm_coro_t *) ivm_coro_list_iterator_t;
 #define IVM_CORO_LIST_ITER_SET(iter, val) (IVM_PTLIST_ITER_SET((iter), (val)))
 #define IVM_CORO_LIST_ITER_GET(iter) ((ivm_coro_t *)IVM_PTLIST_ITER_GET(iter))
 #define IVM_CORO_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_coro_t *)
+
+typedef ivm_pthash_t ivm_coro_set_t;
+typedef ivm_pthash_iterator_t ivm_coro_set_iterator_t;
+
+#define ivm_coro_set_init(set) ivm_pthash_init(set)
+#define ivm_coro_set_insert(set, coro) ivm_pthash_insertEmpty((set), (void *)(coro), IVM_NULL)
+
+#define ivm_coro_set_has(set, coro) ivm_pthash_find((set), (void *)(coro))
+
+#define IVM_CORO_SET_ITER_SET(iter, val) (IVM_PTHASH_ITER_SET_VAL((iter), (void *)(val)))
+#define IVM_CORO_SET_ITER_GET(iter) ((ivm_coro_t *)IVM_PTHASH_ITER_GET_VAL(iter))
+#define IVM_CORO_SET_EACHPTR(set, iter) IVM_PTHASH_EACHPTR((set), iter)
+
+#define ivm_coro_set_dump(set) ivm_pthash_dump(set)
 
 IVM_COM_END
 

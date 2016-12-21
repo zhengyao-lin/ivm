@@ -61,22 +61,22 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (!IVM_GC_DBG && !_ivm_coro_hasInt()) {         \
-		goto *(ivm_instr_entry(tmp_ip));              \
-	} else {                                          \
-		SAVE_STACK();                                 \
-		/* ivm_vmstate_solveIntr(state); */           \
-		GOTO_INSTR(INTR);                             \
-	}                                                 \
+	if (!IVM_GC_DBG && !ivm_vmstate_hasInt(_STATE)) {   \
+		goto *(ivm_instr_entry(tmp_ip));                \
+	} else {                                            \
+		SAVE_STACK();                                   \
+		/* ivm_vmstate_solveIntr(state); */             \
+		GOTO_INSTR(INTR);                               \
+	}                                                   \
 
 #define NEXT_INSTR() \
-	if (!IVM_GC_DBG && !_ivm_coro_hasInt()) {         \
-		goto *(ivm_instr_entry(++tmp_ip));            \
-	} else {                                          \
-		SAVE_STACK();                                 \
-		/* ivm_vmstate_solveIntr(state); */           \
-		++tmp_ip;                                     \
-		GOTO_INSTR(INTR);                             \
+	if (!IVM_GC_DBG && !ivm_vmstate_hasInt(_STATE)) {   \
+		goto *(ivm_instr_entry(++tmp_ip));              \
+	} else {                                            \
+		SAVE_STACK();                                   \
+		/* ivm_vmstate_solveIntr(state); */             \
+		++tmp_ip;                                       \
+		GOTO_INSTR(INTR);                               \
 	}
 
 #define NEXT_INSTR_NINT() goto *(ivm_instr_entry(++tmp_ip));

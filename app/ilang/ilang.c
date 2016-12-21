@@ -9,7 +9,7 @@
 #include "util/perf.h"
 #include "util/console.h"
 
-#include "vm/thread/sched.h"
+// #include "vm/thread/sched.h"
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 #include "vm/mod/mod.h"
@@ -313,14 +313,14 @@ int main(int argc, const char **argv)
 
 		ivm_vmstate_unlockGCFlag(state);
 
-		// ivm_thread_enableThread();
+		ivm_vmstate_initThread(state);
 
 		// execute
 		PROF_START();
 		// ivm_vmstate_schedule(state);
-		ivm_thread_mainThreadStart();
+		// ivm_thread_mainThreadStart();
 		ivm_vmstate_resumeCurCoro(state, IVM_NULL);
-		ivm_thread_mainThreadEnd();
+		// ivm_thread_mainThreadEnd();
 		PROF_END();
 
 		ivm_vmstate_free(state);

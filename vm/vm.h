@@ -12,12 +12,25 @@
 #include "std/string.h"
 #include "std/heap.h"
 #include "std/uid.h"
+#include "std/thread.h"
 
 #include "gc/gc.h"
 #include "coro.h"
 #include "context.h"
 
 IVM_COM_HEADER
+
+#define _INT_BUF_SIZE IVM_DEFAULT_CORO_INT_BUFFER_SIZE
+
+#if _INT_BUF_SIZE != 2 && \
+	_INT_BUF_SIZE != 4 && \
+	_INT_BUF_SIZE != 8 && \
+	_INT_BUF_SIZE != 16 && \
+	_INT_BUF_SIZE != 32 && \
+	_INT_BUF_SIZE != 64 && \
+	_INT_BUF_SIZE != 128
+	#error unsupported coroutine interrupt buffer size
+#endif
 
 typedef struct ivm_vmstate_t_tag {
 	ivm_heap_t heaps[3];						// 120
@@ -45,6 +58,26 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_type_pool_t type_pool;
 
 	ivm_collector_t gc;							// 8
+
+	ivm_coro_set_t thread_pool;
+	ivm_bool_t thread_init;
+
+#if IVM_USE_MULTITHREAD
+	ivm_thread_mutex_t thread_gil;
+	// clock sync lock
+	ivm_thread_mutex_t thread_csl_prot;
+	ivm_bool_t thread_csl;
+	ivm_thread_t thread_clock;
+#endif
+
+	ivm_coro_int_t int_buf[_INT_BUF_SIZE];
+
+	ivm_uint_t int_next;
+	ivm_uint_t int_head;
+
+#if IVM_USE_MULTITHREAD
+	ivm_thread_mutex_t int_lock;
+#endif
 
 	ivm_function_pool_t *func_pool;				// 8
 	ivm_string_pool_t *const_pool;				// 8
@@ -101,6 +134,182 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool);
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+
+#define _INT_ROUND_MASK (_INT_BUF_SIZE - 1)
+
+#define _INC_ROUND(n) ((n) = ((n) + 1) & _INT_ROUND_MASK)
+#define _DEC_ROUND(n) ((n) = ((n) - 1) & _INT_ROUND_MASK)
+
+#if IVM_USE_MULTITHREAD
+	#define _INT_LOCK() if (state->thread_init) ivm_thread_mutex_lock(&state->int_lock)
+	#define _INT_UNLOCK() if (state->thread_init) ivm_thread_mutex_unlock(&state->int_lock)
+#else
+	#define _INT_LOCK()
+	#define _INT_UNLOCK()
+#endif
+
+IVM_INLINE
+void
+ivm_vmstate_setInt(ivm_vmstate_t *state,
+				   ivm_coro_int_t flag)
+{
+	_INT_LOCK();
+
+	state->int_buf[state->int_next] = flag;
+
+	_INC_ROUND(state->int_next);
+
+	if (state->int_next == state->int_head) {
+		_INC_ROUND(state->int_head);
+	}
+
+	_INT_UNLOCK();
+	
+	return;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_vmstate_hasInt(ivm_vmstate_t *state)
+{
+	return state->int_next != state->int_head;
+}
+
+IVM_INLINE
+ivm_coro_int_t
+ivm_vmstate_popInt(ivm_vmstate_t *state)
+{
+	/* assume _coro_int_next != _coro_int_head */
+	register ivm_coro_int_t ret;
+
+	_INT_LOCK();
+	
+	_DEC_ROUND(state->int_next);
+
+	ret = state->int_buf[state->int_next];
+
+	if (state->int_next == state->int_head) {
+		/* empty -> reset to zeros */
+		state->int_head = state->int_next = 0;
+	}
+
+	_INT_UNLOCK();
+
+	return ret;
+}
+
+void
+ivm_vmstate_initThread(ivm_vmstate_t *state);
+
+void
+ivm_vmstate_cleanThread(ivm_vmstate_t *state);
+
+IVM_INLINE
+void
+ivm_vmstate_lockGIL(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	ivm_thread_mutex_lock(&state->thread_gil);
+#endif
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_unlockGIL(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	ivm_thread_mutex_unlock(&state->thread_gil);
+#endif
+	return;
+}
+
+#if IVM_USE_MULTITHREAD
+	#define _CSL_LOCK() ivm_thread_mutex_lock(&state->thread_csl_prot)
+	#define _CSL_UNLOCK() ivm_thread_mutex_unlock(&state->thread_csl_prot)
+#else
+	#define _CSL_LOCK()
+	#define _CSL_UNLOCK()
+#endif
+
+IVM_INLINE
+void
+ivm_vmstate_setCSL(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	_CSL_LOCK();
+	state->thread_csl = IVM_TRUE;
+	_CSL_UNLOCK();
+#endif
+
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_unsetCSL(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	_CSL_LOCK();
+	state->thread_csl = IVM_FALSE;
+	_CSL_UNLOCK();
+#endif
+
+	return;
+}
+
+IVM_INLINE
+ivm_bool_t
+ivm_vmstate_getCSL(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	return state->thread_csl;
+#else
+	return IVM_FALSE;
+#endif
+}
+
+#undef _CSL_LOCK
+#undef _CSL_UNLOCK
+
+#undef _INT_BUF_SIZE
+#undef _INT_ROUND_MASK
+#undef _INC_ROUND
+#undef _DEC_ROUND
+
+#undef _INT_LOCK
+#undef _INT_UNLOCK
+
+IVM_INLINE
+void
+ivm_vmstate_mainThreadStart(ivm_vmstate_t *state)
+{
+	if (state->thread_init) {
+		ivm_vmstate_lockGIL(state);
+	}
+	
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_mainThreadEnd(ivm_vmstate_t *state)
+{
+	if (state->thread_init) {
+		ivm_vmstate_setCSL(state);
+		ivm_vmstate_unlockGIL(state);
+	}
+	
+	return;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+
 #define ivm_vmstate_isGCFlagOpen(state) ((state)->gc_flag == 1)
 
 IVM_INLINE
@@ -110,7 +319,7 @@ ivm_vmstate_openGCFlag(ivm_vmstate_t *state)
 	if (state->gc_flag >= 0) {
 		state->gc_flag = 1;
 		// ivm_vmstate_interrupt(state);
-		ivm_coro_setInt(IVM_CORO_INT_GC);
+		ivm_vmstate_setInt(state, IVM_CORO_INT_GC);
 	}
 
 	return;
@@ -675,8 +884,14 @@ ivm_object_t *
 ivm_vmstate_resumeCurCoro(ivm_vmstate_t *state,
 						  ivm_object_t *init)
 {
+	ivm_object_t *ret;
+
 	if (state->cur_coro) {
-		return ivm_coro_resume(state->cur_coro, state, init);
+		ivm_vmstate_mainThreadStart(state);
+		ret = ivm_coro_resume(state->cur_coro, state, init);
+		ivm_vmstate_mainThreadEnd(state);
+
+		return ret;
 	}
 
 	return IVM_NULL;

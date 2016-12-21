@@ -198,7 +198,7 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 	return;
 }
 
-#if IVM_USE_MULTITHREAD
+#if 0 // IVM_USE_MULTITHREAD
 
 IVM_PRIVATE
 ivm_thread_mutex_t _coro_gil = IVM_THREAD_MUTEXT_INITVAL;
@@ -260,6 +260,8 @@ ivm_coro_getCSL()
 
 #endif
 
+#if 0
+
 #define _INT_BUF_SIZE IVM_DEFAULT_CORO_INT_BUFFER_SIZE
 
 #if _INT_BUF_SIZE != 2 && \
@@ -291,8 +293,8 @@ volatile
 ivm_bool_t
 _coro_int_lock = IVM_FALSE;
 
-#define _INC_ROUND_32(n) ((n) = ((n) + 1) & _INT_ROUND_MASK)
-#define _DEC_ROUND_32(n) ((n) = ((n) - 1) & _INT_ROUND_MASK)
+#define _INC_ROUND(n) ((n) = ((n) + 1) & _INT_ROUND_MASK)
+#define _DEC_ROUND(n) ((n) = ((n) - 1) & _INT_ROUND_MASK)
 
 #define _INT_LOCK() do { \
 		while (_coro_int_lock); \
@@ -308,10 +310,10 @@ ivm_coro_setInt(ivm_coro_int_t flag)
 
 	_coro_int_buf[_coro_int_next] = flag;
 
-	_INC_ROUND_32(_coro_int_next);
+	_INC_ROUND(_coro_int_next);
 
 	if (_coro_int_next == _coro_int_head) {
-		_INC_ROUND_32(_coro_int_head);
+		_INC_ROUND(_coro_int_head);
 	}
 
 	_INT_UNLOCK();
@@ -335,7 +337,7 @@ _ivm_coro_popInt()
 
 	_INT_LOCK();
 	
-	_DEC_ROUND_32(_coro_int_next);
+	_DEC_ROUND(_coro_int_next);
 
 	ret = _coro_int_buf[_coro_int_next];
 
@@ -349,9 +351,12 @@ _ivm_coro_popInt()
 	return ret;
 }
 
+#endif
+
 IVM_INLINE
 ivm_bool_t
-_ivm_coro_otherInt(ivm_coro_int_t intr)
+_ivm_coro_otherInt(ivm_vmstate_t *state,
+				   ivm_coro_int_t intr)
 {
 	switch (intr) {
 #if IVM_USE_MULTITHREAD
@@ -359,10 +364,10 @@ _ivm_coro_otherInt(ivm_coro_int_t intr)
 		case IVM_CORO_INT_THREAD_YIELD:
 			// IVM_TRACE("################ thread switch\n");
 
-			_ivm_coro_unlockGIL();
-			ivm_coro_setCSL();
-			_ivm_coro_lockGIL();
-			
+			ivm_vmstate_unlockGIL(state);
+			ivm_vmstate_setCSL(state);
+			ivm_vmstate_lockGIL(state);
+
 			return IVM_TRUE;
 
 #endif

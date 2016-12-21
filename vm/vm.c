@@ -6,8 +6,11 @@
 #include "std/heap.h"
 #include "std/uid.h"
 #include "std/string.h"
+#include "std/time.h"
+#include "std/thread.h"
 
 #include "gc/gc.h"
+
 #include "vm.h"
 #include "obj.h"
 #include "coro.h"
@@ -68,6 +71,13 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ret->gc_flag = IVM_FALSE;
 	ivm_collector_init(&ret->gc);
 
+	ret->thread_init = IVM_FALSE;
+	ret->int_next = ret->int_head = 0;
+
+#if IVM_USE_MULTITHREAD
+	ivm_thread_mutex_init(&ret->int_lock);
+#endif
+
 	ivm_vmstate_lockGCFlag(ret);
 
 	ret->except = IVM_NULL;
@@ -125,6 +135,8 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	ivm_int_t j;
 
 	if (state) {
+		ivm_vmstate_cleanThread(state);
+
 		ivm_coro_free(state->main_coro, state);
 
 		ivm_collector_dump(&state->gc, state);
@@ -147,6 +159,10 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_block_pool_dump(&state->block_pool);
 #endif
 
+		if (state->thread_init) {
+			ivm_coro_set_dump(&state->thread_pool);
+		}
+
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_destruct(&state->ct_pool);
 		ivm_coro_pool_destruct(&state->cr_pool);
@@ -166,110 +182,62 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	return;
 }
 
-#if 0
+#if IVM_USE_MULTITHREAD
+
+IVM_PRIVATE
+void *
+_thread_clock(void *arg)
+{
+	ivm_vmstate_t *state = (ivm_vmstate_t *)arg;
+
+	while (1) {
+		ivm_time_msleep(10);
+		// IVM_TRACE("########signal!\n");
+		ivm_vmstate_unsetCSL(state);
+		ivm_vmstate_setInt(state, IVM_CORO_INT_THREAD_YIELD);
+		while (!ivm_vmstate_getCSL(state)) {
+			// IVM_TRACE("wait for csl\n");
+			ivm_thread_cancelPoint();
+		}
+	}
+
+	return IVM_NULL;
+}
+
+#endif
 
 void
-ivm_vmstate_travAndCompactCGroup(ivm_vmstate_t *state,
-								 ivm_traverser_arg_t *arg)
+ivm_vmstate_initThread(ivm_vmstate_t *state)
 {
-	ivm_cgroup_list_iterator_t giter;
-	ivm_cgroup_t *group;
+	if (!state->thread_init) {
+		ivm_coro_set_init(&state->thread_pool);
+		state->thread_init = IVM_TRUE;
 
-	IVM_CGROUP_LIST_EACHPTR(&state->coro_groups, giter) {
-		group = IVM_CGROUP_LIST_ITER_GET_PTR(giter);
-		if (ivm_cgroup_isAlive(group)) {
-			ivm_cgroup_travAndCompact(group, arg);
-		}
+#if IVM_USE_MULTITHREAD
+		ivm_thread_mutex_init(&state->thread_gil);
+		ivm_thread_mutex_init(&state->thread_csl_prot);
+		state->thread_csl = IVM_FALSE;
+		// ivm_thread_enableThread(state);
+
+		ivm_thread_init(&state->thread_clock, _thread_clock, (void *)state);
+#endif
 	}
 
 	return;
 }
 
-ivm_cgid_t
-ivm_vmstate_addCGroup(ivm_vmstate_t *state,
-					  ivm_function_object_t *func)
+void
+ivm_vmstate_cleanThread(ivm_vmstate_t *state)
 {
-	// ivm_cgroup_list_iterator_t giter;
-	ivm_coro_t *coro;
-	ivm_cgroup_t *ngroup = IVM_NULL;
-	ivm_cgid_t gid, i, end;
-
-	// IVM_TRACE("%ld\n", ivm_cgroup_list_size(&state->coro_groups));
-
-	/* find dead group */
-	gid = state->last_gid;
-
-	if (ivm_cgroup_list_has(&state->coro_groups, gid)) {
-		ngroup = ivm_cgroup_list_at(&state->coro_groups, gid);
-		end = ivm_cgroup_list_size(&state->coro_groups);
-
-		// IVM_TRACE("alive?: %d\n", ivm_cgroup_isAlive(ngroup));
-
-		// if (ivm_cgroup_isAlive(ngroup)) {
-		// 	IVM_TRACE("what? %d\n", gid);
-		// }
-
-		// find next gid
-		for (i = gid + 1; i != end; i++) {
-			if (!ivm_cgroup_isAlive(ivm_cgroup_list_at(&state->coro_groups, i))) {
-				break;
-			}
-		}
-
-		state->last_gid = i;
-	} else {
-		gid = ivm_cgroup_list_size(&state->coro_groups);
-		ivm_cgroup_list_prepush(&state->coro_groups, &ngroup);
-		ivm_cgroup_init(ngroup);
-		state->last_gid = gid + 1;
+#if IVM_USE_MULTITHREAD
+	if (state->thread_init) {
+		ivm_thread_cancel(&state->thread_clock);
+		// IVM_TRACE("wait!!\n");
+		ivm_thread_wait(&state->thread_clock);
+		// IVM_TRACE("wait done!!\n");
+		ivm_thread_dump(&state->thread_clock);
 	}
-
-	// IVM_TRACE("final %d %d\n", gid, state->last_gid);
-
-	coro = ivm_coro_new(state);
-	ivm_coro_setRoot(coro, state, func);
-	ivm_cgroup_addCoro(ngroup, coro);
-
-	return gid;
-}
-
-ivm_object_t *
-ivm_vmstate_schedule_g(ivm_vmstate_t *state,
-					   ivm_object_t *val,
-					   ivm_cgid_t gid)
-{
-	ivm_cgroup_t *group = ivm_cgroup_list_at(&state->coro_groups, gid);
-	ivm_cgid_t orig = state->cur_cgroup;
-	ivm_coro_t *coro;
-
-	if (!ivm_cgroup_isAlive(group)) {
-		return val;
-	}
-
-	state->cur_cgroup = gid;
-	ivm_cgroup_lock(group);
-
-	do {
-		coro = ivm_cgroup_curCoro(group);
-		val = ivm_coro_resume(coro, state, val);
-		
-		if (!val) {
-			// coro killed by an exception
-			ivm_coro_printException(coro, state, ivm_vmstate_popException(state));
-			val = IVM_NONE(state);
-		}
-
-		group = ivm_cgroup_list_at(&state->coro_groups, gid);
-	} while (ivm_cgroup_switchCoro(group));
-
-	ivm_cgroup_unlock(group);
-	state->cur_cgroup = orig;
-
-	ivm_cgroup_empty(group, state);
-	// IVM_TRACE("group %d is done, %d\n", gid, ivm_cgroup_isAlive(ivm_cgroup_list_at(&state->coro_groups, gid)));
-	state->last_gid = gid;
-
-	return val;
-}
-
 #endif
+
+	return;
+}
