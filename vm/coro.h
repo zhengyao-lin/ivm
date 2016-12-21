@@ -31,6 +31,7 @@ typedef struct ivm_coro_t_tag {
 	ivm_bool_t alive;
 	ivm_bool_t has_native;
 	ivm_bool_t active;
+	ivm_bool_t spawned;
 	ivm_bool_t wb;
 } ivm_coro_t;
 
@@ -133,9 +134,13 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 #define ivm_coro_setCID(coro, id) ((coro)->cid = (id))
 #define ivm_coro_isAlive(coro) ((coro)->alive)
 #define ivm_coro_isActive(coro) ((coro)->active)
+#define ivm_coro_isSpawned(coro) ((coro)->spawned)
 
 #define ivm_coro_getWB(coro) ((coro)->wb)
 #define ivm_coro_setWB(coro, val) ((coro)->wb = (val))
+
+#define ivm_coro_setSpawned(coro) ((coro)->spawned = IVM_TRUE)
+#define ivm_coro_unsetSpawned(coro) ((coro)->spawned = IVM_FALSE)
 
 #if IVM_USE_MULTITHREAD
 
@@ -383,11 +388,11 @@ typedef ivm_pthash_iterator_t ivm_coro_set_iterator_t;
 
 #define ivm_coro_set_init(set) ivm_pthash_init(set)
 #define ivm_coro_set_insert(set, coro) ivm_pthash_insertEmpty((set), (void *)(coro), IVM_NULL)
+#define ivm_coro_set_remove(set, coro) ivm_pthash_remove((set), (void *)(coro))
 
 #define ivm_coro_set_has(set, coro) ivm_pthash_find((set), (void *)(coro))
 
-#define IVM_CORO_SET_ITER_SET(iter, val) (IVM_PTHASH_ITER_SET_VAL((iter), (void *)(val)))
-#define IVM_CORO_SET_ITER_GET(iter) ((ivm_coro_t *)IVM_PTHASH_ITER_GET_VAL(iter))
+#define IVM_CORO_SET_ITER_GET(iter) ((ivm_coro_t *)IVM_PTHASH_ITER_GET_KEY(iter))
 #define IVM_CORO_SET_EACHPTR(set, iter) IVM_PTHASH_EACHPTR((set), iter)
 
 #define ivm_coro_set_dump(set) ivm_pthash_dump(set)

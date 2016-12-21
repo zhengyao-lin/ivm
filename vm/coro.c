@@ -30,6 +30,7 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ret->alive = IVM_FALSE;
 	ret->has_native = IVM_FALSE;
 	ret->active = IVM_FALSE;
+	ret->spawned = IVM_FALSE;
 	ret->wb = IVM_FALSE;
 
 	return ret;
@@ -366,6 +367,7 @@ _ivm_coro_otherInt(ivm_vmstate_t *state,
 
 			ivm_vmstate_unlockGIL(state);
 			ivm_vmstate_setCSL(state);
+			ivm_time_msleep(1);
 			ivm_vmstate_lockGIL(state);
 
 			return IVM_TRUE;
@@ -769,7 +771,12 @@ void
 ivm_coro_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {
-	ivm_coro_free(ivm_coro_object_getCoro(obj), state);
+	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
+
+	if (!ivm_coro_isSpawned(coro)) {
+		ivm_coro_free(coro, state);
+	}
+
 	return;
 }
 

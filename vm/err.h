@@ -137,6 +137,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_DEL_VARG									"cannot delete varg"
 #define IVM_ERROR_MSG_MEMORY_ERROR								"memory error"
 #define IVM_ERROR_MSG_NOT_CHAR									"not a character"
+#define IVM_ERROR_MSG_DISABLED_THREAD							"thread is disabled"
+#define IVM_ERROR_MSG_DUP_THREAD_CORO							"duplicated coroutine as thread root"
 
 IVM_COM_END
 

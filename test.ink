@@ -20,6 +20,39 @@ print(col)
 ret
 */
 
+import time
+
+loc i = 0
+loc end = 0
+
+__spawn(fork: {
+	for p in range(10000000): {
+		i += 1
+	}
+
+	print("end 1")
+	end += 1
+})
+
+__spawn(fork: {
+	for p in range(10000000): {
+		i += 1
+	}
+
+	print("end 2")
+	end += 1
+})
+
+for p in range(10000000): {
+	i += 1
+}
+
+while end != 2: none
+
+print(i)
+
+ret
+
 fib = fn n: {
 	if n < 2: ret 1
 	ret fib(n - 1) + fib(n - 2)

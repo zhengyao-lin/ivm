@@ -102,6 +102,7 @@ typedef struct ivm_vmstate_t_tag {
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps)
+#define IVM_VMSTATE_GET_THREAD_POOL(state) (&(state)->thread_pool)
 
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
@@ -137,6 +138,8 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
+
+#define ivm_vmstate_hasThread(state) ((state)->thread_init)
 
 #define _INT_ROUND_MASK (_INT_BUF_SIZE - 1)
 
@@ -187,6 +190,8 @@ ivm_vmstate_popInt(ivm_vmstate_t *state)
 
 	_INT_LOCK();
 	
+	if (state->int_next == state->int_head) return IVM_CORO_INT_NONE;
+
 	_DEC_ROUND(state->int_next);
 
 	ret = state->int_buf[state->int_next];
@@ -285,7 +290,7 @@ ivm_vmstate_getCSL(ivm_vmstate_t *state)
 
 IVM_INLINE
 void
-ivm_vmstate_mainThreadStart(ivm_vmstate_t *state)
+ivm_vmstate_threadStart(ivm_vmstate_t *state)
 {
 	if (state->thread_init) {
 		ivm_vmstate_lockGIL(state);
@@ -296,7 +301,7 @@ ivm_vmstate_mainThreadStart(ivm_vmstate_t *state)
 
 IVM_INLINE
 void
-ivm_vmstate_mainThreadEnd(ivm_vmstate_t *state)
+ivm_vmstate_threadEnd(ivm_vmstate_t *state)
 {
 	if (state->thread_init) {
 		ivm_vmstate_setCSL(state);
@@ -887,15 +892,20 @@ ivm_vmstate_resumeCurCoro(ivm_vmstate_t *state,
 	ivm_object_t *ret;
 
 	if (state->cur_coro) {
-		ivm_vmstate_mainThreadStart(state);
+		ivm_vmstate_threadStart(state);
 		ret = ivm_coro_resume(state->cur_coro, state, init);
-		ivm_vmstate_mainThreadEnd(state);
+		ivm_vmstate_threadEnd(state);
 
 		return ret;
 	}
 
 	return IVM_NULL;
 }
+
+ivm_object_t *
+ivm_vmstate_spawnThread(ivm_vmstate_t *state,
+						ivm_coro_t *coro,
+						ivm_object_t *init);
 
 #if 0
 

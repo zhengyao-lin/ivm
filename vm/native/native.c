@@ -20,8 +20,9 @@
 		3. 'l': check list type and convert to list object                   -- ivm_list_object_t **
 		4. 'f': check function type and convert to function object           -- ivm_function_object_t **
 		5. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
-		6. '.': no type check but accept the object                          -- ivm_object_t **
-		7. '*' prefix: reverse the optional mark                             -- \
+		6. 'c': check coro type and get the value                            -- ivm_coro_t **
+		7. '.': no type check but accept the object                          -- ivm_object_t **
+		8. '*' prefix: reverse the optional mark                             -- \
 
 		NOTE:
 			[1]. return address passed to an optional argument need to be initialized
@@ -70,6 +71,7 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 			SUB1('l', IVM_LIST_OBJECT_T, ivm_list_object_t *, IVM_AS(tmp, ivm_list_object_t))
 			SUB1('f', IVM_FUNCTION_OBJECT_T, ivm_function_object_t *, IVM_AS(tmp, ivm_function_object_t))
 			SUB1('b', IVM_BUFFER_OBJECT_T, ivm_buffer_object_t *, IVM_AS(tmp, ivm_buffer_object_t))
+			SUB1('c', IVM_CORO_OBJECT_T, ivm_coro_t *, ivm_coro_object_getCoro(tmp))
 
 			case '.':
 				if (ivm_function_arg_has(arg, i)) {

@@ -241,3 +241,74 @@ ivm_vmstate_cleanThread(ivm_vmstate_t *state)
 
 	return;
 }
+
+IVM_INLINE
+ivm_object_t *
+_ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
+						   ivm_coro_t *coro,
+						   ivm_object_t *init)
+{
+	ivm_object_t *ret;
+
+	// IVM_TRACE("hello!\n");
+
+	ivm_coro_setSpawned(coro);
+
+	// IVM_TRACE("wait for GIL\n");
+	ivm_vmstate_threadStart(state);
+	// IVM_TRACE("start!\n");
+	ret = ivm_coro_resume(coro, state, init);
+	ivm_vmstate_threadEnd(state);
+
+	ivm_coro_unsetSpawned(coro);
+
+	ivm_coro_set_remove(&state->thread_pool, coro);
+
+	return ret;
+}
+
+struct spawn_arg_t {
+	ivm_vmstate_t *state;
+	ivm_coro_t *coro;
+	ivm_object_t *arg;
+};
+
+void *
+_spawn_sub(void *tmp)
+{
+	struct spawn_arg_t arg = *(struct spawn_arg_t *)tmp;
+	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg);
+}
+
+ivm_object_t *
+ivm_vmstate_spawnThread(ivm_vmstate_t *state,
+						ivm_coro_t *coro,
+						ivm_object_t *init)
+{
+	struct spawn_arg_t *arg;
+	ivm_thread_t th;
+
+	if (!state->thread_init) {
+		state->except
+		= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_DISABLED_THREAD);
+		return IVM_NULL;
+	}
+
+	if (!ivm_coro_set_insert(&state->thread_pool, coro)) {
+		state->except
+		= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_DUP_THREAD_CORO);
+		return IVM_NULL;
+	}
+
+	arg = STD_ALLOC(sizeof(*arg));
+
+	*arg = (struct spawn_arg_t) {
+		state, coro, init
+	};
+	ivm_thread_init(&th, _spawn_sub, (void *)arg);
+
+	// TODO: free the arg
+	// TODO: thread pool
+
+	return IVM_NONE(state);
+}
