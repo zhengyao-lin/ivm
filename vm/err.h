@@ -26,6 +26,10 @@ IVM_COM_HEADER
 		IVM_ABORT(); \
 	}
 
+#define IVM_FATAL(...) \
+	IVM_ERROR(__VA_ARGS__); \
+	IVM_ABORT();
+
 #ifdef IVM_DEBUG
 
 	#define IVM_ASSERT(cond, ...) \
@@ -47,10 +51,6 @@ IVM_COM_HEADER
 	#define IVM_ASSERT_S(cond) (cond)
 
 #endif
-
-#define IVM_FATAL(...) \
-	IVM_ERROR(__VA_ARGS__); \
-	IVM_ABORT();
 
 #define IVM_ERROR_MSG_UNKNOWN_ERROR								("unknown error")
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)					("failed to allocate new memory for new " name)

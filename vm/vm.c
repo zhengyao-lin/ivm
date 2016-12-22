@@ -358,23 +358,10 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
 	ivm_cthread_set_t *tset = &state->thread_set;
 
 	if (ivm_vmstate_hasThread(state)) {
-		// _ivm_vmstate_joinClock(state);
-
-		/*
-		while (1) {
-			// IVM_TRACE("wait!\n");
-			ivm_vmstate_unlockGIL(state);
-			
-			if (!ivm_cthread_set_size(tset)) break;
-
-			_clock_round(state, tset);
-			ivm_vmstate_lockGIL(state);
-		}
-		*/
-
 		ivm_vmstate_unlockGIL(state);
+
 		while (ivm_cthread_set_size(tset)) ivm_time_msleep(1);
-		// IVM_TRACE("everything end!\n");
+
 		ivm_vmstate_lockGIL(state);
 
 		_ivm_vmstate_joinClock(state);
