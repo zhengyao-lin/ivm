@@ -425,8 +425,7 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	ret = loader(buf, &err, &is_const, state, coro, context);
 
 	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, ret);
-	ivm_vmstate_setPath(state, path_backup);
-	STD_FREE(path);
+	STD_FREE(ivm_vmstate_setPath(state, path_backup));
 
 	if (!ret) {
 		if (!ivm_vmstate_getException(state)) {

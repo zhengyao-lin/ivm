@@ -363,8 +363,19 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 #define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)
 
 #define ivm_vmstate_curPath(state) ((state)->cur_path)
+
 // the path will be free'd in ivm_vmstate_free
-#define ivm_vmstate_setPath(state, path) ((state)->cur_path = (path))
+IVM_INLINE
+ivm_char_t *
+ivm_vmstate_setPath(ivm_vmstate_t *state,
+					ivm_char_t *path)
+{
+	ivm_char_t *ret = state->cur_path;
+
+	state->cur_path = path;
+
+	return ret;
+}
 
 #define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
 #define ivm_vmstate_getHeaps(state) ((state)->heaps)
