@@ -25,7 +25,10 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_block_stack_init(&ret->bstack);
 	ivm_frame_stack_init(&ret->frame_st);
 	// ret->runtime
+
+	ivm_vmstate_addCoroSet(state, ret);
 	
+	ret->ref = 0;
 	ret->cid = 0;
 	ret->alive = IVM_FALSE;
 	ret->has_native = IVM_FALSE;
@@ -42,7 +45,9 @@ ivm_coro_free(ivm_coro_t *coro,
 {
 	ivm_frame_stack_iterator_t fsiter;
 
-	if (coro) {
+	if (coro && !ivm_coro_decRef(coro)) {
+		ivm_vmstate_removeCoroSet(state, coro);
+
 		ivm_runtime_dump(&coro->runtime, state);
 
 		IVM_FRAME_STACK_EACHPTR(&coro->frame_st, fsiter) {
@@ -365,10 +370,7 @@ _ivm_coro_otherInt(ivm_vmstate_t *state,
 		case IVM_CORO_INT_THREAD_YIELD:
 			// IVM_TRACE("################ thread switch\n");
 
-			ivm_vmstate_unlockGIL(state);
-			ivm_vmstate_setCSL(state);
-			ivm_time_msleep(1);
-			ivm_vmstate_lockGIL(state);
+			ivm_vmstate_threadJoint(state);
 
 			return IVM_TRUE;
 
@@ -600,13 +602,13 @@ ivm_coro_resume(ivm_coro_t *coro,
 				ivm_object_t *arg)
 {
 	ivm_object_t *ret;
-	ivm_coro_t *orig = ivm_vmstate_curCoro(state);
+	// ivm_coro_t *orig = ivm_vmstate_curCoro(state);
 
-	ivm_vmstate_setCurCoro(state, coro);
+	// ivm_vmstate_setCurCoro(state, coro);
 
 	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
 
-	ivm_vmstate_setCurCoro(state, orig);
+	// ivm_vmstate_setCurCoro(state, orig);
 
 	if (!ret) {
 		// ret = ivm_vmstate_popException(state);
@@ -625,13 +627,13 @@ ivm_coro_resume_n(ivm_coro_t *coro,
 				  ivm_object_t *arg)
 {
 	ivm_object_t *ret;
-	ivm_coro_t *orig = ivm_vmstate_curCoro(state);
+	// ivm_coro_t *orig = ivm_vmstate_curCoro(state);
 
-	ivm_vmstate_setCurCoro(state, coro);
+	// ivm_vmstate_setCurCoro(state, coro);
 
 	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
 
-	ivm_vmstate_setCurCoro(state, orig);
+	// ivm_vmstate_setCurCoro(state, orig);
 
 	return ret;
 }
@@ -761,6 +763,7 @@ ivm_coro_object_new(ivm_vmstate_t *state,
 	// IVM_TRACE("coro obj: %p\n", coro);
 
 	if (coro) {
+		ivm_coro_addRef(coro);
 		ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
 	}
 
@@ -773,9 +776,7 @@ ivm_coro_object_destructor(ivm_object_t *obj,
 {
 	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
 
-	if (!ivm_coro_isSpawned(coro)) {
-		ivm_coro_free(coro, state);
-	}
+	ivm_coro_free(coro, state);
 
 	return;
 }
@@ -793,9 +794,36 @@ void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  ivm_traverser_arg_t *arg)
 {
-	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
-
-	if (coro) arg->trav_coro(coro, arg);
+	// ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
+	// if (coro) arg->trav_coro(coro, arg);
 	
 	return;
 }
+
+#if IVM_USE_MULTITHREAD
+
+ivm_coro_thread_t *
+ivm_coro_thread_new(ivm_vmstate_t *state,
+					ivm_coro_t *coro)
+{
+	ivm_coro_thread_t *ret = ivm_vmstate_allocCThread(state);
+
+	ret->coro = coro;
+	ivm_coro_addRef(coro);
+
+	return ret;
+}
+
+void
+ivm_coro_thread_free(ivm_coro_thread_t *thread,
+					 ivm_vmstate_t *state)
+{
+	if (thread) {
+		ivm_coro_free(thread->coro, state);
+		ivm_vmstate_dumpCThread(state, thread);
+	}
+
+	return;
+}
+
+#endif

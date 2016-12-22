@@ -443,24 +443,36 @@ ivm_collector_travState(ivm_vmstate_t *state,
 	ivm_type_t *types = IVM_VMSTATE_GET(state, TYPE_LIST), *end;
 	ivm_type_pool_iterator_t titer;
 	ivm_coro_t *tmp_coro;
-	ivm_coro_set_iterator_t citer;
-	ivm_coro_set_t *tpool;
+	ivm_coro_set_iterator_t iter;
 
 	// ivm_vmstate_travAndCompactCGroup(state, arg);
 
-	tmp_coro = ivm_vmstate_curCoro(state);
-	ivm_collector_travCoro(tmp_coro, arg);
+	// tmp_coro = ivm_vmstate_curCoro(state);
+	// ivm_collector_travCoro(tmp_coro, arg);
 
-	tmp_coro = ivm_vmstate_mainCoro(state);
-	ivm_collector_travCoro(tmp_coro, arg);
+	// tmp_coro = ivm_vmstate_mainCoro(state);
+	// ivm_collector_travCoro(tmp_coro, arg);
+
+	IVM_CORO_SET_EACHPTR(&state->coro_set, iter) {
+		tmp_coro = IVM_CORO_SET_ITER_GET(iter);
+		ivm_collector_travCoro(tmp_coro, arg);
+	}
+
+#if 0 && IVM_USE_MULTITHREAD
+
+	ivm_cthread_set_iterator_t citer;
+	ivm_cthread_set_t *tset;
+	ivm_coro_thread_t *tmp_th;
 
 	if (ivm_vmstate_hasThread(state)) {
-		tpool = IVM_VMSTATE_GET(state, THREAD_POOL);
-		IVM_CORO_SET_EACHPTR(tpool, citer) {
-			tmp_coro = IVM_CORO_SET_ITER_GET(citer);
-			ivm_collector_travCoro(tmp_coro, arg);
+		tset = IVM_VMSTATE_GET(state, THREAD_SET);
+		IVM_CTHREAD_SET_EACHPTR(tset, citer) {
+			tmp_th = IVM_CTHREAD_SET_ITER_GET(citer);
+			ivm_collector_travCoro(ivm_coro_thread_getCoro(tmp_th), arg);
 		}
 	}
+
+#endif
 
 	for (end = types + IVM_TYPE_COUNT;
 		 types != end; types++) {

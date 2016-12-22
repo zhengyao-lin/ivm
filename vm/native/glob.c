@@ -156,11 +156,8 @@ IVM_NATIVE_FUNC(_global_spawn)
 
 	MATCH_ARG("c", &coro);
 
-	RTM_ASSERT(coro, IVM_ERROR_MSG_RESUME_EMPTY_CORO);
-	RTM_ASSERT(ivm_coro_isAlive(coro),
-			   IVM_ERROR_MSG_RESUME_DEAD_CORO(coro));
-	RTM_ASSERT(!ivm_coro_isActive(coro),
-			   IVM_ERROR_MSG_RESUME_ACTIVE_CORO(coro));
+	RTM_ASSERT(ivm_coro_canResume(coro),
+			   IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro));
 
 	return ivm_vmstate_spawnThread(NAT_STATE(), coro, IVM_NULL);
 }

@@ -9,6 +9,7 @@ ivm_pthash_init(ivm_pthash_t *set)
 {
 	set->size = IVM_DEFAULT_PTHASH_BUFFER_SIZE;
 	set->table = STD_ALLOC_INIT(sizeof(*set->table) * IVM_DEFAULT_PTHASH_BUFFER_SIZE);
+	set->ecount = 0;
 
 	IVM_MEMCHECK(set->table);
 

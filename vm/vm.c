@@ -55,8 +55,8 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_context_pool_init(&ret->ct_pool, IVM_DEFAULT_CONTEXT_POOL_SIZE);
 	ivm_coro_pool_init(&ret->cr_pool, IVM_DEFAULT_CORO_POOL_SIZE);
 
-	ret->cur_coro = IVM_NULL;
 	ret->main_coro = IVM_NULL;
+	ivm_coro_set_init(&ret->coro_set);
 
 	ret->const_pool = const_pool;
 	ivm_ref_inc(const_pool);
@@ -71,8 +71,9 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ret->gc_flag = IVM_FALSE;
 	ivm_collector_init(&ret->gc);
 
-	ret->thread_init = IVM_FALSE;
+	ret->thread_enabled = IVM_FALSE;
 	ret->int_next = ret->int_head = 0;
+	ret->has_int = IVM_FALSE;
 
 #if IVM_USE_MULTITHREAD
 	ivm_thread_mutex_init(&ret->int_lock);
@@ -135,11 +136,16 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 	ivm_int_t j;
 
 	if (state) {
-		ivm_vmstate_cleanThread(state);
+		// ivm_vmstate_cleanThread(state);
 
 		ivm_coro_free(state->main_coro, state);
 
 		ivm_collector_dump(&state->gc, state);
+
+		if (ivm_coro_set_size(&state->coro_set)) {
+			IVM_FATAL("impossible");
+		}
+		ivm_coro_set_dump(&state->coro_set);
 
 		for (j = 0; j < IVM_ARRLEN(state->heaps); j++) {
 			ivm_heap_dump(state->heaps + j);
@@ -159,9 +165,12 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_block_pool_dump(&state->block_pool);
 #endif
 
-		if (state->thread_init) {
-			ivm_coro_set_dump(&state->thread_pool);
+#if IVM_USE_MULTITHREAD
+		if (state->thread_enabled) {
+			ivm_cthread_set_dump(&state->thread_set);
+			ivm_cthread_pool_destruct(&state->thread_pool);
 		}
+#endif
 
 		ivm_function_pool_free(state->func_pool);
 		ivm_context_pool_destruct(&state->ct_pool);
@@ -184,6 +193,25 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 #if IVM_USE_MULTITHREAD
 
+IVM_INLINE
+void
+_clock_round(ivm_vmstate_t *state,
+			 ivm_cthread_set_t *tset)
+{
+	ivm_time_msleep(10);
+	// IVM_TRACE("########signal!\n");
+	ivm_vmstate_unsetCSL(state);
+	ivm_vmstate_setInt(state, IVM_CORO_INT_THREAD_YIELD);
+
+	while (!ivm_vmstate_getCSL(state)) {
+		if (tset && !ivm_cthread_set_size(tset)) return;
+		// IVM_TRACE("wait for csl\n");
+		ivm_thread_cancelPoint();
+	}
+
+	return;
+}
+
 IVM_PRIVATE
 void *
 _thread_clock(void *arg)
@@ -191,14 +219,7 @@ _thread_clock(void *arg)
 	ivm_vmstate_t *state = (ivm_vmstate_t *)arg;
 
 	while (1) {
-		ivm_time_msleep(10);
-		// IVM_TRACE("########signal!\n");
-		ivm_vmstate_unsetCSL(state);
-		ivm_vmstate_setInt(state, IVM_CORO_INT_THREAD_YIELD);
-		while (!ivm_vmstate_getCSL(state)) {
-			// IVM_TRACE("wait for csl\n");
-			ivm_thread_cancelPoint();
-		}
+		_clock_round(state, IVM_NULL);
 	}
 
 	return IVM_NULL;
@@ -207,35 +228,20 @@ _thread_clock(void *arg)
 #endif
 
 void
-ivm_vmstate_initThread(ivm_vmstate_t *state)
+ivm_vmstate_enableThread(ivm_vmstate_t *state)
 {
-	if (!state->thread_init) {
-		ivm_coro_set_init(&state->thread_pool);
-		state->thread_init = IVM_TRUE;
-
 #if IVM_USE_MULTITHREAD
+	if (!state->thread_enabled) {
+		ivm_cthread_set_init(&state->thread_set);
+		ivm_cthread_pool_init(&state->thread_pool, IVM_DEFAULT_CTHREAD_POOL_SIZE);
 		ivm_thread_mutex_init(&state->thread_gil);
 		ivm_thread_mutex_init(&state->thread_csl_prot);
 		state->thread_csl = IVM_FALSE;
-		// ivm_thread_enableThread(state);
 
 		ivm_thread_init(&state->thread_clock, _thread_clock, (void *)state);
-#endif
-	}
 
-	return;
-}
-
-void
-ivm_vmstate_cleanThread(ivm_vmstate_t *state)
-{
-#if IVM_USE_MULTITHREAD
-	if (state->thread_init) {
-		ivm_thread_cancel(&state->thread_clock);
-		// IVM_TRACE("wait!!\n");
-		ivm_thread_wait(&state->thread_clock);
-		// IVM_TRACE("wait done!!\n");
-		ivm_thread_dump(&state->thread_clock);
+		state->thread_enabled = IVM_TRUE;
+		ivm_vmstate_threadStart(state);
 	}
 #endif
 
@@ -243,26 +249,42 @@ ivm_vmstate_cleanThread(ivm_vmstate_t *state)
 }
 
 IVM_INLINE
+void
+_ivm_vmstate_joinClock(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+	if (state->thread_enabled) {
+		ivm_thread_cancel(&state->thread_clock);
+		ivm_thread_wait(&state->thread_clock);
+		ivm_thread_dump(&state->thread_clock);
+	}
+#endif
+
+	return;
+}
+
+#if IVM_USE_MULTITHREAD
+
+IVM_INLINE
 ivm_object_t *
 _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 						   ivm_coro_t *coro,
-						   ivm_object_t *init)
+						   ivm_object_t *init,
+						   ivm_coro_thread_t *cthread)
 {
 	ivm_object_t *ret;
 
-	// IVM_TRACE("hello!\n");
-
-	ivm_coro_setSpawned(coro);
-
 	// IVM_TRACE("wait for GIL\n");
 	ivm_vmstate_threadStart(state);
-	// IVM_TRACE("start!\n");
+
 	ret = ivm_coro_resume(coro, state, init);
-	ivm_vmstate_threadEnd(state);
 
 	ivm_coro_unsetSpawned(coro);
+	ivm_cthread_set_remove(&state->thread_set, cthread);
 
-	ivm_coro_set_remove(&state->thread_pool, coro);
+	ivm_coro_thread_free(cthread, state);
+
+	ivm_vmstate_threadEnd(state);
 
 	return ret;
 }
@@ -271,44 +293,85 @@ struct spawn_arg_t {
 	ivm_vmstate_t *state;
 	ivm_coro_t *coro;
 	ivm_object_t *arg;
+	ivm_coro_thread_t *cthread;
 };
 
 void *
 _spawn_sub(void *tmp)
 {
 	struct spawn_arg_t arg = *(struct spawn_arg_t *)tmp;
-	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg);
+
+	STD_FREE(tmp);
+
+	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg, arg.cthread);
 }
+
+#endif // IVM_USE_MULTITHREAD
 
 ivm_object_t *
 ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 						ivm_coro_t *coro,
 						ivm_object_t *init)
 {
+#if IVM_USE_MULTITHREAD
+
 	struct spawn_arg_t *arg;
-	ivm_thread_t th;
+	ivm_coro_thread_t *new_th;
+	ivm_thread_t *tid;
 
-	if (!state->thread_init) {
+	if (!state->thread_enabled) {
 		state->except
-		= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_DISABLED_THREAD);
+		= ivm_exception_new(state, IVM_ERROR_MSG_DISABLED_THREAD, "<core>", 0);
 		return IVM_NULL;
 	}
 
-	if (!ivm_coro_set_insert(&state->thread_pool, coro)) {
-		state->except
-		= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_DUP_THREAD_CORO);
-		return IVM_NULL;
-	}
+	new_th = ivm_coro_thread_new(state, coro);
+	ivm_cthread_set_insert(&state->thread_set, new_th);
+
+	tid = ivm_coro_thread_getTID(new_th);
 
 	arg = STD_ALLOC(sizeof(*arg));
 
 	*arg = (struct spawn_arg_t) {
-		state, coro, init
+		state, coro, init, new_th
 	};
-	ivm_thread_init(&th, _spawn_sub, (void *)arg);
 
-	// TODO: free the arg
-	// TODO: thread pool
+	ivm_coro_setSpawned(coro);
+	ivm_thread_init(tid, _spawn_sub, (void *)arg);
 
 	return IVM_NONE(state);
+
+#else
+
+	state->except
+	= ivm_exception_new(state, IVM_ERROR_MSG_DISABLED_THREAD, "<core>", 0);
+	return IVM_NULL;
+
+#endif
+}
+
+void
+ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
+{
+#if IVM_USE_MULTITHREAD
+
+	ivm_cthread_set_t *tset = &state->thread_set;
+
+	if (ivm_vmstate_hasThread(state)) {
+		_ivm_vmstate_joinClock(state);
+
+		while (1) {
+			// IVM_TRACE("wait!\n");
+			ivm_vmstate_unlockGIL(state);
+			
+			if (!ivm_cthread_set_size(tset)) break;
+
+			_clock_round(state, tset);
+			ivm_vmstate_lockGIL(state);
+		}
+	}
+
+#endif
+
+	return;
 }

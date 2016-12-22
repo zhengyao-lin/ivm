@@ -13,6 +13,7 @@
 #include "std/heap.h"
 #include "std/uid.h"
 #include "std/thread.h"
+#include "std/time.h"
 
 #include "gc/gc.h"
 #include "coro.h"
@@ -33,11 +34,13 @@ IVM_COM_HEADER
 #endif
 
 typedef struct ivm_vmstate_t_tag {
+	ivm_collector_t gc;
+	ivm_coro_int_t int_buf[_INT_BUF_SIZE];
+
 	ivm_heap_t heaps[3];						// 120
 
-	ivm_type_t type_list[IVM_TYPE_COUNT];		// 240 * 6 = 1440
-
 	ivm_context_pool_t ct_pool;
+	ivm_coro_pool_t cr_pool;
 
 #if IVM_USE_BLOCK_POOL
 	ivm_block_pool_t block_pool;
@@ -48,32 +51,31 @@ typedef struct ivm_vmstate_t_tag {
 	ivm_object_t *except;
 	ivm_object_t *loaded_mod;
 	ivm_object_t *obj_none;
-
-	ivm_coro_pool_t cr_pool;					// 72
-	// ivm_cgroup_list_t coro_groups;
-	// ivm_cgid_t last_gid;
-	ivm_coro_t *cur_coro;
-	ivm_coro_t *main_coro;
+	ivm_coro_set_t coro_set;
 
 	ivm_type_pool_t type_pool;
 
-	ivm_collector_t gc;							// 8
-
-	ivm_coro_set_t thread_pool;
-	ivm_bool_t thread_init;
-
 #if IVM_USE_MULTITHREAD
+	
+	ivm_cthread_pool_t thread_pool;
+	ivm_cthread_set_t thread_set;
+
 	ivm_thread_mutex_t thread_gil;
 	// clock sync lock
 	ivm_thread_mutex_t thread_csl_prot;
 	ivm_bool_t thread_csl;
 	ivm_thread_t thread_clock;
+
 #endif
 
-	ivm_coro_int_t int_buf[_INT_BUF_SIZE];
+	ivm_coro_t *main_coro;
+
+	ivm_bool_t thread_enabled;
 
 	ivm_uint_t int_next;
 	ivm_uint_t int_head;
+
+	ivm_bool_t has_int;
 
 #if IVM_USE_MULTITHREAD
 	ivm_thread_mutex_t int_lock;
@@ -97,12 +99,14 @@ typedef struct ivm_vmstate_t_tag {
 						  < 0: locked */
 
 	ivm_uid_gen_t uid_gen;						// 4
+
+	ivm_type_t type_list[IVM_TYPE_COUNT];
 } ivm_vmstate_t;
 
 #define IVM_VMSTATE_GET_TYPE_LIST(state) ((state)->type_list)
 #define IVM_VMSTATE_GET_CONST_POOL(state) ((state)->const_pool)
 #define IVM_VMSTATE_GET_CUR_HEAP(state) ((state)->heaps)
-#define IVM_VMSTATE_GET_THREAD_POOL(state) (&(state)->thread_pool)
+#define IVM_VMSTATE_GET_THREAD_SET(state) (&(state)->thread_set)
 
 #define IVM_VMSTATE_GET(obj, member) IVM_GET((obj), IVM_VMSTATE, member)
 #define IVM_VMSTATE_SET(obj, member, val) IVM_SET((obj), IVM_VMSTATE, member, (val))
@@ -139,7 +143,7 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 /*****************************************************************************/
 /*****************************************************************************/
 
-#define ivm_vmstate_hasThread(state) ((state)->thread_init)
+#define ivm_vmstate_hasThread(state) ((state)->thread_enabled)
 
 #define _INT_ROUND_MASK (_INT_BUF_SIZE - 1)
 
@@ -147,8 +151,8 @@ ivm_vmstate_free(ivm_vmstate_t *state);
 #define _DEC_ROUND(n) ((n) = ((n) - 1) & _INT_ROUND_MASK)
 
 #if IVM_USE_MULTITHREAD
-	#define _INT_LOCK() if (state->thread_init) ivm_thread_mutex_lock(&state->int_lock)
-	#define _INT_UNLOCK() if (state->thread_init) ivm_thread_mutex_unlock(&state->int_lock)
+	#define _INT_LOCK() if (state->thread_enabled) ivm_thread_mutex_lock(&state->int_lock)
+	#define _INT_UNLOCK() if (state->thread_enabled) ivm_thread_mutex_unlock(&state->int_lock)
 #else
 	#define _INT_LOCK()
 	#define _INT_UNLOCK()
@@ -169,6 +173,8 @@ ivm_vmstate_setInt(ivm_vmstate_t *state,
 		_INC_ROUND(state->int_head);
 	}
 
+	state->has_int = IVM_TRUE;
+
 	_INT_UNLOCK();
 	
 	return;
@@ -178,7 +184,7 @@ IVM_INLINE
 ivm_bool_t
 ivm_vmstate_hasInt(ivm_vmstate_t *state)
 {
-	return state->int_next != state->int_head;
+	return state->has_int;
 }
 
 IVM_INLINE
@@ -199,6 +205,7 @@ ivm_vmstate_popInt(ivm_vmstate_t *state)
 	if (state->int_next == state->int_head) {
 		/* empty -> reset to zeros */
 		state->int_head = state->int_next = 0;
+		state->has_int = IVM_FALSE;
 	}
 
 	_INT_UNLOCK();
@@ -207,10 +214,10 @@ ivm_vmstate_popInt(ivm_vmstate_t *state)
 }
 
 void
-ivm_vmstate_initThread(ivm_vmstate_t *state);
+ivm_vmstate_enableThread(ivm_vmstate_t *state);
 
-void
-ivm_vmstate_cleanThread(ivm_vmstate_t *state);
+// void
+// ivm_vmstate_cleanThread(ivm_vmstate_t *state);
 
 IVM_INLINE
 void
@@ -292,10 +299,7 @@ IVM_INLINE
 void
 ivm_vmstate_threadStart(ivm_vmstate_t *state)
 {
-	if (state->thread_init) {
-		ivm_vmstate_lockGIL(state);
-	}
-	
+	ivm_vmstate_lockGIL(state);
 	return;
 }
 
@@ -303,13 +307,28 @@ IVM_INLINE
 void
 ivm_vmstate_threadEnd(ivm_vmstate_t *state)
 {
-	if (state->thread_init) {
-		ivm_vmstate_setCSL(state);
-		ivm_vmstate_unlockGIL(state);
-	}
-	
+	ivm_vmstate_setCSL(state);
+	ivm_vmstate_unlockGIL(state);
 	return;
 }
+
+#if IVM_USE_MULTITHREAD
+
+#define ivm_vmstate_allocCThread(state) ivm_cthread_pool_alloc(&(state)->thread_pool)
+#define ivm_vmstate_dumpCThread(state, thread) ivm_cthread_pool_dump(&(state)->thread_pool, (thread))
+
+IVM_INLINE
+void
+ivm_vmstate_threadJoint(ivm_vmstate_t *state)
+{
+	ivm_vmstate_unlockGIL(state);
+	ivm_vmstate_setCSL(state);
+	ivm_time_msleep(1);
+	ivm_vmstate_lockGIL(state);
+	return;
+}
+
+#endif
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -439,13 +458,6 @@ IVM_WBCTX(ivm_vmstate_t *state,
 }
 
 /*
-IVM_INLINE
-ivm_coro_t *
-ivm_vmstate_curCoro(ivm_vmstate_t *state)
-{
-	return ivm_cgroup_curCoro(ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup));
-}
-*/
 
 IVM_INLINE
 ivm_coro_t *
@@ -453,6 +465,8 @@ ivm_vmstate_curCoro(ivm_vmstate_t *state)
 {
 	return state->cur_coro;
 }
+
+*/
 
 IVM_INLINE
 ivm_coro_t *
@@ -466,7 +480,7 @@ void
 ivm_vmstate_setMemError(ivm_vmstate_t *state)
 {
 	state->except
-	= ivm_coro_newStringException(state->cur_coro, state, IVM_ERROR_MSG_MEM_ERROR);
+	= ivm_exception_new(state, IVM_ERROR_MSG_MEM_ERROR, "<core>", 0);
 	return;
 }
 
@@ -867,34 +881,63 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 
 IVM_INLINE
 void
+ivm_vmstate_addCoroSet(ivm_vmstate_t *state,
+					   ivm_coro_t *coro)
+{
+	ivm_coro_set_insert(&state->coro_set, coro);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_removeCoroSet(ivm_vmstate_t *state,
+						  ivm_coro_t *coro)
+{
+	ivm_coro_set_remove(&state->coro_set, coro);
+	return;
+}
+
+/*
+IVM_INLINE
+void
 ivm_vmstate_setCurCoro(ivm_vmstate_t *state,
 					   ivm_coro_t *coro)
 {
 	IVM_WBCORO(state, state->cur_coro);
+	// ivm_coro_free(state->cur_coro, state);
 	IVM_WBCORO(state, state->cur_coro = coro);
+	// ivm_coro_addRef(coro);
+
 	return;
 }
+*/
 
 IVM_INLINE
 void
 ivm_vmstate_setMainCoro(ivm_vmstate_t *state,
 						ivm_coro_t *coro)
 {
+	if (state->main_coro) {
+		IVM_FATAL("reset main coro");
+	}
+
 	state->main_coro = coro;
+	ivm_coro_addRef(coro);
+
 	return;
 }
 
 IVM_INLINE
 ivm_object_t *
-ivm_vmstate_resumeCurCoro(ivm_vmstate_t *state,
+ivm_vmstate_resumeMainCoro(ivm_vmstate_t *state,
 						  ivm_object_t *init)
 {
 	ivm_object_t *ret;
 
-	if (state->cur_coro) {
-		ivm_vmstate_threadStart(state);
-		ret = ivm_coro_resume(state->cur_coro, state, init);
-		ivm_vmstate_threadEnd(state);
+	if (state->main_coro) {
+		// ivm_vmstate_threadStart(state);
+		ret = ivm_coro_resume(state->main_coro, state, init);
+		// ivm_vmstate_threadEnd(state);
 
 		return ret;
 	}
@@ -902,111 +945,15 @@ ivm_vmstate_resumeCurCoro(ivm_vmstate_t *state,
 	return IVM_NULL;
 }
 
+void
+ivm_vmstate_joinAllThread(ivm_vmstate_t *state);
+
 ivm_object_t *
 ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 						ivm_coro_t *coro,
 						ivm_object_t *init);
 
-#if 0
-
-IVM_INLINE
-ivm_size_t
-ivm_vmstate_addCoro_c(ivm_vmstate_t *state,
-					  ivm_coro_t *coro,
-					  ivm_cgid_t gid)
-{
-	return ivm_cgroup_addCoro(ivm_cgroup_list_at(&state->coro_groups, gid), coro);
-}
-
-IVM_INLINE
-ivm_size_t
-ivm_vmstate_addCoro(ivm_vmstate_t *state,
-					ivm_function_object_t *func,
-					ivm_cgid_t gid)
-{
-	ivm_coro_t *coro;
-
-	coro = ivm_coro_new(state);
-	ivm_coro_setRoot(coro, state, func);
-	
-	return ivm_vmstate_addCoro_c(state, coro, gid);
-}
-
-IVM_INLINE
-ivm_size_t
-ivm_vmstate_addCoroToCurCGroup(ivm_vmstate_t *state,
-							   ivm_function_object_t *func)
-{
-	return ivm_vmstate_addCoro(state, func, state->cur_cgroup);
-}
-
-IVM_INLINE
-ivm_size_t
-ivm_vmstate_addCoroToCurCGroup_c(ivm_vmstate_t *state,
-								 ivm_coro_t *coro)
-{
-	return ivm_vmstate_addCoro_c(state, coro, state->cur_cgroup);
-}
-
-ivm_cgid_t
-ivm_vmstate_addCGroup(ivm_vmstate_t *state,
-					  ivm_function_object_t *func);
-
-IVM_INLINE
-ivm_cgroup_t *
-ivm_vmstate_curCGroup(ivm_vmstate_t *state)
-{
-	return ivm_cgroup_list_at(&state->coro_groups, state->cur_cgroup);
-}
-
-IVM_INLINE
-ivm_bool_t
-ivm_vmstate_hasCGroup(ivm_vmstate_t *state, ivm_cgid_t gid)
-{
-	return gid < ivm_cgroup_list_size(&state->coro_groups);
-}
-
-void
-ivm_vmstate_travAndCompactCGroup(ivm_vmstate_t *state,
-								 ivm_traverser_arg_t *arg);
-
-IVM_INLINE
-ivm_bool_t
-ivm_vmstate_isCGroupLocked(ivm_vmstate_t *state, ivm_cgid_t gid)
-{
-	return ivm_cgroup_isLocked(ivm_cgroup_list_at(&state->coro_groups, gid));
-}
-
-ivm_object_t *
-ivm_vmstate_schedule_g(ivm_vmstate_t *state,
-					   ivm_object_t *val,
-					   ivm_cgid_t gid);
-
-IVM_INLINE
-ivm_object_t *
-ivm_vmstate_schedule(ivm_vmstate_t *state)
-{
-	return ivm_vmstate_schedule_g(state, IVM_NULL, 0);
-}
-
-#endif
-
 #define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
-
-/*
-IVM_INLINE
-void
-ivm_vmstate_solveIntr(ivm_vmstate_t *state)
-{
-	state->intr = IVM_FALSE;
-
-	if (ivm_vmstate_checkGC(state)) {
-		ivm_vmstate_doGC(state);
-	}
-
-	return;
-}
-*/
 
 IVM_COM_END
 

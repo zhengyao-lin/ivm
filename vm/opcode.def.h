@@ -925,7 +925,7 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 	CHECK_STACK(2);
 
 	_TMP_OBJ1 = STACK_POP();
-	_TMP_OBJ2 = STACK_TOP();
+	_TMP_OBJ2 = STACK_TOP(); // leave the coro object on the stack
 
 	// IVM_TRACE("what?\n");
 
@@ -934,13 +934,7 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 
 	_TMP_CORO = ivm_coro_object_getCoro(_TMP_OBJ2);
 
-	RTM_ASSERT(_TMP_CORO, IVM_ERROR_MSG_RESUME_EMPTY_CORO);
-
-	RTM_ASSERT(ivm_coro_isAlive(_TMP_CORO),
-			   IVM_ERROR_MSG_RESUME_DEAD_CORO(_TMP_CORO));
-
-	RTM_ASSERT(!ivm_coro_isActive(_TMP_CORO),
-			   IVM_ERROR_MSG_RESUME_ACTIVE_CORO(_TMP_CORO));
+	RTM_ASSERT(ivm_coro_canResume(_TMP_CORO), IVM_ERROR_MSG_CORO_UNABLE_RESUME(_TMP_CORO));
 
 	SAVE_RUNTIME(_INSTR);
 	

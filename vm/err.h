@@ -41,17 +41,16 @@ IVM_COM_HEADER
 			IVM_ABORT(); \
 		}
 
-	#define IVM_FATAL(...) \
-		IVM_ERROR(__VA_ARGS__); \
-		IVM_ABORT();
-
 #else
 
 	#define IVM_ASSERT(cond, ...) (cond)
 	#define IVM_ASSERT_S(cond) (cond)
-	#define IVM_FATAL(...)
 
 #endif
+
+#define IVM_FATAL(...) \
+	IVM_ERROR(__VA_ARGS__); \
+	IVM_ABORT();
 
 #define IVM_ERROR_MSG_UNKNOWN_ERROR								("unknown error")
 #define IVM_ERROR_MSG_FAILED_ALLOC_NEW(name)					("failed to allocate new memory for new " name)
@@ -139,6 +138,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_NOT_CHAR									"not a character"
 #define IVM_ERROR_MSG_DISABLED_THREAD							"thread is disabled"
 #define IVM_ERROR_MSG_DUP_THREAD_CORO							"duplicated coroutine as thread root"
+#define IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro)					"unable to resume coroutine %p", (void *)(coro)
 
 IVM_COM_END
 

@@ -303,7 +303,7 @@ int main(int argc, const char **argv)
 		// set native
 		ivm_vmstate_lockGCFlag(state);
 
-		ctx = ivm_coro_getRuntimeGlobal(ivm_vmstate_curCoro(state));
+		ctx = ivm_coro_getRuntimeGlobal(ivm_vmstate_mainCoro(state));
 
 		// ivm_context_setSlot_r(ctx, state, "print", IVM_NATIVE_WRAP(state, print));
 		ivm_context_setSlot_r(ctx, state, "call", IVM_NATIVE_WRAP(state, call));
@@ -313,13 +313,14 @@ int main(int argc, const char **argv)
 
 		ivm_vmstate_unlockGCFlag(state);
 
-		// ivm_vmstate_initThread(state);
+		ivm_vmstate_enableThread(state);
 
 		// execute
 		PROF_START();
 		// ivm_vmstate_schedule(state);
 		// ivm_thread_mainThreadStart();
-		ivm_vmstate_resumeCurCoro(state, IVM_NULL);
+		ivm_vmstate_resumeMainCoro(state, IVM_NULL);
+		ivm_vmstate_joinAllThread(state);
 		// ivm_thread_mainThreadEnd();
 		PROF_END();
 
@@ -331,31 +332,6 @@ CLEAN:
 	STD_FREE(src);
 	ivm_file_free(src_file);
 	ivm_file_free(output_cache);
-
-#if 0
-#define PSIZE(type) IVM_TRACE(#type ": %d\n", sizeof(type))
-	// IVM_TRACE("vmstate: %d\n", sizeof(ivm_vmstate_t));
-	// IVM_TRACE("arg: %d\n", sizeof(ivm_opcode_arg_t));
-	// IVM_TRACE("arg: %d\n", sizeof(ivm_instr_cache_t));
-
-	ivm_object_t *i;
-
-	PSIZE(ivm_vmstate_t);
-	PSIZE(ivm_heap_t);
-	PSIZE(ivm_coro_list_t);
-	PSIZE(ivm_type_t);
-	PSIZE(ivm_func_list_t);
-	PSIZE(ivm_coro_pool_t);
-	PSIZE(ivm_uid_gen_t);
-	PSIZE(ivm_binop_table_t);
-	PSIZE(ivm_uniop_table_t);
-	PSIZE(ivm_ptlist_t);
-	PSIZE(ivm_object_t);
-	PSIZE(i->mark);
-	PSIZE(i->mark.copy);
-	IVM_TRACE("op count: %d\n", IVM_BINOP_COUNT);
-
-#endif
 
 	ivm_env_clean();
 

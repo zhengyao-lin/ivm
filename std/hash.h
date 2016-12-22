@@ -82,6 +82,7 @@ typedef struct {
 typedef struct {
 	ivm_pthash_pair_t *table;
 	ivm_size_t size;
+	ivm_size_t ecount;
 } ivm_pthash_t;
 
 void
@@ -93,6 +94,8 @@ ivm_pthash_dump(ivm_pthash_t *table);
 IVM_INLINE
 void
 _ivm_pthash_expand(ivm_pthash_t *table);
+
+#define ivm_pthash_count(table) ((table)->ecount)
 
 IVM_INLINE
 ivm_pthash_pair_t *
@@ -153,6 +156,7 @@ ivm_pthash_insert(ivm_pthash_t *table,
 			}
 
 			found->v = val;
+			table->ecount++;
 
 			return;
 		} else {
@@ -179,6 +183,7 @@ ivm_pthash_insertEmpty(ivm_pthash_t *table,
 			if (!found->k) {
 				found->k = key;
 				found->v = val;
+				table->ecount++;
 				return IVM_TRUE;
 			} else {
 				// slot exists
@@ -200,7 +205,7 @@ _ivm_pthash_rehash(ivm_pthash_t *table,
 {
 	ivm_pthash_pair_t *found;
 
-	found = _ivm_pthash_find_c(table, val);
+	found = _ivm_pthash_find_c(table, key);
 
 	if (!found) {
 		IVM_FATAL("impossible");
@@ -228,6 +233,8 @@ ivm_pthash_remove(ivm_pthash_t *table,
 		tab = table->table;
 		end = tab + table->size;
 		mask = table->size - 1;
+
+		table->ecount--;
 
 		while (1) {
 			for (i = found + 1; i != end; i++) {

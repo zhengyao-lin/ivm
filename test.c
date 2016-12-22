@@ -883,6 +883,49 @@ ivm_perf_printElapsed();
 int main()
 {
 #if 0
+#define PSIZE(type) IVM_TRACE(#type ": %d\n", sizeof(type))
+#define MSIZE(name, obj) IVM_TRACE(#name ": %d\n", sizeof(obj))
+#define MPOS(name) IVM_TRACE(#name " pos: %d\n", ((ivm_ptr_t)&state->name) - (ivm_ptr_t)state)
+	// IVM_TRACE("vmstate: %d\n", sizeof(ivm_vmstate_t));
+	// IVM_TRACE("arg: %d\n", sizeof(ivm_opcode_arg_t));
+	// IVM_TRACE("arg: %d\n", sizeof(ivm_instr_cache_t));
+
+	ivm_object_t *i;
+	ivm_vmstate_t *state;
+
+	PSIZE(ivm_vmstate_t);
+
+	MSIZE(heaps, state->heaps);
+	MSIZE(type_list, state->type_list);
+	MSIZE(ct_pool, state->ct_pool);
+	MSIZE(func_list, state->func_list);
+	MSIZE(except, state->except);
+	MSIZE(loaded_mod, state->loaded_mod);
+	MSIZE(obj_none, state->obj_none);
+	MSIZE(cr_pool, state->cr_pool);
+	MSIZE(coro_set, state->coro_set);
+	MSIZE(type_pool, state->type_pool);
+	MSIZE(gc, state->gc);
+	MSIZE(thread_pool, state->thread_pool);
+	MSIZE(thread_set, state->thread_set);
+	MSIZE(thread_gil, state->thread_gil);
+	MSIZE(thread_csl_prot, state->thread_csl_prot);
+	MSIZE(thread_csl, state->thread_csl);
+	MSIZE(thread_clock, state->thread_clock);
+	MSIZE(main_coro, state->main_coro);
+	MSIZE(thread_enabled, state->thread_enabled);
+	MSIZE(int_buf, state->int_buf);
+	MSIZE(int_next, state->int_next);
+	MSIZE(int_head, state->int_head);
+	MSIZE(has_int, state->has_int);
+	MSIZE(int_lock, state->int_lock);
+
+	MPOS(has_int);
+
+	IVM_TRACE("op count: %d\n", IVM_BINOP_COUNT);
+#endif
+	
+#if 0
 	ivm_pthash_t set;
 	void *rd_ptr[6];
 	ivm_int_t i;

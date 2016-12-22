@@ -7,6 +7,7 @@
 
 #include "std/hash.h"
 #include "std/list.h"
+#include "std/thread.h"
 
 #include "obj.h"
 #include "vmstack.h"
@@ -27,6 +28,7 @@ typedef struct ivm_coro_t_tag {
 	ivm_frame_stack_t frame_st;
 	ivm_runtime_t runtime;
 
+	ivm_long_t ref;
 	ivm_int_t cid; // collect id
 	ivm_bool_t alive;
 	ivm_bool_t has_native;
@@ -61,6 +63,9 @@ typedef enum {
 
 #define IVM_CORO_GET(obj, member) IVM_GET((obj), IVM_CORO, member)
 #define IVM_CORO_SET(obj, member, val) IVM_SET((obj), IVM_CORO, member, (val))
+
+#define ivm_coro_addRef(coro) ((coro)->ref++)
+#define ivm_coro_decRef(coro) (--(coro)->ref)
 
 ivm_coro_t *
 ivm_coro_new(struct ivm_vmstate_t_tag *state);
@@ -141,6 +146,17 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #define ivm_coro_setSpawned(coro) ((coro)->spawned = IVM_TRUE)
 #define ivm_coro_unsetSpawned(coro) ((coro)->spawned = IVM_FALSE)
+
+IVM_INLINE
+ivm_bool_t
+ivm_coro_canResume(ivm_coro_t *coro)
+{
+	return
+		coro &&
+		ivm_coro_isAlive(coro) &&
+		!ivm_coro_isActive(coro) &&
+		!ivm_coro_isSpawned(coro);
+}
 
 #if IVM_USE_MULTITHREAD
 
@@ -389,6 +405,7 @@ typedef ivm_pthash_iterator_t ivm_coro_set_iterator_t;
 #define ivm_coro_set_init(set) ivm_pthash_init(set)
 #define ivm_coro_set_insert(set, coro) ivm_pthash_insertEmpty((set), (void *)(coro), IVM_NULL)
 #define ivm_coro_set_remove(set, coro) ivm_pthash_remove((set), (void *)(coro))
+#define ivm_coro_set_size(set) ivm_pthash_count(set)
 
 #define ivm_coro_set_has(set, coro) ivm_pthash_find((set), (void *)(coro))
 
@@ -396,6 +413,48 @@ typedef ivm_pthash_iterator_t ivm_coro_set_iterator_t;
 #define IVM_CORO_SET_EACHPTR(set, iter) IVM_PTHASH_EACHPTR((set), iter)
 
 #define ivm_coro_set_dump(set) ivm_pthash_dump(set)
+
+#if IVM_USE_MULTITHREAD
+
+typedef struct {
+	ivm_coro_t *coro;
+	ivm_thread_t tid;
+} ivm_coro_thread_t;
+
+ivm_coro_thread_t *
+ivm_coro_thread_new(struct ivm_vmstate_t_tag *state,
+					ivm_coro_t *coro);
+
+void
+ivm_coro_thread_free(ivm_coro_thread_t *thread,
+					 struct ivm_vmstate_t_tag *state);
+
+#define ivm_coro_thread_getTID(thread) (&(thread)->tid)
+#define ivm_coro_thread_getCoro(thread) ((thread)->coro)
+
+typedef ivm_ptpool_t ivm_cthread_pool_t;
+
+#define ivm_cthread_pool_init(pool, count) (ivm_ptpool_init((pool), (count), sizeof(ivm_coro_thread_t)))
+#define ivm_cthread_pool_destruct ivm_ptpool_destruct
+#define ivm_cthread_pool_alloc(pool) ((ivm_coro_thread_t *)ivm_ptpool_alloc(pool))
+#define ivm_cthread_pool_dump ivm_ptpool_dump
+
+typedef ivm_pthash_t ivm_cthread_set_t;
+typedef ivm_pthash_iterator_t ivm_cthread_set_iterator_t;
+
+#define ivm_cthread_set_init(set) ivm_pthash_init(set)
+#define ivm_cthread_set_insert(set, thread) ivm_pthash_insertEmpty((set), (void *)(thread), IVM_NULL)
+#define ivm_cthread_set_remove(set, thread) ivm_pthash_remove((set), (void *)(thread))
+#define ivm_cthread_set_size(set) ivm_pthash_count(set)
+
+#define ivm_cthread_set_has(set, thread) ivm_pthash_find((set), (void *)(thread))
+
+#define IVM_CTHREAD_SET_ITER_GET(iter) ((ivm_coro_thread_t *)IVM_PTHASH_ITER_GET_KEY(iter))
+#define IVM_CTHREAD_SET_EACHPTR(set, iter) IVM_PTHASH_EACHPTR((set), iter)
+
+#define ivm_cthread_set_dump(set) ivm_pthash_dump(set)
+
+#endif
 
 IVM_COM_END
 

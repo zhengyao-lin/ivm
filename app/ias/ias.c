@@ -189,7 +189,7 @@ int main(int argc, const char **argv)
 		}
 
 		// ivm_vmstate_schedule(state);
-		ivm_vmstate_resumeCurCoro(state, IVM_NULL);
+		ivm_vmstate_resumeMainCoro(state, IVM_NULL);
 
 		if (cfg_prof) {
 			ivm_perf_stopProfile();
