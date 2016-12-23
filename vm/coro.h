@@ -158,7 +158,7 @@ ivm_coro_canResume(ivm_coro_t *coro)
 		!ivm_coro_isSpawned(coro);
 }
 
-#if IVM_USE_MULTITHREAD
+#if 0 && IVM_USE_MULTITHREAD
 
 void
 ivm_coro_lockGIL();

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <time.h>
 
 #include "pub/const.h"
 #include "pub/inlines.h"

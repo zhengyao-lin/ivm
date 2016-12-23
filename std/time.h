@@ -1,8 +1,7 @@
 #ifndef _IVM_STD_TIME_H_
 #define _IVM_STD_TIME_H_
 
-#include <time.h>
-
+#include "pub/const.h"
 #include "pub/type.h"
 #include "pub/com.h"
 
@@ -10,6 +9,7 @@ IVM_COM_HEADER
 
 #if defined(IVM_OS_WIN32)
 
+	#include <time.h>
 	#include <windows.h>
 
 	IVM_INLINE
@@ -22,10 +22,8 @@ IVM_COM_HEADER
 
 #else
 
-	struct timespec {
-		time_t tv_sec;
-		long tv_nsec;
-	};
+	#include <sys/time.h>
+	#include <time.h>
 
 	int nanosleep(const struct timespec *req, struct timespec *rem);
 

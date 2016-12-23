@@ -1,8 +1,8 @@
-#include <time.h>
-
 #include "pub/const.h"
 #include "pub/type.h"
 #include "pub/err.h"
+
+#include "std/time.h"
 
 #include "perf.h"
 

@@ -26,10 +26,6 @@ IVM_COM_HEADER
 		IVM_ABORT(); \
 	}
 
-#define IVM_FATAL(...) \
-	IVM_ERROR(__VA_ARGS__); \
-	IVM_ABORT();
-
 #ifdef IVM_DEBUG
 
 	#define IVM_ASSERT(cond, ...) \
@@ -45,10 +41,15 @@ IVM_COM_HEADER
 			IVM_ABORT(); \
 		}
 
+	#define IVM_FATAL(...) \
+		IVM_ERROR(__VA_ARGS__); \
+		IVM_ABORT();
+
 #else
 
 	#define IVM_ASSERT(cond, ...) (cond)
 	#define IVM_ASSERT_S(cond) (cond)
+	#define IVM_FATAL(...)
 
 #endif
 
