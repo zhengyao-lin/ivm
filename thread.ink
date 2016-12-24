@@ -24,7 +24,12 @@ __spawn(fork: {
 
 __spawn(fork: {
 	print("######################### testm")
-	//import test.testm
+	import test.testm
+})
+
+__spawn(fork: {
+	print("######################### ga")
+	import test.ga
 })
 
 __spawn(fork: {

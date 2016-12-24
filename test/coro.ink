@@ -92,12 +92,10 @@ loc a = gen {
 for i in a:
 	print(i)
 
-c = fork: none
+c = fork: print("right")
 
 a = c.clone()
-
-try: resume a
-catch: print("failed to resume")
+resume a
 
 ret
 
@@ -155,4 +153,4 @@ ret
 // -> "num: 361"
 // -> "num: 400"
 
-// -> "str: failed to resume"
+// -> "str: right"

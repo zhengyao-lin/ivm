@@ -158,26 +158,6 @@ ivm_coro_canResume(ivm_coro_t *coro)
 		!ivm_coro_isSpawned(coro);
 }
 
-#if 0 && IVM_USE_MULTITHREAD
-
-void
-ivm_coro_lockGIL();
-
-void
-ivm_coro_unlockGIL();
-
-// to sync the clock
-void
-ivm_coro_setCSL();
-
-void
-ivm_coro_unsetCSL();
-
-ivm_bool_t
-ivm_coro_getCSL();
-
-#endif
-
 ivm_object_t *
 ivm_coro_call_0(ivm_coro_t *coro,
 				struct ivm_vmstate_t_tag *state,
@@ -345,9 +325,6 @@ ivm_coro_getRuntimeLocal(ivm_coro_t *coro)
 
 	return IVM_NULL;
 }
-
-ivm_long_t
-ivm_coro_where(ivm_coro_t *coro, ivm_size_t trback /* trace back */);
 
 typedef ivm_ptpool_t ivm_coro_pool_t;
 

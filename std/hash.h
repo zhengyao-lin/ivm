@@ -222,47 +222,53 @@ ivm_bool_t /* found the ptr? */
 ivm_pthash_remove(ivm_pthash_t *table,
 				  void *key)
 {
-	ivm_pthash_pair_t *found = _ivm_pthash_find_c(table, key);
+	ivm_pthash_pair_t *gap = _ivm_pthash_find_c(table, key);
 	ivm_pthash_pair_t *tab, *end, *i;
 	ivm_size_t mask;
 	ivm_hash_val_t hash;
 
-	if (found && found->k) {
-		found->k = IVM_NULL;
+	if (gap && gap->k) {
+		gap->k = IVM_NULL;
 
 		tab = table->table;
 		end = tab + table->size;
 		mask = table->size - 1;
 
-		table->ecount--;
-
 		while (1) {
-			for (i = found + 1; i != end; i++) {
-				if (!i->k) return IVM_TRUE; // next gap: no influence
+			// IVM_TRACE("always\n");
+			for (i = gap + 1; i != end; i++) {
+				if (!i->k) goto SUC; // next gap: no influence
 				
 				hash = ivm_hash_fromPointer(i->k) & mask;
 				
-				if (tab + hash <= found ||
+				if (tab + hash <= gap ||
 					tab + hash > i) {
 					goto FILL; // found a filling element
 				}
 			}
 
-			for (i = tab; i != found; i++) {
-				if (!i->k) return IVM_TRUE; // next gap: no influence
+			for (i = tab; i != gap; i++) {
+				if (!i->k) goto SUC; // next gap: no influence
 				
 				hash = ivm_hash_fromPointer(i->k) & mask;
 				
-				if (tab + hash > i) {
+				if (tab + hash > i &&
+					tab + hash <= gap) {
 					goto FILL; // found a filling element
 				}
 			}
 
+			break;
+
 		FILL:
-			*found = *i;
-			found = i;
-			found->k = IVM_NULL;
+			*gap = *i;
+			gap = i;
+			gap->k = IVM_NULL;
 		}
+
+		SUC:
+			table->ecount--;
+			return IVM_TRUE;
 
 	} else return IVM_FALSE;
 }

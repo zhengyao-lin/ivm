@@ -627,13 +627,8 @@ ivm_coro_resume_n(ivm_coro_t *coro,
 				  ivm_object_t *arg)
 {
 	ivm_object_t *ret;
-	// ivm_coro_t *orig = ivm_vmstate_curCoro(state);
-
-	// ivm_vmstate_setCurCoro(state, coro);
 
 	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
-
-	// ivm_vmstate_setCurCoro(state, orig);
 
 	return ret;
 }
@@ -785,8 +780,7 @@ void
 ivm_coro_object_cloner(ivm_object_t *obj,
 					   ivm_vmstate_t *state)
 {
-	// TODO
-	IVM_AS(obj, ivm_coro_object_t)->coro = IVM_NULL;
+	ivm_coro_addRef(IVM_AS(obj, ivm_coro_object_t)->coro);
 	return;
 }
 

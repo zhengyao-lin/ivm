@@ -274,6 +274,7 @@ IVM_INLINE
 void
 ivm_vmstate_unlockGIL(ivm_vmstate_t *state)
 {
+	// IVM_TRACE("unlocked!\n");
 #if IVM_USE_MULTITHREAD
 	ivm_thread_mutex_unlock(&state->thread_gil);
 #endif

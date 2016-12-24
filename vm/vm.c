@@ -312,6 +312,8 @@ _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 
 	ivm_coro_thread_free(cthread, state);
 
+	// IVM_TRACE("hello\n");
+
 	ivm_vmstate_threadEnd(state);
 
 	return ret;
@@ -391,7 +393,10 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
 	if (ivm_vmstate_hasThread(state)) {
 		ivm_vmstate_unlockGIL(state);
 
-		while (ivm_cthread_set_size(tset)) ivm_time_msleep(1);
+		while (ivm_cthread_set_size(tset)) {
+			ivm_time_msleep(1);
+			// IVM_TRACE("%d\n", ivm_cthread_set_size(tset));
+		}
 
 		ivm_vmstate_lockGIL(state);
 
