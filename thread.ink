@@ -3,11 +3,28 @@ import time
 loc i = 0
 
 __spawn(fork: {
+	print("######################### bp")
 	import test.bp
 })
 
 __spawn(fork: {
+	print("######################### test")
 	import test
+})
+
+__spawn(fork: {
+	print("######################### sort")
+	import test.sort
+})
+
+__spawn(fork: {
+	print("######################### gc")
+	import test.gc
+})
+
+__spawn(fork: {
+	print("######################### testm")
+	//import test.testm
 })
 
 __spawn(fork: {

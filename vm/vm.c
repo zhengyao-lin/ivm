@@ -121,7 +121,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	ivm_vmstate_unlockGCFlag(ret);
 
-	ret->cur_path = IVM_NULL;
+	ret->cur_path = IVM_VMSTATE_CONST(ret, C_EMPTY);
 	// ret->coro_list_uid = ivm_uid_gen_nextPtr(ret->uid_gen);
 
 	return ret;
@@ -183,7 +183,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 			ivm_type_dump(i);
 		}
 
-		STD_FREE(state->cur_path);
+		// STD_FREE(state->cur_path);
 
 		STD_FREE(state);
 	}
@@ -192,6 +192,28 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 }
 
 #if IVM_USE_MULTITHREAD
+
+void
+ivm_vmstate_threadJoint(ivm_vmstate_t *state)
+{
+	const ivm_string_t *cur_path = ivm_vmstate_getCurPath(state);
+
+	// IVM_TRACE("interrupted sad\n");
+	ivm_vmstate_unlockGIL(state);
+	ivm_vmstate_setCSL(state);
+
+	ivm_time_msleep(1);
+
+	// IVM_TRACE("try to lock!\n");
+
+	ivm_vmstate_lockGIL(state);
+
+	// IVM_TRACE("arised!\n");
+
+	ivm_vmstate_setCurPath_c(state, cur_path);
+
+	return;
+}
 
 IVM_INLINE
 void
@@ -207,6 +229,7 @@ _clock_round(ivm_vmstate_t *state,
 		if (tset && !ivm_cthread_set_size(tset)) return;
 		// IVM_TRACE("wait for csl\n");
 		ivm_thread_cancelPoint();
+		// ivm_time_msleep(10);
 	}
 
 	return;
@@ -270,14 +293,19 @@ ivm_object_t *
 _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 						   ivm_coro_t *coro,
 						   ivm_object_t *init,
-						   ivm_coro_thread_t *cthread)
+						   ivm_coro_thread_t *cthread,
+						   const ivm_string_t *cur_path)
 {
 	ivm_object_t *ret;
 
 	// IVM_TRACE("wait for GIL\n");
 	ivm_vmstate_threadStart(state);
 
+	ivm_vmstate_setCurPath_c(state, cur_path);
+
 	ret = ivm_coro_resume(coro, state, init);
+
+	// IVM_TRACE("endwwww\n");
 
 	ivm_coro_unsetSpawned(coro);
 	ivm_cthread_set_remove(&state->thread_set, cthread);
@@ -294,6 +322,7 @@ struct spawn_arg_t {
 	ivm_coro_t *coro;
 	ivm_object_t *arg;
 	ivm_coro_thread_t *cthread;
+	const ivm_string_t *cur_path;
 };
 
 void *
@@ -303,7 +332,7 @@ _spawn_sub(void *tmp)
 
 	STD_FREE(tmp);
 
-	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg, arg.cthread);
+	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg, arg.cthread, arg.cur_path);
 }
 
 #endif // IVM_USE_MULTITHREAD
@@ -333,7 +362,7 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 	arg = STD_ALLOC(sizeof(*arg));
 
 	*arg = (struct spawn_arg_t) {
-		state, coro, init, new_th
+		state, coro, init, new_th, ivm_vmstate_getCurPath(state)
 	};
 
 	ivm_coro_setSpawned(coro);
@@ -356,6 +385,8 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
 #if IVM_USE_MULTITHREAD
 
 	ivm_cthread_set_t *tset = &state->thread_set;
+
+	// IVM_TRACE("join!\n");
 
 	if (ivm_vmstate_hasThread(state)) {
 		ivm_vmstate_unlockGIL(state);

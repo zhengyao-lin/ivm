@@ -388,8 +388,10 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	const ivm_char_t *mod = ivm_string_trimHead(mod_name);
 	ivm_char_t *err = IVM_NULL;
-	ivm_char_t *path_backup, *path;
+	ivm_char_t *path;
 	ivm_bool_t is_const;
+
+	const ivm_string_t *path_backup, *rpath;
 
 	ivm_object_t *ret;
 
@@ -401,11 +403,11 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	ivm_char_t buf[buf_size];
 
-	path_backup = ivm_vmstate_curPath(state);
+	path_backup = ivm_vmstate_getCurPath(state);
 
 	// IVM_TRACE("cur path: %s\n", path_backup);
 
-	_ivm_mod_addModPath_n(path_backup);
+	_ivm_mod_addModPath_n((ivm_char_t *)ivm_string_trimHead(path_backup));
 	loader = _ivm_mod_search_c(mod, len, buf);
 	_ivm_mod_popModPath_n();
 
@@ -414,18 +416,21 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	// avoid circular reference
 	IVM_CORO_NATIVE_ASSERT(coro, state, ivm_path_realpath(buf, buf), IVM_ERROR_MSG_FAILED_GET_ABS_PATH(buf));
 
-	ret = ivm_object_getSlot_r(ivm_vmstate_getLoadedMod(state), state, buf);
+	rpath = ivm_vmstate_constantize_r(state, buf);
+
+	ret = ivm_object_getSlot(ivm_vmstate_getLoadedMod(state), state, rpath);
 	if (ret) return ret;
 
 	path = ivm_sys_getBasePath(buf);
-	ivm_vmstate_setPath(state, path);
+	ivm_vmstate_setCurPath(state, path);
+	STD_FREE(path);
 
-	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, IVM_NONE(state));
+	ivm_object_setSlot(ivm_vmstate_getLoadedMod(state), state, rpath, IVM_NONE(state));
 	
 	ret = loader(buf, &err, &is_const, state, coro, context);
 
-	ivm_object_setSlot_r(ivm_vmstate_getLoadedMod(state), state, buf, ret);
-	STD_FREE(ivm_vmstate_setPath(state, path_backup));
+	ivm_object_setSlot(ivm_vmstate_getLoadedMod(state), state, rpath, ret);
+	ivm_vmstate_setCurPath_c(state, path_backup);
 
 	if (!ret) {
 		if (!ivm_vmstate_getException(state)) {

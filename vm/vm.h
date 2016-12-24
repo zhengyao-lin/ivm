@@ -88,7 +88,7 @@ typedef struct ivm_vmstate_t_tag {
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
-	ivm_char_t *cur_path;
+	const ivm_string_t *cur_path;
 
 	ivm_size_t wild_size;
 
@@ -138,6 +138,47 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool);
 
 void
 ivm_vmstate_free(ivm_vmstate_t *state);
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_constantize(ivm_vmstate_t *state,
+						const ivm_string_t *str)
+{
+	if (IVM_UNLIKELY(!ivm_string_isConst(str))) {
+		return ivm_string_pool_register(state->const_pool, str);
+	}
+
+	return str;
+}
+
+IVM_INLINE
+const ivm_string_t *
+ivm_vmstate_constantize_r(ivm_vmstate_t *state,
+						  const ivm_char_t *str)
+{
+	return ivm_string_pool_registerRaw(state->const_pool, str);
+}
+
+#define ivm_vmstate_getCurPath(state) ((state)->cur_path)
+#define ivm_vmstate_getCurPath_r(state) ivm_string_trimHead((state)->cur_path)
+
+IVM_INLINE
+void
+ivm_vmstate_setCurPath(ivm_vmstate_t *state,
+					   const ivm_char_t *path)
+{
+	state->cur_path = ivm_vmstate_constantize_r(state, path);
+	return;
+}
+
+IVM_INLINE
+void
+ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
+						 const ivm_string_t *path)
+{
+	state->cur_path = path;
+	return;
+}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -307,8 +348,11 @@ IVM_INLINE
 void
 ivm_vmstate_threadEnd(ivm_vmstate_t *state)
 {
-	ivm_vmstate_setCSL(state);
 	ivm_vmstate_unlockGIL(state);
+
+	// IVM_TRACE("unlock!\n");
+	// ivm_vmstate_setCSL(state);
+
 	return;
 }
 
@@ -317,16 +361,8 @@ ivm_vmstate_threadEnd(ivm_vmstate_t *state)
 #define ivm_vmstate_allocCThread(state) ivm_cthread_pool_alloc(&(state)->thread_pool)
 #define ivm_vmstate_dumpCThread(state, thread) ivm_cthread_pool_dump(&(state)->thread_pool, (thread))
 
-IVM_INLINE
 void
-ivm_vmstate_threadJoint(ivm_vmstate_t *state)
-{
-	ivm_vmstate_unlockGIL(state);
-	ivm_vmstate_setCSL(state);
-	ivm_time_msleep(1);
-	ivm_vmstate_lockGIL(state);
-	return;
-}
+ivm_vmstate_threadJoint(ivm_vmstate_t *state);
 
 #endif
 
@@ -361,21 +397,6 @@ ivm_vmstate_closeGCFlag(ivm_vmstate_t *state)
 
 #define ivm_vmstate_lockGCFlag(state) ((state)->gc_flag = -1)
 #define ivm_vmstate_unlockGCFlag(state) ((state)->gc_flag = 0)
-
-#define ivm_vmstate_curPath(state) ((state)->cur_path)
-
-// the path will be free'd in ivm_vmstate_free
-IVM_INLINE
-ivm_char_t *
-ivm_vmstate_setPath(ivm_vmstate_t *state,
-					ivm_char_t *path)
-{
-	ivm_char_t *ret = state->cur_path;
-
-	state->cur_path = path;
-
-	return ret;
-}
 
 #define ivm_vmstate_getHeapAt(state, i) ((state)->heaps + (i))
 #define ivm_vmstate_getHeaps(state) ((state)->heaps)
@@ -655,26 +676,6 @@ ivm_vmstate_tryAlloc(ivm_vmstate_t *state,
 	// IVM_ASSERT(ret, IVM_ERROR_MSG_FAILED_ALLOC);
 
 	return ret;
-}
-
-IVM_INLINE
-const ivm_string_t *
-ivm_vmstate_constantize(ivm_vmstate_t *state,
-						const ivm_string_t *str)
-{
-	if (IVM_UNLIKELY(!ivm_string_isConst(str))) {
-		return ivm_string_pool_register(state->const_pool, str);
-	}
-
-	return str;
-}
-
-IVM_INLINE
-const ivm_string_t *
-ivm_vmstate_constantize_r(ivm_vmstate_t *state,
-						  const ivm_char_t *str)
-{
-	return ivm_string_pool_registerRaw(state->const_pool, str);
 }
 
 IVM_INLINE

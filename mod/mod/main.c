@@ -18,7 +18,7 @@ IVM_NATIVE_FUNC(_mod_addPath)
 
 	MATCH_ARG("s", &path);
 	
-	cur = ivm_vmstate_curPath(NAT_STATE());
+	cur = ivm_vmstate_getCurPath_r(NAT_STATE());
 	tmp = cur ? IVM_STRLEN(cur) : 0;
 	len = tmp + ivm_string_length(path);
 
