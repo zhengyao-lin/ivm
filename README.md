@@ -12,7 +12,7 @@ Build using cmake
 	make
 	make test
 
-Further build options can be found in CMakefile.txt(e.g. -DPLATFORM)
+Further build options can be found in CMakeList.txt(e.g. -DPLATFORM)
 
 ## executable files(in build/bin in default)
 
