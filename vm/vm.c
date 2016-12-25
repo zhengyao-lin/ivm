@@ -291,28 +291,32 @@ IVM_INLINE
 ivm_object_t *
 _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 						   ivm_coro_t *coro,
-						   ivm_object_t *init,
 						   ivm_coro_thread_t *cthread,
 						   const ivm_string_t *cur_path)
 {
 	ivm_object_t *ret;
 
 	// IVM_TRACE("wait for GIL\n");
+
+	// lock GIL
 	ivm_vmstate_threadStart(state);
 
 	ivm_vmstate_setCurPath_c(state, cur_path);
 
-	ret = ivm_coro_resume(coro, state, init);
+	// real execution start
+	ret = ivm_coro_resume(coro, state, IVM_NULL);
 
+	// execution end
 	ivm_coro_unsetSpawned(coro);
 	if (!ivm_cthread_set_remove(&state->thread_set, cthread)) {
-		abort();
+		IVM_FATAL("impossible");
 	}
 
 	ivm_coro_thread_free(cthread, state);
 
 	// IVM_TRACE("release lock %d\n", ivm_cthread_set_size(&state->thread_set));
 
+	// unlock GIL
 	ivm_vmstate_threadEnd(state);
 
 	return ret;
@@ -321,7 +325,6 @@ _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 struct spawn_arg_t {
 	ivm_vmstate_t *state;
 	ivm_coro_t *coro;
-	ivm_object_t *arg;
 	ivm_coro_thread_t *cthread;
 	const ivm_string_t *cur_path;
 };
@@ -333,7 +336,7 @@ _spawn_sub(void *tmp)
 
 	STD_FREE(tmp);
 
-	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.arg, arg.cthread, arg.cur_path);
+	return (void *)_ivm_vmstate_spawnThread_c(arg.state, arg.coro, arg.cthread, arg.cur_path);
 }
 
 #endif // IVM_USE_MULTITHREAD
@@ -363,8 +366,13 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 	arg = STD_ALLOC(sizeof(*arg));
 
 	*arg = (struct spawn_arg_t) {
-		state, coro, init, new_th, ivm_vmstate_getCurPath(state)
+		state, coro, new_th, ivm_vmstate_getCurPath(state)
 	};
+
+	// push argument ahead of time in case of GC
+	if (init) {
+		ivm_vmstack_push(coro, init);
+	}
 
 	ivm_coro_setSpawned(coro);
 	ivm_thread_init(tid, _spawn_sub, (void *)arg);
@@ -381,7 +389,8 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 }
 
 void
-ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
+ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
+						  ivm_bool_t stop_clock)
 {
 #if IVM_USE_MULTITHREAD
 
@@ -399,7 +408,9 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
 
 		ivm_vmstate_lockGIL(state);
 
-		_ivm_vmstate_joinClock(state);
+		if (stop_clock) {
+			_ivm_vmstate_joinClock(state);
+		}
 	}
 
 #endif

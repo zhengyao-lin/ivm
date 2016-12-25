@@ -964,7 +964,8 @@ ivm_vmstate_resumeMainCoro(ivm_vmstate_t *state,
 }
 
 void
-ivm_vmstate_joinAllThread(ivm_vmstate_t *state);
+ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
+						  ivm_bool_t stop_clock);
 
 ivm_object_t *
 ivm_vmstate_spawnThread(ivm_vmstate_t *state,

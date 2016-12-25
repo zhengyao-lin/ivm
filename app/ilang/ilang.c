@@ -321,7 +321,7 @@ int main(int argc, const char **argv)
 		// ivm_vmstate_schedule(state);
 		// ivm_thread_mainThreadStart();
 		ivm_vmstate_resumeMainCoro(state, IVM_NULL);
-		ivm_vmstate_joinAllThread(state);
+		ivm_vmstate_joinAllThread(state, IVM_TRUE);
 		// ivm_thread_mainThreadEnd();
 		PROF_END();
 

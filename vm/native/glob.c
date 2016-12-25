@@ -150,18 +150,6 @@ IVM_NATIVE_FUNC(_global_print)
 	return IVM_NONE(NAT_STATE());
 }
 
-IVM_NATIVE_FUNC(_global_spawn)
-{
-	ivm_coro_t *coro;
-
-	MATCH_ARG("c", &coro);
-
-	RTM_ASSERT(ivm_coro_canResume(coro),
-			   IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro));
-
-	return ivm_vmstate_spawnThread(NAT_STATE(), coro, IVM_NULL);
-}
-
 void
 ivm_native_global_bind(ivm_vmstate_t *state,
 					   ivm_context_t *ctx)
@@ -191,8 +179,6 @@ ivm_native_global_bind(ivm_vmstate_t *state,
 	
 	ivm_context_setSlot_r(ctx, state, "$import", IVM_NATIVE_WRAP(state, _global_import));
 	// ivm_context_setSlot_r(ctx, state, "$is", IVM_NATIVE_WRAP(state, _global_is));
-
-	ivm_context_setSlot_r(ctx, state, "__spawn", IVM_NATIVE_WRAP(state, _global_spawn));
 
 	return;
 }
