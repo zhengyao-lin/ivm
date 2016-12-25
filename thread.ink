@@ -1,4 +1,5 @@
 import time
+import mthread
 
 loc i = 0
 
@@ -30,6 +31,11 @@ __spawn(fork: {
 __spawn(fork: {
 	print("######################### ga")
 	import test.ga
+})
+
+__spawn(fork: {
+	print("######################### fib")
+	import test.fib
 })
 
 __spawn(fork: {

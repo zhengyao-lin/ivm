@@ -108,6 +108,7 @@ ivm_object_setLinkable(ivm_object_t *obj,
 {
 	if (!obj->slots)
 		return obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
+	
 	return obj->slots;
 }
 

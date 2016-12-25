@@ -355,6 +355,8 @@ ivm_collector_travContext(ivm_context_t *ctx,
 			!ivm_context_getWB(ctx))
 			return;
 
+		// IVM_TRACE("trav: %p, prev: %p, ref: %d\n", (void *)ctx, (void *)ctx->prev, ctx->mark.ref);
+
 		ivm_collector_travSingleContext(ctx, arg);
 		ctx = ivm_context_getPrev(ctx);
 	}
@@ -455,6 +457,7 @@ ivm_collector_travState(ivm_vmstate_t *state,
 
 	IVM_CORO_SET_EACHPTR(&state->coro_set, iter) {
 		tmp_coro = IVM_CORO_SET_ITER_GET(iter);
+		// IVM_TRACE("----------------trav coro %p\n", (void *)tmp_coro);
 		ivm_collector_travCoro(tmp_coro, arg);
 	}
 
@@ -633,6 +636,8 @@ ivm_collector_collect(ivm_collector_t *collector,
 		// IVM_TRACE("heap2 is full\n");
 		collector->gen = 1;
 	}
+
+	// IVM_TRACE("gc ends\n");
 
 	// collector->gen = 1;
 

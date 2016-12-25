@@ -20,20 +20,6 @@ ivm_runtime_new(ivm_vmstate_t *state)
 }
 
 ivm_context_t *
-ivm_runtime_appendContextNode(ivm_runtime_t *runtime,
-							  ivm_vmstate_t *state)
-{
-	ivm_context_t *orig = runtime->ctx;
-
-	runtime->ctx
-	= ivm_context_addRef(ivm_context_new(state, orig));
-
-	ivm_context_free(orig, state);
-
-	return runtime->ctx;
-}
-
-ivm_context_t *
 ivm_runtime_removeContextNode(ivm_runtime_t *runtime,
 							  ivm_vmstate_t *state)
 {

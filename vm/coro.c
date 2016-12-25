@@ -48,7 +48,9 @@ ivm_coro_free(ivm_coro_t *coro,
 	if (coro && !ivm_coro_decRef(coro)) {
 		ivm_vmstate_removeCoroSet(state, coro);
 
-		ivm_runtime_dump(&coro->runtime, state);
+		if (coro->alive) {
+			ivm_runtime_dump(&coro->runtime, state);
+		}
 
 		IVM_FRAME_STACK_EACHPTR(&coro->frame_st, fsiter) {
 			ivm_frame_dump(IVM_FRAME_STACK_ITER_GET(fsiter), state);

@@ -267,6 +267,7 @@ ivm_vmstate_lockGIL(ivm_vmstate_t *state)
 #if IVM_USE_MULTITHREAD
 	ivm_thread_mutex_lock(&state->thread_gil);
 #endif
+	// IVM_TRACE("GIL locked!\n");
 	return;
 }
 
@@ -274,7 +275,7 @@ IVM_INLINE
 void
 ivm_vmstate_unlockGIL(ivm_vmstate_t *state)
 {
-	// IVM_TRACE("unlocked!\n");
+	// IVM_TRACE("GIL unlocked!\n");
 #if IVM_USE_MULTITHREAD
 	ivm_thread_mutex_unlock(&state->thread_gil);
 #endif
@@ -299,6 +300,8 @@ ivm_vmstate_setCSL(ivm_vmstate_t *state)
 	_CSL_UNLOCK();
 #endif
 
+	// IVM_TRACE("set CSL! %d\n", state->thread_csl);
+
 	return;
 }
 
@@ -311,6 +314,8 @@ ivm_vmstate_unsetCSL(ivm_vmstate_t *state)
 	state->thread_csl = IVM_FALSE;
 	_CSL_UNLOCK();
 #endif
+
+	// IVM_TRACE("unset CSL! %d\n", state->thread_csl);
 
 	return;
 }

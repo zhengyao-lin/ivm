@@ -19,9 +19,10 @@ ivm_context_new(ivm_vmstate_t *state,
 {
 	ivm_context_t *ret = ivm_vmstate_allocContext(state);
 
-	if (prev) { ivm_context_addRef(prev); }
-	ret->prev = prev;
+	ret->prev = ivm_context_addRef(prev);
 	STD_INIT(&ret->slots, sizeof(ret->slots) + sizeof(ret->mark));
+
+	// IVM_TRACE("context created: %p\n", (void *)ret);
 
 	return ret;
 }
@@ -34,6 +35,7 @@ ivm_context_free(ivm_context_t *ctx,
 	ivm_context_t *tmp;
 
 	while (ctx && !--ctx->mark.ref) {
+		// IVM_TRACE("dump context %p\n", (void *)ctx);
 		tmp = ctx->prev;
 		ivm_vmstate_dumpContext(state, ctx);
 		ctx = tmp;
@@ -50,7 +52,7 @@ ivm_context_setSlot(ivm_context_t *ctx,
 					ivm_object_t *value)
 {
 	if (!ctx->slots) {
-		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
+		ctx->slots = ivm_slot_table_newAt(state, ivm_context_getGen(ctx));
 	}
 
 	ivm_slot_table_setSlot(ctx->slots, state, key, value);
@@ -66,7 +68,7 @@ ivm_context_setSlot_r(ivm_context_t *ctx,
 					  ivm_object_t *value)
 {
 	if (!ctx->slots) {
-		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
+		ctx->slots = ivm_slot_table_newAt(state, ivm_context_getGen(ctx));
 	}
 
 	ivm_slot_table_setSlot_r(ctx->slots, state, rkey, value);
@@ -83,7 +85,7 @@ ivm_context_setSlot_cc(ivm_context_t *ctx,
 					   ivm_instr_t *instr)
 {
 	if (!ctx->slots) {
-		IVM_WBCTX(state, ctx, ctx->slots = ivm_slot_table_new(state));
+		ctx->slots = ivm_slot_table_newAt(state, ivm_context_getGen(ctx));
 	}
 
 	ivm_slot_table_setSlot_cc(ctx->slots, state, key, value, instr);
@@ -162,7 +164,7 @@ ivm_context_getLinkedObject(ivm_context_t *ctx,
 							ivm_vmstate_t *state)
 {
 	if (!ctx->slots) {
-		ctx->slots = ivm_slot_table_new(state);
+		ctx->slots = ivm_slot_table_newAt(state, ivm_context_getGen(ctx));
 	}
 
 	return ivm_object_new_t(state, ctx->slots);
@@ -208,9 +210,13 @@ ivm_context_search_cc(ivm_context_t *ctx,
 
 	do {
 		ret = ivm_context_getSlot_cc(ctx, state, key, instr);
-		if (ret) return ret;
+		if (ret) {
+			// IVM_TRACE("end!!!\n");
+			return ret;
+		}
 		ctx = ctx->prev;
 	} while (ctx);
+	// IVM_TRACE("end!!!\n");
 
 	return IVM_NULL;
 }

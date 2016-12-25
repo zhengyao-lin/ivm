@@ -35,17 +35,6 @@ _ivm_function_invoke_c(const ivm_function_t *func,
 	);
 }
 
-// no new local context
-IVM_INLINE
-ivm_instr_t *
-_ivm_function_invoke_r(const ivm_function_t *func,
-					   ivm_vmstate_t *state,
-					   ivm_context_t *ctx,
-					   ivm_runtime_t *runtime)
-{
-	INVOKE_HANDLER(0);
-}
-
 // with base
 IVM_INLINE
 ivm_instr_t *

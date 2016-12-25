@@ -198,7 +198,7 @@ ivm_vmstate_threadJoint(ivm_vmstate_t *state)
 {
 	const ivm_string_t *cur_path = ivm_vmstate_getCurPath(state);
 
-	// IVM_TRACE("interrupted sad\n");
+	// IVM_TRACE("interrupted\n");
 	ivm_vmstate_unlockGIL(state);
 	ivm_vmstate_setCSL(state);
 
@@ -217,20 +217,19 @@ ivm_vmstate_threadJoint(ivm_vmstate_t *state)
 
 IVM_INLINE
 void
-_clock_round(ivm_vmstate_t *state,
-			 ivm_cthread_set_t *tset)
+_clock_round(ivm_vmstate_t *state)
 {
 	ivm_time_msleep(10);
-	// IVM_TRACE("########signal!\n");
-	ivm_vmstate_unsetCSL(state);
+	// IVM_TRACE("########signal! %d\n", ivm_cthread_set_size(&state->thread_set));
 	ivm_vmstate_setInt(state, IVM_CORO_INT_THREAD_YIELD);
 
 	while (!ivm_vmstate_getCSL(state)) {
-		if (tset && !ivm_cthread_set_size(tset)) return;
 		// IVM_TRACE("wait for csl\n");
 		ivm_thread_cancelPoint();
 		// ivm_time_msleep(10);
 	}
+
+	ivm_vmstate_unsetCSL(state);
 
 	return;
 }
@@ -242,7 +241,7 @@ _thread_clock(void *arg)
 	ivm_vmstate_t *state = (ivm_vmstate_t *)arg;
 
 	while (1) {
-		_clock_round(state, IVM_NULL);
+		_clock_round(state);
 	}
 
 	return IVM_NULL;
@@ -305,14 +304,14 @@ _ivm_vmstate_spawnThread_c(ivm_vmstate_t *state,
 
 	ret = ivm_coro_resume(coro, state, init);
 
-	// IVM_TRACE("endwwww\n");
-
 	ivm_coro_unsetSpawned(coro);
-	ivm_cthread_set_remove(&state->thread_set, cthread);
+	if (!ivm_cthread_set_remove(&state->thread_set, cthread)) {
+		abort();
+	}
 
 	ivm_coro_thread_free(cthread, state);
 
-	// IVM_TRACE("hello\n");
+	// IVM_TRACE("release lock %d\n", ivm_cthread_set_size(&state->thread_set));
 
 	ivm_vmstate_threadEnd(state);
 
@@ -391,7 +390,7 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state)
 	// IVM_TRACE("join!\n");
 
 	if (ivm_vmstate_hasThread(state)) {
-		ivm_vmstate_unlockGIL(state);
+		ivm_vmstate_threadEnd(state);
 
 		while (ivm_cthread_set_size(tset)) {
 			ivm_time_msleep(1);

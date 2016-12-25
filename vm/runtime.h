@@ -78,10 +78,6 @@ ivm_runtime_incBP(ivm_runtime_t *runtime,
 }
 
 ivm_context_t *
-ivm_runtime_appendContextNode(ivm_runtime_t *runtime,
-							  struct ivm_vmstate_t_tag *state);
-
-ivm_context_t *
 ivm_runtime_removeContextNode(ivm_runtime_t *runtime,
 							  struct ivm_vmstate_t_tag *state);
 
