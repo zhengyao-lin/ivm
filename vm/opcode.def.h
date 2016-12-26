@@ -800,7 +800,7 @@ OPCODE_GEN(DUP_PREV_BLOCK_N, "dup_prev_block_n", I, 1, {
 	NEXT_INSTR_NINT();
 })
 
-#if 1
+#if 0
 
 OPCODE_GEN(OUT, "out", S, 0, {
 	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));

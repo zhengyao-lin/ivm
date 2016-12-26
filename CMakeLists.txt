@@ -23,7 +23,6 @@ endforeach(dir ${plat_list})
 
 # message(STATUS "${PLATFORMS}")
 
-# Kindle
 if(DEFINED PLATFORM)
 	list(FIND PLATFORMS "${PLATFORM}" idx)
 	# message(STATUS "${idx}")
@@ -99,8 +98,6 @@ elseif(MULTITHREAD STREQUAL "disabled")
 	message(STATUS "Thread disabled")
 endif()
 
-message(STATUS "Compile using argument: '${CMAKE_C_FLAGS}'")
-
 # reset output dir
 if(WIN32)
 	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
@@ -158,3 +155,5 @@ else()
 endif()
 
 include(CMakeTests.txt)
+
+message(STATUS "Compile using flags: '${CMAKE_C_FLAGS}'")
