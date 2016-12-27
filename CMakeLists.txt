@@ -38,6 +38,9 @@ endif()
 # set basic compile flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
 
+# struct timespec
+add_definitions(-D__need_timespec)
+
 if(NOT CMAKE_C_COMPILER MATCHES "icc")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-value")
 endif()
