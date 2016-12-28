@@ -27,7 +27,7 @@ loc.merge(import curses)
 try: {
 
 	initscr()
-	raise exception()
+	// raise exception()
 
 	cbreak()
 	// noecho()

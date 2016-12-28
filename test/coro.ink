@@ -28,7 +28,7 @@ c1 = fork fn a: {
 }
 
 print("huh?")
-print(resume c1 with 1)
+print(resume c1: 1)
 resume c1
 print("end")
 
@@ -69,7 +69,7 @@ print("hi?")
 loc gen = fn f: {
 	loc c = fork f
 	loc r = fn arg: {
-		resume c with arg
+		resume c: arg
 	}
 
 	r.iter = fn: {

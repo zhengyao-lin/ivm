@@ -43,8 +43,8 @@ enum token_id_t {
 	T_YIELD,
 	T_RESUME,
 
-	T_WITH,
-	T_TO,
+	// T_WITH,
+	// T_TO,
 
 	T_FORK,
 
@@ -580,8 +580,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("yield", T_YIELD)
 		KEYWORD("resume", T_RESUME)
 
-		KEYWORD("with", T_WITH)
-		KEYWORD("to", T_TO)
+		// KEYWORD("with", T_WITH)
+		// KEYWORD("to", T_TO)
 
 		KEYWORD("fork", T_FORK)
 
@@ -1500,13 +1500,13 @@ RULE(oop)
 
 /*
 	block_param
-		: '|' nllo param_list_opt nllo '|'
+		: '|' nllo param_list nllo '|'
  */
-RULE(param_list_opt);
+RULE(param_list);
 RULE(block_param)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_BIOR) R(nllo) R(param_list_opt) R(nllo) T(T_BIOR)
+		SUB_RULE(T(T_BIOR) R(nllo) R(param_list) R(nllo) T(T_BIOR)
 		{
 			_RETVAL.param_list = RULE_RET_AT(1).u.param_list;
 		})
@@ -1583,6 +1583,7 @@ RULE(block)
 		})
 		*/
 
+		/*
 		SUB_RULE(T(T_TO) R(nllo)
 				 R(block_param_opt) R(nllo)
 				 R(prefix_expr)
@@ -1596,6 +1597,7 @@ RULE(block)
 				RULE_RET_AT(3).u.expr
 			);
 		})
+		*/
 	)
 
 	FAILED({})
@@ -2467,6 +2469,28 @@ RULE(param_list_opt)
 }
 
 /*
+	param_list
+		: param param_list_sub
+ */
+RULE(param_list)
+{
+	ilang_gen_param_list_t *tmp_list;
+	ilang_gen_param_t tmp_value;
+
+	SUB_RULE_SET(
+		SUB_RULE(R(param) R(param_list_sub)
+		{
+			tmp_list = _RETVAL.param_list = RULE_RET_AT(1).u.param_list;
+			tmp_value = RULE_RET_AT(0).u.param;
+			ilang_gen_param_list_push(tmp_list, &tmp_value);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	fn_expr
 		: fn param_list_opt ':' prefix_expr
  */
@@ -2622,7 +2646,7 @@ RULE(raise_expr)
 
 /*
 	yield_expr:
-		: 'resume' prefix_expr 'with' prefix_expr
+		: 'resume' expr ':' prefix_expr
 		| 'resume' prefix_expr
 		| 'yield' prefix_expr
 		| 'yield'
@@ -2632,7 +2656,7 @@ RULE(yield_expr)
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_RESUME) R(prefix_expr) T(T_WITH) R(prefix_expr)
+		SUB_RULE(T(T_RESUME) R(expr) T(T_COLON) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_intr_expr_new(
