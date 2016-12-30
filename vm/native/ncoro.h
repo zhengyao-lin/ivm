@@ -8,6 +8,7 @@
 IVM_COM_HEADER
 
 IVM_NATIVE_FUNC(_coro_cons);
+IVM_NATIVE_FUNC(_coro_alive);
 
 IVM_COM_END
 

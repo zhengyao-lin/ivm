@@ -37,6 +37,28 @@ print(list(arith_seq(1, 2, 4)))
 [ a, , b, c ] = arith_seq(1, 10, 4)
 print([ a, b, c ])
 
+// generator
+loc gen = fn core: {
+	loc c = fork core
+
+	fn: {
+		iter: fn: {
+			next: fn: {
+				loc r = resume c
+				if !c.alive(): raise exception()
+				r
+			}
+		}
+	}
+}
+
+loc g1 = gen {
+	for i in range(, 100, 10):
+		yield i
+}
+
+print(list(g1()))
+
 ret
 
 // -> "num: 0"
@@ -52,3 +74,4 @@ ret
 // -> "list: \\[ 0, 1 \\]"
 // -> "list: \\[ 1, 3, 5, 7 \\]"
 // -> "list: \\[ 1, 21, 31 \\]"
+// -> "list: \\[ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 \\]"

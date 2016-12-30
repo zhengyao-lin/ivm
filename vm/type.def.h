@@ -117,10 +117,12 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
 
 TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
 	IVM_NATIVE_WRAP_C(_STATE, _coro_cons), {
-	
+
 	ivm_object_t *tmp = ivm_coro_object_new(_STATE, IVM_NULL);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+	ivm_object_setSlot_r(tmp, _STATE, "alive", IVM_NATIVE_WRAP(_STATE, _coro_alive));
 
 }, .des = ivm_coro_object_destructor,
    .clone = ivm_coro_object_cloner,
