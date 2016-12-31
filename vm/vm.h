@@ -98,7 +98,7 @@ typedef struct ivm_vmstate_t_tag {
 						  = 0: closed
 						  < 0: locked */
 
-	ivm_uid_gen_t uid_gen;						// 4
+	ivm_uid_gen_t st_uid_gen; // slot table uid generator
 
 	ivm_type_t type_list[IVM_TYPE_COUNT];
 } ivm_vmstate_t;
@@ -972,7 +972,12 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 						ivm_coro_t *coro,
 						ivm_object_t *init);
 
-#define ivm_vmstate_genUID(state) (ivm_uid_gen_nextPtr((state)->uid_gen))
+// slot table UID
+#define ivm_vmstate_genSTUID(state) ivm_uid_gen_nextPtr(&(state)->st_uid_gen)
+#define ivm_vmstate_curSTUID(state) ivm_uid_gen_curPtr(&(state)->st_uid_gen)
+
+void
+ivm_vmstate_initInstrCache(ivm_vmstate_t *state);
 
 IVM_COM_END
 

@@ -47,6 +47,8 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 			 sizeof(*table->tabl)
 			 * init);
 
+	// table->cid = 0;
+
 	return;
 }
 
@@ -117,9 +119,11 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 	}
 
 	STD_MEMCPY(ret->tabl,
-			 table->tabl,
-			 sizeof(*ret->tabl)
-			 * ret->size);
+			   table->tabl,
+			   sizeof(*ret->tabl)
+			   * ret->size);
+
+	// ret->cid = 0;
 
 	return ret;
 }
@@ -150,9 +154,11 @@ ivm_slot_table_copy_state(ivm_slot_table_t *table,
 	}
 
 	STD_MEMCPY(ret->tabl,
-			 table->tabl,
-			 sizeof(*ret->tabl)
-			 * ret->size);
+			   table->tabl,
+			   sizeof(*ret->tabl)
+			   * ret->size);
+
+	// ret->cid = 0;
 
 	return ret;
 }

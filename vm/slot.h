@@ -41,7 +41,7 @@ ivm_slot_getValue(ivm_slot_t *slot,
 	return slot ? slot->v : IVM_NULL;
 }
 
-#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 10
+#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 11
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_size_t size;
@@ -61,6 +61,7 @@ typedef struct ivm_slot_table_t_tag {
 		struct ivm_slot_table_t_tag *copy;
 	} mark;
 	ivm_uid_t uid;
+	// ivm_int_t cid; // collect id
 } ivm_slot_table_t;
 
 IVM_INLINE
@@ -102,8 +103,11 @@ ivm_slot_table_setCopy(ivm_slot_table_t *table,
 #define ivm_slot_table_setGen(table, val) ((table)->mark.sub.gen = (val))
 #define ivm_slot_table_incGen(table) (++(table)->mark.sub.gen)
 
+// #define ivm_slot_table_setCID(table, id) ((table)->cid = (id))
+// #define ivm_slot_table_checkCID(table, id) ((table)->cid == (id))
+
 #define ivm_slot_table_updateUID(table, state) \
-	((table)->uid = ivm_vmstate_genUID(state))
+	((table)->uid = ivm_vmstate_genSTUID(state))
 
 ivm_slot_table_t *
 ivm_slot_table_new(struct ivm_vmstate_t_tag *state);

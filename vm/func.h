@@ -112,6 +112,22 @@ ivm_function_addRef(ivm_function_t *func)
 	return func;
 }
 
+void
+ivm_function_setExec(ivm_function_t *func,
+					 struct ivm_vmstate_t_tag *state,
+					 ivm_exec_t *body);
+
+IVM_INLINE
+void
+ivm_function_initInstrCache(ivm_function_t *func)
+{
+	if (!func->is_native) {
+		ivm_exec_initInstrCache(&func->u.body);
+	}
+
+	return;
+}
+
 /*
 IVM_INLINE
 ivm_int_t
@@ -245,11 +261,6 @@ ivm_func_list_empty(ivm_func_list_t *list,
 
 	return;
 }
-
-void
-ivm_function_setExec(ivm_function_t *func,
-					 struct ivm_vmstate_t_tag *state,
-					 ivm_exec_t *body);
 
 /*
 

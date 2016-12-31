@@ -112,6 +112,9 @@ ivm_exec_copy(ivm_exec_t *exec,
 
 	size = sizeof(*exec->instrs) * exec->alloc;
 	dest->instrs = STD_ALLOC(size);
+	
+	IVM_MEMCHECK(dest->instrs);
+
 	STD_MEMCPY(dest->instrs, exec->instrs, size);
 
 	return;

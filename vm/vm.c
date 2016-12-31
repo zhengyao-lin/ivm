@@ -82,7 +82,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_vmstate_lockGCFlag(ret);
 
 	ret->except = IVM_NULL;
-	ivm_uid_gen_init(&ret->uid_gen);
+	ivm_uid_gen_init(&ret->st_uid_gen);
 
 #define _STATE ret
 	
@@ -414,6 +414,22 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
 	}
 
 #endif
+
+	return;
+}
+
+void
+ivm_vmstate_initInstrCache(ivm_vmstate_t *state)
+{
+	ivm_func_list_iterator_t iter;
+	ivm_function_t *func;
+
+	IVM_FUNC_LIST_EACHPTR(&state->func_list, iter) {
+		func = IVM_FUNC_LIST_ITER_GET(iter);
+		ivm_function_initInstrCache(func);
+	}
+
+	ivm_uid_gen_init(&(state)->st_uid_gen);
 
 	return;
 }

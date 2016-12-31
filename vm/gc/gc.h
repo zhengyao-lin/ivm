@@ -182,6 +182,20 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 						   ivm_traverser_arg_t *arg);
 
 IVM_INLINE
+ivm_int_t
+ivm_collector_genCID(ivm_collector_t *col)
+{
+	ivm_int_t ret;
+
+	ret = ++col->cid;
+	if (ret == 0) {
+		ret = ++col->cid; // skip 0
+	}
+
+	return ret;
+}
+
+IVM_INLINE
 ivm_object_t * /* null for trav */
 ivm_collector_quickCheck(ivm_object_t *obj,
 						 ivm_traverser_arg_t *arg)

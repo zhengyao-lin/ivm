@@ -133,6 +133,20 @@ void
 ivm_exec_preproc(ivm_exec_t *exec,
 				 struct ivm_vmstate_t_tag *state);
 
+IVM_INLINE
+void
+ivm_exec_initInstrCache(ivm_exec_t *exec)
+{
+	ivm_instr_t *i, *end;
+
+	for (i = exec->instrs, end = i + exec->next;
+		 i != end; i++) {
+		ivm_instr_initCache(i);
+	}
+
+	return;
+}
+
 typedef ivm_ptpool_t ivm_exec_pool_t;
 
 #define ivm_exec_pool_new(count) (ivm_ptpool_new((count), sizeof(ivm_exec_t)))

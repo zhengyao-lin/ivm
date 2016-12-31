@@ -177,6 +177,9 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 
 		ret = ivm_slot_table_getCopy(table);
 		if (ret) return ret;
+		// else if (ivm_slot_table_checkCID(table, arg->cid))
+		//	return table;
+
 		else if (ivm_heap_isIn(arg->heap, table)) {
 			return table;
 		}
@@ -189,6 +192,7 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 	ivm_slot_table_setGen(ret, 1);
 	ivm_slot_table_setWB(table, 0);
 	ivm_slot_table_setCopy(table, ret);
+	// ivm_slot_table_setCID(ret, arg->cid);
 	// ivm_slot_table_updateUID(table, arg->state);
 
 	// IVM_TRACE("pa %p -> %p\n", table, ret);
@@ -226,6 +230,7 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 	// IVM_TRACE("hey there? %p\n", table);
 
 	ivm_slot_table_setWB(table, 0);
+	// ivm_slot_table_setCID(table, arg->cid);
 	// ivm_slot_table_updateUID(table, arg->state);
 
 	IVM_SLOT_TABLE_EACHPTR(table, siter) {
@@ -580,11 +585,15 @@ ivm_collector_collect(ivm_collector_t *collector,
 		return;
 	}
 
+	if (ivm_vmstate_curSTUID(state) >= IVM_INSTR_CACHE_UID_MAX) {
+		ivm_vmstate_initInstrCache(state);
+	}
+
 	arg.state = state;
 	arg.collector = collector;
 	arg.trav_ctx = ivm_collector_travContext;
 	arg.trav_coro = ivm_collector_travCoro;
-	arg.cid = ++collector->cid;
+	arg.cid = ivm_collector_genCID(collector);
 	arg.gen = collector->gen;
 
 	// IVM_TRACE("gen: %d, live ratio: %d, %.20f\n", arg.gen, collector->live_ratio, collector->bc_weight);

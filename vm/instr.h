@@ -59,6 +59,14 @@ ivm_instr_setCache(ivm_instr_t *instr, ivm_uid_t id, ivm_ptr_t data)
 	return;
 }
 
+IVM_INLINE
+void
+ivm_instr_initCache(ivm_instr_t *instr)
+{
+	instr->cc_id = 0;
+	return;
+}
+
 #define ivm_instr_build_l(o, a, l) \
 	((ivm_instr_t) { .entry = ivm_opcode_table_getEntry(o), .arg = (a), .lineno = (l), .opc = (o)})
 #define ivm_instr_build(o, a) ivm_instr_build_l((o), (a), -1)

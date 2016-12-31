@@ -12,8 +12,9 @@ typedef struct {
 	ivm_uid_t cur;
 } ivm_uid_gen_t;
 
-#define ivm_uid_gen_init(state) ((state)->cur = 0)
-#define ivm_uid_gen_nextPtr(state) (++(state).cur)
+#define ivm_uid_gen_init(gen) ((gen)->cur = 0)
+#define ivm_uid_gen_nextPtr(gen) (++(gen)->cur)
+#define ivm_uid_gen_curPtr(gen) ((gen)->cur)
 
 IVM_COM_END
 

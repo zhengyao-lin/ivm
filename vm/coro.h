@@ -137,6 +137,7 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #define ivm_coro_checkCID(coro, id) ((coro)->cid == (id))
 #define ivm_coro_setCID(coro, id) ((coro)->cid = (id))
+
 #define ivm_coro_isAlive(coro) ((coro)->alive)
 #define ivm_coro_isActive(coro) ((coro)->active)
 #define ivm_coro_isSpawned(coro) ((coro)->spawned)
