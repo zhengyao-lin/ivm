@@ -133,7 +133,6 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_INPUT_READ_EOF							"end-of-file reached in input"
 #define IVM_ERROR_MSG_DIV_MOD_ZERO								"number division or modulo by zero"
 #define IVM_ERROR_MSG_ILLEGAL_TO_S								"illegal to_s method"
-#define IVM_ERROR_MSG_TOO_LESS_ARGUMENT(n, expect)				"require at least %d argument(s)(%d given)", (ivm_int_t)(expect), (ivm_int_t)(n)
 #define IVM_ERROR_MSG_DEL_VARG									"cannot delete varg"
 #define IVM_ERROR_MSG_MEMORY_ERROR								"memory error"
 #define IVM_ERROR_MSG_NOT_CHAR									"not a character"
@@ -142,6 +141,9 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro)					"unable to resume coroutine %p", (void *)(coro)
 #define IVM_ERROR_MSG_UNINIT_CORO								"operating uninitialized coroutine"
 #define IVM_ERROR_MSG_ASSERT_FAILED								"assertion failed"
+#define IVM_ERROR_MSG_WRONG_ARG(n, expect, given)				"wrong %dth argument(expecting <%s>, <%s> given)", (n), (expect), (given)
+#define IVM_ERROR_MSG_TOO_LESS_ARG(n, expect)					"require at least %d argument(s)(%d given)", (ivm_int_t)(expect), (ivm_int_t)(n)
+#define IVM_ERROR_MSG_MISSING_ARG(n, expect)					"missing the %dth argument, expecting <%s>", (n), (expect)
 
 IVM_COM_END
 

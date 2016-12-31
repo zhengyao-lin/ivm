@@ -23,6 +23,12 @@ ivm_exception_new(struct ivm_vmstate_t_tag *state,
 				  const ivm_char_t *file,
 				  ivm_long_t line);
 
+ivm_object_t *
+ivm_exception_new_c(struct ivm_vmstate_t_tag *state,
+					const ivm_string_t *msg,
+					const ivm_string_t *file,
+					ivm_long_t line);
+
 #define ivm_exception_getMsg(exc) ((exc)->msg)
 #define ivm_exception_getFile(exc) ((exc)->file)
 #define ivm_exception_getLine(exc) ((exc)->line)

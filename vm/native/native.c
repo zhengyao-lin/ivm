@@ -29,18 +29,36 @@
 			[2]. optional mark could only appear once
  */
 
-ivm_int_t
+ivm_bool_t
 ivm_native_matchArgument(ivm_function_arg_t arg,
 						 ivm_vmstate_t *state,
+						 const ivm_char_t *func_name,
 						 const ivm_char_t *rule, ...)
 {
 	ivm_bool_t opt = IVM_FALSE;
-	ivm_int_t ret = 0;
 	ivm_argc_t i;
 	ivm_object_t *tmp;
 	va_list args;
+	ivm_bool_t ret = IVM_TRUE;
 
 	va_start(args, rule);
+
+#define SET_ERR(...) \
+	{                                             \
+		ivm_char_t msg_buf[                       \
+			IVM_DEFAULT_EXCEPTION_BUFFER_SIZE     \
+		];                                        \
+		ivm_object_t *exc;                        \
+		IVM_SNPRINTF(                             \
+			msg_buf, IVM_ARRLEN(msg_buf),         \
+			__VA_ARGS__                           \
+		);                                        \
+		exc = ivm_exception_new(                  \
+			(state), msg_buf, func_name, 0        \
+		);                                        \
+		ivm_vmstate_setException((state), exc);   \
+		ret = IVM_FALSE;                          \
+	}
 
 #define SUB1(r, type, cvt, val) \
 	case r:                                                        \
@@ -51,7 +69,10 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 				= (val);                                           \
 			} else {                                               \
 				if (!(opt && IVM_IS_NONE(state, tmp))) {           \
-					ret = i;                                       \
+					SET_ERR(IVM_ERROR_MSG_WRONG_ARG(               \
+						i, ivm_vmstate_getTypeName(state, (type)), \
+						IVM_OBJECT_GET(tmp, TYPE_NAME)             \
+					));                                            \
 					goto END;                                      \
 				} else {                                           \
 					va_arg(args, cvt *);                           \
@@ -59,7 +80,11 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 			}                                                      \
 			i++;                                                   \
 		} else {                                                   \
-			if (!opt) ret = i;                                     \
+			if (!opt) {                                            \
+				SET_ERR(IVM_ERROR_MSG_MISSING_ARG(                 \
+					i, ivm_vmstate_getTypeName(state, (type))      \
+				));                                                \
+			}                                                      \
 			goto END;                                              \
 		}                                                          \
 		break;
@@ -78,7 +103,10 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 					*(va_arg(args, ivm_object_t **)) = ivm_function_arg_at(arg, i);
 					i++;
 				} else {
-					if (!opt) ret = i;
+					if (!opt) {
+						SET_ERR(IVM_ERROR_MSG_MISSING_ARG(i, "any type"));
+					}
+
 					goto END;
 				}
 				break;

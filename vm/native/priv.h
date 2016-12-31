@@ -33,26 +33,27 @@
 	RTM_ASSERT(NAT_BASE(), IVM_NATIVE_ERROR_MSG_WRONG_BASE("(nil)"))
 
 #define CHECK_ARG_1(type) \
-	RTM_ASSERT(NAT_ARGC() && IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
+	RTM_ASSERT(NAT_ARGC(), IVM_ERROR_MSG_MISSING_ARG(1, ivm_vmstate_getTypeName(NAT_STATE(), (type))))  \
+	RTM_ASSERT(                                                                                         \
+		IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)),                                              \
+		IVM_ERROR_MSG_WRONG_ARG(                                                                        \
+			1, ivm_vmstate_getTypeName(NAT_STATE(), (type)),                                            \
+			IVM_OBJECT_GET(NAT_ARG_AT(1), TYPE_NAME)                                                    \
+		)                                                                                               \
+	)
 
 #define CHECK_ARG_1_C(type) \
 	(NAT_ARGC() >= 1 && IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (type)))
 
 #define CHECK_ARG_1_TP(uid) \
-	RTM_ASSERT(NAT_ARGC() && ivm_type_checkUID(IVM_TYPE_OF(NAT_ARG_AT(1)), (uid)), IVM_NATIVE_ERROR_MSG_WRONG_ARG)
-
-#define CHECK_ARG_2(t1, t2) \
-	RTM_ASSERT(NAT_ARGC() >= 2 &&                                      \
-			   IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (t1)) &&      \
-			   IVM_IS_BTTYPE(NAT_ARG_AT(2), NAT_STATE(), (t2)),        \
-			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
-
-#define CHECK_ARG_3(t1, t2, t3) \
-	RTM_ASSERT(NAT_ARGC() >= 3 &&                                      \
-			   IVM_IS_BTTYPE(NAT_ARG_AT(1), NAT_STATE(), (t1)) &&      \
-			   IVM_IS_BTTYPE(NAT_ARG_AT(2), NAT_STATE(), (t2)) &&      \
-			   IVM_IS_BTTYPE(NAT_ARG_AT(3), NAT_STATE(), (t3),         \
-			   IVM_NATIVE_ERROR_MSG_WRONG_ARG)
+	RTM_ASSERT(NAT_ARGC(), IVM_ERROR_MSG_MISSING_ARG(1, ivm_type_getName(IVM_TPTYPE(NAT_STATE(), (uid)))))  \
+	RTM_ASSERT(                                                                                             \
+		ivm_type_checkUID(IVM_TYPE_OF(NAT_ARG_AT(1)), (uid)),                                               \
+		IVM_ERROR_MSG_WRONG_ARG(                                                                            \
+			1, ivm_type_getName(IVM_TPTYPE(NAT_STATE(), (uid))),                                            \
+			IVM_OBJECT_GET(NAT_ARG_AT(1), TYPE_NAME)                                                        \
+		)                                                                                                   \
+	)
 
 #define CHECK_OVERFLOW(n) \
 	RTM_ASSERT(ivm_number_canbeLong(n), IVM_ERROR_MSG_TO_LONG_OVERFLOW(n));
@@ -61,10 +62,10 @@
 	(NAT_ARGC() >= (n) && !IVM_IS_NONE(NAT_STATE(), NAT_ARG_AT(n)))
 
 #define MATCH_ARG(rule, ...) \
-	{                                                                                   \
-		ivm_int_t __match_ret__                                                         \
-		= ivm_native_matchArgument(NAT_ARG(), NAT_STATE(), (rule), __VA_ARGS__);        \
-		RTM_ASSERT(!__match_ret__, IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(__match_ret__));   \
+	{                                                                                            \
+		if (!ivm_native_matchArgument(NAT_ARG(), NAT_STATE(), __func__, (rule), __VA_ARGS__)) {  \
+			return IVM_NULL;                                                                     \
+		}                                                                                        \
 	}
 
 #define GET_BASE_AS(type) IVM_AS(NAT_BASE(), type)
@@ -76,13 +77,8 @@
 #define WRONG_ARG_COUNT(expect) \
 	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT((expect), NAT_ARGC()))
 
-#define WRONG_ARG() \
-	RTM_FATAL(IVM_NATIVE_ERROR_MSG_WRONG_ARG)
-
 #define IVM_NATIVE_ERROR_MSG_WRONG_BASE(tn)								"wrong base type <%s>", (tn)
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG									("wrong argument")
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(expect, given)				"wrong argument count(expect %d, %d given)", (ivm_int_t)(expect), (ivm_int_t)(given)
-#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_AT(i)							"wrong %dth argument", (i)
+#define IVM_NATIVE_ERROR_MSG_WRONG_ARG_COUNT(expect, given)				"wrong argument count(expecting %d, %d given)", (ivm_int_t)(expect), (ivm_int_t)(given)
 
 #define BUILTIN_FUNC(name, instrs) IVM_BUILTIN_FUNC(name) {                   \
 		ivm_exec_t *__exec__;                                                 \

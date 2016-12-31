@@ -18,10 +18,11 @@
 
 #include "glob.h"
 
-/* 0 for success, other return stand for the position of the wrong argument */
-ivm_int_t
+/* true for success, false for error and the msg will be set */
+ivm_bool_t
 ivm_native_matchArgument(ivm_function_arg_t arg,
 						 ivm_vmstate_t *state,
+						 const ivm_char_t *func_name,
 						 const ivm_char_t *rule, ...);
 
 #define IVM_NATIVE_WRAP(state, name) \

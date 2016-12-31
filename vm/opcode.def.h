@@ -1367,7 +1367,7 @@ OPCODE_GEN(CHECK2, "check2", A, 0, {
 
 /* if the number of stack is less than what has expected, an exception will be thrown */
 OPCODE_GEN(CHECK_E, "check_e", I, 0, {
-	RTM_ASSERT(AVAIL_STACK >= IARG(), IVM_ERROR_MSG_TOO_LESS_ARGUMENT(AVAIL_STACK, IARG()));
+	RTM_ASSERT(AVAIL_STACK >= IARG(), IVM_ERROR_MSG_TOO_LESS_ARG(AVAIL_STACK, IARG()));
 	NEXT_INSTR_NINT();
 })
 

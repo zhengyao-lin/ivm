@@ -162,7 +162,7 @@ ivm_type_pool_register_c(ivm_type_pool_t *pool,
 	return copy;
 }
 
-#define ivm_type_pool_get(pool, key) ivm_pthash_find((pool), (void *)(key))
+#define ivm_type_pool_get(pool, key) ((ivm_type_t *)ivm_pthash_find((pool), (void *)(key)))
 
 #define IVM_TYPE_POOL_ITER_GET(iter) ((ivm_type_t *)IVM_PTHASH_ITER_GET_VAL(iter))
 #define IVM_TYPE_POOL_EACHPTR(pool, iter) IVM_PTHASH_EACHPTR((pool), iter)
