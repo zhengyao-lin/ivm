@@ -337,6 +337,19 @@ OPCODE_GEN(CHECK_PROTO, "check_proto", N, 0, {
 	NEXT_INSTR();
 })
 
+OPCODE_GEN(ASSERT_TRUE, "assert_true", N, 0, {
+	CHECK_STACK(1);
+	RTM_ASSERT(ivm_object_toBool(STACK_POP(), _STATE), IVM_ERROR_MSG_ASSERT_FAILED);
+	NEXT_INSTR_NINT();
+})
+
+// no pop
+OPCODE_GEN(ASSERT_TRUE_N, "assert_true_n", N, 0, {
+	CHECK_STACK(1);
+	RTM_ASSERT(ivm_object_toBool(STACK_TOP(), _STATE), IVM_ERROR_MSG_ASSERT_FAILED);
+	NEXT_INSTR_NINT();
+})
+
 /*
 	assert_* is similar to get_*, but if the slot doesn't exist,
 	these instrs will create a new object and set it to the slot

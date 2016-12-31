@@ -261,6 +261,26 @@ ilang_gen_intr_expr_eval(ilang_gen_expr_t *expr,
 }
 
 ilang_gen_value_t
+ilang_gen_assert_expr_eval(ilang_gen_expr_t *expr,
+						   ilang_gen_flag_t flag,
+						   ilang_gen_env_t *env)
+{
+	ilang_gen_assert_expr_t *asrt = IVM_AS(expr, ilang_gen_assert_expr_t);
+
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assert expression", flag);
+
+	asrt->cond->eval(asrt->cond, FLAG(0), env);
+
+	if (flag.is_top_level) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ASSERT_TRUE);
+	} else {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), ASSERT_TRUE_N); // no pop
+	}
+
+	return NORET();
+}
+
+ilang_gen_value_t
 ilang_gen_assign_expr_eval(ilang_gen_expr_t *expr,
 						   ilang_gen_flag_t flag,
 						   ilang_gen_env_t *env)

@@ -45,7 +45,7 @@ loc gen = fn core: {
 		iter: fn: {
 			next: fn: {
 				loc r = resume c
-				if !c.alive(): raise exception()
+				assert c.alive()
 				r
 			}
 		}

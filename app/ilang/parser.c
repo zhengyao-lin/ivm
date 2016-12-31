@@ -55,6 +55,7 @@ enum token_id_t {
 	T_IS,
 
 	T_IMPORT,
+	T_ASSERT,
 
 	T_SEMIC,	// ;
 	T_COMMA,	// ,
@@ -157,6 +158,7 @@ token_name_table[] = {
 	"operator `is`",
 
 	"keyword `import`",
+	"keyword `assert`",
 
 	"semicolon",
 	"comma",
@@ -592,6 +594,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		KEYWORD("is", T_IS)
 
 		KEYWORD("import", T_IMPORT)
+		KEYWORD("assert", T_ASSERT)
 #undef KEYWORD
 	};
 
@@ -3223,6 +3226,32 @@ RULE(branch_expr)
 */
 
 /*
+	assert_expr
+		: 'assert' nllo prefix_expr
+ */
+RULE(assert_expr)
+{
+	struct token_t *tmp_token;
+
+	SUB_RULE_SET(
+		SUB_RULE(T(T_ASSERT) R(nllo)
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("assert expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.expr = ilang_gen_assert_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr
+			);
+		})
+	);
+
+	FAILED({})
+	MATCHED({})
+}
+
+/*
 	prefix_expr
 		: assign_expr
 		| intr_expr
@@ -3232,6 +3261,7 @@ RULE(branch_expr)
 		| while_expr
 		| for_expr
 		| fork_expr
+		| assert_expr
 		| logic_or_expr '?' nllo prefix_expr nllo ':' nllo prefix_expr
  */
 
@@ -3249,6 +3279,7 @@ RULE(prefix_expr)
 		SUB_RULE(R(while_expr))
 		SUB_RULE(R(for_expr))
 		SUB_RULE(R(fork_expr))
+		SUB_RULE(R(assert_expr))
 		// SUB_RULE(R(group_expr))
 		// SUB_RULE(R(branch_expr))
 		// SUB_RULE(R(logic_or_expr))

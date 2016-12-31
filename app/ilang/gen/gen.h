@@ -735,6 +735,16 @@ COMMON_EXPR(fork_expr, "fork expression", {
 }, ilang_gen_expr_t *forkee,
    ivm_bool_t is_group);
 
+/* assert expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *cond;
+} ilang_gen_assert_expr_t;
+
+COMMON_EXPR(assert_expr, "assert expression", {
+	ret->cond = cond;
+}, ilang_gen_expr_t *cond);
+
 /* intr expr */
 enum {
 	ILANG_GEN_INTR_RET = 1,
