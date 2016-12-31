@@ -99,20 +99,6 @@ _ivm_coro_setExceptionPos(ivm_vmstate_t *state,
 	return;
 }
 
-IVM_INLINE
-ivm_object_t *
-_ivm_coro_newException_c(ivm_vmstate_t *state,
-						 ivm_object_t *msg)
-{
-	ivm_object_t *ret = ivm_object_new(state);
-
-	// _ivm_coro_updateExceptionPos(state, ret, file, line);
-
-	ivm_object_setSlot(ret, state, IVM_VMSTATE_CONST(state, C_MSG), msg);
-
-	return ret;
-}
-
 ivm_object_t *
 ivm_coro_newStringException(ivm_coro_t *coro,
 							ivm_vmstate_t *state,
