@@ -508,8 +508,13 @@ ivm_conv_parseDouble(const ivm_char_t *src,
 		R_OCT = 8,
 		R_HEX = 16,
 	} radix = R_DEC;
-	ivm_double_t ret = 0;
+	ivm_double_t ret = 0, sub_val = 0;
 	ivm_uint_t dec_pos = 0;
+
+	ivm_bool_t has_exp = IVM_FALSE;
+	ivm_int_t exp_sign = 1;
+
+	if (err) *err = IVM_FALSE;
 
 	/* sign & prefix */
 	if (len) {
@@ -542,6 +547,11 @@ ivm_conv_parseDouble(const ivm_char_t *src,
 		 src != end;
 		 src++) {
 		if (*src == '.') {
+			if (has_exp) {
+				if (err) *err = IVM_TRUE;
+				return 0; // error
+			}
+
 			dec_pos = 1;
 			continue;
 		}
@@ -554,11 +564,38 @@ ivm_conv_parseDouble(const ivm_char_t *src,
 				ret *= radix;
 				ret += _hex_to_digit(*src);
 			}
+		} else if (*src == 'e' || *src == 'E') {
+			has_exp = IVM_TRUE;
+			if (radix != R_DEC) {
+				if (err) *err = IVM_TRUE;
+				return 0;
+			}
+
+			sub_val = ret;
+			ret = 0;
+			dec_pos = 0;
+
+			src++;
+
+			if (src != end) {
+				if (*src == '-') exp_sign = -1;
+				else if (*src != '+') {
+					src--;
+				}
+			} else {
+				if (err) *err = IVM_TRUE;
+				return 0;
+			}
 		} else {
 			// PARSER_ERR_P((ivm_ptr_t)src - (ivm_ptr_t)beg,
 			// 			 PARSER_ERR_MSG_ILLEGAL_CHAR_RADIX(*src, radix));
 			if (err) *err = IVM_TRUE;
+			return 0;
 		}
+	}
+
+	if (has_exp) {
+		ret = sub_val * pow(R_DEC, ret * exp_sign);
 	}
 
 	if (!IVM_DOUBLE_ACC(ret) && overflow) {

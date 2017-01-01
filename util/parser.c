@@ -143,6 +143,7 @@ ivm_parser_parseStr(const ivm_char_t *str,
 	IVM_MEMCHECK(buf);
 
 	if (ivm_parser_parseStr_c(buf, str, len, err) == -1) {
+		STD_FREE(buf);
 		return IVM_NULL;
 	}
 
@@ -158,6 +159,7 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 	ivm_char_t *buf = ivm_heap_alloc(heap, sizeof(*buf) * (len + 1));
 
 	if (ivm_parser_parseStr_c(buf, str, len, err) == -1) {
+		STD_FREE(buf);
 		return IVM_NULL;
 	}
 
