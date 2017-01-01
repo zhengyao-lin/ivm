@@ -20,9 +20,9 @@ print(col)
 ret
 */
 
-import sys
+import json
 
-sys.exit(1)
+print(json.decode("[\"a\""))
 
 ret
 

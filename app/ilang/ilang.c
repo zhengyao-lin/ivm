@@ -178,6 +178,8 @@ int main(int argc, const char **argv)
 	ivm_file_t *output_cache = IVM_NULL;
 	ivm_file_t *src_file = IVM_NULL;
 
+	ivm_int_t end_idx = 0;
+
 #define OPTION IVM_CONSOLE_ARG_DIRECT_MATCH_OPTION
 #define NORMAL IVM_CONSOLE_ARG_DIRECT_MATCH_STRING
 #define DEFAULT IVM_CONSOLE_ARG_DIRECT_DEFAULT
@@ -187,7 +189,7 @@ int main(int argc, const char **argv)
 #define ERROR IVM_CONSOLE_ARG_DIRECT_ERROR
 #define ILLEGAL_ARG IVM_CONSOLE_ARG_DIRECT_ILLEGAL_ARG
 
-	IVM_CONSOLE_ARG_DIRECT("ilang", "1.0", argc, argv,
+	IVM_CONSOLE_ARG_DIRECT("ilang", "0.1", argc, argv,
 		OPTION("p", "-profile", "[enable|disable]", "enable(as default)/disable performance profile", {
 			if (!(tmp_str = ARG()->value)) {
 				cfg_prof = !cfg_prof;
@@ -239,6 +241,9 @@ int main(int argc, const char **argv)
 				if (!src_file) {
 					ERROR("cannot open source file %s", tmp_str);
 				}
+
+				end_idx = IVM_CONSOLE_ARG_DIRECT_INDEX() + 1;
+				IVM_CONSOLE_ARG_DIRECT_BREAK();
 			}
 		}),
 
@@ -259,6 +264,8 @@ int main(int argc, const char **argv)
 #undef ILLEGAL_ARG
 
 	if (is_failed) return 1;
+
+	ivm_env_setArg(argv + end_idx, argc - end_idx);
 
 	src = ivm_file_readAll(src_file);
 

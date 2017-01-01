@@ -264,11 +264,10 @@ ivm_ptlist_insert(ivm_ptlist_t *ptlist,
 }
 
 typedef struct {
+	ivm_byte_t *lst;
 	ivm_size_t esize;
-
 	ivm_size_t alloc;
 	ivm_size_t cur;
-	ivm_byte_t *lst;
 } ivm_list_t;
 
 ivm_list_t *
@@ -362,10 +361,14 @@ ivm_list_pop(ivm_list_t *list)
 #define ivm_list_isEmpty(list) ((list)->cur == 0)
 #define ivm_list_isLast(list) (((ivm_ptr_t)(iter) - (ivm_ptr_t)(list)->lst) / (list)->esize == (list)->cur - 1)
 
+#define ivm_list_offset(list, ptr) \
+	(((ivm_ptr_t)(ptr) - (ivm_ptr_t)(list)->lst) / (list)->esize)
+
 #define IVM_LIST_ITER_TYPE(elem_type) elem_type *
 #define IVM_LIST_ITER_SET(iter, val, type) (*((type *)(iter)) = val)
 #define IVM_LIST_ITER_GET(iter, type) (*((type *)(iter)))
 #define IVM_LIST_ITER_GET_PTR(iter, type) ((type *)(iter))
+#define IVM_LIST_ITER_INDEX(list, iter) ivm_list_offset((list), (iter))
 #define IVM_LIST_ITER_IS_LAST(list, iter, type) ((type *)(iter) + 1 == (type *)(list)->lst + (list)->cur)
 #define IVM_LIST_ITER_IS_FIRST(list, iter, type) ((type *)(iter) == (type *)(list)->lst)
 #define IVM_LIST_EACHPTR(list, iter, type) \

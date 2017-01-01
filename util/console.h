@@ -55,6 +55,7 @@ typedef IVM_LIST_ITER_TYPE(ivm_console_arg_t) ivm_console_arg_list_iterator_t;
 #define IVM_CONSOLE_ARG_LIST_ITER_SET(iter, val) IVM_LIST_ITER_SET((iter), (val), ivm_console_arg_t)
 #define IVM_CONSOLE_ARG_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ivm_console_arg_t)
 #define IVM_CONSOLE_ARG_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ivm_console_arg_t)
+#define IVM_CONSOLE_ARG_LIST_INDEX(list, iter) IVM_LIST_ITER_INDEX((list), (iter))
 #define IVM_CONSOLE_ARG_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ivm_console_arg_t)
 
 ivm_console_arg_list_t *
@@ -81,8 +82,8 @@ ivm_console_arg_parse(ivm_int_t argc,
 		ivm_console_arg_t *__ca_cur_arg__ = IVM_NULL;                                        \
 		ivm_size_t __ca_cur_opt__ = -1;                                                      \
 		ivm_bool_t __ca_is_failed__ = IVM_FALSE;                                             \
-		const ivm_char_t *__cs_prog__ = (prog);                                              \
-		const ivm_char_t *__cs_vers__ = (vers);                                              \
+		const ivm_char_t *__ca_prog__ = (prog);                                              \
+		const ivm_char_t *__ca_vers__ = (vers);                                              \
 		const ivm_char_t *__ca_path__ = *(argv);                                             \
 		__ca_tmp_opt__ = __ca_tmp_opt__;                                                     \
 		__ca_is_def__ = __ca_is_def__;                                                       \
@@ -100,6 +101,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 			} while (0);                                                                     \
 			if (__ca_is_failed__) break;                                                     \
 		}                                                                                    \
+__CA_END__:                                                                                  \
 		if (!__ca_is_failed__) {                                                             \
 			__ca_cur_opt__ = -1;                                                             \
 			do {                                                                             \
@@ -131,6 +133,8 @@ ivm_console_arg_parse(ivm_int_t argc,
 		break;                                                                             \
 	}
 
+#define IVM_CONSOLE_ARG_DIRECT_INDEX() IVM_CONSOLE_ARG_LIST_INDEX(__ca_arg_list__, __ca_aiter__)
+
 #define IVM_CONSOLE_ARG_DIRECT_MATCH_STRING(...) \
 	if (!__ca_is_def__ && !__ca_cur_arg__->name) {   \
 		__VA_ARGS__;                                 \
@@ -146,7 +150,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 #define IVM_CONSOLE_ARG_DIRECT_PRINT_HELP() \
 	ivm_console_printHelp_c(                                             \
 		ivm_console_help_info_build(                                     \
-			__cs_prog__, __cs_vers__, __ca_path__,                       \
+			__ca_prog__, __ca_vers__, __ca_path__,                       \
 			ivm_list_size(__ca_opt_list__),                              \
 			(ivm_console_option_t *)ivm_list_core(__ca_opt_list__)       \
 		),                                                               \
@@ -154,6 +158,8 @@ ivm_console_arg_parse(ivm_int_t argc,
 	)
 
 #define IVM_CONSOLE_ARG_DIRECT_ERROR IVM_CONSOLE_ARG_ERROR
+
+#define IVM_CONSOLE_ARG_DIRECT_BREAK() goto __CA_END__
 
 #define IVM_CONSOLE_ARG_DIRECT_FAILED(is_opt, ...) \
 	IVM_CONSOLE_ARG_FATAL(__VA_ARGS__);                                  \
