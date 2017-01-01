@@ -14,12 +14,13 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
-#define JSON_ERROR_MSG_FAILED_PARSE(str, pos, msg)			"failed to parse '%s': position %ld: %s", (str), (pos), (msg)
+#define JSON_ERROR_MSG_FAILED_PARSE(pos, msg)				"failed to parse JSON data: position %ld: %s", (pos), (msg)
 #define JSON_ERROR_MSG_ILLEGAL_CHAR_BEFORE(value)			"illegal character before " value
 #define JSON_ERROR_MSG_UNEXPECTED_ENDING					"unexpected ending"
 #define JSON_ERROR_MSG_EXPECTING(sth)						"expecting '" sth "'"
 #define JSON_ERROR_MSG_FAILED_PARSE_NUM						"failed to parse number"
 #define JSON_ERROR_MSG_NON_SPACE_AFTER						"unexpected non-whitespace character after JSON data"
+#define JSON_ERROR_MSG_MAX_RECUR							"max recursion count reached"
 
 struct encode_flag_t {
 	ivm_bool_t no_compact;
@@ -272,10 +273,18 @@ _json_encode_c(ivm_vmstate_t *state,
 			ivm_size_t len,              \
 			ivm_size_t *cur,             \
 			ivm_size_t *err_pos,         \
-			const ivm_char_t **err_msg)
+			const ivm_char_t **err_msg,  \
+			ivm_int_t recur)
+
+#define CHECK_RECUR() \
+	if (recur >= IVM_NATIVE_MAX_RECUR_COUNT) {  \
+		*err_pos = *cur;                        \
+		*err_msg = JSON_ERROR_MSG_MAX_RECUR;    \
+		return IVM_NULL;                        \
+	}
 
 #define CALL_RULE(name, cur) \
-	R(name)(state, src, len, (cur), err_pos, err_msg)
+	R(name)(state, src, len, (cur), err_pos, err_msg, recur + 1)
 
 #define ERR_RET(pos, msg) \
 	if (!*err_msg) {      \
@@ -321,7 +330,7 @@ RULE(string)
 
 					ret = ivm_string_object_new_r(state, tmp_str);
 					STD_FREE(tmp_str);
-					
+
 					return ret;
 				}
 
@@ -583,6 +592,8 @@ RULE(object)
 IVM_PRIVATE
 RULE(value)
 {
+	CHECK_RECUR();
+
 	ivm_object_t *ret;
 	ivm_size_t i, rest_len;
 	ivm_char_t c;
@@ -636,7 +647,7 @@ _json_parse_c(ivm_vmstate_t *state,
 	ivm_object_t *ret;
 	ivm_char_t c;
 
-	ret = R(value)(state, src, len, &cur, err_pos, err_msg);
+	ret = R(value)(state, src, len, &cur, err_pos, err_msg, 0);
 
 	if (ret) {
 		for (; cur < len; cur++) {
@@ -679,7 +690,7 @@ IVM_NATIVE_FUNC(_json_decode)
 
 	ret = _json_parse_c(NAT_STATE(), ivm_string_trimHead(str), ivm_string_length(str), &err_pos, &err_msg);
 
-	RTM_ASSERT(ret, JSON_ERROR_MSG_FAILED_PARSE(ivm_string_trimHead(str), err_pos, err_msg));
+	RTM_ASSERT(ret, JSON_ERROR_MSG_FAILED_PARSE(err_pos, err_msg));
 
 	return ret;
 }

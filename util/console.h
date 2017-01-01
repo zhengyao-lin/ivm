@@ -101,6 +101,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 			} while (0);                                                                     \
 			if (__ca_is_failed__) break;                                                     \
 		}                                                                                    \
+		goto __CA_END__;                                                                     \
 __CA_END__:                                                                                  \
 		if (!__ca_is_failed__) {                                                             \
 			__ca_cur_opt__ = -1;                                                             \

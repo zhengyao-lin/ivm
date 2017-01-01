@@ -81,7 +81,7 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 #endif
 
 #ifndef IVM_COMMON_PARSER_MAX_RECUR_DEPTH
-	#define IVM_COMMON_PARSER_MAX_RECUR_DEPTH 1024
+	#define IVM_COMMON_PARSER_MAX_RECUR_DEPTH IVM_NATIVE_MAX_RECUR_COUNT
 #endif
 
 #include "setjmp.h"

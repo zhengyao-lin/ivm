@@ -20,12 +20,6 @@ print(col)
 ret
 */
 
-import json
-
-print(json.decode("[\"a\""))
-
-ret
-
 import time
 import io
 loc.merge(import curses)
