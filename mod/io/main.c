@@ -46,19 +46,23 @@ ivm_int_t _type_uid;
 typedef struct {
 	IVM_OBJECT_HEADER
 	ivm_file_t *fp;
+	ivm_bool_t im_free; // implicit free
 } ivm_file_object_t;
 
 ivm_object_t *
 ivm_file_object_new(ivm_vmstate_t *state,
-					ivm_file_t *fp)
+					ivm_file_t *fp, ivm_bool_t im_free)
 {
 	ivm_file_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
 
 	ivm_object_init(IVM_AS_OBJ(ret), IVM_TPTYPE(state, IO_FILE_TYPE_UID));
 
 	ret->fp = fp;
+	ret->im_free = im_free;
 
-	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+	if (fp) {
+		ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+	}
 
 	return IVM_AS_OBJ(ret);
 }
@@ -67,7 +71,14 @@ void
 ivm_file_object_destructor(ivm_object_t *obj,
 						   ivm_vmstate_t *state)
 {
-	ivm_file_free(IVM_AS(obj, ivm_file_object_t)->fp);
+	ivm_file_object_t *fobj = IVM_AS(obj, ivm_file_object_t);
+	
+	if (fobj->im_free) {
+		ivm_file_free(fobj->fp);
+	} else {
+		ivm_file_free_n(fobj->fp);
+	}
+
 	return;
 }
 
@@ -76,7 +87,7 @@ ivm_file_object_cloner(ivm_object_t *obj,
 					   ivm_vmstate_t *state)
 {
 	IVM_AS(obj, ivm_file_object_t)->fp = IVM_NULL;
-	ivm_vmstate_addDesLog(state, obj);
+	// ivm_vmstate_addDesLog(state, obj);
 	return;
 }
 
@@ -98,7 +109,7 @@ IVM_NATIVE_FUNC(_io_file)
 
 	RTM_ASSERT(fp, IO_ERROR_MSG_FAILED_TO_OPEN_FILE(rfile));
 
-	return ivm_file_object_new(NAT_STATE(), fp);
+	return ivm_file_object_new(NAT_STATE(), fp, IVM_TRUE);
 }
 
 IVM_NATIVE_FUNC(_io_file_close)
@@ -460,7 +471,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	/* io.file */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_io_file_type, {
-		file_proto = ivm_file_object_new(state, IVM_NULL);
+		file_proto = ivm_file_object_new(state, IVM_NULL, IVM_FALSE);
 		ivm_type_setProto(_TYPE, file_proto);
 		ivm_object_setProto(file_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
 
@@ -489,9 +500,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_setSlot_r(mod, state, "kbhit", IVM_NATIVE_WRAP(state, _io_kbhit));
 #endif
 
-	ivm_object_setSlot_r(mod, state, "stdin", ivm_file_object_new(state, ivm_file_new_c(stdin)));
-	ivm_object_setSlot_r(mod, state, "stdout", ivm_file_object_new(state, ivm_file_new_c(stdout)));
-	ivm_object_setSlot_r(mod, state, "stderr", ivm_file_object_new(state, ivm_file_new_c(stderr)));
+	ivm_object_setSlot_r(mod, state, "stdin", ivm_file_object_new(state, ivm_file_new_c(stdin), IVM_FALSE));
+	ivm_object_setSlot_r(mod, state, "stdout", ivm_file_object_new(state, ivm_file_new_c(stdout), IVM_FALSE));
+	ivm_object_setSlot_r(mod, state, "stderr", ivm_file_object_new(state, ivm_file_new_c(stderr), IVM_FALSE));
 
 	return mod;
 }

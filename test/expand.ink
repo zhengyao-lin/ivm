@@ -23,9 +23,9 @@ catch: print("error")
 
 f(*[])
 
-print([ "yeah", 2 ][(for loc i in range(10): {
+print([ "yeah", 2 ][{ for loc i in range(10): {
 	f(1, f(*[ break ]), 1)
-}, 0)])
+}; 0 }])
 
 // -> "str: \\[ 1, 2, 3, 1, 2 \\]"
 // -> "num: 10013"

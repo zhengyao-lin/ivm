@@ -64,6 +64,16 @@ ivm_file_free(ivm_file_t *file)
 	return;
 }
 
+void
+ivm_file_free_n(ivm_file_t *file)
+{
+	if (file) {
+		STD_FREE(file);
+	}
+
+	return;
+}
+
 #define FGOTO(fp, pos) (IVM_FSEEK((fp), IVM_FSEEK_##pos, 0))
 
 ivm_long_t

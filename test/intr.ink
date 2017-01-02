@@ -7,11 +7,11 @@ a = 0
 for i in list: {
 	print(i)
 	list[
-		try:
+		(try:
 			try:
 				try:
 					cont
-				final: print("no!!!")]
+				final: print("no!!!"))]
 }
 
 // -> "num: 1"
@@ -25,12 +25,12 @@ print(a[{
 	try: {
 		try:
 			a[
-				for i in [1, 2, 3, 4, 5, {}]: {
+				(for i in [1, 2, 3, 4, 5, {}]: {
 					if i == 3:
 						cont
 					if i == 5:
 						break
-				}
+				})
 			]
 		catch:
 			print("inner")
@@ -48,13 +48,13 @@ try: try: try: try: try: try: try: try: try: {
 		i = i + 1
 	}
 }
-catch err: (print("first"), {} + 1)
-catch err: (print("second"), 1 + {})
+catch err: { print("first"); {} + 1 }
+catch err: { print("second"); 1 + {} }
 catch err: print("third")
 catch catch catch catch catch catch
 
 print(a[
-	a[(while 0: cont, 2)]
+	a[{while 0: cont; 2}]
 ])
 
 ret

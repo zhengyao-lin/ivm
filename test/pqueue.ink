@@ -34,7 +34,7 @@ loc pqueue = fn: {
 			q.push(val)
 
 			// float!
-			while i && val > (q[loc j = father(i)]): {
+			while i && val > (q[(loc j = father(i))]): {
 				swap(i, j)
 				i = j
 			}

@@ -292,6 +292,8 @@ _ivm_pthash_expand(ivm_pthash_t *table)
 		}
 	}
 
+	STD_FREE(orig);
+
 	return;
 }
 

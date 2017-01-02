@@ -769,6 +769,7 @@ ivm_coro_object_cloner(ivm_object_t *obj,
 					   ivm_vmstate_t *state)
 {
 	ivm_coro_addRef(IVM_AS(obj, ivm_coro_object_t)->coro);
+	ivm_vmstate_addDesLog(state, obj);
 	return;
 }
 

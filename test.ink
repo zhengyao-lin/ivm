@@ -27,7 +27,7 @@ loc.merge(import curses)
 try: {
 
 	initscr()
-	// raise exception()
+	raise exception()
 
 	cbreak()
 	// noecho()
@@ -243,11 +243,11 @@ __test = fn: {
 
 	print("hi")
 
-	b = fn: (
-		n = 10.clone(),
-		n.speak = fn a: print(a),
+	b = fn: {
+		n = 10.clone()
+		n.speak = fn a: print(a)
 		n
-	)
+	}
 
 	a = b()
 	a.speak("yes")
@@ -407,17 +407,17 @@ __test = fn: {
 
 	a = 10
 
-	func = fn n, b, a: (
-		b = a + 10,
-		n = b + 1,
-		n + 1,
-		c = "hello, " + "world!",
+	func = fn n, b, a: {
+		b = a + 10
+		n = b + 1
+		n + 1
+		c = "hello, " + "world!"
 		print(c)
-	)
+	}
 
-	func(1, (2, 3), 4)
+	func(1, { 2; 3 }, 4)
 
-	print(if 0, a < 11: "a < 11" elif a > 2: "a > 2" else: "no!")
+	print(if a < 11: "a < 11" elif a > 2: "a > 2" else: "no!")
 
 	builder = fn n: {
 		a: 10,

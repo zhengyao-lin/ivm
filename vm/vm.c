@@ -137,7 +137,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 
 	if (state) {
 		// ivm_vmstate_cleanThread(state);
-
 		ivm_coro_free(state->main_coro, state);
 
 		ivm_collector_dump(&state->gc, state);
@@ -145,6 +144,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		if (ivm_coro_set_size(&state->coro_set)) {
 			IVM_FATAL("impossible");
 		}
+
 		ivm_coro_set_dump(&state->coro_set);
 
 		for (j = 0; j < IVM_ARRLEN(state->heaps); j++) {

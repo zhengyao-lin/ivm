@@ -2,4 +2,4 @@
 
 add_mod_batch(json main.c)
 
-target_link_libraries(json ivm-vm)
+target_link_libraries(json ivm-vm ivm-util)

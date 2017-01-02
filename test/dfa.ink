@@ -1,5 +1,5 @@
 import std
-// import ulist
+import ulist
 import math
 
 // rule: [ from, char, next ]
@@ -53,6 +53,11 @@ loc dfa = fn rules, fin_node = [], init = 0: {
 
 				i = i + 1
 			}
+		},
+
+		// minimize DFA
+		min: fn: {
+
 		}
 	}
 }

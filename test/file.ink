@@ -2,7 +2,8 @@ import std
 import io
 
 fp = io.file("test/text1")
-print(loc str = fp.read())
+loc str = fp.read()
+print(str)
 print(fp is io.file)
 
 fp.seek()

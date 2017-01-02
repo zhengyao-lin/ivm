@@ -74,6 +74,9 @@ ivm_file_new_c(ivm_file_raw_t raw);
 void
 ivm_file_free(ivm_file_t *file);
 
+void
+ivm_file_free_n(ivm_file_t *file);
+
 ivm_char_t *
 ivm_file_readAll_c(ivm_file_t *file,
 				   ivm_bool_t save_pos);
