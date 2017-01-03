@@ -3,12 +3,12 @@ import ulist
 
 a = [0, 0, 0]
 
-print(1 && (try: {
-	try: a[a[a[a[a[a[a[a[{} + {}]]]]]]]] catch
-	try: a[{} + {}] catch: none final: {
+print(1 && (try {
+	try a[a[a[a[a[a[a[a[{} + {}]]]]]]]] catch
+	try a[{} + {}] catch none final {
 		"oops"; {} + {}
 	}
-} catch final: "yep"))
+} catch none final "yep"))
 
 print(none || a.apply(fn a: a * 2).sum() && 1)
 print(1 && 1 && 1 && 1 && 1 && 1 && 1 && 1 && 1 && 1 && 0 || "yes")

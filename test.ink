@@ -24,7 +24,7 @@ import time
 import io
 loc.merge(import curses)
 
-try: {
+try {
 
 	initscr()
 	raise exception()
@@ -79,7 +79,7 @@ try: {
 
 } catch e: {
 	print(e)
-} final: {
+} final {
 	endwin()
 }
 
@@ -87,7 +87,7 @@ printe = fn e: {
 	print("ERROR: " + string(e))
 }
 
-__test = fn: {
+__test = fn {
 	a = 1
 	a.proto = string.proto
 
@@ -95,8 +95,8 @@ __test = fn: {
 
 	string.proto.+ = "".+
 
-	try: print(a.+(1))
-	catch: print("a little problem")
+	try print(a.+(1))
+	catch none
 
 	print(numeric("10"))
 	print(numeric("10.01001"))
@@ -357,7 +357,7 @@ __test = fn: {
 		printe(err)
 	}
 
-	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()() catch) == none)
+	print((try: (fn:fn:fn:fn:raise "wonrg!!")()()()() catch none) == none)
 
 	print("hello" == "hello")
 	try: (fn:fn:fn:fn:raise "right!")()()()()

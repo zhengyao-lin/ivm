@@ -22,25 +22,25 @@ for i in list: {
 a = [ "yes!", "yeah!!", 1 ]
 
 print(a[{
-	try: {
-		try:
+	try {
+		try
 			a[
-				(for i in [1, 2, 3, 4, 5, {}]: {
+				(for i in [1, 2, 3, 4, 5, {}] {
 					if i == 3:
 						cont
 					if i == 5:
 						break
 				})
 			]
-		catch:
+		catch
 			print("inner")
 		print("here")
-	} catch final: 0
+	} catch none final 0
 }])
 
 loc wrong = fn: 1 + {}
 
-try: try: try: try: try: try: try: try: try: {
+try try try try try try try try try {
 	loc i = 0
 	while i < 100000: {
 		if i == 10000:
@@ -51,7 +51,7 @@ try: try: try: try: try: try: try: try: try: {
 catch err: { print("first"); {} + 1 }
 catch err: { print("second"); 1 + {} }
 catch err: print("third")
-catch catch catch catch catch catch
+catch none catch none catch none catch none catch none catch none
 
 print(a[
 	a[{while 0: cont; 2}]

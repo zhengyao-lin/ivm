@@ -2495,7 +2495,8 @@ RULE(param_list)
 
 /*
 	fn_expr
-		: fn param_list_opt ':' prefix_expr
+		: fn param_list ':' prefix_expr
+		| fn ':'? prefix_expr
  */
 RULE(fn_expr)
 {
@@ -2504,7 +2505,7 @@ RULE(fn_expr)
 
 	SUB_RULE_SET(
 		SUB_RULE(T(T_FN) R(nllo)
-				 R(param_list_opt)
+				 R(param_list)
 				 R(nllo) T(T_COLON) R(nllo) R(prefix_expr) DBB(PRINT_MATCH_TOKEN("fn expr"))
 		{
 			tmp_list = RULE_RET_AT(1).u.param_list;
@@ -2513,6 +2514,18 @@ RULE(fn_expr)
 				_ENV->unit,
 				TOKEN_POS(tmp_token),
 				tmp_list, RULE_RET_AT(4).u.expr
+			);
+		})
+
+		SUB_RULE(T(T_FN) R(nllo) T_OPT(T_COLON, 0) R(nllo)
+				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("fn expr"))
+		{
+			tmp_list = ilang_gen_param_list_new(_ENV->unit);
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_fn_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				tmp_list, RULE_RET_AT(2).u.expr
 			);
 		})
 	);
@@ -2880,20 +2893,21 @@ RULE(elif_list_opt)
 
 /*
 	else_branch_opt
-		: 'else' nllo ':' nllo prefix_expr
+		: 'else' nllo ':'? nllo prefix_expr
 		| %empty
  */
 RULE(else_branch_opt)
 {
 	SUB_RULE_SET(
 		SUB_RULE(R(nllo) T(T_ELSE) R(nllo)
-				 T(T_COLON) R(nllo) R(prefix_expr)
+				 T_OPT(T_COLON, 0) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("else branch"))
 		{
 			_RETVAL.branch = ilang_gen_branch_build(
 				IVM_NULL, RULE_RET_AT(3).u.expr
 			);
 		})
+
 		SUB_RULE()
 	);
 
@@ -2995,14 +3009,14 @@ RULE(for_expr)
 
 /*
 	final_branch_opt
-		: 'final' nllo ':' nllo prefix_expr
+		: 'final' nllo ':'? nllo prefix_expr
 		| %empty
  */
 RULE(final_branch_opt)
 {
 	SUB_RULE_SET(
 		SUB_RULE(R(nllo) T(T_FINAL) R(nllo)
-				 T(T_COLON) R(nllo) R(prefix_expr)
+				 T_OPT(T_COLON, 0) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("final branch"))
 		{
 			_RETVAL.expr = RULE_RET_AT(3).u.expr;
@@ -3017,8 +3031,7 @@ RULE(final_branch_opt)
 /*
 	catch_branch_opt
 		: nllo 'catch' nllo leftval nllo ':' nllo prefix_expr
-		| nllo 'catch' nllo ':' nllo prefix_expr
-		| nllo 'catch'
+		| nllo 'catch' nllo ':'? nllo prefix_expr
 		| %empty
  */
 RULE(catch_branch_opt)
@@ -3035,7 +3048,7 @@ RULE(catch_branch_opt)
 		})
 
 		SUB_RULE(R(nllo) T(T_CATCH) R(nllo)
-				 T(T_COLON) R(nllo) R(prefix_expr)
+				 T_OPT(T_COLON, 0) R(nllo) R(prefix_expr)
 				 DBB(PRINT_MATCH_TOKEN("catch branch(no arg)"))
 		{
 			_RETVAL.catch_branch = ilang_gen_catch_branch_build(
@@ -3043,12 +3056,14 @@ RULE(catch_branch_opt)
 			);
 		})
 
+		/*
 		SUB_RULE(R(nllo) T(T_CATCH)
 		{
 			_RETVAL.catch_branch = ilang_gen_catch_branch_build(
 				IVM_NULL, NONE_EXPR()
 			);
 		})
+		*/
 		
 		SUB_RULE()
 	);
@@ -3059,14 +3074,14 @@ RULE(catch_branch_opt)
 
 /*
 	try_expr
-		: 'try' nllo ':' nllo prefix_expr catch_branch_opt final_branch_opt
+		: 'try' nllo ':'? nllo prefix_expr catch_branch_opt final_branch_opt
  */
 RULE(try_expr)
 {
 	struct token_t *tmp_token;
 
 	SUB_RULE_SET(
-		SUB_RULE(T(T_TRY) R(nllo) T(T_COLON) R(nllo)
+		SUB_RULE(T(T_TRY) R(nllo) T_OPT(T_COLON, 0) R(nllo)
 				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("try branch"))
 				 R(catch_branch_opt)
 				 R(final_branch_opt)
@@ -3138,93 +3153,6 @@ RULE(fork_expr)
 	MATCHED({})
 }
 
-#if 0
-
-/*
-	group_expr
-		: 'group' nllo ':' nllo prefix_expr
-		| 'group' nllo prefix_expr
- */
-RULE(group_expr)
-{
-	struct token_t *tmp_token;
-
-	SUB_RULE_SET(
-		SUB_RULE(T(T_GROUP) R(nllo) T(T_COLON) R(nllo)
-				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("group fn expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			/*
-				fork: expr
-				=>
-				fork fn: expr
-			 */
-			_RETVAL.expr = ilang_gen_fork_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				ilang_gen_fn_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token),
-					IVM_NULL, RULE_RET_AT(2).u.expr
-				),
-				IVM_TRUE
-			);
-		})
-		SUB_RULE(T(T_GROUP) R(nllo)
-				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("group expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			/*
-				fork expr
-				=>
-				fork fn: expr()
-			 */
-			_RETVAL.expr = ilang_gen_fork_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				RULE_RET_AT(1).u.expr,
-				IVM_TRUE
-			);
-		})
-	);
-
-	FAILED({})
-	MATCHED({})
-}
-
-#endif
-
-/*
-
-RULE(branch_expr)
-{
-	struct token_t *tmp_token;
-
-	SUB_RULE_SET(
-		SUB_RULE(R(logic_or_expr)
-				 T(T_QM) R(nllo)
-				 R(prefix_expr) R(nllo)
-				 T(T_COLON) R(nllo)
-				 R(prefix_expr) DBB(PRINT_MATCH_TOKEN("branchexpr"))
-		{
-			tmp_token = TOKEN_AT(0);
-
-			_RETVAL.expr = ilang_gen_if_expr_new(
-				_ENV->unit,
-				TOKEN_POS(tmp_token),
-				ilang_gen_branch_build(RULE_RET_AT(0).u.expr, RULE_RET_AT(2).u.expr),
-				IVM_NULL,
-				ilang_gen_branch_build(IVM_NULL, RULE_RET_AT(5).u.expr)
-			);
-		})
-	);
-
-	FAILED({})
-	MATCHED({})
-}
-
-*/
-
 /*
 	assert_expr
 		: 'assert' nllo prefix_expr
@@ -3262,7 +3190,7 @@ RULE(assert_expr)
 		| for_expr
 		| fork_expr
 		| assert_expr
-		| logic_or_expr '?' nllo prefix_expr nllo ':' nllo prefix_expr
+		| logic_or_expr ('?' nllo prefix_expr nllo ':' nllo prefix_expr)?
  */
 
 RULE(prefix_expr)
