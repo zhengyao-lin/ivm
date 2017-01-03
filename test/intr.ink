@@ -25,7 +25,7 @@ print(a[{
 	try {
 		try
 			a[
-				(for i in [1, 2, 3, 4, 5, {}] {
+				(for i in [1, 2, 3, 4, 5, {}]: {
 					if i == 3:
 						cont
 					if i == 5:
