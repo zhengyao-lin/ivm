@@ -88,8 +88,6 @@ print(b.bala)
 
 a.proto = "no!!"
 
-print(typename(b.proto))
-
 (fn: {
 	loc a = { val: 0 }
 	a.a = a
@@ -103,6 +101,8 @@ print(typename(b.proto))
 	print(typename(val))
 })()
 
+print(loc == loc)
+
 // -> "num: 10"
 // -> "num: 1"
 
@@ -114,8 +114,9 @@ print(typename(b.proto))
 // -> "str: no ret"
 // -> "str: everything is ok"
 // -> "str: yo"
-// -> "str: object"
 
 // -> "num: 0"
 // -> "num: 2"
 // -> "str: none"
+
+// -> "num: 1"

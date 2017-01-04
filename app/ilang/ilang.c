@@ -135,7 +135,7 @@ ilang_mod_loadSource(const ivm_char_t *path,
 	// IVM_TRACE("%p\n", dest);
 
 	if (ivm_coro_resume(coro, state, IVM_NULL)) {
-		ret = ivm_object_new_t(state, ivm_context_getSlotTable(dest));
+		ret = ivm_context_getObject(dest, state);
 	}
 
 	ivm_context_free(dest, state);

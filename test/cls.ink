@@ -2,12 +2,12 @@ import std
 
 loc.merge(import class)
 
-loc TypeA = class { | self |
+loc TypeA = class { self ->
 	self.val = 10
 	self.print = fn: print(self.val)
 }
 
-loc TypeB = class(TypeA()) { | self, val |
+loc TypeB = class(TypeA()) { self, val ->
 	self.val = val
 	self.print = fn: print("b: " + self.val)
 }

@@ -88,6 +88,8 @@ enum token_id_t {
 	T_SHAR,		// >>
 	T_SHLR,		// >>>
 
+	T_ARROW,	// ->
+
 	T_INADD,	// +=
 	T_INSUB,	// -=
 	T_INMUL,	// *=
@@ -190,6 +192,8 @@ token_name_table[] = {
 	"shift left",
 	"shift arithmetic right",
 	"shift logic right",
+
+	"arrow",
 
 	"inplace add operator",
 	"inplace sub operator",
@@ -392,6 +396,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* TRY_SUB */
 		{
 			{ "==", ST_INIT, T_INSUB, .ext = IVM_TRUE, .exc = IVM_TRUE },
+			{ "=>", ST_INIT, T_ARROW, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_SUB }
 		},
 
@@ -1503,15 +1508,15 @@ RULE(oop)
 
 /*
 	block_param
-		: '|' nllo param_list nllo '|'
+		: param_list nllo '->'
  */
 RULE(param_list);
 RULE(block_param)
 {
 	SUB_RULE_SET(
-		SUB_RULE(T(T_BIOR) R(nllo) R(param_list) R(nllo) T(T_BIOR)
+		SUB_RULE(R(param_list) R(nllo) T(T_ARROW)
 		{
-			_RETVAL.param_list = RULE_RET_AT(1).u.param_list;
+			_RETVAL.param_list = RULE_RET_AT(0).u.param_list;
 		})
 	)
 

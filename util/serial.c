@@ -575,7 +575,7 @@ ivm_serial_mod_loadCache(const ivm_char_t *path,
 	dest = ivm_context_addRef(ivm_coro_getRuntimeGlobal(coro));
 	ivm_coro_resume(coro, state, IVM_NULL);
 
-	ret = ivm_context_getLinkedObject(dest, state);
+	ret = ivm_context_getObject(dest, state);
 
 	ivm_context_free(dest, state);
 

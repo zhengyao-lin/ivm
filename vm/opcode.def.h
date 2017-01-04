@@ -555,7 +555,7 @@ OPCODE_GEN(SET_CONTEXT_SLOT, "set_context_slot", S, -1, {
 
 /* loc object in ink */
 OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
-	_TMP_OBJ1 = ivm_context_getLinkedObject(_CONTEXT, _STATE);
+	_TMP_OBJ1 = ivm_context_getObject(_CONTEXT, _STATE);
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR_NINT();
@@ -563,13 +563,13 @@ OPCODE_GEN(GET_LOCAL_CONTEXT, "get_local_context", N, 1, {
 
 OPCODE_GEN(SET_LOCAL_CONTEXT, "set_local_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_context_linkToObject(_CONTEXT, _STATE, STACK_POP());
+	ivm_context_setObject(_CONTEXT, _STATE, STACK_POP());
 	NEXT_INSTR();
 })
 
 /* top object in ink */
 OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
-	_TMP_OBJ1 = ivm_context_getLinkedObject(ivm_context_getGlobal(_CONTEXT), _STATE);
+	_TMP_OBJ1 = ivm_context_getObject(ivm_context_getGlobal(_CONTEXT), _STATE);
 	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR_NINT();
@@ -577,10 +577,7 @@ OPCODE_GEN(GET_GLOBAL_CONTEXT, "get_global_context", N, 1, {
 
 OPCODE_GEN(SET_GLOBAL_CONTEXT, "set_global_context", N, -1, {
 	CHECK_STACK(1);
-	ivm_context_linkToObject(
-		ivm_context_getGlobal(_CONTEXT),
-		_STATE, STACK_POP()
-	);
+	ivm_context_setObject(ivm_context_getGlobal(_CONTEXT), _STATE, STACK_POP());
 	NEXT_INSTR();
 })
 

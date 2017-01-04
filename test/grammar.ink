@@ -15,7 +15,7 @@ gen = fn count: {
 
 loc a = gen(10)
 
-for [a, b] in a zip(a apply { | x | x * x }):
+for [a, b] in a zip(a apply { x -> x * x }):
 	print(a + " ^ 2 = " + b)
 
 for i in [ 1, 2, 2, 3, 1, "hi", "wow", "wow", "hi", 3, 3, 5, 6, 6, 9, 1, 5, 6, 7 ].uniq():

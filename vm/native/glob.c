@@ -116,12 +116,12 @@ BUILTIN_FUNC(_global_map, {
 	I(INVOKE, 1)
 
 	I(DUP_PREV_BLOCK_N, 0)
-    I(PUSH_LIST)
+	I(PUSH_LIST)
 
-    I(JUMP, -7)
-    I(POP_BLOCK)
+	I(JUMP, -7)
+	I(POP_BLOCK)
 
-    I(RETURN)
+	I(RETURN)
 })
 
 IVM_NATIVE_FUNC(_global_print)

@@ -16,10 +16,11 @@ struct ivm_vmstate_t_tag;
 struct ivm_object_t_tag;
 
 typedef struct ivm_context_t_tag {
+	ivm_object_t *obj;
 	struct ivm_context_t_tag *prev;
-	ivm_slot_table_t *slots;
 	struct {
-		ivm_uint_t ref;
+		ivm_long_t ref;
+		ivm_int_t cid;
 		ivm_bool_t gen;
 		ivm_bool_t wb;
 	} mark;
@@ -43,7 +44,13 @@ typedef struct ivm_context_t_tag {
 #define ivm_context_getWB(ctx) ((ctx)->mark.wb)
 #define ivm_context_setWB(ctx, val) ((ctx)->mark.wb = (val))
 
+#define ivm_context_getCID(ctx) ((ctx)->mark.cid)
+#define ivm_context_setCID(ctx, val) ((ctx)->mark.cid = (val))
+#define ivm_context_checkCID(ctx, val) ((ctx)->mark.cid == (val))
+
 #define ivm_context_getPrev(ctx) ((ctx)->prev)
+
+#define ivm_context_lastRef(ctx) ((ctx)->mark.ref == 1)
 
 IVM_INLINE
 ivm_context_t *
@@ -62,36 +69,6 @@ ivm_context_getGlobal(ivm_context_t *ctx)
 {
 	for (; ctx->prev; ctx = ctx->prev);
 	return ctx;
-}
-
-/*
-	cache versions of search and searchAndSetExistSlot are in inline/context.h
- */
-
-ivm_object_t *
-ivm_context_search(ivm_context_t *ctx,
-				   struct ivm_vmstate_t_tag *state,
-				   const ivm_string_t *key);
-
-ivm_bool_t
-ivm_context_searchAndSetExistSlot(ivm_context_t *ctx,
-								  struct ivm_vmstate_t_tag *state,
-								  const ivm_string_t *key,
-								  ivm_object_t *val);
-
-IVM_INLINE
-void
-ivm_context_expandSlotTable(ivm_context_t *ctx,
-							struct ivm_vmstate_t_tag *state,
-							ivm_size_t size)
-{
-	if (ctx->slots) {
-		ivm_slot_table_expandTo(ctx->slots, state, size);
-	} else {
-		ctx->slots = ivm_slot_table_newAt_c(state, size, ctx->mark.gen);
-	}
-
-	return;
 }
 
 typedef ivm_ptpool_t ivm_context_pool_t;

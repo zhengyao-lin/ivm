@@ -117,8 +117,14 @@ typedef struct ivm_collector_t_tag {
 #define ivm_collector_addWBSlotTable(collector, table) \
 	(ivm_wbslot_list_push(&(collector)->wb_slot, (table)))
 
-#define ivm_collector_addWBContext(collector, table) \
-	(ivm_wbctx_list_push(&(collector)->wb_ctx, (table)))
+IVM_INLINE
+void
+ivm_collector_addWBContext(ivm_collector_t *col,
+						   ivm_context_t *ctx)
+{
+	ivm_wbctx_list_push(&col->wb_ctx, ivm_context_addRef(ctx));
+	return;
+}
 
 #define ivm_collector_addWBCoro(collector, coro) \
 	(ivm_wbcoro_list_push(&(collector)->wb_coro, (coro)))

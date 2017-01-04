@@ -185,11 +185,35 @@ ivm_object_setSlot_cc(ivm_object_t *obj,
 					  ivm_object_t *value,
 					  ivm_instr_t *instr);
 
-#define ivm_object_setSlotIfExist(obj, state, key, value) \
-	(ivm_slot_table_setSlotIfExist((obj)->slots, (state), (key), (value)))
+ivm_bool_t
+ivm_object_setEmptySlot_r(ivm_object_t *obj,
+						  struct ivm_vmstate_t_tag *state,
+						  const ivm_char_t *rkey,
+						  ivm_object_t *value);
 
-#define ivm_object_setSlotIfExist_cc(obj, state, key, value, instr) \
-	(ivm_slot_table_setSlotIfExist_cc((obj)->slots, (state), (key), (value), (instr)))
+ivm_bool_t
+ivm_object_setExistSlot(ivm_object_t *obj,
+						struct ivm_vmstate_t_tag *state,
+						const ivm_string_t *key,
+						ivm_object_t *value);
+
+ivm_bool_t
+ivm_object_setExistSlot_cc(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state,
+						   const ivm_string_t *key,
+						   ivm_object_t *value,
+						   ivm_instr_t *instr);
+
+void
+ivm_object_expandSlotTable(ivm_object_t *obj,
+						   struct ivm_vmstate_t_tag *state,
+						   ivm_size_t size);
+
+void
+ivm_object_setOop(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state,
+				  ivm_int_t op,
+				  ivm_object_t *func);
 
 ivm_object_t *
 ivm_object_getSlot(ivm_object_t *obj,
@@ -206,29 +230,6 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_instr_t *instr);
-
-ivm_bool_t
-ivm_object_setEmptySlot_r(ivm_object_t *obj,
-						  struct ivm_vmstate_t_tag *state,
-						  const ivm_char_t *rkey,
-						  ivm_object_t *value);
-
-void
-ivm_object_setOop(ivm_object_t *obj,
-				  struct ivm_vmstate_t_tag *state,
-				  ivm_int_t op,
-				  ivm_object_t *func);
-
-#if 0
-/* no prototype */
-ivm_object_t *
-ivm_object_getSlotValue_np(ivm_object_t *obj,
-						   struct ivm_vmstate_t_tag *state,
-						   const ivm_char_t *key);
-#endif
-
-void
-ivm_object_printSlots(ivm_object_t *obj);
 
 #define IVM_AS(obj, type) ((type *)(obj))
 #define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))

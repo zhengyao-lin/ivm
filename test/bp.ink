@@ -161,7 +161,7 @@ loc test_bin2bool = fn ev, jud: {
 }
 
 // test_not()
-test_gate { | a, b | a | b }
+test_gate { a, b -> a | b }
 test_bin2bool((fn a, b: math.abs(math.abs(a) - math.abs(b))), (fn a: a < 50))
 
 ret

@@ -477,6 +477,7 @@ IVM_WBSLOT(ivm_vmstate_t *state,
 	return IVM_FALSE;
 }
 
+/*
 IVM_INLINE
 ivm_bool_t
 IVM_WBCTX(ivm_vmstate_t *state,
@@ -485,6 +486,25 @@ IVM_WBCTX(ivm_vmstate_t *state,
 {
 	if (ivm_context_getGen(ctx) && value &&
 		!ivm_slot_table_getGen(value)) {
+		if (!ivm_context_getWB(ctx)) {
+			ivm_collector_addWBContext(&state->gc, ctx);
+			ivm_context_setWB(ctx, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+*/
+
+IVM_INLINE
+ivm_bool_t
+IVM_WBCTX(ivm_vmstate_t *state,
+		  ivm_context_t *ctx,
+		  ivm_object_t *obj)
+{
+	if (ivm_context_getGen(ctx) &&
+		!IVM_OBJECT_GET(obj, GEN)) {
 		if (!ivm_context_getWB(ctx)) {
 			ivm_collector_addWBContext(&state->gc, ctx);
 			ivm_context_setWB(ctx, 1);

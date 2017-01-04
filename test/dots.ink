@@ -350,7 +350,7 @@ loc test5 = fn: {
 }
 
 _print = print
-print = fn:none
+print = fn: none
 
 test1()
 test2()

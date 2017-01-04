@@ -180,9 +180,9 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 		// else if (ivm_slot_table_checkCID(table, arg->cid))
 		//	return table;
 
-		else if (ivm_heap_isIn(arg->heap, table)) {
-			return table;
-		}
+		// else if (ivm_heap_isIn(arg->heap, table)) {
+		// 	return table;
+		// }
 	} else {
 		return IVM_NULL;
 	}
@@ -336,16 +336,24 @@ ivm_collector_travSingleContext(ivm_context_t *ctx,
 								ivm_traverser_arg_t *arg)
 {
 	// IVM_TRACE("trax ctx %p\n", ctx);
+	// IVM_TRACE("obj obj: %p %d\n", ctx->obj, ivm_heap_isIn(arg->heap, ctx->obj));
+
+	if (ivm_context_checkCID(ctx, arg->cid)) {
+		// IVM_TRACE("skip!\n");
+		return;
+	}
 
 	ivm_context_setGen(ctx, 1);
 	ivm_context_setWB(ctx, 0);
+	ivm_context_setCID(ctx, arg->cid);
 
-	_ivm_context_setSlotTable_c(ctx,
-		ivm_collector_copySlotTable(
-			ivm_context_getSlotTable(ctx),
-			arg
+	_ivm_context_updateObject_c(
+		ctx, ivm_collector_copyObject(
+			ivm_context_getObject_c(ctx), arg
 		)
 	);
+
+	// IVM_TRACE("new obj: %p\n", (void *)ctx->obj);
 
 	return;
 }
@@ -403,6 +411,8 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_runtime_t *runtime;
 	ivm_frame_stack_iterator_t fiter;
 	ivm_object_t **i, **sp;
+
+	// IVM_TRACE("find coro: %p\n", coro);
 
 	// prevent duplicated traversing
 	if (ivm_coro_checkCID(coro, arg->cid)) return;
@@ -515,6 +525,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 	ivm_wbslot_list_iterator_t siter;
 	ivm_wbctx_list_iterator_t citer;
 	ivm_wbcoro_list_iterator_t coro_iter;
+	ivm_context_t *tmp_ctx;
 
 	if (!arg->gen) {
 		IVM_WBOBJ_LIST_EACHPTR(&collector->wb_obj, oiter) {
@@ -534,7 +545,17 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 
 	if (!arg->gen) {
 		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
-			ivm_collector_travContext(IVM_WBCTX_LIST_ITER_GET(citer), arg);
+			tmp_ctx = IVM_WBCTX_LIST_ITER_GET(citer);
+
+			if (!ivm_context_lastRef(tmp_ctx)) {
+				ivm_collector_travContext(tmp_ctx, arg);
+			}
+
+			ivm_context_free(tmp_ctx, arg->state);
+		}
+	} else {
+		IVM_WBCTX_LIST_EACHPTR(&collector->wb_ctx, citer) {
+			ivm_context_free(IVM_WBCTX_LIST_ITER_GET(citer), arg->state);
 		}
 	}
 

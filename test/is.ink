@@ -27,11 +27,11 @@ loc class = fn p, init: {
 
 loc Type0 = class({
 	shout: fn: print(base.val)
-}) { | self |
+}) { self ->
 	self.val = "this is type0"
 }
 
-loc TypeA = class(Type0) { | self |
+loc TypeA = class(Type0) { self ->
 	self.val = "hi"
 }
 
