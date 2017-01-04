@@ -501,7 +501,25 @@ IVM_INLINE
 ivm_bool_t
 IVM_WBCTX(ivm_vmstate_t *state,
 		  ivm_context_t *ctx,
-		  ivm_object_t *obj)
+		  ivm_slot_table_t *slots)
+{
+	if (ivm_context_getGen(ctx) &&
+		!ivm_slot_table_getGen(slots)) {
+		if (!ivm_context_getWB(ctx)) {
+			ivm_collector_addWBContext(&state->gc, ctx);
+			ivm_context_setWB(ctx, 1);
+		}
+		return IVM_TRUE;
+	}
+
+	return IVM_FALSE;
+}
+
+IVM_INLINE
+ivm_bool_t
+IVM_WBCTX_OBJ(ivm_vmstate_t *state,
+			  ivm_context_t *ctx,
+			  ivm_object_t *obj)
 {
 	if (ivm_context_getGen(ctx) &&
 		!IVM_OBJECT_GET(obj, GEN)) {

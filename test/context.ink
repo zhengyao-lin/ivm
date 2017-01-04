@@ -53,9 +53,9 @@ d3 = 1024
 local = loc
 a = local.clone()
 
-local.what = "yes"
+// local.what = "yes"
 
-print(what)
+// print(what)
 
 loc.+ = fn b: {
 	print("loc add " + b)
@@ -108,7 +108,7 @@ print(loc == loc)
 
 // -> "str: hey"
 // -> "str: hi"
-// -> "str: yes"
+// nop -> "str: yes"
 
 // -> "str: loc add 10"
 // -> "str: no ret"

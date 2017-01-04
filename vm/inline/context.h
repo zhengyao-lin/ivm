@@ -13,16 +13,17 @@
 IVM_COM_HEADER
 
 IVM_INLINE
-ivm_object_t *
+ivm_slot_table_t *
 ivm_context_initSlots(ivm_context_t *ctx,
 					  ivm_vmstate_t *state)
 {
-	if (!ctx->obj) {
-		ctx->obj = ivm_object_new_c(state, 0);
-		IVM_WBCTX(state, ctx, ctx->obj);
+	if (!ctx->slots) {
+		// ctx->obj = ivm_object_new_c(state, 0);
+		ctx->slots = ivm_slot_table_newAt(state, ivm_context_getGen(ctx));
+		// IVM_WBCTX(state, ctx, ctx->obj);
 	}
 
-	return ctx->obj;
+	return ctx->slots;
 }
 
 IVM_INLINE
@@ -63,7 +64,7 @@ ivm_context_setSlot(ivm_context_t *ctx,
 					const ivm_string_t *key,
 					ivm_object_t *value)
 {
-	ivm_object_setSlot(ivm_context_initSlots(ctx, state), state, key, value);
+	ivm_slot_table_setSlot(ivm_context_initSlots(ctx, state), state, key, value);
 	return;
 }
 
@@ -74,7 +75,7 @@ ivm_context_setSlot_r(ivm_context_t *ctx,
 					  const ivm_char_t *rkey,
 					  ivm_object_t *value)
 {
-	ivm_object_setSlot_r(ivm_context_initSlots(ctx, state), state, rkey, value);
+	ivm_slot_table_setSlot_r(ivm_context_initSlots(ctx, state), state, rkey, value);
 	return;
 }
 
@@ -86,7 +87,7 @@ ivm_context_setSlot_cc(ivm_context_t *ctx,
 					   ivm_object_t *value,
 					   ivm_instr_t *instr)
 {
-	ivm_object_setSlot_cc(ivm_context_initSlots(ctx, state), state, key, value, instr);
+	ivm_slot_table_setSlot_cc(ivm_context_initSlots(ctx, state), state, key, value, instr);
 	return;
 }
 
@@ -96,7 +97,7 @@ ivm_context_getSlot(ivm_context_t *ctx,
 					ivm_vmstate_t *state,
 					const ivm_string_t *key)
 {
-	return ctx->obj ? ivm_object_getSlot(ctx->obj, state, key) : IVM_NULL;
+	return ctx->slots ? ivm_slot_getValue(ivm_slot_table_getSlot(ctx->slots, state, key), state) : IVM_NULL;
 }
 
 IVM_INLINE
@@ -106,9 +107,9 @@ ivm_context_getSlot_cc(ivm_context_t *ctx,
 					   const ivm_string_t *key,
 					   ivm_instr_t *instr)
 {
-	if (!ctx->obj) return IVM_NULL;
+	if (!ctx->slots) return IVM_NULL;
 
-	return ivm_object_getSlot_cc(ctx->obj, state, key, instr);
+	return ivm_slot_getValue(ivm_slot_table_getSlot_cc(ctx->slots, state, key, instr), state);
 }
 
 IVM_INLINE
@@ -118,10 +119,10 @@ ivm_context_setExistSlot(ivm_context_t *ctx,
 						 const ivm_string_t *key,
 						 ivm_object_t *value)
 {
-	if (!ctx->obj) return IVM_FALSE;
+	if (!ctx->slots) return IVM_FALSE;
 
-	return ivm_object_setExistSlot(
-		ctx->obj, state,
+	return ivm_slot_table_setExistSlot(
+		ctx->slots, state,
 		key, value
 	);
 }
@@ -134,10 +135,10 @@ ivm_context_setExistSlot_cc(ivm_context_t *ctx,
 							ivm_object_t *value,
 							ivm_instr_t *instr)
 {
-	if (!ctx->obj) return IVM_FALSE;
+	if (!ctx->slots) return IVM_FALSE;
 
-	return ivm_object_setExistSlot_cc(
-		ctx->obj, state,
+	return ivm_slot_table_setExistSlot_cc(
+		ctx->slots, state,
 		key, value, instr
 	);
 }
@@ -147,7 +148,14 @@ ivm_object_t *
 ivm_context_getObject(ivm_context_t *ctx,
 					  ivm_vmstate_t *state)
 {
-	return ivm_context_initSlots(ctx, state);
+	if (!ctx->obj) {
+		ivm_context_initSlots(ctx, state);
+
+		ctx->obj = ivm_object_new_t(state, ctx->slots);
+		IVM_WBCTX_OBJ(state, ctx, ctx->obj);
+	}
+
+	return ctx->obj;
 }
 
 IVM_INLINE
@@ -155,6 +163,13 @@ ivm_object_t *
 ivm_context_getObject_c(ivm_context_t *ctx)
 {
 	return ctx->obj;
+}
+
+IVM_INLINE
+ivm_slot_table_t *
+ivm_context_getSlots_c(ivm_context_t *ctx)
+{
+	return ctx->slots;
 }
 
 IVM_INLINE
@@ -166,7 +181,16 @@ ivm_context_setObject(ivm_context_t *ctx,
 	ctx->obj = obj;
 
 	if (obj) {
-		IVM_WBCTX(state, ctx, obj);
+		IVM_WBCTX_OBJ(state, ctx, obj);
+
+		ctx->slots = IVM_OBJECT_GET(obj, SLOTS);
+		
+		if (!ctx->slots) {
+			ivm_object_expandSlotTable(obj, state, 0);
+			ctx->slots = IVM_OBJECT_GET(obj, SLOTS);
+		}
+	} else {
+		ctx->slots = IVM_NULL;
 	}
 
 	return;
@@ -179,6 +203,15 @@ _ivm_context_updateObject_c(ivm_context_t *ctx,
 							ivm_object_t *obj)
 {
 	ctx->obj = obj;
+	return;
+}
+
+IVM_INLINE
+void
+_ivm_context_updateSlots_c(ivm_context_t *ctx,
+						  ivm_slot_table_t *slots)
+{
+	ctx->slots = slots;
 	return;
 }
 
@@ -260,7 +293,7 @@ ivm_context_expandSlotTable(ivm_context_t *ctx,
 							struct ivm_vmstate_t_tag *state,
 							ivm_size_t size)
 {
-	ivm_object_expandSlotTable(ivm_context_initSlots(ctx, state), state, size);
+	ivm_slot_table_expandTo(ivm_context_initSlots(ctx, state), state, size);
 	return;
 }
 

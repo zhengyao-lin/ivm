@@ -353,6 +353,12 @@ ivm_collector_travSingleContext(ivm_context_t *ctx,
 		)
 	);
 
+	_ivm_context_updateSlots_c(
+		ctx, ivm_collector_copySlotTable(
+			ivm_context_getSlots_c(ctx), arg
+		)
+	);
+
 	// IVM_TRACE("new obj: %p\n", (void *)ctx->obj);
 
 	return;

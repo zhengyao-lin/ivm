@@ -36,7 +36,7 @@ if(DEFINED PLATFORM)
 endif()
 
 # set basic compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall")
 
 # struct timespec
 add_definitions(-D__need_timespec)

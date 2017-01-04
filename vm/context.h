@@ -16,8 +16,9 @@ struct ivm_vmstate_t_tag;
 struct ivm_object_t_tag;
 
 typedef struct ivm_context_t_tag {
-	ivm_object_t *obj;
+	ivm_slot_table_t *slots;
 	struct ivm_context_t_tag *prev;
+	ivm_object_t *obj;
 	struct {
 		ivm_long_t ref;
 		ivm_int_t cid;
