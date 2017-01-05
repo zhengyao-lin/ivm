@@ -53,8 +53,8 @@ typedef struct ivm_slot_table_t_tag {
 			ivm_int_t dummy2: 32 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
 			ivm_uint_t oop_count: 6; // max 64
 			ivm_uint_t is_hash: 1;
-			ivm_uint_t is_linked: 1; // assert(is_linked & is_shared != 1)
 			ivm_uint_t is_shared: 1; // shared by multiple objects, need to copy on write
+			ivm_uint_t no_cow: 1;
 			ivm_uint_t wb: 1;
 			ivm_uint_t gen: 1;
 		} sub;
@@ -140,9 +140,9 @@ ivm_slot_table_t *
 ivm_slot_table_copy_state(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state);
 
-#define ivm_slot_table_isLinked(table) ((table)->mark.sub.is_linked)
-#define ivm_slot_table_setLinked(table) ((table)->mark.sub.is_linked = IVM_TRUE)
 #define ivm_slot_table_isShared(table) ((table)->mark.sub.is_shared)
+#define ivm_slot_table_setNoCOW(table) ((table)->mark.sub.no_cow = IVM_TRUE)
+#define ivm_slot_Table_isNoCOW(table) ((table)->mark.sub.no_cow)
 
 IVM_INLINE
 ivm_slot_table_t *
@@ -150,7 +150,7 @@ ivm_slot_table_copyOnWrite(ivm_slot_table_t *table,
 						   struct ivm_vmstate_t_tag *state)
 {
 	// IVM_TRACE("COW!!\n");
-	if (table && ivm_slot_table_isShared(table)) {
+	if (ivm_slot_table_isShared(table)) {
 		return ivm_slot_table_copy_state(table, state);
 	}
 
@@ -163,11 +163,12 @@ ivm_slot_table_copyShared(ivm_slot_table_t *table,
 						  struct ivm_vmstate_t_tag *state)
 {
 	if (table) {
-		if (ivm_slot_table_isLinked(table)) {
-			return ivm_slot_table_copy_state(table, state);
+		if (ivm_slot_Table_isNoCOW(table)) {
+			table = ivm_slot_table_copy_state(table, state);
+		} else {
+			table->mark.sub.is_shared = IVM_TRUE;
 		}
 
-		table->mark.sub.is_shared = IVM_TRUE;
 		return table;
 	}
 	

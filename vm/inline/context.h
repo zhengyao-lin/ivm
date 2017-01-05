@@ -151,6 +151,8 @@ ivm_context_getObject(ivm_context_t *ctx,
 	if (!ctx->obj) {
 		ivm_context_initSlots(ctx, state);
 
+		ivm_slot_table_setNoCOW(ctx->slots);
+
 		ctx->obj = ivm_object_new_t(state, ctx->slots);
 		IVM_WBCTX_OBJ(state, ctx, ctx->obj);
 	}
@@ -181,6 +183,7 @@ ivm_context_setObject(ivm_context_t *ctx,
 	ctx->obj = obj;
 
 	if (obj) {
+		ivm_object_copyOnWrite(obj, state);
 		IVM_WBCTX_OBJ(state, ctx, obj);
 
 		ctx->slots = IVM_OBJECT_GET(obj, SLOTS);
@@ -189,6 +192,8 @@ ivm_context_setObject(ivm_context_t *ctx,
 			ivm_object_expandSlotTable(obj, state, 0);
 			ctx->slots = IVM_OBJECT_GET(obj, SLOTS);
 		}
+
+		ivm_slot_table_setNoCOW(ctx->slots);
 	} else {
 		ctx->slots = IVM_NULL;
 	}

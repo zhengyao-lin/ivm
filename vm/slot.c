@@ -139,8 +139,8 @@ ivm_slot_table_copy_state(ivm_slot_table_t *table,
 	ivm_slot_table_setWB(ret, 0);
 	ivm_slot_table_setGen(ret, 0);
 	ivm_slot_table_setCopy(ret, IVM_NULL);
-	ret->mark.sub.is_linked = IVM_FALSE;
 	ret->mark.sub.is_shared = IVM_FALSE;
+	ret->mark.sub.no_cow = IVM_FALSE;
 
 	ivm_slot_table_updateUID(ret, state);
 	ret->tabl = ivm_vmstate_alloc(state,

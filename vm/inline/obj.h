@@ -83,8 +83,8 @@ ivm_object_new_t(ivm_vmstate_t *state,
 
 	ivm_object_init(ret, IVM_BTTYPE(state, IVM_OBJECT_T));
 	ret->slots = slots;
+
 	if (slots) {
-		ivm_slot_table_setLinked(slots);
 		ret->mark.sub.oop = IVM_TRUE; // ivm_slot_table_hasOop(slots);
 	}
 
@@ -99,17 +99,6 @@ ivm_object_initSlots(ivm_object_t *obj,
 {
 	obj->slots = ivm_slot_table_new_c(state, prealloc);
 	return;
-}
-
-IVM_INLINE
-ivm_slot_table_t *
-ivm_object_setLinkable(ivm_object_t *obj,
-					   ivm_vmstate_t *state)
-{
-	if (!obj->slots)
-		return obj->slots = ivm_slot_table_newAt(state, IVM_OBJECT_GET(obj, GEN));
-	
-	return obj->slots;
 }
 
 IVM_INLINE
@@ -183,21 +172,33 @@ ivm_object_getOop(ivm_object_t *obj,
 }
 
 IVM_INLINE
+ivm_slot_table_t *
+ivm_object_copyOnWrite(ivm_object_t *obj,
+					   ivm_vmstate_t *state)
+{
+	if (obj->slots && ivm_slot_table_isShared(obj->slots)) {
+		obj->slots = ivm_slot_table_copyOnWrite(obj->slots, state);
+		IVM_WBOBJ_SLOT(state, obj, obj->slots);
+	}
+
+	return obj->slots;
+}
+
+IVM_INLINE
 void
 ivm_object_merge(ivm_object_t *obj,
 				 ivm_vmstate_t *state,
 				 ivm_object_t *mergee,
 				 ivm_bool_t overw)
 {
-	if (obj->slots) {
-		if (mergee->slots) {
-			ivm_slot_table_copyOnWrite(obj->slots, state);
-			ivm_slot_table_merge(obj->slots, state, mergee->slots, overw);
-			obj->mark.sub.oop |= mergee->mark.sub.oop;
-		}
+	if (obj->slots && mergee->slots) {
+		ivm_object_copyOnWrite(obj, state);
+		ivm_slot_table_merge(obj->slots, state, mergee->slots, overw);
+		obj->mark.sub.oop |= mergee->mark.sub.oop;
 	} else if (mergee->slots) {
 		obj->slots = ivm_slot_table_copy_state(mergee->slots, state);
 		obj->mark.sub.oop = mergee->mark.sub.oop;
+		IVM_WBOBJ_SLOT(state, obj, obj->slots);
 	}
 
 	return;
