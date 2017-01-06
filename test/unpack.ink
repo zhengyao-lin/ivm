@@ -120,6 +120,24 @@ loc fib = fn n: {
 
 print([ a, b, c, d ])
 
+{
+	val: [ a, *[ *[ b, c, d ], e, f ], g, h, i ],
+	[ "val2" ]: [ j, *k, l ],
+	proto: {
+		merge: loc mergef
+	}
+} = {
+	val: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+	val2: [ 1 ]
+}
+
+[ a, b, c, d, e, f, g, h, i ].print()
+[ j, k, l ].print()
+
+print({
+	merge: mergef
+}.merge({ val: "hello" }).val)
+
 // -> "str: ### list ###"
 // -> "num: 1"
 // -> "num: 2"
@@ -158,3 +176,7 @@ print([ a, b, c, d ])
 // -> "str: \\[ 1, \\[\\], <none> \\]"
 
 // -> "list: \\[ 1, 1, 2, \\[ 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610 \\] \\]"
+
+// -> "str: \\[ 1, 2, 3, 4, 5, 6, 7, 8, 9 \\]"
+// -> "str: \\[ 1, \\[\\], <none> \\]"
+// -> "str: hello"

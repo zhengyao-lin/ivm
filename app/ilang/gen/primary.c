@@ -168,58 +168,101 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	const ivm_char_t *err;
 
-	GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
+	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
 
 	list = table_expr->list;
 	size = ilang_gen_table_entry_list_size(list);
 
 	/* not top level => no new object */
-	if (size) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_OBJ_T, size);
-	} else {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_OBJ);
-	}
-
-	ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
-		tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
-
-		tmp_entry.expr->eval(
-			tmp_entry.expr,
-			FLAG(0),
-			env
-		);
-
-		if (tmp_entry.oop != -1) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_OOP_B, tmp_entry.oop);
-		} else if (tmp_entry.index) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);
-			ilang_gen_index_expr_genArg(expr, tmp_entry.index, env);
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDXA);
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	if (!flag.is_left_val) {
+		if (size) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_OBJ_T, size);
 		} else {
-			tmp_str = ivm_parser_parseStr_heap(
-				env->heap,
-				tmp_entry.name.val,
-				tmp_entry.name.len,
-				&err
-			);
-
-			if (!tmp_str) {
-				GEN_ERR_FAILED_PARSE_STRING(expr, err);
-			}
-
-			if (!IVM_STRCMP(tmp_str, "proto")) {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PROTO);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
-			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT_B, tmp_str);
-			}
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_OBJ);
 		}
 	}
 
-	if (flag.is_top_level) {
+	if (flag.is_left_val) {
+		ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
+			tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
+
+			if (tmp_entry.oop != -1) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_OOP, tmp_entry.oop);
+			} else if (tmp_entry.index) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+				ilang_gen_index_expr_genArg(expr, tmp_entry.index, env);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
+			} else {
+				tmp_str = ivm_parser_parseStr_heap(
+					env->heap,
+					tmp_entry.name.val,
+					tmp_entry.name.len,
+					&err
+				);
+
+				if (!tmp_str) {
+					GEN_ERR_FAILED_PARSE_STRING(expr, err);
+				}
+
+				if (!IVM_STRCMP(tmp_str, "proto")) {
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
+				} else {
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+				}
+			}
+
+			tmp_entry.expr->eval(
+				tmp_entry.expr,
+				FLAG(.is_left_val = IVM_TRUE),
+				env
+			);
+		}
+
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+	} else {
+		ILANG_GEN_TABLE_ENTRY_LIST_EACHPTR_R(list, eiter) {
+			tmp_entry = ILANG_GEN_TABLE_ENTRY_LIST_ITER_GET(eiter);
+
+			tmp_entry.expr->eval(
+				tmp_entry.expr,
+				FLAG(0),
+				env
+			);
+
+			if (tmp_entry.oop != -1) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_OOP_B, tmp_entry.oop);
+			} else if (tmp_entry.index) {
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);
+				ilang_gen_index_expr_genArg(expr, tmp_entry.index, env);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDXA);
+				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+			} else {
+				tmp_str = ivm_parser_parseStr_heap(
+					env->heap,
+					tmp_entry.name.val,
+					tmp_entry.name.len,
+					&err
+				);
+
+				if (!tmp_str) {
+					GEN_ERR_FAILED_PARSE_STRING(expr, err);
+				}
+
+				if (!IVM_STRCMP(tmp_str, "proto")) {
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PROTO);
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+				} else {
+					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT_B, tmp_str);
+				}
+			}
+		}
+		
+		if (flag.is_top_level) {
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
+		}
 	}
 
 	return NORET();

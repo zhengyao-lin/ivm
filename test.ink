@@ -20,6 +20,35 @@ print(col)
 ret
 */
 
+{
+	a: loc val_a,
+	b: loc val_b
+} = { a: 10, b: 20 }
+
+print(val_a)
+print(val_b)
+
+{
+	val: [ a, b, c, d ]
+} = { val: [ 1, 2, 3, 4 ] }
+
+print(a)
+print(b)
+print(c)
+print(d)
+
+{
+	val1: {
+		val2: {
+			real: loc val
+		}
+	}
+} = { val1: { val2: { real: "haha" } } }
+
+print(val)
+
+ret
+
 fib = fn n: {
 	if n < 2: ret 1
 	ret fib(n - 1) + fib(n - 2)
