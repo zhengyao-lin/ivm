@@ -216,7 +216,7 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		if (flag.is_top_level) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
-	} // else neither left value nor top level: don't generate
+	}
 
 	return ret;
 }

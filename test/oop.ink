@@ -104,6 +104,12 @@ a = { f: f, val: "no!" }
 
 a.f.()()
 
+~{
+	~: fn: {
+		print("wow")
+	}
+}
+
 // -> "num: 5"
 // -> "str: failed"
 // -> "str: yes!"
@@ -140,3 +146,5 @@ a.f.()()
 // -> "str: \\[ 1, 2 \\]"
 
 // -> "str: called! base: yeah"
+// 
+// -> "str: wow"

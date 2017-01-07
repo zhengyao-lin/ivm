@@ -506,6 +506,20 @@ COMMON_EXPR(binary_expr, "binary expression", {
 	ret->type = type;
 }, ilang_gen_expr_t *op1, ilang_gen_expr_t *op2, ivm_int_t type);
 
+/* cop expr */
+typedef struct {
+	ILANG_GEN_EXPR_HEADER
+	ilang_gen_expr_t *op1;
+	ilang_gen_expr_t *op2;
+	ilang_gen_token_value_t op;
+} ilang_gen_cop_expr_t;
+
+COMMON_EXPR(cop_expr, "custom operator expression", {
+	ret->op1 = op1;
+	ret->op2 = op2;
+	ret->op = op;
+}, ilang_gen_expr_t *op1, ilang_gen_expr_t *op2, ilang_gen_token_value_t op);
+
 /* cmp expr */
 enum {
 	ILANG_GEN_CMP_LT = -2,

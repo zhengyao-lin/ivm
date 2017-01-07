@@ -20,32 +20,18 @@ print(col)
 ret
 */
 
-{
-	a: loc val_a,
-	b: loc val_b
-} = { a: 10, b: 20 }
+a = {}
+a.---> = fn v: print("wonderful!! " + string(v))
 
-print(val_a)
-print(val_b)
+a ---> 10
 
-{
-	val: [ a, b, c, d ]
-} = { val: [ 1, 2, 3, 4 ] }
+ret
 
-print(a)
-print(b)
-print(c)
-print(d)
+f = fn: {
+	print("hi")
+}
 
-{
-	val1: {
-		val2: {
-			real: loc val
-		}
-	}
-} = { val1: { val2: { real: "haha" } } }
-
-print(val)
+f()(print("hi2"))
 
 ret
 
@@ -54,7 +40,7 @@ fib = fn n: {
 	ret fib(n - 1) + fib(n - 2)
 }
 
-print(fib(40))
+print(fib(30))
 
 ret
 

@@ -195,6 +195,7 @@ OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", {
 }))
 OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", 0))
 OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", 0))
+OPCODE_GEN(BNOT, "bnot", N, 0, UNIOP_HANDLER(BNOT, "~", 0))
 
 /* binary operations */
 OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", 0))

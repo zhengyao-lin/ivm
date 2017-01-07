@@ -81,9 +81,13 @@ enum token_id_t {
 	T_DIV,		// /
 	T_MOD,		// %
 
+	T_ADDAT,	// +@
+	T_SUBAT,	// -@
+
 	T_BAND,		// &
 	T_BIOR,		// |
 	T_BEOR,		// ^
+	T_BNOT,		// ~
 	T_SHL,		// <<
 	T_SHAR,		// >>
 	T_SHLR,		// >>>
@@ -114,6 +118,8 @@ enum token_id_t {
 
 	T_CAND,		// &&
 	T_COR,		// ||
+
+	T_COP,		// custom op: +, -, *, \, %, &, |, ^, >, <, !, @, ~
 
 	T_NEWL,
 	T_EOF
@@ -148,8 +154,8 @@ token_name_table[] = {
 	"keyword `yield`",
 	"keyword `resume`",
 
-	"keyword `with`",
-	"keyword `to`",
+	// "keyword `with`",
+	// "keyword `to`",
 
 	"keyword `fork`",
 
@@ -186,9 +192,13 @@ token_name_table[] = {
 	"div operator",
 	"mod operator",
 
+	"add at",
+	"sub at",
+
 	"bit and operator",
 	"bit inclusive or operator",
 	"bit exclusive or operator",
+	"bit not",
 	"shift left",
 	"shift arithmetic right",
 	"shift logic right",
@@ -219,6 +229,8 @@ token_name_table[] = {
 
 	"logic and operator",
 	"logic or operator",
+
+	"custom operator",
 
 	"new line",
 	"EOF"
@@ -259,6 +271,8 @@ enum state_t {
 
 	ST_TRY_COMMENT12,
 
+	ST_TRY_COP,
+
 	ST_IN_COMMENT1,
 	ST_OUT_COMMENT1,
 
@@ -287,6 +301,25 @@ ivm_list_t *
 _ilang_parser_getTokens(const ivm_char_t *src,
 						ivm_bool_t debug)
 {
+	// include:
+	// +, -, *, \, %, &, |, ^, >, <, !, ~, @, ?, =
+	// 
+	// except:
+	// +, -, *, \, %, &, |, ^, >, <, !, @, ?, =
+	// <<, >>, >>>, ->, +=, -=, *=, /=, %=
+	// &=, |=, ^=, <<=, >>=, >>>=
+	// >=, <=, !=, &&, ||
+	// 
+	// 1. ! ~
+	// 2. * \ %
+	// 3. + -
+	// 4. < >
+	// 5. &
+	// 6. ^
+	// 7. |
+	// 8. =
+	// 9. ?
+
 	ivm_list_t *ret = TOKENIZE(src,
 		/* INIT */
 		{
@@ -312,24 +345,29 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=[", ST_INIT, T_LBRAKT },
 			{ "=]", ST_INIT, T_RBRAKT },
 
+			{ "&+-*\\%&|^><!~@?=", ST_TRY_COP },
+
+/*
 			{ "=+", ST_TRY_ADD },
 			{ "=-", ST_TRY_SUB },
 			{ "=*", ST_TRY_MUL },
 			{ "=%", ST_TRY_MOD },
 
 			{ "=^", ST_TRY_BEOR },
-			{ "=@", ST_INIT, T_AT },
-			{ "=?", ST_INIT, T_QM },
 
 			{ "=!", ST_TRY_NOT },
 
 			{ "=>", ST_TRY_GT },
 			{ "=<", ST_TRY_LT },
-			{ "==", ST_TRY_ASSIGN },
-
 			{ "=&", ST_TRY_AND },
 			{ "=|", ST_TRY_OR },
-			
+
+			{ "=@", ST_INIT, T_AT },
+			{ "=?", ST_INIT, T_QM },
+			{ "==", ST_TRY_ASSIGN },
+
+*/
+
 			{ "=\n", ST_INIT, T_NEWL },
 			{ "=\r", ST_TRY_NEWL },
 
@@ -465,6 +503,12 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ ".", ST_INIT, T_DIV }
 		},
 
+		/* TRY_COP */
+		{
+			{ "&+-*\\%&|^><!~@?=", ST_TRY_COP },
+			{ ".", ST_INIT, T_COP }
+		},
+
 		/* IN_COMMENT1 */
 		{
 			{ "=*", ST_OUT_COMMENT1 },
@@ -562,6 +606,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 
 	ivm_int_t i, j, size = ivm_list_size(ret);
 	struct token_t *tmp_token;
+	
 	struct {
 		const ivm_char_t *name;
 		ivm_size_t len;
@@ -603,6 +648,65 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 #undef KEYWORD
 	};
 
+	struct {
+		const ivm_char_t *name;
+		ivm_size_t len;
+		enum token_id_t id;
+	} ops[] = {
+#define OP(name, id) { (name), sizeof(name) - 1, (id) },
+
+	OP("+", T_ADD)
+	OP("-", T_SUB)
+	OP("*", T_MUL)
+	OP("\\", T_DIV)
+	OP("%", T_MOD)
+	
+	OP("&", T_BAND)
+	OP("|", T_BIOR)
+	OP("^", T_BEOR)
+	OP("~", T_BNOT)
+	
+	OP(">", T_CGT)
+	OP("<", T_CLT)
+	
+	OP("!", T_NOT)
+	OP("<<", T_SHL)
+	OP(">>", T_SHAR)
+	OP(">>>", T_SHLR)
+	OP("->", T_ARROW)
+
+	OP("+=", T_INADD)
+	OP("-=", T_INSUB)
+	OP("*=", T_INMUL)
+	OP("/=", T_INDIV)
+	OP("%=", T_INMOD)
+	OP("&=", T_INBAND)
+	OP("|=", T_INBIOR)
+	OP("^=", T_INBEOR)
+	OP("<<=", T_INSHL)
+	OP(">>=", T_INSHAR)
+	OP(">>>=", T_INSHLR)
+
+	OP(">=", T_CGE)
+	OP("<=", T_CLE)
+	OP("!=", T_CNE)
+	
+	OP("&&", T_CAND)
+	OP("||", T_COR)
+
+	OP("@", T_AT)
+	OP("?", T_QM)
+	OP("==", T_CEQ)
+	OP("=", T_ASSIGN)
+
+	OP("+@", T_ADDAT)
+	OP("-@", T_SUBAT)
+
+#undef OP
+	};
+
+	ivm_bool_t find_cop;
+
 	for (i = 0; i < size; i++) {
 		tmp_token = (struct token_t *)ivm_list_at(ret, i);
 		if (tmp_token->id == T_ID) {
@@ -615,6 +719,38 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			}
 		} else if (tmp_token->id == T_STR_ID) {
 			tmp_token->id = T_ID;
+		} else if (tmp_token->id == T_COP) {
+			find_cop = IVM_FALSE;
+			for (j = 0; j < IVM_ARRLEN(ops); j++) {
+				if (!IVM_STRNCMP(tmp_token->val, tmp_token->len,
+								 ops[j].name, ops[j].len)) {
+					// IVM_TRACE("try match: %.*s\n", tmp_token->len,  tmp_token->val);
+					tmp_token->id = ops[j].id;
+					find_cop = IVM_TRUE;
+				}
+			}
+
+			if (!find_cop) {
+				switch (*tmp_token->val) {
+					case '!': case '~':
+					case '*': case '\\': case '%':
+						tmp_token->order = 1; break;
+					case '+': case '-':
+						tmp_token->order = 2; break;
+					case '<': case '>':
+						tmp_token->order = 3; break;
+					case '&':
+						tmp_token->order = 4; break;
+					case '^':
+						tmp_token->order = 5; break;
+					case '|':
+						tmp_token->order = 6; break;
+					case '=': case '?':
+						tmp_token->order = 7; break;
+					default:
+						IVM_IMPORTANT(0, "impossible");
+				}
+			}
 		}
 	}
 
@@ -652,6 +788,7 @@ struct env_t {
 
 #define T EXPECT_TOKEN
 #define T_OPT EXPECT_TOKEN_OPT
+#define T_ORD EXPECT_TOKEN_ORDER
 
 #define DBB(...) { if (_ENV->debug) { __VA_ARGS__; } } // debug block
 
@@ -737,8 +874,10 @@ RULE(nllo)
 /*
 	slot
 		: id nllo ':' nllo prefix_expr
+		| cop nllo ':' nllo prefix_expr
 		| oop nllo ':' nllo prefix_expr
 		| '.' nllo id nllo ':' nllo prefix_expr
+		| '.' nllo cop nllo ':' nllo prefix_expr
 		| '.' nllo oop nllo ':' nllo prefix_expr
  */
 
@@ -761,6 +900,17 @@ RULE(slot)
 			);
 		})
 
+		SUB_RULE(T(T_COP) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+
+			_RETVAL.slot = ilang_gen_table_entry_build(
+				TOKEN_POS(tmp_token),
+				TOKEN_VAL(tmp_token),
+				RULE_RET_AT(2).u.expr
+			);
+		})
+
 		SUB_RULE(R(oop) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(0);
@@ -773,6 +923,17 @@ RULE(slot)
 		})
 
 		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(1);
+
+			_RETVAL.slot = ilang_gen_table_entry_build(
+				TOKEN_POS(tmp_token),
+				TOKEN_VAL(tmp_token),
+				RULE_RET_AT(3).u.expr
+			);
+		})
+
+		SUB_RULE(T(T_DOT) R(nllo) T(T_COP) R(nllo) T(T_COLON) R(nllo) R(prefix_expr)
 		{
 			tmp_token = TOKEN_AT(1);
 
@@ -1366,8 +1527,9 @@ RULE(arg_list_opt)
 /*
 	oop
 		: '!'
-		| '+' '@'
-		| '-' '@'
+		| '+@'
+		| '-@'
+		| '~'
 		| '+'
 		| '-'
 		| '*'
@@ -1437,15 +1599,17 @@ RULE(oop)
 	SUB_RULE_SET(
 		DEF_OOP(NOT)
 
-		SUB_RULE(T(T_ADD) T(T_AT)
+		SUB_RULE(T(T_ADDAT)
 		{
 			_RETVAL.oop = IVM_OOP_ID(POS);
 		})
 
-		SUB_RULE(T(T_SUB) T(T_AT)
+		SUB_RULE(T(T_SUBAT)
 		{
 			_RETVAL.oop = IVM_OOP_ID(NEG);
 		})
+
+		DEF_OOP(BNOT)
 
 		DEF_OOP(ADD)
 		DEF_OOP(SUB)
@@ -1640,6 +1804,7 @@ RULE(block_opt)
 		| block postfix_expr_sub
 		| '[' nllo arg_list_opt nllo ']' postfix_expr_sub
 		| '.' id postfix_expr_sub
+		| '.' cop postfix_expr_sub
 		| '.' oop postfix_expr_sub
 		| id postfix_expr_sub
 		| %empt
@@ -1759,6 +1924,30 @@ RULE(postfix_expr_sub)
 			}
 		})
 
+		SUB_RULE(T(T_DOT) R(nllo) T(T_COP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			id = TOKEN_AT(1);
+			tmp_expr = RULE_RET_AT(1).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+				);
+			}
+		})
+
 		SUB_RULE(T(T_DOT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
 		{
 			tmp_token = TOKEN_AT(0);
@@ -1806,25 +1995,6 @@ RULE(postfix_expr_sub)
 			}
 		})
 
-/*
-		SUB_RULE(T(T_ELLIP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("varg expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			tmp_expr = RULE_RET_AT(0).u.expr;
-
-			if (tmp_expr) {
-				_RETVAL.expr = tmp_expr;
-				// find the innermost expression
-				while (GET_OPERAND(tmp_expr, 1))
-					tmp_expr = GET_OPERAND(tmp_expr, 1);
-
-				SET_OPERAND(tmp_expr, 1, ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), IVM_NULL));
-			} else {
-				_RETVAL.expr = ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), IVM_NULL);
-			}
-		})
-*/
-		
 		SUB_RULE(
 		{
 			_RETVAL.expr = IVM_NULL;
@@ -1871,12 +2041,13 @@ RULE(postfix_expr)
 /*
 	unary_expr
 		: postfix_expr
-		| '!' unary_expr
-		| '-' unary_expr
-		| '+' unary_expr
-		| 'del' unary_expr
-		| 'ref' unary_expr
-		| 'deref' unary_expr
+		| '!' nllo unary_expr
+		| '-' nllo unary_expr
+		| '+' nllo unary_expr
+		| '~' nllo unary_expr
+		| 'del' nllo unary_expr
+		| 'ref' nllo unary_expr
+		| 'deref' nllo unary_expr
  */
 RULE(unary_expr)
 {
@@ -1899,6 +2070,8 @@ RULE(unary_expr)
 		UNARY_EXPR(T_NOT, "not expr", IVM_UNIOP_ID(NOT))
 		UNARY_EXPR(T_SUB, "neg expr", IVM_UNIOP_ID(NEG))
 		UNARY_EXPR(T_ADD, "pos expr", IVM_UNIOP_ID(POS))
+		UNARY_EXPR(T_BNOT, "bnot expr", IVM_UNIOP_ID(BNOT))
+
 		// UNARY_EXPR(T_CLONE, "clone expr", IVM_UNIOP_ID(CLONE))
 		UNARY_EXPR(T_DEL, "del expr", IVM_UNIOP_ID(DEL))
 
@@ -1909,6 +2082,16 @@ RULE(unary_expr)
 		{
 			tmp_token = TOKEN_AT(0);
 			_RETVAL.expr = ilang_gen_varg_expr_new(_ENV->unit, TOKEN_POS(tmp_token), RULE_RET_AT(1).u.expr);
+		})
+
+		SUB_RULE(T(T_COP) R(nllo) R(unary_expr) DBB("cop expr")
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_cop_expr_new(
+				_ENV->unit, TOKEN_POS(tmp_token),
+				RULE_RET_AT(1).u.expr, IVM_NULL,
+				TOKEN_VAL(tmp_token)
+			);
 		})
 
 		SUB_RULE(R(postfix_expr)
@@ -1922,14 +2105,6 @@ RULE(unary_expr)
 	FAILED({})
 	MATCHED({})
 }
-
-/*
-	mul_div_expr_sub
-		: '*' unary_expr mul_div_expr_sub
-		| '/' unary_expr mul_div_expr_sub
-		| '%' unary_expr mul_div_expr_sub
-		| %empty
- */
 
 #define SUB1_OP(op) \
 	{                                                                   \
@@ -1952,6 +2127,31 @@ RULE(unary_expr)
 				_ENV->unit,                                             \
 				TOKEN_POS(tmp_token), IVM_NULL,                         \
 				RULE_RET_AT(1).u.expr, IVM_BINOP_ID(op)                 \
+			);                                                          \
+		}                                                               \
+	}
+
+#define SUB1_COP() \
+	{                                                                   \
+		struct token_t *tmp_token = TOKEN_AT(0);                        \
+		ilang_gen_expr_t *tmp_expr = RULE_RET_AT(2).u.expr;             \
+                                                                        \
+		if (tmp_expr) {                                                 \
+			_RETVAL.expr = tmp_expr;                                    \
+			/* find the innermost expression */                         \
+			while (GET_OPERAND(tmp_expr, 1))                            \
+				tmp_expr = GET_OPERAND(tmp_expr, 1);                    \
+                                                                        \
+			SET_OPERAND(tmp_expr, 1, ilang_gen_cop_expr_new(            \
+				_ENV->unit,                                             \
+				TOKEN_POS(tmp_token), IVM_NULL,                         \
+				RULE_RET_AT(1).u.expr, TOKEN_VAL(tmp_token)             \
+			));                                                         \
+		} else {                                                        \
+			_RETVAL.expr = ilang_gen_cop_expr_new(                      \
+				_ENV->unit,                                             \
+				TOKEN_POS(tmp_token), IVM_NULL,                         \
+				RULE_RET_AT(1).u.expr, TOKEN_VAL(tmp_token)             \
 			);                                                          \
 		}                                                               \
 	}
@@ -2022,12 +2222,21 @@ RULE(unary_expr)
 		}                                                               \
 	}
 
+/*
+	mul_div_expr_sub
+		: '*' nllo unary_expr mul_div_expr_sub
+		| '/' nllo unary_expr mul_div_expr_sub
+		| '%' nllo unary_expr mul_div_expr_sub
+		| cop(1) nllo unary_expr mul_div_expr_sub
+		| %empty
+ */
 RULE(mul_div_expr_sub)
 {
 	SUB_RULE_SET(
 		SUB_RULE(T(T_MUL) R(nllo) R(unary_expr) R(mul_div_expr_sub) SUB1_OP(MUL))
 		SUB_RULE(T(T_DIV) R(nllo) R(unary_expr) R(mul_div_expr_sub) SUB1_OP(DIV))
 		SUB_RULE(T(T_MOD) R(nllo) R(unary_expr) R(mul_div_expr_sub) SUB1_OP(MOD))
+		SUB_RULE(T_ORD(T_COP, 1) R(nllo) R(unary_expr) R(mul_div_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2055,8 +2264,9 @@ RULE(mul_div_expr)
 
 /*
 	add_sub_expr_sub
-		: '+' mul_div_expr add_sub_expr_sub
-		| '-' mul_div_expr add_sub_expr_sub
+		: '+' nllo mul_div_expr add_sub_expr_sub
+		| '-' nllo mul_div_expr add_sub_expr_sub
+		| cop(2) nllo mul_div_expr add_sub_expr_sub
 		| %empty
  */
 RULE(add_sub_expr_sub)
@@ -2064,6 +2274,7 @@ RULE(add_sub_expr_sub)
 	SUB_RULE_SET(
 		SUB_RULE(T(T_ADD) R(nllo) R(mul_div_expr) R(add_sub_expr_sub) SUB1_OP(ADD))
 		SUB_RULE(T(T_SUB) R(nllo) R(mul_div_expr) R(add_sub_expr_sub) SUB1_OP(SUB))
+		SUB_RULE(T_ORD(T_COP, 2) R(nllo) R(mul_div_expr) R(add_sub_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2091,9 +2302,9 @@ RULE(add_sub_expr)
 
 /*
 	shift_expr_sub
-		: '<<' add_sub_expr shift_expr_sub
-		| '>>' add_sub_expr shift_expr_sub
-		| '>>>' add_sub_expr shift_expr_sub
+		: '<<' nllo add_sub_expr shift_expr_sub
+		| '>>' nllo add_sub_expr shift_expr_sub
+		| '>>>' nllo add_sub_expr shift_expr_sub
 		| %empty
  */
 RULE(shift_expr_sub)
@@ -2129,10 +2340,11 @@ RULE(shift_expr)
 
 /*
 	cmp_expr_sub
-		: '>' shift_expr cmp_expr_sub
-		| '>=' shift_expr cmp_expr_sub
-		| '<' shift_expr cmp_expr_sub
-		| '<=' shift_expr cmp_expr_sub
+		: '>' nllo shift_expr cmp_expr_sub
+		| '>=' nllo shift_expr cmp_expr_sub
+		| '<' nllo shift_expr cmp_expr_sub
+		| '<=' nllo shift_expr cmp_expr_sub
+		| cop(3) nllo shift_expr cmp_expr_sub
 		| %empty
  */
 RULE(cmp_expr_sub)
@@ -2142,6 +2354,7 @@ RULE(cmp_expr_sub)
 		SUB_RULE(T(T_CGE) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(GE))
 		SUB_RULE(T(T_CLT) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(LT))
 		SUB_RULE(T(T_CLE) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_CMP(LE))
+		SUB_RULE(T_ORD(T_COP, 3) R(nllo) R(shift_expr) R(cmp_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2169,9 +2382,9 @@ RULE(cmp_expr)
 
 /*
 	eq_expr_sub
-		: '==' cmp_expr eq_expr_sub
-		| '!=' cmp_expr eq_expr_sub
-		| 'is' cmp_expr eq_expr_sub
+		: '==' nllo cmp_expr eq_expr_sub
+		| '!=' nllo cmp_expr eq_expr_sub
+		| 'is' nllo cmp_expr eq_expr_sub
 		| %empty
  */
 RULE(eq_expr_sub)
@@ -2207,13 +2420,15 @@ RULE(eq_expr)
 
 /*
 	and_expr_sub
-		: '&' eq_expr and_expr_sub
+		: '&' nllo eq_expr and_expr_sub
+		| cop(4) nllo eq_expr and_expr_sub
 		| %empty
  */
 RULE(and_expr_sub)
 {
 	SUB_RULE_SET(
 		SUB_RULE(T(T_BAND) R(nllo) R(eq_expr) R(and_expr_sub) SUB1_OP(AND))
+		SUB_RULE(T_ORD(T_COP, 4) R(nllo) R(eq_expr) R(and_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2241,13 +2456,15 @@ RULE(and_expr)
 
 /*
 	eor_expr_sub
-		: '^' and_expr eor_expr_sub
+		: '^' nllo and_expr eor_expr_sub
+		| cop(5) nllo and_expr eor_expr_sub
 		| %empty
  */
 RULE(eor_expr_sub)
 {
 	SUB_RULE_SET(
 		SUB_RULE(T(T_BEOR) R(nllo) R(and_expr) R(eor_expr_sub) SUB1_OP(EOR))
+		SUB_RULE(T_ORD(T_COP, 5) R(nllo) R(and_expr) R(eor_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2275,13 +2492,15 @@ RULE(eor_expr)
 
 /*
 	ior_expr_sub
-		: '|' eor_expr ior_expr_sub
+		: '|' nllo eor_expr ior_expr_sub
+		| cop(6) nllo eor_expr ior_expr_sub
 		| %empty
  */
 RULE(ior_expr_sub)
 {
 	SUB_RULE_SET(
 		SUB_RULE(T(T_BIOR) R(nllo) R(eor_expr) R(ior_expr_sub) SUB1_OP(IOR))
+		SUB_RULE(T_ORD(T_COP, 6) R(nllo) R(eor_expr) R(ior_expr_sub) SUB1_COP())
 		SUB_RULE({ _RETVAL.expr = IVM_NULL; })
 	);
 
@@ -2816,6 +3035,18 @@ RULE(assign_right_side)
 		INPLACE_OP(SHL)
 		INPLACE_OP(SHAR)
 		INPLACE_OP(SHLR)
+
+		SUB_RULE(T_ORD(T_COP, 7) R(nllo) R(prefix_expr)
+		{
+			tmp_token = TOKEN_AT(0);
+			_RETVAL.expr = ilang_gen_cop_expr_new(
+				_ENV->unit,
+				TOKEN_POS(tmp_token),
+				IVM_NULL,
+				RULE_RET_AT(1).u.expr,
+				TOKEN_VAL(tmp_token)
+			);
+		})
 	);
 
 	FAILED({})
@@ -2824,7 +3055,7 @@ RULE(assign_right_side)
 
 /*
 	assign_expr
-		| leftval '=' nllo prefix_expr
+		| leftval assign_right_side
  */
 RULE(assign_expr)
 {

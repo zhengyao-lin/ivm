@@ -102,6 +102,7 @@ struct token_t {
 	ivm_int_t id;
 	ivm_size_t len;
 	const ivm_char_t *val;
+	ivm_size_t order;
 	
 	ivm_size_t line;
 	ivm_size_t pos;
@@ -175,10 +176,16 @@ _is_match(const char c,
 		case '|': return c == reg[1] || c == reg[2];
 		case '.': return IVM_TRUE;
 		case '$': return (ivm_uchar_t)c > 0x7F; // not ascii
+		case '&':
+			for (reg++; *reg; reg++) {
+				if (*reg == c)
+					return IVM_TRUE;
+			}
+			return IVM_FALSE;
 		default: ;
 	}
 
-	IVM_ASSERT(0, PARSER_ERR_MSG_ILLEGAL_REG);
+	IVM_FATAL(PARSER_ERR_MSG_ILLEGAL_REG);
 
 	return IVM_FALSE;
 }
@@ -365,6 +372,25 @@ FAILED_END:
 
 #define EXPECT_TOKEN(tid) \
 	if (HAS_NEXT_TOKEN() && (*__toki__++ = CUR_TOKEN())->id == (tid)) { \
+		__has_matched__ = IVM_TRUE; \
+		NEXT_TOKEN(); \
+	} else { \
+		if (HAS_NEXT_TOKEN() && !__last_err__->line && __has_matched__ /* has matched token(s) */) { \
+			__tmp_token__ = CUR_TOKEN(); \
+			__tmp_err__= ERR_MSG( \
+				__tmp_token__->line, __tmp_token__->pos, \
+				TOKEN_NAME(tid), TOKEN_NAME(__tmp_token__->id) \
+			); \
+			SET_ERR(__tmp_err__); \
+		} \
+		RESTORE_RULE(); \
+		break; \
+	}
+
+#define EXPECT_TOKEN_ORDER(tid, ord) \
+	if (HAS_NEXT_TOKEN() && \
+		(*__toki__++ = CUR_TOKEN())->id == (tid) && \
+		CUR_TOKEN()->order == (ord)) { \
 		__has_matched__ = IVM_TRUE; \
 		NEXT_TOKEN(); \
 	} else { \

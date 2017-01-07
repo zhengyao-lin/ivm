@@ -10,6 +10,10 @@ UNIOP_GEN(POS, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1));
 })
 
+UNIOP_GEN(BNOT, IVM_NUMERIC_T, {
+	return ivm_numeric_new(_STATE, ~(ivm_sint32_t)ivm_numeric_getValue(_OP1));
+})
+
 BINOP_GEN(IVM_NUMERIC_T, ADD, IVM_NUMERIC_T, IVM_FALSE, {
 	return ivm_numeric_new(_STATE, ivm_numeric_getValue(_OP1) + ivm_numeric_getValue(_OP2));
 })
@@ -90,15 +94,15 @@ BINOP_GEN(IVM_STRING_OBJECT_T, NE, IVM_STRING_OBJECT_T, IVM_TRUE, {
 })
 
 BINOP_GEN(IVM_NUMERIC_T, AND, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) & (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) & (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, EOR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) ^ (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) ^ (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, IOR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) | (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) | (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN_C(IVM_STRING_OBJECT_T, ADD, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_linkStringString)
@@ -169,15 +173,15 @@ BINOP_GEN_C(IVM_LIST_OBJECT_T, MUL, IVM_NUMERIC_T, IVM_FALSE, ivm_binop_mulList)
 BINOP_GEN_C(IVM_STRING_OBJECT_T, MUL, IVM_NUMERIC_T, IVM_FALSE, ivm_binop_mulString)
 
 BINOP_GEN(IVM_NUMERIC_T, SHL, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) << (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) << (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, SHAR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) >> (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, SHLR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_uint64_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_uint64_t)ivm_numeric_getValue(_OP1) >> (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 /* inplace op */
@@ -211,15 +215,15 @@ BINOP_GEN(IVM_NUMERIC_T, INMOD, IVM_NUMERIC_T, IVM_FALSE, {
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INAND, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) & (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) & (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INEOR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) ^ (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) ^ (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INIOR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_long_t)ivm_numeric_getValue(_OP1) | (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint32_t)ivm_numeric_getValue(_OP1) | (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN_C(IVM_STRING_OBJECT_T, INADD, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_linkStringString)
@@ -237,13 +241,13 @@ BINOP_GEN_C(IVM_LIST_OBJECT_T, INMUL, IVM_NUMERIC_T, IVM_FALSE, ivm_binop_mulLis
 BINOP_GEN_C(IVM_STRING_OBJECT_T, INMUL, IVM_NUMERIC_T, IVM_FALSE, ivm_binop_mulString)
 
 BINOP_GEN(IVM_NUMERIC_T, INSHL, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) << (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) << (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INSHAR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_sint64_t)ivm_numeric_getValue(_OP1) >> (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
 
 BINOP_GEN(IVM_NUMERIC_T, INSHLR, IVM_NUMERIC_T, IVM_FALSE, {
-	return ivm_numeric_new(_STATE, (ivm_uint64_t)ivm_numeric_getValue(_OP1) >> (ivm_long_t)ivm_numeric_getValue(_OP2));
+	return ivm_numeric_new(_STATE, (ivm_uint64_t)ivm_numeric_getValue(_OP1) >> (ivm_sint32_t)ivm_numeric_getValue(_OP2));
 })
