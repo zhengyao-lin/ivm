@@ -26,6 +26,10 @@
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
 	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str))
 
+#define INSTR_TYPE_SI_ARG_INIT(instr, exec) \
+	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str)), \
+	.arg2 = ivm_opcode_arg_fromInt(arg)
+
 #define OPCODE_GEN(o, name, param, st_inc, ...) \
 	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##param##_ARG    \
 								  ivm_exec_t *exec,               \

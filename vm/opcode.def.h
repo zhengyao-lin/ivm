@@ -762,6 +762,12 @@ OPCODE_GEN(POP_ALL, "pop_all", N, -1, {
 	NEXT_INSTR_NINT();
 })
 
+OPCODE_GEN(SWITCH, "switch", N, 1, {
+	CHECK_STACK(2);
+	STACK_SWITCH(_TMP_OBJ1);
+	NEXT_INSTR_NINT();
+})
+
 OPCODE_GEN(DUP_N, "dup_n", I, 1, {
 	_TMP_ARGC = IARG();
 

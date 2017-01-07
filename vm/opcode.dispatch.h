@@ -254,6 +254,10 @@
 	#define STACK_SET(count) \
 		(tmp_sp = tmp_bp + (count))
 
+	#define STACK_SWITCH(tmp) \
+		((tmp) = *(tmp_sp - 1), *(tmp_sp - 1) = *(tmp_sp - 2), *(tmp_sp - 2) = (tmp))
+
+
 #elif IVM_STACK_CACHE_N_TOS == 1
 
 	#define STC_PUSHBACK() \
