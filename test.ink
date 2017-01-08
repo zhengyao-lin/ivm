@@ -20,8 +20,6 @@ print(col)
 ret
 */
 
-ret
-
 import test.std
 
 import time
