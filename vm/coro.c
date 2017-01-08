@@ -41,7 +41,7 @@ ivm_coro_new(ivm_vmstate_t *state)
 
 void
 ivm_coro_free(ivm_coro_t *coro,
-			  ivm_vmstate_t *state)
+				ivm_vmstate_t *state)
 {
 	ivm_frame_stack_iterator_t fsiter;
 
@@ -69,8 +69,8 @@ ivm_coro_free(ivm_coro_t *coro,
 IVM_INLINE
 void
 _ivm_coro_setExceptionPos(ivm_vmstate_t *state,
-						  ivm_object_t *obj,
-						  ivm_instr_t *ip)
+							ivm_object_t *obj,
+							ivm_instr_t *ip)
 {
 	ivm_long_t line = 0;
 	const ivm_char_t *file = "<untraceable>";
@@ -125,9 +125,9 @@ ivm_coro_newStringException(ivm_coro_t *coro,
 #define PRINT_POS() \
 	if (tmp_ip) {                                                                       \
 		IVM_TRACE(IVM_TAB "%s: line %d: %s\n",                                          \
-				  ivm_source_pos_getFile(ivm_instr_pos(tmp_ip)),                        \
-				  ivm_instr_lineno(tmp_ip),                                             \
-				  ivm_opcode_table_getName(ivm_instr_opcode(tmp_ip)));                  \
+					ivm_source_pos_getFile(ivm_instr_pos(tmp_ip)),                        \
+					ivm_instr_lineno(tmp_ip),                                             \
+					ivm_opcode_table_getName(ivm_instr_opcode(tmp_ip)));                  \
 	}
 
 	tmp_ip = IVM_RUNTIME_GET(runtime, IP);
@@ -350,7 +350,7 @@ _ivm_coro_popInt()
 IVM_INLINE
 ivm_bool_t
 _ivm_coro_otherInt(ivm_vmstate_t *state,
-				   ivm_coro_int_t intr)
+					 ivm_coro_int_t intr)
 {
 	switch (intr) {
 #if IVM_USE_MULTITHREAD
@@ -380,9 +380,9 @@ _ivm_coro_otherInt(ivm_vmstate_t *state,
 
 ivm_object_t *
 ivm_coro_execute_c(ivm_coro_t *coro,
-				   ivm_vmstate_t *state,
-				   ivm_object_t *arg,
-                   ivm_bool_t get_opcode_entry)
+					 ivm_vmstate_t *state,
+					 ivm_object_t *arg,
+									 ivm_bool_t get_opcode_entry)
 {
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -448,12 +448,14 @@ ivm_coro_execute_c(ivm_coro_t *coro,
 	IVM_REG ivm_object_t *stc0 = IVM_NULL;
 #elif IVM_STACK_CACHE_N_TOS == 2
 	IVM_REG ivm_object_t *stc0 = IVM_NULL,
-						  *stc1 = IVM_NULL;
+							*stc1 = IVM_NULL;
 #endif
 
 #if IVM_STACK_CACHE_N_TOS != 0
 	IVM_REG ivm_int_t cst = 0; /* cache state */
 #endif
+
+	ivm_uint_t tmp_dump;
 
 	static void *opcode_entry[] = {
 		#define OPCODE_GEN(o, name, arg, ...) &&OPCODE_##o,
@@ -530,9 +532,18 @@ ACTION_EXCEPTION:
 
 			while (!(tmp_ip = ivm_coro_popToCatch(tmp_bstack, tmp_runtime))) {
 				// IVM_TRACE("kill!\n");
+				tmp_dump = IVM_RUNTIME_GET(tmp_runtime, DUMP);
 				ivm_runtime_dump(tmp_runtime, state);
 				tmp_bp = ivm_coro_popFrame(coro);
+
 				if (tmp_bp) {
+					UPDATE_STACK();
+					
+					switch (tmp_dump) {
+						case 2: STACK_POP();
+						case 1: STACK_POP();
+					}
+
 					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 						_TMP_OBJ1 = IVM_NULL;
 						goto END;
@@ -543,8 +554,8 @@ ACTION_EXCEPTION:
 					goto END;
 				}
 			}
-			// find a frame with raise protection
 
+			// find a frame with raise protection
 			UPDATE_STACK();
 
 			ivm_vmstate_popException(state);
@@ -557,13 +568,21 @@ ACTION_RETURN:
 
 			IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(RETURN, _TMP_OBJ1));
 
+			tmp_dump = IVM_RUNTIME_GET(tmp_runtime, DUMP);
 			ivm_runtime_dump(tmp_runtime, state);
 
 			if (ivm_coro_popFrame(coro)) {
 				UPDATE_STACK();
+
+				switch (tmp_dump) {
+					case 2: STACK_POP();
+					case 1: STACK_POP();
+				}
+
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
 					goto END;
 				}
+
 				STACK_PUSH(_TMP_OBJ1);
 			} else {
 				/* no more callee to restore, end coro */
@@ -611,8 +630,8 @@ ivm_coro_resume(ivm_coro_t *coro,
 IVM_INLINE
 ivm_object_t *
 ivm_coro_resume_n(ivm_coro_t *coro,
-				  ivm_vmstate_t *state,
-				  ivm_object_t *arg)
+					ivm_vmstate_t *state,
+					ivm_object_t *arg)
 {
 	ivm_object_t *ret;
 
@@ -755,7 +774,7 @@ ivm_coro_object_new(ivm_vmstate_t *state,
 
 void
 ivm_coro_object_destructor(ivm_object_t *obj,
-						   ivm_vmstate_t *state)
+							 ivm_vmstate_t *state)
 {
 	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
 
@@ -766,7 +785,7 @@ ivm_coro_object_destructor(ivm_object_t *obj,
 
 void
 ivm_coro_object_cloner(ivm_object_t *obj,
-					   ivm_vmstate_t *state)
+						 ivm_vmstate_t *state)
 {
 	ivm_coro_addRef(IVM_AS(obj, ivm_coro_object_t)->coro);
 	ivm_vmstate_addDesLog(state, obj);
@@ -775,7 +794,7 @@ ivm_coro_object_cloner(ivm_object_t *obj,
 
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
-						  ivm_traverser_arg_t *arg)
+							ivm_traverser_arg_t *arg)
 {
 	// ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
 	// if (coro) arg->trav_coro(coro, arg);

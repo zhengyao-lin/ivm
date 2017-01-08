@@ -63,6 +63,12 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		GEN_NL_BLOCK_START();
 	}
 
+	tmp_ret = call_expr->callee->eval(
+		call_expr->callee,
+		FLAG(.is_callee = IVM_TRUE),
+		env
+	);
+
 	pa_argno = 0;
 	// generate in a reverse order(the order in ast is reversed)
 	{
@@ -78,20 +84,16 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		}
 	}
 
-	tmp_ret = call_expr->callee->eval(
-		call_expr->callee,
-		FLAG(.is_callee = IVM_TRUE),
-		env
-	);
-
 	if (has_varg && pa_arg_count) {
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK_AT, pa_arg_count);
 	}
 
 	if (tmp_ret.has_base) {
 		if (has_varg) {
+			// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH_VAR_BASE);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE_VAR);
 		} else {
+			// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH_ARG_BASE, ilang_gen_expr_list_size(args));
 			ivm_exec_addInstr_l(
 				env->cur_exec, GET_LINE(expr), INVOKE_BASE,
 				ilang_gen_expr_list_size(args)
@@ -99,8 +101,10 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 		}
 	} else {
 		if (has_varg) {
+			// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH_VAR);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_VAR);
 		} else {
+			// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH_ARG, ilang_gen_expr_list_size(args));
 			ivm_exec_addInstr_l(
 				env->cur_exec, GET_LINE(expr), INVOKE,
 				ilang_gen_expr_list_size(args)

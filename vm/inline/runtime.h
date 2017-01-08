@@ -17,11 +17,13 @@ IVM_INLINE
 void
 ivm_runtime_invokeNative(ivm_runtime_t *runtime,
 						 ivm_vmstate_t *state,
-						 ivm_context_t *ctx)
+						 ivm_context_t *ctx,
+						 ivm_uint_t dump)
 {
 	runtime->ctx = ivm_context_addRef(ctx);
 	runtime->rbp = runtime->bp = runtime->sp;
 	runtime->ip = IVM_NULL;
+	runtime->dump = dump;
 	runtime->offset = 0;
 
 	return;
@@ -32,11 +34,13 @@ ivm_instr_t *
 ivm_runtime_invoke(ivm_runtime_t *runtime,
 				   ivm_vmstate_t *state,
 				   ivm_context_t *ctx,
-				   const ivm_exec_t *exec)
+				   const ivm_exec_t *exec,
+				   ivm_uint_t dump)
 {
 	runtime->ctx = ivm_context_addRef(ctx);
 	runtime->rbp = runtime->bp = runtime->sp;
 	runtime->ip = ivm_exec_instrPtrStart(exec);
+	runtime->dump = dump;
 	runtime->offset = ivm_exec_offset(exec);
 
 	return runtime->ip;

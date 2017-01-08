@@ -1,4 +1,5 @@
 import std
+import ulist
 
 loc printl = fn list: {
 	loc i = 0
@@ -54,8 +55,6 @@ r = fn: ref l[i = i + 1]
 
 for i in l:
 	print(i)
-
-import ulist
 
 [ a, *b, c ] = [ 1, 2, 3, 2 ]
 [ a, b, c ].print()

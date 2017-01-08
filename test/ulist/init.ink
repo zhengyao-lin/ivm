@@ -1,7 +1,7 @@
 import math
 
 (fn: {
-	lp = list.proto
+	lp = [].proto
 
 	lp.each = fn f: {
 		for loc e in base: f(e)

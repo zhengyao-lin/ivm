@@ -21,7 +21,9 @@ IVM_COM_HEADER
 	struct ivm_object_t_tag **bp;     \
 	struct ivm_object_t_tag **rbp;    \
 	ivm_instr_t *ip;                  \
-	ivm_uint_t offset;                \
+	ivm_uint_t dump: 2;               \
+	ivm_uint_t offset:                \
+		sizeof(ivm_uint_t) * 8 - 2;   \
 	ivm_uint_t bcur;
 
 #define IVM_FRAME_HEADER_SIZE \

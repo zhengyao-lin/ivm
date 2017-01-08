@@ -98,15 +98,17 @@ OPCODE_GEN(ENSURE_NONE, "ensure_none", N, 1, {
 OPCODE_GEN(TO_LIST, "to_list", N, 0, {
 	CHECK_STACK(1);
 
-	_TMP_OBJ1 = STACK_TOP();
+	_TMP_OBJ1 = STACK_POP();
 
 	if (!_TMP_OBJ1) { // del flag detected
+		STACK_PUSH(IVM_NULL);
 		NEXT_INSTR_NINT();
 	}
 
 	// non-normal list object -> use for to iterate
 	_TMP_FUNC = ivm_vmstate_getTypeCons(_STATE, IVM_LIST_OBJECT_T);
 	STACK_PUSH(ivm_function_object_new(_STATE, IVM_NULL, _TMP_FUNC));
+	STACK_PUSH(_TMP_OBJ1);
 
 	SET_IARG(1);
 	GOTO_INSTR(INVOKE);
@@ -407,9 +409,9 @@ OPCODE_GEN(GET_SLOT, "get_slot", S, 0, {
 	} else {
 		_TMP_OBJ2 = ivm_object_getSlot(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NOSLOT));
 		if (_TMP_OBJ2) {
-			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
 			STACK_PUSH(_TMP_OBJ1);
 			STACK_PUSH(_TMP_OBJ2);
+			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
 			INVOKE_BASE_C(1);
 			// unreachable
 		}
@@ -434,9 +436,9 @@ OPCODE_GEN(GET_SLOT_N, "get_slot_n", S, 1, {
 	} else {
 		_TMP_OBJ2 = ivm_object_getSlot(_TMP_OBJ1, _STATE, IVM_VMSTATE_CONST(_STATE, C_NOSLOT));
 		if (_TMP_OBJ2) {
-			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
 			STACK_PUSH(_TMP_OBJ1);
 			STACK_PUSH(_TMP_OBJ2);
+			STACK_PUSH(ivm_string_object_new(_STATE, SARG()));
 			INVOKE_BASE_C(1);
 			// unreachable
 		}
@@ -762,7 +764,7 @@ OPCODE_GEN(POP_ALL, "pop_all", N, -1, {
 	NEXT_INSTR_NINT();
 })
 
-OPCODE_GEN(SWITCH, "switch", N, 1, {
+OPCODE_GEN(SWITCH2, "switch2", N, 1, {
 	CHECK_STACK(2);
 	STACK_SWITCH(_TMP_OBJ1);
 	NEXT_INSTR_NINT();
@@ -900,6 +902,30 @@ OPCODE_GEN(INVOKE_BASE_VAR, "invoke_base_var", N, -1, {
 	SET_IARG(AVAIL_STACK - 2);
 	GOTO_INSTR(INVOKE_BASE);
 })
+
+#if 0
+
+OPCODE_GEN(INVOKE_R, "invoke_r", I, 0, {
+	INVOKE_R_C(IARG());
+})
+
+OPCODE_GEN(INVOKE_BASE_R, "invoke_base_r", I, 1, {
+	INVOKE_BASE_R_C(IARG());
+})
+
+OPCODE_GEN(INVOKE_VAR_R, "invoke_var_r", N, 1, {
+	CHECK_STACK(1);
+	SET_IARG(AVAIL_STACK - 1);
+	GOTO_INSTR(INVOKE_R);
+})
+
+OPCODE_GEN(INVOKE_BASE_VAR_R, "invoke_base_var_r", N, 1, {
+	CHECK_STACK(2);
+	SET_IARG(AVAIL_STACK - 2);
+	GOTO_INSTR(INVOKE_BASE_R);
+})
+
+#endif
 
 OPCODE_GEN(FORK, "fork", N, 0, {
 	CHECK_STACK(1);
@@ -1198,27 +1224,17 @@ OPCODE_GEN(POP_BLOCK, "pop_block", N, 0, {
 	NEXT_INSTR_NINT();
 })
 
-// save original stack
-OPCODE_GEN(POP_BLOCK_S, "pop_block_s", I, 0, {
-	_TMP_ARGC = IARG();
-	CHECK_STACK(_TMP_ARGC);
-
-	SAVE_STACK();
-	ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
-	UPDATE_STACK_C();
-	STACK_INC_C(_TMP_ARGC);
-
-	NEXT_INSTR_NINT();
-})
-
-// save 1 original stack
+// save 1 the top
 OPCODE_GEN(POP_BLOCK_S1, "pop_block_s1", N, 0, {
 	CHECK_STACK(1);
 
+	_TMP_OBJ1 = STACK_POP();
+
 	SAVE_STACK();
 	ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
 	UPDATE_STACK_C();
-	STACK_INC_C(1);
+
+	STACK_PUSH(_TMP_OBJ1);
 
 	NEXT_INSTR_NINT();
 })

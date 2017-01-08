@@ -76,9 +76,9 @@
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ3);                                                             \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
 			SET_IARG(1);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
@@ -110,11 +110,11 @@
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
+			STACK_PUSH(_TMP_OBJ1);                                                             \
+			STACK_PUSH(_TMP_OBJ4);                                                             \
 			STACK_PUSH(_TMP_OBJ3 ? _TMP_OBJ3 : IVM_NONE(_STATE));                              \
 			/* assign value could be null */                                                   \
 			STACK_PUSH(_TMP_OBJ2);                                                             \
-			STACK_PUSH(_TMP_OBJ1);                                                             \
-			STACK_PUSH(_TMP_OBJ4);                                                             \
 			SET_IARG(2);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
@@ -143,9 +143,9 @@
 	        STACK_PUSH(ivm_numeric_new(_STATE, _TMP_CMP_REG));                                 \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ4);                                                             \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
 			SET_IARG(1);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \
@@ -175,9 +175,9 @@
 			}                                                                                  \
 			NEXT_INSTR();                                                                      \
 		} else {                                                                               \
-			STACK_PUSH(_TMP_OBJ2);                                                             \
 			STACK_PUSH(_TMP_OBJ1);                                                             \
 			STACK_PUSH(_TMP_OBJ4);                                                             \
+			STACK_PUSH(_TMP_OBJ2);                                                             \
 			SET_IARG(1);                                                                       \
 			GOTO_INSTR(INVOKE_BASE);                                                           \
 		}                                                                                      \

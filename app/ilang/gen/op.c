@@ -74,6 +74,7 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 				FLAG(0),
 				env
 			);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH2);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE, 1);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		} else {
@@ -213,9 +214,9 @@ ilang_gen_cop_expr_eval(ilang_gen_expr_t *expr,
 	if (cop_expr->op2) {
 		// binary
 		cop_expr->op1->eval(cop_expr->op1, FLAG(0), env);
-		cop_expr->op2->eval(cop_expr->op2, FLAG(0), env);
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+		cop_expr->op2->eval(cop_expr->op2, FLAG(0), env);
+		// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SWITCH2);
 
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE_BASE, 1);
 	} else {

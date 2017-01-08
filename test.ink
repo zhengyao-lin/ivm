@@ -20,29 +20,9 @@ print(col)
 ret
 */
 
-a = {}
-a.---> = fn v: print("wonderful!! " + string(v))
-
-a ---> 10
-
 ret
 
-f = fn: {
-	print("hi")
-}
-
-f()(print("hi2"))
-
-ret
-
-fib = fn n: {
-	if n < 2: ret 1
-	ret fib(n - 1) + fib(n - 2)
-}
-
-print(fib(30))
-
-ret
+import test.std
 
 import time
 import io
@@ -347,7 +327,7 @@ __test = fn {
 	a.< = fn b: a >= b
 	a.> = fn b: a < b
 
-	try: 10 + ""
+	try: 10 + 10
 
 	if a > 11: print("yes!")
 	else: print("no!")

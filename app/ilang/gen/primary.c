@@ -104,8 +104,8 @@ ilang_gen_import_expr_eval(ilang_gen_expr_t *expr,
 
 	buf[offset - 1] = '\0';
 
-	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, buf);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, IVM_NATIVE_IMPORT_FUNC);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, buf);
 	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), INVOKE, 1);
 
 	/*

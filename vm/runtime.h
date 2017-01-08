@@ -33,6 +33,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_GET_BCUR(runtime) ((runtime)->bcur)
 #define IVM_RUNTIME_GET_OFFSET(runtime) ((runtime)->offset)
 #define IVM_RUNTIME_GET_NO_REG(runtime) ((runtime)->no_reg)
+#define IVM_RUNTIME_GET_DUMP(runtime) ((runtime)->dump)
 
 #define IVM_RUNTIME_GET_SP_INC(runtime) ((runtime)->sp++)
 #define IVM_RUNTIME_GET_DEC_SP(runtime) (--(runtime)->sp)

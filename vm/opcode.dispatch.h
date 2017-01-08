@@ -228,6 +228,8 @@
 
 	#define STACK_BEFORE(i) (*(tmp_sp - 1 - (i)))
 
+	#define STACK_SET_BEFORE(i, obj) (*(tmp_sp - 1 - (i)) = (obj))
+
 	#define STACK_CUT(i) (tmp_sp -= (i))
 
 	/*
@@ -250,6 +252,20 @@
 	#define STACK_MOVE(count) \
 		((tmp_sp += (count)), \
 		 STD_MEMMOVE(tmp_bp + (count), tmp_bp, sizeof(*tmp_sp) * AVAIL_STACK))
+
+	#define STACK_MOVE_N(count, n) \
+		((tmp_sp += (count)), \
+		 STD_MEMMOVE(tmp_sp - (n), tmp_sp - (count) - (n), sizeof(*tmp_sp) * (n)))
+
+	// move backwards
+	#define STACK_MOVE_B(count) \
+		((tmp_sp -= (count)), \
+		 STD_MEMMOVE(tmp_bp, tmp_bp + (count), sizeof(*tmp_sp) * AVAIL_STACK /* tmp_sp has already decreased */))
+
+	// move n backwards
+	#define STACK_MOVE_NB(count, n) \
+		((tmp_sp -= (count)), \
+		 STD_MEMMOVE(tmp_sp - (n), tmp_sp + (count) - (n), sizeof(*tmp_sp) * (n)))
 
 	#define STACK_SET(count) \
 		(tmp_sp = tmp_bp + (count))

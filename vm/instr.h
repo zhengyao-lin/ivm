@@ -32,8 +32,8 @@ typedef struct ivm_instr_t_tag {
 
 	ivm_opcode_arg_t arg;
 
-	ivm_ptr_t cc_data;
 	ivm_uid_t cc_id;
+	ivm_ptr_t cc_data;
 
 	ivm_opcode_arg_t arg2;
 

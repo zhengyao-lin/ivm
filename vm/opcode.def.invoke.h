@@ -1,7 +1,7 @@
 #define INVOKE_C(argc) \
 	_TMP_ARGC = (argc); \
 	CHECK_STACK(_TMP_ARGC + 1); \
-	_TMP_OBJ1 = STACK_POP(); \
+	_TMP_OBJ1 = STACK_BEFORE(_TMP_ARGC); \
  \
 	_TMP_ARGV = STACK_CUR(); \
 	STACK_CUT(_TMP_ARGC); \
@@ -53,8 +53,9 @@
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL)); \
 		if (_TMP_OBJ2) { \
 			STACK_INC_C(_TMP_ARGC); \
-			STACK_PUSH(_TMP_OBJ1); \
-			STACK_PUSH(_TMP_OBJ2); \
+			STACK_ENSURE(1); \
+			STACK_MOVE_N(1, _TMP_ARGC + 1); \
+			STACK_SET_BEFORE(_TMP_ARGC + 1, _TMP_OBJ2); \
 			GOTO_INSTR(INVOKE_BASE); \
 		} else { \
 			RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))); \
@@ -66,8 +67,8 @@
  \
 	CHECK_STACK(_TMP_ARGC + 2); \
  \
-	_TMP_OBJ1 = STACK_POP(); \
-	_TMP_OBJ2 = STACK_POP(); \
+	_TMP_OBJ1 = STACK_BEFORE(_TMP_ARGC); \
+	_TMP_OBJ2 = STACK_BEFORE(_TMP_ARGC + 1); \
  \
 	_TMP_ARGV = STACK_CUR(); \
 	STACK_CUT(_TMP_ARGC); \
@@ -101,7 +102,7 @@
 		INVOKE_STACK(); \
 		IVM_PER_INSTR_DBG(DBG_RUNTIME_ACTION(INVOKE, 1 /* native invoke */)); \
  \
-		STACK_INC_C(_TMP_ARGC + 1); /* include base */ \
+		STACK_INC_C(_TMP_ARGC); \
 		SAVE_STACK(); \
  \
 		_TMP_BOOL = IVM_CORO_GET(_CORO, HAS_NATIVE); \

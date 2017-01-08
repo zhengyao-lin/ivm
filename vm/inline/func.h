@@ -15,20 +15,21 @@ IVM_COM_HEADER
 
 #define INVOKE_HANDLER(e1) \
 	if (func->is_native) {                                          \
-		ivm_runtime_invokeNative(runtime, state, ctx);              \
+		ivm_runtime_invokeNative(runtime, state, ctx, dump);        \
 		return IVM_NULL;                                            \
 	}                                                               \
                                                                     \
 	e1;                                                             \
                                                                     \
-	return ivm_runtime_invoke(runtime, state, ctx, &func->u.body);
+	return ivm_runtime_invoke(runtime, state, ctx, &func->u.body, dump);
 
 IVM_INLINE
 ivm_instr_t *
 _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
-					   ivm_runtime_t *runtime)
+					   ivm_runtime_t *runtime,
+					   ivm_uint_t dump)
 {
 	INVOKE_HANDLER(
 		{ ctx = ivm_context_new(state, ctx); }
@@ -42,7 +43,8 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
 					   ivm_runtime_t *runtime,
-					   ivm_object_t *base)
+					   ivm_object_t *base,
+					   ivm_uint_t dump)
 {
 	INVOKE_HANDLER(
 		{
@@ -72,7 +74,7 @@ ivm_function_createRuntime(const ivm_function_t *func,
 	IVM_RUNTIME_SET(runtime, BP, sp);
 	IVM_RUNTIME_SET(runtime, BCUR, 0);
 
-	return _ivm_function_invoke_c(func, state, ctx, runtime);
+	return _ivm_function_invoke_c(func, state, ctx, runtime, 0);
 }
 
 IVM_INLINE
@@ -85,7 +87,7 @@ ivm_function_invoke(const ivm_function_t *func,
 					ivm_runtime_t *runtime)
 {
 	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
-	return _ivm_function_invoke_c(func, state, ctx, runtime);
+	return _ivm_function_invoke_c(func, state, ctx, runtime, 1);
 }
 
 IVM_INLINE
@@ -100,7 +102,7 @@ ivm_function_invokeBase(const ivm_function_t *func,
 {
 	// ivm_frame_stack_push(frame_st, runtime);
 	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
-	return _ivm_function_invoke_b(func, state, ctx, runtime, base);
+	return _ivm_function_invoke_b(func, state, ctx, runtime, base, 2);
 }
 
 IVM_INLINE
@@ -111,7 +113,7 @@ ivm_function_invoke_r(const ivm_function_t *func,
 					  ivm_context_t *ctx)
 {
 	ivm_coro_pushFrame(coro);
-	return _ivm_function_invoke_c(func, state, ctx, IVM_CORO_GET(coro, RUNTIME));
+	return _ivm_function_invoke_c(func, state, ctx, IVM_CORO_GET(coro, RUNTIME), 0);
 }
 
 IVM_INLINE
@@ -123,7 +125,8 @@ ivm_function_object_invoke(ivm_function_object_t *obj,
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 
 	ivm_coro_pushFrame(coro);
-	return _ivm_function_invoke_c(obj->val, state, obj->scope, runtime);
+	
+	return _ivm_function_invoke_c(obj->val, state, obj->scope, runtime, 0);
 }
 
 IVM_INLINE
@@ -136,7 +139,8 @@ ivm_function_object_invokeBase(ivm_function_object_t *obj,
 	ivm_runtime_t *runtime = IVM_CORO_GET(coro, RUNTIME);
 
 	ivm_coro_pushFrame(coro);
-	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base);
+	
+	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base, 0);
 }
 
 IVM_INLINE
