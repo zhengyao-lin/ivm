@@ -168,7 +168,7 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	const ivm_char_t *err;
 
-	// GEN_ASSERT_NOT_LEFT_VALUE(expr, "table expression", flag);
+	GEN_ASSERT_NOT_DEL(expr, "table expression", flag);
 
 	list = table_expr->list;
 	size = ilang_gen_table_entry_list_size(list);

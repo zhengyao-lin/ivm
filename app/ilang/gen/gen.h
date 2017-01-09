@@ -123,6 +123,7 @@ typedef struct {
 	ivm_int_t varg_offset; // real offset + 1
 	ivm_bool_t varg_enable; // parent node is aware of the varg expr
 	ivm_bool_t varg_reverse;
+	ivm_bool_t is_del;
 } ilang_gen_flag_t;
 
 #define ilang_gen_flag_build(...) ((ilang_gen_flag_t) { __VA_ARGS__ })

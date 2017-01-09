@@ -96,7 +96,7 @@ ilang_gen_unary_expr_eval(ilang_gen_expr_t *expr,
 			
 			unary_expr->opr->eval(
 				unary_expr->opr,
-				FLAG(.is_left_val = IVM_TRUE),
+				FLAG(.is_left_val = IVM_TRUE, .is_del = IVM_TRUE),
 				env
 			);
 

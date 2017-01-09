@@ -40,6 +40,19 @@ a +++ a *** a
 
 a *** a ??? a === a
 
+object.proto.~= = fn val: {
+	deref base = val
+}
+
+a = ref loc me
+
+a ~= "yep"
+
+print(me)
+
+try 10 ~= 10
+catch print("yeah")
+
 ret
 
 // -> "str: point to \\[ 1, 2, 3 \\]"
@@ -53,3 +66,6 @@ ret
 // -> "str: \\*\\*\\* <a>"
 // -> "str: === <a>"
 // -> "str: \\?\\?\\? <a>"
+// -> "str: yep"
+
+// -> "str: yeah"

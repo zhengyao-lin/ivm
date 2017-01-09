@@ -50,6 +50,7 @@
 #define GEN_ERR_MSG_NOT_LEFT_VAL(name)								"a %s has to be a left expression", (name)
 #define GEN_ERR_MSG_NOT_IN_LIST(name)								"%s outside a list", (name)
 #define GEN_ERR_MSG_ILLEGAL_VARG									"varg expression used in illegal context"
+#define GEN_ERR_MSG_CANNOT_DEL(name)								"cannot delete %s", (name)
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -90,6 +91,11 @@
 #define GEN_ASSERT_VARG_ENABLE(expr, flag) \
 	if (!(flag).varg_enable) { \
 		GEN_ERR((expr)->pos, GEN_ERR_MSG_ILLEGAL_VARG); \
+	}
+
+#define GEN_ASSERT_NOT_DEL(expr, name, flag) \
+	if ((flag).is_del) { \
+		GEN_ERR((expr)->pos, GEN_ERR_MSG_CANNOT_DEL(name)); \
 	}
 
 #define GEN_ERR_MULTIPLE_VARG(expr) \
