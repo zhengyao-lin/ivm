@@ -1,7 +1,7 @@
 import std
 import ulist
 
-print([1, 2, 3, " happies"].reduce(fn a, b: a + b))
+print([1, 2, 3, " happies"].reduce { a, b -> a + b })
 
 [1, 2, 3, 4, 5].filter(fn a: a % 2).print()
 

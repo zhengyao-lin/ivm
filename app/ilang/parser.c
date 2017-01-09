@@ -248,24 +248,6 @@ enum state_t {
 
 	ST_TRY_NEWL,
 
-	ST_TRY_GT,
-	ST_TRY_LT,
-	ST_TRY_SHL,
-	ST_TRY_NOT,
-	
-	ST_TRY_ASSIGN,
-
-	ST_TRY_ADD,
-	ST_TRY_SUB,
-	ST_TRY_MUL,
-	ST_TRY_MOD,
-	ST_TRY_BEOR,
-
-	ST_TRY_AND,
-	ST_TRY_OR,
-	ST_TRY_SHR,
-	ST_TRY_SHLR,
-
 	ST_TRY_DOT,
 	ST_TRY_ELLIP,
 
@@ -305,7 +287,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 	// +, -, *, \, %, &, |, ^, >, <, !, ~, @, ?, =
 	// 
 	// except:
-	// +, -, *, \, %, &, |, ^, >, <, !, @, ?, =
+	// +, -, *, %, &, |, ^, >, <, !, @, ?, =
 	// <<, >>, >>>, ->, +=, -=, *=, /=, %=
 	// &=, |=, ^=, <<=, >>=, >>>=
 	// >=, <=, !=, &&, ||
@@ -346,28 +328,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=]", ST_INIT, T_RBRAKT },
 
 			{ "&+-*\\%&|^><!~@?=", ST_TRY_COP },
-
-/*
-			{ "=+", ST_TRY_ADD },
-			{ "=-", ST_TRY_SUB },
-			{ "=*", ST_TRY_MUL },
-			{ "=%", ST_TRY_MOD },
-
-			{ "=^", ST_TRY_BEOR },
-
-			{ "=!", ST_TRY_NOT },
-
-			{ "=>", ST_TRY_GT },
-			{ "=<", ST_TRY_LT },
-			{ "=&", ST_TRY_AND },
-			{ "=|", ST_TRY_OR },
-
-			{ "=@", ST_INIT, T_AT },
-			{ "=?", ST_INIT, T_QM },
-			{ "==", ST_TRY_ASSIGN },
-
-*/
-
+			
 			{ "=\n", ST_INIT, T_NEWL },
 			{ "=\r", ST_TRY_NEWL },
 
@@ -391,96 +352,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			/* check \r\n */
 			{ "=\n", ST_INIT, T_NEWL, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_NEWL },
-		},
-
-		/* TRY_GT */
-		{
-			{ "==", ST_INIT, T_CGE, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "=>", ST_TRY_SHR },
-			{ ".", ST_INIT, T_CGT },
-		},
-
-		/* TRY_LT */
-		{
-			{ "==", ST_INIT, T_CLE, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "=<", ST_TRY_SHL },
-			{ ".", ST_INIT, T_CLT }
-		},
-
-		/* TRY_SHL */
-		{
-			{ "==", ST_INIT, T_INSHL, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_SHL }
-		},
-
-		/* TRY_NOT */
-		{
-			{ "==", ST_INIT, T_CNE, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_NOT }
-		},
-
-		/* TRY_ASSIGN */
-		{
-			{ "==", ST_INIT, T_CEQ, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_ASSIGN }
-		},
-
-		/* TRY_ADD */
-		{
-			{ "==", ST_INIT, T_INADD, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_ADD }
-		},
-
-		/* TRY_SUB */
-		{
-			{ "==", ST_INIT, T_INSUB, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "=>", ST_INIT, T_ARROW, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_SUB }
-		},
-
-		/* TRY_MUL */
-		{
-			{ "==", ST_INIT, T_INMUL, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_MUL }
-		},
-
-		/* TRY_MOD */
-		{
-			{ "==", ST_INIT, T_INMOD, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_MOD }
-		},
-
-		/* TRY_BEOR */
-		{
-			{ "==", ST_INIT, T_INBEOR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_BEOR }
-		},
-
-		/* TRY_AND */
-		{
-			{ "=&", ST_INIT, T_CAND, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "==", ST_INIT, T_INBAND, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_BAND }
-		},
-
-		/* TRY_OR */
-		{
-			{ "=|", ST_INIT, T_COR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ "==", ST_INIT, T_INBIOR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_BIOR }
-		},
-
-		/* TRY_SHR */
-		{
-			{ "=>", ST_TRY_SHLR },
-			{ "==", ST_INIT, T_INSHAR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_SHAR }
-		},
-
-		/* TRY_SHLR */
-		{
-			{ "==", ST_INIT, T_INSHLR, .ext = IVM_TRUE, .exc = IVM_TRUE },
-			{ ".", ST_INIT, T_SHLR }
 		},
 
 		/* TRY_DOT */
@@ -658,7 +529,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 	OP("+", T_ADD)
 	OP("-", T_SUB)
 	OP("*", T_MUL)
-	OP("\\", T_DIV)
+	// OP("\\", T_DIV)
 	OP("%", T_MOD)
 	
 	OP("&", T_BAND)
@@ -678,7 +549,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 	OP("+=", T_INADD)
 	OP("-=", T_INSUB)
 	OP("*=", T_INMUL)
-	OP("/=", T_INDIV)
+	// OP("/=", T_INDIV)
 	OP("%=", T_INMOD)
 	OP("&=", T_INBAND)
 	OP("|=", T_INBIOR)
