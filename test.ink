@@ -20,10 +20,6 @@ print(col)
 ret
 */
 
-deref ref {} = { a: 1 }
-
-ret
-
 import test.std
 
 import time
