@@ -10,11 +10,12 @@
 #include "vm/inline/runtime.h"
 #include "vm/inline/vmstack.h"
 #include "vm/inline/coro.h"
-#include "vm/inline/func.h"
 
 #include "vm/inline/typeobj.h"
 #include "vm/inline/num.h"
 #include "vm/inline/strobj.h"
 #include "vm/inline/listobj.h"
+
+#include "vm/inline/func.h"
 
 #endif

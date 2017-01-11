@@ -28,6 +28,8 @@ typedef struct ivm_coro_t_tag {
 	ivm_frame_stack_t frame_st;
 	ivm_runtime_t runtime;
 
+	ivm_param_list_t *param;
+
 	ivm_long_t ref;
 	ivm_int_t cid; // collect id
 	ivm_bool_t alive;
@@ -147,6 +149,8 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 
 #define ivm_coro_setSpawned(coro) ((coro)->spawned = IVM_TRUE)
 #define ivm_coro_unsetSpawned(coro) ((coro)->spawned = IVM_FALSE)
+
+#define ivm_coro_setParam(coro, p) ((coro)->param = (p))
 
 IVM_INLINE
 ivm_bool_t

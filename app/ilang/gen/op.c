@@ -16,7 +16,7 @@ _ilang_gen_ref_expr_eval(ilang_gen_unary_expr_t *unary_expr,
 	sp_back = env->sp;
 	env->sp = 0;
 
-	exec = ivm_exec_new(env->str_pool);
+	exec = ivm_exec_new(env->str_pool, -1);
 	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 	exec_backup = env->cur_exec;
 	env->cur_exec = exec;

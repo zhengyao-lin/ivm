@@ -35,8 +35,6 @@ typedef struct ivm_instr_t_tag {
 	ivm_uid_t cc_id;
 	ivm_ptr_t cc_data;
 
-	ivm_opcode_arg_t arg2;
-
 	struct ivm_source_pos_t_tag *pos;
 
 	ivm_uint_t lineno;
@@ -85,7 +83,6 @@ ivm_instr_initCache(ivm_instr_t *instr)
 #define IVM_INSTR_TYPE_X_ARG ivm_long_t arg,		/* exec */
 #define IVM_INSTR_TYPE_F_ARG ivm_double_t arg,		/* float */
 #define IVM_INSTR_TYPE_S_ARG const char *str,		/* string */
-#define IVM_INSTR_TYPE_SI_ARG const char *str, ivm_long_t arg		/* string, int */
 
 #define IVM_INSTR_GEN(o, ...) \
 	(ivm_instr_gen_##o(__VA_ARGS__, 0))

@@ -294,8 +294,8 @@ _ivm_list_object_unpackAll(ivm_list_object_t *list,
 {
 	ivm_object_t **end, **cur;
 
-	for (end = list->lst - 1, cur = end + list->size;
-		 cur != end; cur--) {
+	for (cur = list->lst, end = cur + list->size;
+		 cur != end; cur++) {
 		*sp++ = *cur ? *cur : IVM_NONE(state);
 	}
 
@@ -310,9 +310,11 @@ _ivm_list_object_unpackAll_r(ivm_list_object_t *list,
 {
 	ivm_object_t **end, **cur;
 
+	sp += list->size - 1;
+
 	for (cur = list->lst, end = cur + list->size;
 		 cur != end; cur++) {
-		*sp++ = *cur ? *cur : IVM_NONE(state);
+		*sp-- = *cur ? *cur : IVM_NONE(state);
 	}
 
 	return;

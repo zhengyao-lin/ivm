@@ -34,10 +34,77 @@ ivm_source_pos_free(ivm_source_pos_t *pos)
 	return;
 }
 
+void
+ivm_param_list_init(ivm_param_list_t *plist,
+					ivm_size_t count)
+{
+	if (count) {
+		if (count == -1) {
+			plist->param = IVM_NULL;
+			plist->count = 0;
+			plist->no_match = IVM_TRUE;
+		} else {
+			plist->param = STD_ALLOC_INIT(sizeof(*plist->param) * count);
+			plist->count = count;
+			IVM_MEMCHECK(plist->param);
+			plist->no_match = IVM_FALSE;
+		}
+	} else {
+		plist->param = IVM_NULL;
+		plist->count = count;
+		plist->no_match = IVM_FALSE;
+	}
+
+	plist->has_varg = IVM_FALSE;
+
+	return;
+}
+
+void
+ivm_param_list_dump(ivm_param_list_t *plist)
+{
+	if (plist) {
+		STD_FREE(plist->param);
+	}
+
+	return;
+}
+
+void
+ivm_param_list_setParam(ivm_param_list_t *plist,
+						ivm_size_t idx, const ivm_string_t *name,
+						ivm_bool_t is_varg)
+{
+	IVM_ASSERT(idx < plist->count, "impossible");
+
+	plist->param[idx].name = name;
+	plist->param[idx].is_varg = is_varg;
+
+	plist->has_varg |= is_varg;
+
+	return;
+}
+
+IVM_INLINE
+void
+_ivm_param_list_copy(ivm_param_list_t *from,
+					 ivm_param_list_t *to)
+{
+	ivm_param_list_init(to, from->no_match ? -1 : from->count);
+
+	if (from->param) {
+		STD_MEMCPY(to->param, from->param, sizeof(*to->param) * from->count);
+		to->has_varg = from->has_varg;
+	}
+
+	return;
+}
+
 IVM_INLINE
 void
 _ivm_exec_init(ivm_exec_t *exec,
-			   ivm_string_pool_t *pool)
+			   ivm_string_pool_t *pool,
+			   ivm_size_t argc)
 {
 	ivm_ref_init(exec);
 	exec->offset = 0;
@@ -54,19 +121,22 @@ _ivm_exec_init(ivm_exec_t *exec,
 
 	IVM_MEMCHECK(exec->instrs);
 
+	ivm_param_list_init(&exec->param, argc);
+
 	exec->cached = IVM_FALSE;
 
 	return;
 }
 
 ivm_exec_t *
-ivm_exec_new(ivm_string_pool_t *pool)
+ivm_exec_new(ivm_string_pool_t *pool,
+			 ivm_size_t argc)
 {
 	ivm_exec_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_MEMCHECK(ret);
 
-	_ivm_exec_init(ret, pool);
+	_ivm_exec_init(ret, pool, argc);
 
 	return ret;
 }
@@ -77,6 +147,7 @@ ivm_exec_free(ivm_exec_t *exec)
 	if (exec && !ivm_ref_dec(exec)) {
 		ivm_string_pool_free(exec->pool);
 		ivm_source_pos_free(exec->pos);
+		ivm_param_list_dump(&exec->param);
 		STD_FREE(exec->instrs);
 		STD_FREE(exec);
 	}
@@ -90,6 +161,7 @@ ivm_exec_dump(ivm_exec_t *exec)
 	if (exec) {
 		ivm_string_pool_free(exec->pool);
 		ivm_source_pos_free(exec->pos);
+		ivm_param_list_dump(&exec->param);
 		STD_FREE(exec->instrs);
 	}
 
@@ -116,6 +188,8 @@ ivm_exec_copy(ivm_exec_t *exec,
 	IVM_MEMCHECK(dest->instrs);
 
 	STD_MEMCPY(dest->instrs, exec->instrs, size);
+
+	_ivm_param_list_copy(&exec->param, &dest->param);
 
 	return;
 }

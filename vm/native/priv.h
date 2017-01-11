@@ -84,7 +84,7 @@
 		ivm_exec_t *__exec__;                                                 \
 		ivm_function_t *__ret__;                                              \
 	                                                                          \
-		__exec__ = ivm_exec_new(ivm_vmstate_getConstPool(NAT_STATE()));       \
+		__exec__ = ivm_exec_new(ivm_vmstate_getConstPool(NAT_STATE()), -1);   \
 		ivm_ref_inc(__exec__);                                                \
 	                                                                          \
 		instrs;                                                               \

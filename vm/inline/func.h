@@ -13,23 +13,99 @@
 
 IVM_COM_HEADER
 
+#define _MATCH_CASE_NO_VARG(pc, ac) \
+	if ((pc) > (ac)) {                                                                 \
+		for (ivm_size_t i = 0; i < (ac); i++) {                                        \
+			ivm_context_setSlot(loc, state, param[i].name, argv[i]);                   \
+		}                                                                              \
+                                                                                       \
+		for (ivm_size_t i = 0; i < (pc) - (ac); i++) {                                 \
+			ivm_context_setSlot(loc, state, param[i + (ac)].name, IVM_NONE(state));    \
+		}                                                                              \
+	} else for (ivm_size_t i = 0; i < (pc); i++) {                                     \
+		ivm_context_setSlot(loc, state, param[i].name, argv[i]);                       \
+	}
+
+#define _MATCH_SWITCH(pc) \
+	switch (argc) {                                     \
+		case 0: _MATCH_CASE_NO_VARG((pc), 0); return;   \
+		case 1: _MATCH_CASE_NO_VARG((pc), 1); return;   \
+		case 2: _MATCH_CASE_NO_VARG((pc), 2); return;   \
+		case 3: _MATCH_CASE_NO_VARG((pc), 3); return;   \
+	}
+
+IVM_PRIVATE
+void
+ivm_param_list_match(ivm_param_list_t *plist,
+					 ivm_vmstate_t *state, ivm_context_t *loc,
+					 ivm_size_t argc, ivm_object_t **argv)
+{
+	register ivm_param_t *param = plist->param;
+
+	if (!param) return;
+
+	if (!plist->has_varg) {
+		switch (plist->count) {
+			case 1: _MATCH_SWITCH(1); break;
+			case 2: _MATCH_SWITCH(2); break;
+			case 3: _MATCH_SWITCH(3); break;
+		}
+		// IVM_TRACE("he\n");
+	}
+
+#undef _MATCH_SWITCH
+
+	ivm_size_t i, n, rest;
+	ivm_param_t *end;
+
+	param = plist->param;
+	end = param + plist->count;
+
+	for (i = 0; param != end && i < argc; param++) {
+		IVM_ASSERT(param->name, "unset param");
+
+		if (!param->is_varg) {
+			ivm_context_setSlot(loc, state, param->name, argv[i++]);
+		} else {
+			rest = IVM_PTR_DIFF(end, param, ivm_param_t) - 1;
+			n = argc - i;
+			if (rest > n) {
+				ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state, 0));
+			} else {
+				n -= rest;
+				ivm_context_setSlot(loc, state, param->name, ivm_list_object_new_c(state, argv + i, n));
+				i += n;
+			}
+		}
+	}
+
+	for (; param != end; param++) {
+		if (param->is_varg) {
+			ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state, 0));
+		} else {
+			ivm_context_setSlot(loc, state, param->name, IVM_NONE(state));
+		}
+	}
+
+	return;
+}
+
 #define INVOKE_HANDLER(e1) \
 	if (func->is_native) {                                          \
-		ivm_runtime_invokeNative(runtime, state, ctx, dump);        \
+		ivm_runtime_invokeNative(runtime, state, ctx);              \
 		return IVM_NULL;                                            \
 	}                                                               \
                                                                     \
 	e1;                                                             \
                                                                     \
-	return ivm_runtime_invoke(runtime, state, ctx, &func->u.body, dump);
+	return ivm_runtime_invoke(runtime, state, ctx, &func->u.body);
 
 IVM_INLINE
 ivm_instr_t *
 _ivm_function_invoke_c(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
-					   ivm_runtime_t *runtime,
-					   ivm_uint_t dump)
+					   ivm_runtime_t *runtime)
 {
 	INVOKE_HANDLER(
 		{ ctx = ivm_context_new(state, ctx); }
@@ -43,8 +119,7 @@ _ivm_function_invoke_b(const ivm_function_t *func,
 					   ivm_vmstate_t *state,
 					   ivm_context_t *ctx,
 					   ivm_runtime_t *runtime,
-					   ivm_object_t *base,
-					   ivm_uint_t dump)
+					   ivm_object_t *base)
 {
 	INVOKE_HANDLER(
 		{
@@ -74,7 +149,7 @@ ivm_function_createRuntime(const ivm_function_t *func,
 	IVM_RUNTIME_SET(runtime, BP, sp);
 	IVM_RUNTIME_SET(runtime, BCUR, 0);
 
-	return _ivm_function_invoke_c(func, state, ctx, runtime, 0);
+	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE
@@ -87,7 +162,7 @@ ivm_function_invoke(const ivm_function_t *func,
 					ivm_runtime_t *runtime)
 {
 	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
-	return _ivm_function_invoke_c(func, state, ctx, runtime, 1);
+	return _ivm_function_invoke_c(func, state, ctx, runtime);
 }
 
 IVM_INLINE
@@ -102,7 +177,7 @@ ivm_function_invokeBase(const ivm_function_t *func,
 {
 	// ivm_frame_stack_push(frame_st, runtime);
 	ivm_coro_pushFrame_c(bstack, frame_st, runtime);
-	return _ivm_function_invoke_b(func, state, ctx, runtime, base, 2);
+	return _ivm_function_invoke_b(func, state, ctx, runtime, base);
 }
 
 IVM_INLINE
@@ -113,7 +188,7 @@ ivm_function_invoke_r(const ivm_function_t *func,
 					  ivm_context_t *ctx)
 {
 	ivm_coro_pushFrame(coro);
-	return _ivm_function_invoke_c(func, state, ctx, IVM_CORO_GET(coro, RUNTIME), 0);
+	return _ivm_function_invoke_c(func, state, ctx, IVM_CORO_GET(coro, RUNTIME));
 }
 
 IVM_INLINE
@@ -126,7 +201,7 @@ ivm_function_object_invoke(ivm_function_object_t *obj,
 
 	ivm_coro_pushFrame(coro);
 	
-	return _ivm_function_invoke_c(obj->val, state, obj->scope, runtime, 0);
+	return _ivm_function_invoke_c(obj->val, state, obj->scope, runtime);
 }
 
 IVM_INLINE
@@ -140,7 +215,7 @@ ivm_function_object_invokeBase(ivm_function_object_t *obj,
 
 	ivm_coro_pushFrame(coro);
 	
-	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base, 0);
+	return _ivm_function_invoke_b(obj->val, state, obj->scope, runtime, base);
 }
 
 IVM_INLINE

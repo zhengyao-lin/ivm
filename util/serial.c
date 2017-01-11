@@ -47,7 +47,7 @@ _ivm_serial_unserializeExec(ivm_serial_exec_t *exec,
 							ivm_string_pool_list_t *pool_list)
 {
 	ivm_exec_t *ret = ivm_exec_new(
-		ivm_string_pool_list_at(pool_list, exec->pool)
+		ivm_string_pool_list_at(pool_list, exec->pool), 0
 	);
 	ivm_serial_instr_t *i, *end;
 

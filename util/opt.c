@@ -91,7 +91,7 @@ ivm_opt_il_convertFromExec(ivm_exec_t *exec)
 			.lineno = ivm_instr_lineno(i),
 			.opc = ivm_instr_opcode(i),
 			.arg = ivm_instr_arg(i),
-			.addr = -1
+			.addr = -1,
 		);
 		ivm_opt_instr_list_push(instrs, &tmp);
 

@@ -122,7 +122,6 @@ typedef struct {
 	ivm_int_t pa_argno;
 	ivm_int_t varg_offset; // real offset + 1
 	ivm_bool_t varg_enable; // parent node is aware of the varg expr
-	ivm_bool_t varg_reverse;
 	ivm_bool_t is_del;
 } ilang_gen_flag_t;
 
@@ -606,6 +605,7 @@ ilang_gen_param_list_new(ilang_gen_trans_unit_t *unit)
 #define ILANG_GEN_PARAM_LIST_ITER_GET(iter) IVM_LIST_ITER_GET((iter), ilang_gen_param_t)
 #define ILANG_GEN_PARAM_LIST_ITER_GET_PTR(iter) IVM_LIST_ITER_GET_PTR((iter), ilang_gen_param_t)
 #define ILANG_GEN_PARAM_LIST_EACHPTR_R(list, iter) IVM_LIST_EACHPTR_R((list), iter, ilang_gen_param_t)
+#define ILANG_GEN_PARAM_LIST_EACHPTR(list, iter) IVM_LIST_EACHPTR((list), iter, ilang_gen_param_t)
 
 typedef struct {
 	ILANG_GEN_EXPR_HEADER

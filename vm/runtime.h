@@ -44,6 +44,7 @@ typedef struct ivm_runtime_t_tag {
 #define IVM_RUNTIME_SET_SP(runtime, val) ((runtime)->sp = (val))
 #define IVM_RUNTIME_SET_BCUR(runtime, val) ((runtime)->bcur = (val))
 #define IVM_RUNTIME_SET_NO_REG(runtime, val) ((runtime)->no_reg = (val))
+#define IVM_RUNTIME_SET_DUMP(runtime, val) ((runtime)->dump = (val))
 
 #define IVM_RUNTIME_GET(obj, member) IVM_GET((obj), IVM_RUNTIME, member)
 #define IVM_RUNTIME_SET(obj, member, val) IVM_SET((obj), IVM_RUNTIME, member, (val))

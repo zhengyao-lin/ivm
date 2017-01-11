@@ -16,6 +16,8 @@
 IVM_COM_HEADER
 
 struct ivm_vmstate_t_tag;
+struct ivm_context_t_tag;
+struct ivm_object_t_tag;
 struct ivm_function_t_tag;
 
 typedef struct ivm_source_pos_t_tag {
@@ -36,6 +38,32 @@ ivm_source_pos_getFile(ivm_source_pos_t *pos)
 	return pos ? pos->file : "<untraceable>";
 }
 
+typedef struct {
+	const ivm_string_t *name;
+	ivm_bool_t is_varg;
+} ivm_param_t;
+
+typedef struct {
+	ivm_param_t *param;
+	ivm_size_t count;
+	ivm_bool_t has_varg;
+	ivm_bool_t no_match;
+} ivm_param_list_t;
+
+void
+ivm_param_list_init(ivm_param_list_t *plist,
+					ivm_size_t count);
+
+void
+ivm_param_list_dump(ivm_param_list_t *plist);
+
+void
+ivm_param_list_setParam(ivm_param_list_t *plist,
+						ivm_size_t idx, const ivm_string_t *name,
+						ivm_bool_t is_varg);
+
+#define ivm_param_list_isNoMatch(list) ((list)->no_match)
+
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
 
@@ -50,11 +78,14 @@ typedef struct ivm_exec_t_tag {
 	ivm_uint_t alloc;
 	ivm_uint_t next;
 
+	ivm_param_list_t param;
+
 	ivm_bool_t cached;
 } ivm_exec_t;
 
 ivm_exec_t *
-ivm_exec_new(ivm_string_pool_t *pool);
+ivm_exec_new(ivm_string_pool_t *pool,
+			 ivm_size_t param);
 
 void
 ivm_exec_free(ivm_exec_t *exec);
@@ -76,8 +107,9 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_addInstr_l(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN_L(__VA_ARGS__, (exec))))
 
-#define ivm_exec_registerString(exec, str) (ivm_string_pool_registerRaw_i((exec)->pool, (str)))
-#define ivm_exec_getString(exec, i) (ivm_string_pool_get((exec)->pool, (i)))
+#define ivm_exec_registerString(exec, str) ivm_string_pool_registerRaw_i((exec)->pool, (str))
+#define ivm_exec_registerString_c(exec, str) ivm_string_pool_registerRaw((exec)->pool, (str))
+#define ivm_exec_getString(exec, i) ivm_string_pool_get((exec)->pool, (i))
 
 #define ivm_exec_length(exec) ((exec)->next)
 #define ivm_exec_cur ivm_exec_length
@@ -86,6 +118,9 @@ ivm_exec_addInstr_c(ivm_exec_t *exec,
 #define ivm_exec_instrPtrAt(exec, i) ((exec)->instrs + (i))
 #define ivm_exec_instrPtrStart(exec) ((exec)->instrs)
 #define ivm_exec_instrPtrEnd(exec) ((exec)->instrs + (exec)->next)
+
+#define ivm_exec_setParam(exec, i, name, is_varg) ivm_param_list_setParam(&(exec)->param, (i), (name), (is_varg))
+#define ivm_exec_getParam(exec) (&(exec)->param)
 
 IVM_INLINE
 void

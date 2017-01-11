@@ -99,7 +99,7 @@ typedef struct {
 
 /* i starts from 1 */
 #define ivm_function_arg_has(arg, i) ((i) <= (arg).argc)
-#define ivm_function_arg_at(arg, i) ((arg).argv[-(i)])
+#define ivm_function_arg_at(arg, i) ((arg).argv[(i) - 1])
 
 #define ivm_function_arg_buildEmpty() \
 	((ivm_function_arg_t) { IVM_NULL, 0, IVM_NULL })

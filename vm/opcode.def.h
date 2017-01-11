@@ -70,11 +70,11 @@ OPCODE_GEN(NEW_LIST_ALL, "new_list_all", N, -1, {
 	NEXT_INSTR();
 })
 
-/* pack up all elem on the stack except x elems on the bottom */
-OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
-	_TMP_ARGC = AVAIL_STACK - IARG();
+#if 1
 
-	// IVM_TRACE("%d %d\n", AVAIL_STACK, _TMP_ARGC);
+/* pack up all elem on the stack except x elems on the bottom(in reversed order) */
+OPCODE_GEN(NEW_LIST_ALL_R, "new_list_all_r", I, -1, {
+	_TMP_ARGC = AVAIL_STACK - IARG();
 
 	if (_TMP_ARGC > 0) {
 		_TMP_OBJ1 = ivm_list_object_new_c(_STATE, STACK_CUT(_TMP_ARGC), _TMP_ARGC);
@@ -86,6 +86,8 @@ OPCODE_GEN(NEW_VARG, "new_varg", I, -1, {
 
 	NEXT_INSTR();
 })
+
+#endif
 
 OPCODE_GEN(ENSURE_NONE, "ensure_none", N, 1, {
 	if (!AVAIL_STACK) {
@@ -145,6 +147,19 @@ OPCODE_GEN(UNPACK_LIST, "unpack_list", I, 1, {
 	NEXT_INSTR_NINT();
 })
 
+/*
+	list:
+	-------------
+	| 1 | 2 | 3 |
+	-------------
+
+	to stack:
+	          top
+	-------------
+	| 1 | 2 | 3 |
+	-------------
+	(same memory order)
+ */
 OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
 	CHECK_STACK(1);
 
@@ -167,7 +182,19 @@ OPCODE_GEN(UNPACK_LIST_ALL, "unpack_list_all", N, 1, {
 	NEXT_INSTR_NINT();
 })
 
-/* reversed unpack */
+/*
+	list:
+	-------------
+	| 1 | 2 | 3 |
+	-------------
+
+	to stack:
+	          top
+	-------------
+	| 3 | 2 | 1 |
+	-------------
+	(reversed memory order)
+ */
 OPCODE_GEN(UNPACK_LIST_ALL_R, "unpack_list_all_r", N, 1, {
 	CHECK_STACK(1);
 
@@ -290,11 +317,6 @@ OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", 0, IVM_FALSE))
 OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);
 	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(EXPAND_LOC, "expand_loc", I, 0, {
-	ivm_context_expandSlotTable(_CONTEXT, _STATE, IARG());
-	NEXT_INSTR();
 })
 
 /*
@@ -640,21 +662,22 @@ OPCODE_GEN(SET_PA_ARG, "set_pa_arg", I, 0, {
 	if (AVAIL_STACK >= _TMP_ARGC) {
 		// too many arguments => trim the head
 		_TMP_ARGC = AVAIL_STACK - _TMP_ARGC;
-		STACK_TRIM_HEAD(_TMP_ARGC);
+		STACK_CUT(_TMP_ARGC);
 	} else {
 		// too little argument => fill in none
-		STACK_ENSURE(_TMP_ARGC);
-
 		_TMP_ARGC = _TMP_ARGC - AVAIL_STACK;
-		STACK_MOVE(_TMP_ARGC);
+		STACK_ENSURE(_TMP_ARGC);
+		_TMP_OBJ1 = IVM_NONE(state);
 
-		_TMP_OBJ1 = IVM_NONE(_STATE);
-		STACK_FILLIN(_BP, _TMP_OBJ1, _TMP_ARGC);
+		while (_TMP_ARGC--) {
+			STACK_PUSH(_TMP_OBJ1);
+		}
 	}
 
 	NEXT_INSTR();
 })
 
+/*
 OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 	ivm_context_setSlot_cc(
 		_CONTEXT,
@@ -664,28 +687,7 @@ OPCODE_GEN(SET_ARG, "set_arg", S, -1, {
 
 	NEXT_INSTR();
 })
-
-// set default
-OPCODE_GEN(SET_DEF, "set_def", S, -2, {
-	switch (AVAIL_STACK) {
-		case 1:
-			ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), STACK_POP(), _INSTR);
-			break;
-		case 0: INSUF_STACK(1); break;
-		default:
-			_TMP_OBJ1 = STACK_POP(); // default
-			_TMP_OBJ2 = STACK_POP();
-
-			if (IVM_IS_NONE(_STATE, _TMP_OBJ2)) {
-				ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), _TMP_OBJ1, _INSTR);
-			} else {
-				ivm_context_setSlot_cc(_CONTEXT, _STATE, SARG(), _TMP_OBJ2, _INSTR);
-			}
-			break;
-	}
-
-	NEXT_INSTR();
-})
+*/
 
 /*
 	top
@@ -862,8 +864,17 @@ OPCODE_GEN(FORK, "fork", N, 0, {
 	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T),
 			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
 
+	_TMP_FUNC = ivm_function_object_getFunc(_TMP_OBJ1);
+
+	RTM_ASSERT(!ivm_function_isNative(_TMP_FUNC),
+			   IVM_ERROR_MSG_CANNOT_FORK_NATIVE);
+
 	_TMP_CORO = ivm_coro_new(_STATE);
 	ivm_coro_setRoot(_TMP_CORO, _STATE, IVM_AS(_TMP_OBJ1, ivm_function_object_t));
+	ivm_coro_setParam(_TMP_CORO, ivm_function_getParam(_TMP_FUNC));
+
+	// IVM_TRACE("param: %p %p\n", ivm_function_getParam(_TMP_FUNC), _TMP_FUNC);
+	// IVM_TRACE("%d\n", *(int *)(0));
 
 	_TMP_OBJ2 = ivm_coro_object_new(_STATE, _TMP_CORO);
 	STACK_PUSH(_TMP_OBJ2);
@@ -1195,6 +1206,19 @@ OPCODE_GEN(CHECK_LIST_ITER, "check_list_iter", A, 0, {
 		NEXT_INSTR_NINT();
 	} else {
 		GOTO_SET_INSTR(ADDR_ARG());
+	}
+})
+
+// if the stack top is not none, jump to another ip
+OPCODE_GEN(CHECK_NONE, "check_none", A, -1, {
+	CHECK_STACK(1);
+
+	_TMP_OBJ1 = STACK_POP();
+
+	if (!IVM_IS_NONE(_STATE, _TMP_OBJ1)) {
+		GOTO_SET_INSTR(ADDR_ARG());
+	} else {
+		NEXT_INSTR();
 	}
 })
 

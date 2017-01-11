@@ -343,7 +343,7 @@ _ias_gen_block_generateExec(ias_gen_block_t *block,
 	ias_gen_instr_t instr;
 	const ivm_char_t *param;
 	ias_gen_instr_list_iterator_t iter;
-	ivm_exec_t *ret = ivm_exec_new(env->str_pool);
+	ivm_exec_t *ret = ivm_exec_new(env->str_pool, -1);
 	ivm_bool_t failed;
 
 	if (block->instrs) {

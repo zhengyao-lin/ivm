@@ -22,6 +22,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 	ivm_int_t cur_param, param_count;
 	ivm_size_t sp_back;
 	const ivm_char_t *err;
+	ivm_size_t tmp_addr;
 
 	ilang_gen_addr_set_t addr_backup = env->addr;
 	sp_back = env->sp;
@@ -29,7 +30,15 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "function expression", flag);
 
-	exec = ivm_exec_new(env->str_pool);
+	params = func->params;
+
+	if (params) {
+		param_count = ilang_gen_param_list_size(params);
+	} else {
+		param_count = 0;
+	}
+
+	exec = ivm_exec_new(env->str_pool, param_count);
 	exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 	exec_backup = env->cur_exec;
 	env->cur_exec = exec;
@@ -40,22 +49,16 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 
 	/*
 		ink calling convention:
-			1. first argument, top of the stack
-			2. last argument, bottom of the stack
+			top                                           bottom
+			-------------------     ----------------------------
+			| arg n | arg n-1 | ... | arg 1 | func | base(opt) |
+			-------------------     ----------------------------
 	 */
-	params = func->params;
 
 	if (params) {
-		param_count = ilang_gen_param_list_size(params);
 		cur_param = 0;
 
-		if (param_count >= IVM_DEFAULT_SLOT_TABLE_SIZE) {
-			ivm_exec_addInstr_l(exec, GET_LINE(expr), EXPAND_LOC, param_count);
-		}
-
 		ILANG_GEN_PARAM_LIST_EACHPTR_R(params, piter) {
-			cur_param++;
-
 			tmp_param1 = ILANG_GEN_PARAM_LIST_ITER_GET_PTR(piter);
 
 			ILANG_GEN_PARAM_LIST_EACHPTR_R(params, chk_iter) {
@@ -74,24 +77,27 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 				GEN_ERR_FAILED_PARSE_STRING(expr, err);
 			}
 
-			if (tmp_param1->is_varg) {
-				if (has_varg) {
-					GEN_ERR_MULTIPLE_VARG(expr);
-				}
-				has_varg = IVM_TRUE;
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), NEW_VARG, param_count - cur_param);
+			if (tmp_param1->is_varg && has_varg) {
+				GEN_ERR_MULTIPLE_VARG(expr);
 			}
 
+			ivm_exec_setParam(
+				exec, cur_param,
+				ivm_exec_registerString_c(exec, tmp_str ? tmp_str : IVM_NATIVE_VARG_NAME),
+				tmp_param1->is_varg
+			);
+
 			if (tmp_param1->def) {
+				ivm_exec_addInstr_l(exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
+				tmp_addr = ivm_exec_addInstr_l(exec, GET_LINE(expr), CHECK_NONE, 0);
+				
 				tmp_param1->def->eval(tmp_param1->def, FLAG(0), env);
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_DEF, tmp_str);
-			} else {
-				if (tmp_str) {
-					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, tmp_str);
-				} else {
-					ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_ARG, IVM_NATIVE_VARG_NAME);
-				}
+				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_LOCAL_SLOT, tmp_str);
+				
+				ivm_exec_setArgAt(exec, tmp_addr, ivm_exec_cur(exec) - tmp_addr);
 			}
+
+			cur_param++;
 		}
 	}
 
@@ -126,17 +132,13 @@ ilang_gen_varg_expr_eval(ilang_gen_expr_t *expr,
 	GEN_ASSERT_VARG_ENABLE(expr, flag)
 
 	if (flag.is_left_val) {
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_VARG, flag.varg_offset - 1);
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_LIST_ALL_R, flag.varg_offset - 1);
 		varg->bondee->eval(varg->bondee, FLAG(.is_left_val = IVM_TRUE), env);
 	} else {
 		varg->bondee->eval(varg->bondee, FLAG(0), env);
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), TO_LIST);
 
-		if (flag.varg_reverse) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL_R);
-		} else {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
-		}
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
 	}
 
 	return NORET();
@@ -350,21 +352,13 @@ ilang_gen_fork_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_fork_expr_t *fork_expr = IVM_AS(expr, ilang_gen_fork_expr_t);
 	
-	GEN_ASSERT_NOT_LEFT_VALUE(expr, "assign expression", flag);
+	GEN_ASSERT_NOT_LEFT_VALUE(expr, "fork expression", flag);
 
-	if (fork_expr->is_group) {
-		/* fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GROUP);
-		if (flag.is_top_level) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
-		} */
-		IVM_FATAL("impossible");
-	} else {
-		fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), FORK);
-		if (flag.is_top_level) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
-		}
+	fork_expr->forkee->eval(fork_expr->forkee, FLAG(0), env);
+	ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), FORK);
+
+	if (flag.is_top_level) {
+		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 	}
 
 	return NORET();

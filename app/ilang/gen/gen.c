@@ -87,7 +87,7 @@ ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
 	}
 
 	ret = ivm_exec_unit_new(0, ivm_exec_list_new());
-	top_level = ivm_exec_new(str_pool);
+	top_level = ivm_exec_new(str_pool, 0);
 
 	ivm_exec_unit_setSourcePos(ret, ivm_source_pos_new(unit->file));
 

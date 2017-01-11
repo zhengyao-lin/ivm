@@ -166,9 +166,11 @@
 #define FARG() (ivm_opcode_arg_toFloat(ivm_instr_arg(_INSTR)))
 // #define SARG() (ivm_exec_getString(_EXEC, ivm_opcode_arg_toInt(ivm_instr_arg(_INSTR))))
 #define PARG(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg(_INSTR)))
+#define PARG2(type) ((type)ivm_opcode_arg_toPointer(ivm_instr_arg2(_INSTR)))
 #define XARG() (ivm_opcode_arg_toFunc(ivm_instr_arg(_INSTR))) // (PARG(ivm_function_t *))
 #define SARG() (PARG(const ivm_string_t *))
 #define ADDR_ARG() (PARG(ivm_instr_t *))
+#define ADDR_ARG2() (PARG2(ivm_instr_t *))
 #define SET_IARG(i) (ivm_instr_setArg(_INSTR, ivm_opcode_arg_fromInt(i)))
 
 #define STACK_TOP_NOCACHE() (*(tmp_sp - 1))
@@ -204,7 +206,7 @@
 
 #endif
 
-#define STACK_CUR() (tmp_sp)
+#define STACK_CUR() tmp_sp
 #define STACK_INC_C(i) (tmp_sp += (i))
 
 #define STACK_ENSURE(i) \

@@ -303,7 +303,7 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 		if (has_varg) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), PUSH_BLOCK_S1);
 			GEN_NL_BLOCK_START();
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL);
+			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST_ALL_R);
 		} else {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), UNPACK_LIST, size);
 		}
@@ -319,6 +319,7 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 				} else {
 					tmp_elem->eval(tmp_elem, FLAG(.is_left_val = IVM_TRUE, .varg_offset = vofs, .varg_enable = IVM_TRUE), env);
 				}
+
 				vofs--;
 			}
 		}
@@ -334,7 +335,7 @@ ilang_gen_list_expr_eval(ilang_gen_expr_t *expr,
 
 			ILANG_GEN_EXPR_LIST_EACHPTR_R(elems, eiter) {
 				tmp_elem = ILANG_GEN_EXPR_LIST_ITER_GET(eiter);
-				tmp_elem->eval(tmp_elem, FLAG(.varg_enable = IVM_TRUE, .varg_reverse = IVM_TRUE), env);
+				tmp_elem->eval(tmp_elem, FLAG(.varg_enable = IVM_TRUE), env);
 			}
 
 			// pack up everything

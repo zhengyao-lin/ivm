@@ -28,6 +28,8 @@ ivm_coro_new(ivm_vmstate_t *state)
 
 	ivm_vmstate_addCoroSet(state, ret);
 	
+	ret->param = IVM_NULL;
+
 	ret->ref = 0;
 	ret->cid = 0;
 	ret->alive = IVM_FALSE;
@@ -192,161 +194,6 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 	return;
 }
 
-#if 0 // IVM_USE_MULTITHREAD
-
-IVM_PRIVATE
-ivm_thread_mutex_t _coro_gil = IVM_THREAD_MUTEXT_INITVAL;
-
-// clock sync lock
-IVM_PRIVATE
-volatile
-ivm_bool_t _coro_csl = IVM_FALSE;
-
-IVM_INLINE
-void
-_ivm_coro_lockGIL()
-{
-	ivm_thread_mutex_lock(&_coro_gil);
-	return;
-}
-
-IVM_INLINE
-void
-_ivm_coro_unlockGIL()
-{
-	ivm_thread_mutex_unlock(&_coro_gil);
-	return;
-}
-
-void
-ivm_coro_lockGIL()
-{
-	_ivm_coro_lockGIL();
-	return;
-}
-
-void
-ivm_coro_unlockGIL()
-{
-	_ivm_coro_unlockGIL();
-	return;
-}
-
-void
-ivm_coro_setCSL()
-{
-	_coro_csl = IVM_TRUE;
-	return;
-}
-
-void
-ivm_coro_unsetCSL()
-{
-	_coro_csl = IVM_FALSE;
-	return;
-}
-
-ivm_bool_t
-ivm_coro_getCSL()
-{
-	return _coro_csl;
-}
-
-#endif
-
-#if 0
-
-#define _INT_BUF_SIZE IVM_DEFAULT_CORO_INT_BUFFER_SIZE
-
-#if _INT_BUF_SIZE != 2 && \
-	_INT_BUF_SIZE != 4 && \
-	_INT_BUF_SIZE != 8 && \
-	_INT_BUF_SIZE != 16 && \
-	_INT_BUF_SIZE != 32 && \
-	_INT_BUF_SIZE != 64 && \
-	_INT_BUF_SIZE != 128
-	#error unsupported coroutine interrupt buffer size
-#endif
-
-#define _INT_ROUND_MASK (_INT_BUF_SIZE - 1)
-
-IVM_PRIVATE
-ivm_coro_int_t
-_coro_int_buf[_INT_BUF_SIZE];
-
-IVM_PRIVATE
-ivm_uint_t
-_coro_int_next = 0;
-
-IVM_PRIVATE
-ivm_uint_t
-_coro_int_head = 0;
-
-IVM_PRIVATE
-volatile
-ivm_bool_t
-_coro_int_lock = IVM_FALSE;
-
-#define _INC_ROUND(n) ((n) = ((n) + 1) & _INT_ROUND_MASK)
-#define _DEC_ROUND(n) ((n) = ((n) - 1) & _INT_ROUND_MASK)
-
-#define _INT_LOCK() do { \
-		while (_coro_int_lock); \
-		_coro_int_lock = IVM_TRUE; \
-	} while (0)
-
-#define _INT_UNLOCK() _coro_int_lock = IVM_FALSE;
-
-void
-ivm_coro_setInt(ivm_coro_int_t flag)
-{
-	_INT_LOCK();
-
-	_coro_int_buf[_coro_int_next] = flag;
-
-	_INC_ROUND(_coro_int_next);
-
-	if (_coro_int_next == _coro_int_head) {
-		_INC_ROUND(_coro_int_head);
-	}
-
-	_INT_UNLOCK();
-	
-	return;
-}
-
-IVM_INLINE
-ivm_bool_t
-_ivm_coro_hasInt()
-{
-	return _coro_int_next != _coro_int_head;
-}
-
-IVM_INLINE
-ivm_coro_int_t
-_ivm_coro_popInt()
-{
-	/* assume _coro_int_next != _coro_int_head */
-	register ivm_coro_int_t ret;
-
-	_INT_LOCK();
-	
-	_DEC_ROUND(_coro_int_next);
-
-	ret = _coro_int_buf[_coro_int_next];
-
-	if (_coro_int_next == _coro_int_head) {
-		/* empty -> reset to zeros */
-		_coro_int_head = _coro_int_next = 0;
-	}
-
-	_INT_UNLOCK();
-
-	return ret;
-}
-
-#endif
-
 IVM_INLINE
 ivm_bool_t
 _ivm_coro_otherInt(ivm_vmstate_t *state,
@@ -382,7 +229,7 @@ ivm_object_t *
 ivm_coro_execute_c(ivm_coro_t *coro,
 					 ivm_vmstate_t *state,
 					 ivm_object_t *arg,
-									 ivm_bool_t get_opcode_entry)
+					 ivm_bool_t get_opcode_entry)
 {
 	register ivm_instr_t *tmp_ip;
 	register ivm_object_t **tmp_bp, **tmp_sp;
@@ -480,7 +327,14 @@ ivm_coro_execute_c(ivm_coro_t *coro,
 		UPDATE_STACK();
 
 		if (arg) {
-			STACK_PUSH(arg);
+			if (coro->param) {
+				if (!ivm_param_list_isNoMatch(coro->param)) {
+					ivm_param_list_match(coro->param, state, IVM_RUNTIME_GET(tmp_runtime, CONTEXT), 1, &arg);
+				}
+				coro->param = IVM_NULL;
+			} else {
+				STACK_PUSH(arg);
+			}
 		}
 
 		while (1) {
@@ -539,9 +393,11 @@ ACTION_EXCEPTION:
 				if (tmp_bp) {
 					UPDATE_STACK();
 					
-					switch (tmp_dump) {
-						case 2: STACK_POP();
-						case 1: STACK_POP();
+					if (tmp_dump) {
+						switch (tmp_dump) {
+							case 2: STACK_POP();
+							case 1: STACK_POP();
+						}
 					}
 
 					if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {
@@ -574,9 +430,11 @@ ACTION_RETURN:
 			if (ivm_coro_popFrame(coro)) {
 				UPDATE_STACK();
 
-				switch (tmp_dump) {
-					case 2: STACK_POP();
-					case 1: STACK_POP();
+				if (tmp_dump) {
+					switch (tmp_dump) {
+						case 2: STACK_POP();
+						case 1: STACK_POP();
+					}
 				}
 
 				if (IVM_RUNTIME_GET(tmp_runtime, IS_NATIVE)) {

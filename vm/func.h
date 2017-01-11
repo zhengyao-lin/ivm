@@ -24,9 +24,9 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 #define IVM_FUNCTION_COMMON_ARG_PASS base, argc, argv
 
 #define IVM_FUNCTION_SET_ARG_2(argc, argv) \
-	(ivm_function_arg_t){ IVM_NULL, (argc), (argv) }
+	((ivm_function_arg_t) { IVM_NULL, (argc), (argv) })
 #define IVM_FUNCTION_SET_ARG_3(base, argc, argv) \
-	(ivm_function_arg_t){ (base), (argc), (argv) }
+	((ivm_function_arg_t) { (base), (argc), (argv) })
 
 #define IVM_GET_NATIVE_FUNC(name) ivm_native_function_##name
 #define IVM_GET_BUILTIN_FUNC(name) ivm_builtin_function_##name
@@ -54,7 +54,15 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 #define NAT_BASE() (__arg__.base)
 #define NAT_BASE_C(t) (IVM_AS(__arg__.base, t))
 #define NAT_ARGC() (__arg__.argc)
-#define NAT_ARG_AT(i) (__arg__.argv[-(i)])
+#define NAT_ARG_AT(i) ivm_function_arg_at(__arg__, (i)) // (__arg__.argv[(i) - 1])
+
+/*
+enum ivm_param_type_t {
+	IVM_PARAM_TYPE_NONE = 0
+	IVM_PARAM_TYPE_NORMAL,
+	IVM_PARAM_TYPE_VARG
+};
+*/
 
 typedef ivm_ptlist_t ivm_func_list_t;
 
@@ -83,10 +91,19 @@ ivm_function_free(ivm_function_t *func,
 #define ivm_function_isNative(func) ((func) && (func)->is_native)
 #define ivm_function_getNative(func) ((func)->u.native)
 
+#define ivm_function_getParam(func) ivm_exec_getParam(&(func)->u.body)
+
 #define ivm_function_callNative(func, state, coro, context, arg) \
 	((func)->u.native((state), (coro), (context), (arg)))
 
 #define ivm_function_getStringPool(func) ivm_exec_pool(&(func)->u.body)
+
+IVM_INLINE
+ivm_bool_t
+ivm_function_hasParam(ivm_function_t *func)
+{
+	return !func->is_native && !ivm_param_list_isNoMatch(ivm_exec_getParam(&func->u.body));
+}
 
 IVM_INLINE
 ivm_function_t *
@@ -155,8 +172,9 @@ void
 ivm_function_object_traverser(ivm_object_t *obj,
 							  struct ivm_traverser_arg_t_tag *arg);
 
-#define ivm_function_object_getScope(obj) ((obj)->scope)
-#define ivm_function_object_getFunc(obj) ((obj)->val)
+#define ivm_function_object_getScope(obj) (IVM_AS((obj), ivm_function_object_t)->scope)
+#define ivm_function_object_getFunc(obj) (IVM_AS((obj), ivm_function_object_t)->val)
+#define ivm_function_object_getParam(obj) ivm_function_getParam(IVM_AS((obj), ivm_function_object_t)->val)
 
 typedef ivm_ptpool_t ivm_function_pool_t;
 

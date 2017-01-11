@@ -144,6 +144,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_WRONG_ARG(n, expect, given)				"wrong %dth argument(expecting <%s>, <%s> given)", (n), (expect), (given)
 #define IVM_ERROR_MSG_TOO_LESS_ARG(n, expect)					"require at least %d argument(s)(%d given)", (ivm_int_t)(expect), (ivm_int_t)(n)
 #define IVM_ERROR_MSG_MISSING_ARG(n, expect)					"missing the %dth argument, expecting <%s>", (n), (expect)
+#define IVM_ERROR_MSG_CANNOT_FORK_NATIVE						"cannot use native function as coroutine root"
 
 IVM_COM_END
 

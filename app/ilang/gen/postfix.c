@@ -50,7 +50,7 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 
 	// partial applied function
 	if (pa_arg_count) {
-		exec = ivm_exec_new(env->str_pool);
+		exec = ivm_exec_new(env->str_pool, -1);
 		exec_id = ivm_exec_unit_registerExec(env->unit, exec);
 		exec_backup = env->cur_exec;
 		env->cur_exec = exec;
@@ -70,9 +70,10 @@ ilang_gen_call_expr_eval(ilang_gen_expr_t *expr,
 	);
 
 	pa_argno = 0;
-	// generate in a reverse order(the order in ast is reversed)
+	
 	{
-		ILANG_GEN_EXPR_LIST_EACHPTR(args, aiter) {
+		/* ast is reversed */
+		ILANG_GEN_EXPR_LIST_EACHPTR_R(args, aiter) {
 			tmp_arg = ILANG_GEN_EXPR_LIST_ITER_GET(aiter);
 
 			if (tmp_arg->is_missing) {
