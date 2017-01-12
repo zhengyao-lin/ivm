@@ -53,6 +53,14 @@ print(me)
 try 10 ~= 10
 catch print("yeah")
 
+object.proto.<= = fn obj: base.merge(obj) 
+
+loc <= {
+	another: "woho"
+}
+
+print(another)
+
 ret
 
 // -> "str: point to \\[ 1, 2, 3 \\]"
@@ -69,3 +77,4 @@ ret
 // -> "str: yep"
 
 // -> "str: yeah"
+// -> "str: woho"

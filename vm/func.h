@@ -56,22 +56,6 @@ typedef ivm_uint16_t ivm_signal_mask_t;
 #define NAT_ARGC() (__arg__.argc)
 #define NAT_ARG_AT(i) (__arg__.argv[-(i)])
 
-typedef const ivm_string_t *ivm_parameter_t;
-
-typedef ivm_ptlist_t ivm_param_list_t;
-typedef IVM_PTLIST_ITER_TYPE(ivm_parameter_t) ivm_param_list_iterator_t;
-
-#define ivm_parameter_getName(param) (param)
-
-#define ivm_param_list_new(argc) (ivm_ptlist_new_c(argc))
-#define ivm_param_list_free ivm_ptlist_free
-#define ivm_param_list_add ivm_ptlist_push
-#define ivm_param_list_size ivm_ptlist_size
-#define ivm_param_list_at(list, i) ((ivm_parameter_t)ivm_ptlist_at((list), (i)))
-
-#define IVM_PARAM_LIST_ITER_GET(iter) (*(iter))
-#define IVM_PARAM_LIST_EACHPTR(list, iter) IVM_PTLIST_EACHPTR((list), iter, ivm_parameter_t)
-
 typedef ivm_ptlist_t ivm_func_list_t;
 
 typedef struct ivm_function_t_tag {

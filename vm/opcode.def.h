@@ -819,55 +819,6 @@ OPCODE_GEN(DUP_PREV_BLOCK_N, "dup_prev_block_n", I, 1, {
 	NEXT_INSTR_NINT();
 })
 
-#if 0
-
-OPCODE_GEN(OUT, "out", S, 0, {
-	IVM_TRACE("%s\n", ivm_string_trimHead(SARG()));
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(OUT_NUM, "out_num", N, 0, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_TOP();
-	if (IVM_OBJECT_GET(_TMP_OBJ1, TYPE_TAG) == IVM_NUMERIC_T) {
-		IVM_TRACE("%.3f\n", IVM_AS(_TMP_OBJ1, ivm_numeric_t)->val);
-	} else {
-		IVM_TRACE("cannot print number of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME));
-	}
-
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(OUT_STR, "out_str", N, 0, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_TOP();
-	if (IVM_OBJECT_GET(_TMP_OBJ1, TYPE_TAG) == IVM_STRING_OBJECT_T) {
-		IVM_TRACE("%s\n", ivm_string_trimHead(IVM_AS(_TMP_OBJ1, ivm_string_object_t)->val));
-	} else {
-		IVM_TRACE("cannot print string of object of type <%s>\n", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME));
-	}
-
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(OUT_STACK_SIZE, "out_stack_size", N, 0, {
-	IVM_TRACE("%ld\n", STACK_SIZE());
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(OUT_TYPE, "out_type", N, 0, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_TOP();
-	IVM_TRACE("%s\n", _TMP_OBJ1 ? IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME) : "<null pointer>");
-	
-	NEXT_INSTR_NINT();
-})
-
-#endif
-
 /*
  * invoke:
  * ----------------------
@@ -902,30 +853,6 @@ OPCODE_GEN(INVOKE_BASE_VAR, "invoke_base_var", N, -1, {
 	SET_IARG(AVAIL_STACK - 2);
 	GOTO_INSTR(INVOKE_BASE);
 })
-
-#if 0
-
-OPCODE_GEN(INVOKE_R, "invoke_r", I, 0, {
-	INVOKE_R_C(IARG());
-})
-
-OPCODE_GEN(INVOKE_BASE_R, "invoke_base_r", I, 1, {
-	INVOKE_BASE_R_C(IARG());
-})
-
-OPCODE_GEN(INVOKE_VAR_R, "invoke_var_r", N, 1, {
-	CHECK_STACK(1);
-	SET_IARG(AVAIL_STACK - 1);
-	GOTO_INSTR(INVOKE_R);
-})
-
-OPCODE_GEN(INVOKE_BASE_VAR_R, "invoke_base_var_r", N, 1, {
-	CHECK_STACK(2);
-	SET_IARG(AVAIL_STACK - 2);
-	GOTO_INSTR(INVOKE_BASE_R);
-})
-
-#endif
 
 OPCODE_GEN(FORK, "fork", N, 0, {
 	CHECK_STACK(1);
@@ -990,113 +917,6 @@ OPCODE_GEN(RESUME, "resume", N, -1, {
 
 	NEXT_INSTR();
 })
-
-#if 0
-
-OPCODE_GEN(FORK, "fork", N, -1, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_POP();
-
-	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-
-	ivm_vmstate_addCoroToCurCGroup(
-		_STATE,
-		IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-	);
-
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(GROUP, "group", N, 0, {
-	CHECK_STACK(1);
-
-	_TMP_OBJ1 = STACK_POP();
-
-	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-
-	STACK_PUSH(
-		ivm_numeric_new(_STATE,
-			ivm_vmstate_addCGroup(
-				_STATE,
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)
-			)
-		)
-	);
-
-	NEXT_INSTR_NINT();
-})
-
-OPCODE_GEN(GROUP_TO, "group_to", N, -1, {
-	CHECK_STACK(2);
-
-	_TMP_OBJ1 = STACK_POP();
-	_TMP_OBJ2 = STACK_POP();
-
-	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T),
-			   IVM_ERROR_MSG_NOT_TYPE("function", IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME)));
-
-	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_NUMERIC_T),
-			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
-
-	_TMP_CGID = ivm_numeric_getValue(_TMP_OBJ2);
-	CHECK_CGID();
-
-	STACK_PUSH(
-		ivm_numeric_new(_STATE,
-			ivm_vmstate_addCoro(
-				_STATE,
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t),
-				_TMP_CGID
-			)
-		)
-	);
-
-	NEXT_INSTR();
-})
-
-OPCODE_GEN(YIELD, "yield", N, 0, {
-	CHECK_STACK(1);
-	
-	_TMP_OBJ1 = STACK_POP();
-
-	RTM_ASSERT(!IVM_CORO_GET(_CORO, HAS_NATIVE),
-			   IVM_ERROR_MSG_YIELD_ATOM_CORO);
-
-	INC_INSTR();
-	SAVE_RUNTIME(_INSTR);
-	
-	YIELD();
-})
-
-OPCODE_GEN(RESUME, "resume", N, -1, {
-	CHECK_STACK(2);
-
-	_TMP_OBJ2 = STACK_POP();
-	_TMP_OBJ1 = STACK_POP();
-
-	RTM_ASSERT(IVM_IS_BTTYPE(_TMP_OBJ2, _STATE, IVM_NUMERIC_T),
-			   IVM_ERROR_MSG_ILLEGAL_GID_TYPE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME)));
-
-	_TMP_CGID = ivm_numeric_getValue(_TMP_OBJ2);
-
-	CHECK_CGID();
-
-	RTM_ASSERT(!ivm_vmstate_isCGroupLocked(_STATE, _TMP_CGID),
-			   IVM_ERROR_MSG_CORO_GROUP_SUSPENDED(_TMP_CGID));
-
-	SAVE_RUNTIME(_INSTR);
-	
-	_TMP_OBJ1 = ivm_vmstate_schedule_g(_STATE, _TMP_OBJ1, _TMP_CGID);
-
-	UPDATE_RUNTIME();
-	STACK_PUSH(_TMP_OBJ1 ? _TMP_OBJ1 : IVM_NONE(_STATE));
-	NEXT_INSTR();
-})
-
-#endif
 
 OPCODE_GEN(ITER_NEXT, "iter_next", A, 2, {
 	CHECK_STACK(1);
@@ -1252,35 +1072,6 @@ OPCODE_GEN(RETURN, "return", N, -1, {
 OPCODE_GEN(JUMP, "jump", A, 0, {
 	GOTO_SET_INSTR(ADDR_ARG());
 })
-
-#if 0
-
-OPCODE_GEN(INT_LOOP, "int_loop", A, 0, {
-	SAVE_STACK();
-	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
-	UPDATE_STACK_C();
-	GOTO_SET_INSTR(ADDR_ARG());
-})
-
-// pop n normal blocks(not include the blocks with catches)
-OPCODE_GEN(INT_N_LOOP, "int_n_loop", I, 0, {
-	SAVE_STACK();
-
-	_TMP_ARGC = IARG();
-
-	while (_TMP_ARGC--) {
-		ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
-		ivm_coro_popBlock(_BLOCK_STACK, _RUNTIME);
-	}
-
-	ivm_coro_popAllCatch(_BLOCK_STACK, _RUNTIME);
-
-	UPDATE_STACK_C();
-
-	NEXT_INSTR();
-})
-
-#endif
 
 OPCODE_GEN(INT_LOOP, "int_loop", I, 0, {
 	SAVE_STACK();
