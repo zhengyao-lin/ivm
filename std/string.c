@@ -330,6 +330,13 @@ HASH(RAW_HASH(ivm_string_trimHead(str)),
 	 CHECK(ivm_string_compare(i->k, str),
 		   _ivm_string_copy_heap(str, pool->heap)));
 
+ivm_string_id_t
+ivm_string_pool_register_i(ivm_string_pool_t *pool,
+						   const ivm_string_t *str)
+HASH(RAW_HASH(ivm_string_trimHead(str)),
+	 CHECK_I(ivm_string_compare(i->k, str),
+			 _ivm_string_copy_heap(str, pool->heap)));
+
 const ivm_string_t *
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,
 							const ivm_char_t *str)

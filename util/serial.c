@@ -12,6 +12,66 @@
 
 #include "serial.h"
 
+typedef struct {
+	ivm_byte_t opc;
+	ivm_opcode_arg_t arg;
+} ivm_serial_instr_t;
+
+typedef struct {
+	ivm_uint64_t name;
+	ivm_byte_t is_varg;
+} ivm_serial_param_t;
+
+typedef struct {
+	ivm_uint64_t count;
+	ivm_serial_param_t *param;
+} ivm_serial_param_list_t;
+
+typedef struct {
+	ivm_uint64_t pool;
+	ivm_uint64_t size;
+	ivm_serial_param_list_t *param;
+	ivm_serial_instr_t *instrs;
+} ivm_serial_exec_t;
+
+typedef struct {
+	ivm_string_pool_list_t *pool_list;
+	ivm_uint64_t size;
+	ivm_serial_exec_t *execs;
+} ivm_serial_exec_list_t;
+
+typedef struct {
+	ivm_uint64_t root;
+	ivm_serial_exec_list_t *list;
+} ivm_serial_exec_unit_t;
+
+IVM_PRIVATE
+ivm_serial_param_list_t *
+_ivm_serial_serializeParam(ivm_param_list_t *param,
+						   ivm_vmstate_t *state,
+						   ivm_string_pool_t *pool)
+{
+	ivm_serial_param_list_t *ret = STD_ALLOC(sizeof(*ret));
+	ivm_param_t *tmp;
+	ivm_size_t i;
+
+	IVM_MEMCHECK(ret);
+
+	ret->count = ivm_param_list_count(param);
+	ret->param = STD_ALLOC(sizeof(*ret->param) * ret->count);
+
+	IVM_MEMCHECK(ret->param);
+
+	for (i = 0; i < ret->count; i++) {
+		tmp = ivm_param_list_getParam(param, i);
+		ret->param[i].name = ivm_string_pool_register_i(pool, ivm_param_name(tmp));
+		ret->param[i].is_varg = ivm_param_isVarg(tmp);
+	}
+
+	return ret;
+}
+
+IVM_PRIVATE
 ivm_serial_exec_t
 _ivm_serial_serializeExec(ivm_exec_t *exec,
 						  ivm_vmstate_t *state,
@@ -24,11 +84,13 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 	ivm_instr_t *i, *end;
 	ivm_serial_instr_t *tmp;
 
-	IVM_ASSERT(!ivm_exec_cached(exec), IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC);
+	IVM_IMPORTANT(!ivm_exec_cached(exec), IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC);
 
 	tmp = ret.instrs = STD_ALLOC(sizeof(*ret.instrs) * ret.size);
 
 	IVM_MEMCHECK(ret.instrs);
+
+	ret.param = _ivm_serial_serializeParam(ivm_exec_getParam(exec), state, ivm_exec_pool(exec));
 
 	for (i = ivm_exec_instrPtrStart(exec),
 		 end = i + ret.size;
@@ -42,14 +104,29 @@ _ivm_serial_serializeExec(ivm_exec_t *exec,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_exec_t *
 _ivm_serial_unserializeExec(ivm_serial_exec_t *exec,
 							ivm_string_pool_list_t *pool_list)
 {
-	ivm_exec_t *ret = ivm_exec_new(
-		ivm_string_pool_list_at(pool_list, exec->pool), 0
-	);
+	ivm_size_t count = exec->param->count, cur;
+	ivm_string_pool_t *pool = ivm_string_pool_list_at(pool_list, exec->pool);
+	ivm_exec_t *ret = ivm_exec_new(pool, count);
 	ivm_serial_instr_t *i, *end;
+	ivm_serial_param_t *tmp;
+
+	for (cur = 0; cur != count; cur++) {
+		tmp = exec->param->param + cur;
+		
+		if (!ivm_string_pool_hasIndex(pool, tmp->name)) {
+			/* illegal string id */
+			ivm_ref_inc(ret);
+			ivm_exec_free(ret);
+			return IVM_NULL;
+		}
+
+		ivm_exec_setParam(ret, cur, ivm_string_pool_get(pool, tmp->name), tmp->is_varg);
+	}
 
 	for (i = exec->instrs,
 		 end = i + exec->size;
@@ -60,6 +137,7 @@ _ivm_serial_unserializeExec(ivm_serial_exec_t *exec,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_serial_exec_list_t *
 _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 							  ivm_vmstate_t *state)
@@ -98,49 +176,71 @@ _ivm_serial_serializeExecList(ivm_exec_list_t *list,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_exec_list_t *
 _ivm_serial_unserializeExecList(ivm_serial_exec_list_t *list)
 {
 	ivm_exec_list_t *ret = ivm_exec_list_new();
 	ivm_serial_exec_t *i, *end;
+	ivm_exec_t *tmp;
 
 	for (i = list->execs,
 		 end = i + list->size;
 		 i != end; i++) {
-		ivm_exec_list_push(
-			ret,
-			_ivm_serial_unserializeExec(i, list->pool_list)
-		);
+		tmp = _ivm_serial_unserializeExec(i, list->pool_list);
+		if (!tmp) {
+			ivm_exec_list_free(ret);
+			return IVM_NULL;
+		}
+		ivm_exec_list_push(ret, tmp);
 	}
 
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_serial_exec_unit_t *
-ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
-							 ivm_vmstate_t *state)
+_ivm_serial_serializeExecUnit(ivm_exec_unit_t *unit,
+							  ivm_vmstate_t *state)
 {
 	ivm_serial_exec_unit_t *ret = STD_ALLOC(sizeof(*ret));
 
 	IVM_MEMCHECK(ret);
 
 	ret->root = ivm_exec_unit_root(unit);
-	ret->list = _ivm_serial_serializeExecList(
-		ivm_exec_unit_execList(unit), state
-	);
+	ret->list = _ivm_serial_serializeExecList(ivm_exec_unit_execList(unit), state);
 
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_exec_unit_t *
-ivm_serial_unserializeExecUnit(ivm_serial_exec_unit_t *unit)
+_ivm_serial_unserializeExecUnit(ivm_serial_exec_unit_t *unit)
 {
-	ivm_exec_unit_t *ret = ivm_exec_unit_new(
-		unit->root,
-		_ivm_serial_unserializeExecList(unit->list)
-	);
+	ivm_exec_list_t *list;
+	ivm_exec_unit_t *ret;
+
+	list = _ivm_serial_unserializeExecList(unit->list);
+
+	if (!list) {
+		return IVM_NULL;
+	}
+
+	ret = ivm_exec_unit_new(unit->root, list);
 
 	return ret;
+}
+
+IVM_PRIVATE
+void
+_ivm_serial_param_list_free(ivm_serial_param_list_t *param)
+{
+	if (param) {
+		STD_FREE(param->param);
+		STD_FREE(param);
+	}
+
+	return;
 }
 
 IVM_PRIVATE
@@ -148,12 +248,14 @@ void
 _ivm_serial_exec_dump(ivm_serial_exec_t *exec)
 {
 	if (exec) {
+		_ivm_serial_param_list_free(exec->param);
 		STD_FREE(exec->instrs);
 	}
 
 	return;
 }
 
+IVM_PRIVATE
 void
 _ivm_serial_exec_list_free(ivm_serial_exec_list_t *list)
 {
@@ -175,8 +277,9 @@ _ivm_serial_exec_list_free(ivm_serial_exec_list_t *list)
 	return;
 }
 
+IVM_PRIVATE
 void
-ivm_serial_exec_unit_free(ivm_serial_exec_unit_t *unit)
+_ivm_serial_exec_unit_free(ivm_serial_exec_unit_t *unit)
 {
 	if (unit) {
 		_ivm_serial_exec_list_free(unit->list);
@@ -204,6 +307,7 @@ ivm_serial_exec_unit_free(ivm_serial_exec_unit_t *unit)
  *           .
  */
 
+IVM_PRIVATE
 ivm_size_t
 _ivm_serial_stringPoolToFile(ivm_string_pool_t *pool,
 							 ivm_file_t *file)
@@ -226,6 +330,7 @@ _ivm_serial_stringPoolToFile(ivm_string_pool_t *pool,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_string_pool_t *
 _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 {
@@ -241,7 +346,6 @@ _ivm_serial_stringPoolFromFile(ivm_file_t *file)
 
 	fsize = ivm_file_length(file);
 	
-	// IVM_ASSERT(tmp, IVM_ERROR_MSG_FILE_FORMAT_ERR);
 	// IVM_TRACE("pool size: %ld\n", size);
 
 	heap = ivm_heap_new(IVM_DEFAULT_STRING_POOL_BLOCK_SIZE);
@@ -306,6 +410,7 @@ CLEAN_END:
  *           .
  */
 
+IVM_PRIVATE
 ivm_size_t
 _ivm_serial_stringPoolListToFile(ivm_string_pool_list_t *list,
 								 ivm_file_t *file)
@@ -326,6 +431,7 @@ _ivm_serial_stringPoolListToFile(ivm_string_pool_list_t *list,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_string_pool_list_t *
 _ivm_serial_stringPoolListFromFile(ivm_file_t *file)
 {
@@ -336,7 +442,6 @@ _ivm_serial_stringPoolListFromFile(ivm_file_t *file)
 
 	if (!ivm_file_read(file, &size, sizeof(size), 1))
 		return IVM_NULL;
-	// IVM_ASSERT(tmp, IVM_ERROR_MSG_FILE_FORMAT_ERR);
 	
 	// IVM_TRACE("pool count: %ld\n", size);
 
@@ -366,6 +471,18 @@ CLEAN_END:
  * |    pool_id: 64    |
  * |     size: 64      |
  * ---------------------
+ * |  param_count: 64  |
+ * ---------------------
+ * |   param1 id: 64   |
+ * | param1 is_varg: 8 |
+ * ---------------------
+ * |   param2 id: 64   |
+ * | param2 is_varg: 8 |
+ * ---------------------
+ * |         .         |
+ * |         .         |
+ * |         .         |
+ * ---------------------
  * |     instr0: v     |
  * |     instr1: v     |
  * |         .         |
@@ -374,35 +491,99 @@ CLEAN_END:
  * ---------------------
  */
 
+IVM_PRIVATE
 ivm_size_t
 _ivm_serial_execToFile(ivm_serial_exec_t *exec,
 					   ivm_file_t *file)
 {
 	ivm_size_t ret = 0;
+	ivm_size_t i;
+	ivm_serial_param_t *tmp;
+	ivm_serial_instr_t *tmp_ip;
 
 	ret += ivm_file_write(file, &exec->pool, sizeof(exec->pool), 1);
 	ret += ivm_file_write(file, &exec->size, sizeof(exec->size), 1);
-	ret += ivm_file_write(file, exec->instrs, sizeof(*exec->instrs), exec->size);
+
+	ret += ivm_file_write(file, &exec->param->count, sizeof(exec->param->count), 1);
+	for (i = 0; i < exec->param->count; i++) {
+		tmp = exec->param->param + i;
+		ret += ivm_file_write(file, &tmp->name, sizeof(tmp->name), 1);
+		ret += ivm_file_write(file, &tmp->is_varg, sizeof(tmp->is_varg), 1);
+	}
+
+	for (i = 0; i < exec->size; i++) {
+		tmp_ip = exec->instrs + i;
+		ret += ivm_file_write(file, &tmp_ip->opc, sizeof(tmp_ip->opc), 1);
+		ret += ivm_file_write(file, &tmp_ip->arg, sizeof(tmp_ip->arg), 1);
+	}
 
 	return ret;
 }
 
+IVM_PRIVATE
+ivm_serial_param_list_t *
+_ivm_serial_paramFromFile(ivm_file_t *file)
+{
+	ivm_serial_param_list_t *ret = STD_ALLOC(sizeof(*ret));
+	ivm_size_t i;
+	ivm_serial_param_t *tmp;
+
+	IVM_MEMCHECK(ret);
+
+	if (!ivm_file_read(file, &ret->count, sizeof(ret->count), 1)) {
+		STD_FREE(ret);
+		return IVM_NULL;
+	}
+
+	ret->param = STD_ALLOC(sizeof(*ret->param) * ret->count);
+
+	if (!ret->param) {
+		STD_FREE(ret);
+		return IVM_NULL;
+	}
+
+	for (i = 0; i < ret->count; i++) {
+		tmp = ret->param + i;
+		if (!ivm_file_read(file, &tmp->name, sizeof(tmp->name), 1) ||
+			!ivm_file_read(file, &tmp->is_varg, sizeof(tmp->is_varg), 1)) {
+			_ivm_serial_param_list_free(ret);
+			return IVM_NULL;
+		}
+	}
+
+	return ret;
+}
+
+IVM_PRIVATE
 ivm_bool_t
 _ivm_serial_execFromFile(ivm_file_t *file,
 						 ivm_serial_exec_t *ret)
 {
+	ivm_size_t i;
+	ivm_serial_instr_t *tmp_ip;
+
 	if (!ivm_file_read(file, &ret->pool, sizeof(ret->pool), 1)) return IVM_FALSE;
 	if (!ivm_file_read(file, &ret->size, sizeof(ret->size), 1)) return IVM_FALSE;
 
+	ret->param = _ivm_serial_paramFromFile(file);
+
+	if (!ret->param) return IVM_FALSE;
+
 	ret->instrs = STD_ALLOC(sizeof(*ret->instrs) * ret->size);
 
-	IVM_MEMCHECK(ret->instrs);
-
-	if (ivm_file_read(file, ret->instrs, sizeof(*ret->instrs), ret->size)
-		!= ret->size) {
-		STD_FREE(ret->instrs);
-		ret->instrs = IVM_NULL;
+	if (!ret->instrs) {
+		_ivm_serial_param_list_free(ret->param);
 		return IVM_FALSE;
+	}
+
+	for (i = 0; i < ret->size; i++) {
+		tmp_ip = ret->instrs + i;
+		if (!ivm_file_read(file, &tmp_ip->opc, sizeof(tmp_ip->opc), 1) ||
+			!ivm_file_read(file, &tmp_ip->arg, sizeof(tmp_ip->arg), 1)) {
+			STD_FREE(ret->instrs);
+			ret->instrs = IVM_NULL;
+			return IVM_FALSE;
+		}
 	}
 
 	return IVM_TRUE;
@@ -426,6 +607,7 @@ _ivm_serial_execFromFile(ivm_file_t *file,
  *           .
  */
 
+IVM_PRIVATE
 ivm_size_t
 _ivm_serial_execListToFile(ivm_serial_exec_list_t *list,
 						   ivm_file_t *file)
@@ -449,6 +631,7 @@ _ivm_serial_execListToFile(ivm_serial_exec_list_t *list,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_serial_exec_list_t *
 _ivm_serial_execListFromFile(ivm_file_t *file)
 {
@@ -495,9 +678,10 @@ CLEAN_END:
  * ---------------------
  */
 
+IVM_PRIVATE
 ivm_size_t
-ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
-						  ivm_file_t *file)
+_ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
+						   ivm_file_t *file)
 {
 	ivm_size_t ret = 0;
 
@@ -507,8 +691,9 @@ ivm_serial_execUnitToFile(ivm_serial_exec_unit_t *unit,
 	return ret;
 }
 
+IVM_PRIVATE
 ivm_serial_exec_unit_t *
-ivm_serial_execUnitFromFile(ivm_file_t *file)
+_ivm_serial_execUnitFromFile(ivm_file_t *file)
 {
 	ivm_serial_exec_unit_t *ret = STD_ALLOC_INIT(sizeof(*ret));
 
@@ -524,11 +709,40 @@ ivm_serial_execUnitFromFile(ivm_file_t *file)
 
 goto CLEAN_END;
 CLEAN:;
-	ivm_serial_exec_unit_free(ret);
+	_ivm_serial_exec_unit_free(ret);
 	return IVM_NULL;
 CLEAN_END:
 
 	return ret;
+}
+
+ivm_exec_unit_t *
+ivm_serial_decodeCache(ivm_file_t *file)
+{
+	ivm_exec_unit_t *ret = IVM_NULL;
+	ivm_serial_exec_unit_t *s_unit;
+
+	s_unit = _ivm_serial_execUnitFromFile(file);
+	if (s_unit) {
+		ret = _ivm_serial_unserializeExecUnit(s_unit);
+		_ivm_serial_exec_unit_free(s_unit);
+	}
+
+	return ret;
+}
+
+void
+ivm_serial_encodeCache(ivm_exec_unit_t *unit,
+					   ivm_file_t *file)
+{
+	ivm_serial_exec_unit_t *s_unit;
+
+	s_unit = _ivm_serial_serializeExecUnit(unit, IVM_NULL);
+	_ivm_serial_execUnitToFile(s_unit, file);
+
+	_ivm_serial_exec_unit_free(s_unit);
+
+	return;
 }
 
 ivm_object_t *
@@ -553,7 +767,7 @@ ivm_serial_mod_loadCache(const ivm_char_t *path,
 		goto END;
 	}
 
-	unit = ivm_serial_parseCacheFile(cache);
+	unit = ivm_serial_decodeCache(cache);
 
 	ivm_file_free(cache);
 	

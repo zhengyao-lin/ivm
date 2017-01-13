@@ -166,8 +166,6 @@ int main(int argc, const char **argv)
 	ivm_exec_unit_t *exec_unit;
 	ivm_vmstate_t *state;
 	ivm_context_t *ctx;
-	
-	ivm_serial_exec_unit_t *s_unit;
 
 	const ivm_char_t *tmp_str, *src_path = IVM_NULL;
 	ivm_bool_t is_failed = IVM_FALSE;
@@ -299,10 +297,7 @@ int main(int argc, const char **argv)
 	unit = IVM_NULL;
 
 	if (output_cache) {
-		s_unit = ivm_serial_serializeExecUnit(exec_unit, IVM_NULL);
-		ivm_serial_execUnitToFile(s_unit, output_cache);
-
-		ivm_serial_exec_unit_free(s_unit);
+		ivm_serial_encodeCache(exec_unit, output_cache);
 		ivm_exec_unit_free(exec_unit);
 	} else {
 		state = ivm_exec_unit_generateVM(exec_unit);

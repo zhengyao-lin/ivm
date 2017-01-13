@@ -78,7 +78,6 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_PUSH_DEAD_CORO_STACK						"cannot push object to dead coro"
 #define IVM_ERROR_MSG_SERIALIZE_CACHED_EXEC						"cannot serialize cached executable"
 #define IVM_ERROR_MSG_UNEXPECTED_INSTR_ARG_CACHE				"unexpected instruction string operand cache(not appear in the string pool)"
-#define IVM_ERROR_MSG_FILE_FORMAT_ERR(file, format)				"wrong file format of file %s, expecting %s file", (file), (format)
 #define IVM_ERROR_MSG_ILLEGAL_STRING_LEN(len, max)				"illegal string len %ld(expect less than %ld)", (ivm_ulong_t)(len), (ivm_ulong_t)(max)
 #define IVM_ERROR_MSG_DECACHE_FUNC_ID_WITHOUT_STATE				("decache function id without vm state")
 #define IVM_ERROR_MSG_CORO_NATIVE_ROOT							("root function of coroutine cannot be native")

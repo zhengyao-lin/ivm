@@ -191,10 +191,15 @@ ivm_string_pool_free(ivm_string_pool_t *pool);
 #define ivm_string_pool_size(pool) ivm_string_list_size(&(pool)->lst)
 #define ivm_string_pool_core(pool) ivm_string_list_core(&(pool)->lst)
 #define ivm_string_pool_get(pool, i) ivm_string_list_at(&(pool)->lst, (i))
+#define ivm_string_pool_hasIndex(pool, i) ((i) < ivm_string_list_size(&(pool)->lst))
 
 const ivm_string_t *
 ivm_string_pool_register(ivm_string_pool_t *pool,
 						 const ivm_string_t *str);
+
+ivm_string_id_t
+ivm_string_pool_register_i(ivm_string_pool_t *pool,
+						   const ivm_string_t *str);
 
 const ivm_string_t *
 ivm_string_pool_registerRaw(ivm_string_pool_t *pool,

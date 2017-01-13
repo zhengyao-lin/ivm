@@ -9,6 +9,7 @@
 #include "std/io.h"
 
 #include "vm/env.h"
+#include "vm/native/native.h"
 
 #include "util/serial.h"
 #include "util/perf.h"
@@ -38,8 +39,9 @@ int main(int argc, const char **argv)
 	ias_gen_env_t *env;
 	ivm_exec_unit_t *unit = IVM_NULL;
 	ivm_vmstate_t *state = IVM_NULL;
-	ivm_serial_exec_unit_t *s_unit;
 	ivm_bool_t is_failed = IVM_FALSE;
+
+	ivm_context_t *ctx;
 
 	ivm_bool_t cfg_prof = IVM_TRUE;
 
@@ -159,10 +161,7 @@ int main(int argc, const char **argv)
 		unit = ias_gen_env_generateExecUnit(env);
 
 		if (output_cache) {
-			s_unit = ivm_serial_serializeExecUnit(unit, IVM_NULL);
-			ivm_serial_execUnitToFile(s_unit, output_cache);
-
-			ivm_serial_exec_unit_free(s_unit);
+			ivm_serial_encodeCache(unit, output_cache);
 			ivm_exec_unit_free(unit);
 			unit = IVM_NULL;
 		}
@@ -170,17 +169,17 @@ int main(int argc, const char **argv)
 		ias_gen_env_free(env);
 		STD_FREE(src);
 	} else if (cache_file) {
-		s_unit = ivm_serial_execUnitFromFile(cache_file);
-		if (s_unit) {
-			unit = ivm_serial_unserializeExecUnit(s_unit);
-			ivm_serial_exec_unit_free(s_unit);
-		} else {
-			IVM_ERROR(IVM_ERROR_MSG_FILE_FORMAT_ERR(cache_file_path, "ivm cache"));
+		unit = ivm_serial_decodeCache(cache_file);
+		if (!unit) {
+			IVM_ERROR("failed to decode cache file %s(wrong format)", cache_file_path);
 		}
 	}
 
 	if (unit) {
 		state = ivm_exec_unit_generateVM(unit);
+
+		ctx = ivm_coro_getRuntimeGlobal(ivm_vmstate_mainCoro(state));
+		ivm_native_global_bind(state, ctx);
 
 		if (cfg_prof) {
 			ivm_perf_reset();
@@ -189,6 +188,7 @@ int main(int argc, const char **argv)
 
 		// ivm_vmstate_schedule(state);
 		ivm_vmstate_resumeMainCoro(state, IVM_NULL);
+		ivm_vmstate_joinAllThread(state, IVM_TRUE);
 
 		if (cfg_prof) {
 			ivm_perf_stopProfile();

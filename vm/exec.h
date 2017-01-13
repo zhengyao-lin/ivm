@@ -43,6 +43,9 @@ typedef struct {
 	ivm_bool_t is_varg;
 } ivm_param_t;
 
+#define ivm_param_name(p) ((p)->name)
+#define ivm_param_isVarg(p) ((p)->is_varg)
+
 typedef struct {
 	ivm_param_t *param;
 	ivm_size_t count;
@@ -62,7 +65,10 @@ ivm_param_list_setParam(ivm_param_list_t *plist,
 						ivm_size_t idx, const ivm_string_t *name,
 						ivm_bool_t is_varg);
 
+#define ivm_param_list_getParam(list, i) ((list)->param + (i))
+
 #define ivm_param_list_isNoMatch(list) ((list)->no_match)
+#define ivm_param_list_count(list) ((list)->count)
 
 typedef struct ivm_exec_t_tag {
 	IVM_REF_HEADER
