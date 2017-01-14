@@ -134,7 +134,12 @@ IVM_NATIVE_FUNC(_global_print)
 
 	obj = NAT_ARG_AT(1);
 	to_s = ivm_object_getSlot(obj, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_TO_S));
-			
+	
+	if (IVM_IS_NONE(NAT_STATE(), obj)) {
+		IVM_TRACE("<none>\n");
+		return IVM_NONE(NAT_STATE());
+	}
+
 	if (to_s && (func = ivm_object_callable(to_s, NAT_STATE(), &base))) {
 		ret = ivm_coro_callBase_0(NAT_CORO(), NAT_STATE(), func, base ? base : obj);
 
