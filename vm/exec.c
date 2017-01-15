@@ -39,23 +39,26 @@ ivm_param_list_init(ivm_param_list_t *plist,
 					ivm_size_t count)
 {
 	if (count) {
-		if (count == -1) {
-			plist->param = IVM_NULL;
-			plist->count = 0;
-			plist->no_match = IVM_TRUE;
-		} else {
-			plist->param = STD_ALLOC_INIT(sizeof(*plist->param) * count);
-			plist->count = count;
-			IVM_MEMCHECK(plist->param);
-			plist->no_match = IVM_FALSE;
-		}
+		plist->param = STD_ALLOC_INIT(sizeof(*plist->param) * count);
+		plist->count = count;
+		IVM_MEMCHECK(plist->param);
 	} else {
 		plist->param = IVM_NULL;
-		plist->count = count;
-		plist->no_match = IVM_FALSE;
+		plist->count = 0;
 	}
 
+	plist->legacy = IVM_FALSE;
 	plist->has_varg = IVM_FALSE;
+
+	return;
+}
+
+void
+ivm_param_list_initLegacy(ivm_param_list_t *plist)
+{
+	plist->param = IVM_NULL;
+	plist->count = 0;
+	plist->legacy = IVM_TRUE;
 
 	return;
 }
@@ -90,11 +93,15 @@ void
 _ivm_param_list_copy(ivm_param_list_t *from,
 					 ivm_param_list_t *to)
 {
-	ivm_param_list_init(to, from->no_match ? -1 : from->count);
+	if (!from->legacy) {
+		ivm_param_list_init(to, from->count);
 
-	if (from->param) {
-		STD_MEMCPY(to->param, from->param, sizeof(*to->param) * from->count);
-		to->has_varg = from->has_varg;
+		if (from->param) {
+			STD_MEMCPY(to->param, from->param, sizeof(*to->param) * from->count);
+			to->has_varg = from->has_varg;
+		}
+	} else {
+		ivm_param_list_initLegacy(to);
 	}
 
 	return;
@@ -121,7 +128,11 @@ _ivm_exec_init(ivm_exec_t *exec,
 
 	IVM_MEMCHECK(exec->instrs);
 
-	ivm_param_list_init(&exec->param, argc);
+	if (argc != (ivm_size_t)-1){
+		ivm_param_list_init(&exec->param, argc);
+	} else {
+		ivm_param_list_initLegacy(&exec->param);
+	}
 
 	exec->cached = IVM_FALSE;
 

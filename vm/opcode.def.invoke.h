@@ -55,33 +55,33 @@
                                                                                              \
 			INVOKE_STACK();                                                                  \
                                                                                              \
-			_INVOKE_NONNATIVE(_INSTR, 1);                                                    \
+			_INVOKE_NONNATIVE(_INSTR, IVM_TRUE);                                             \
  		} else {                                                                             \
  			STACK_INC_C(1);                                                                  \
  			SAVE_RUNTIME(_INSTR + 1);                                                        \
                                                                                              \
 			_INSTR = ivm_function_invoke(                                                    \
 				_TMP_FUNC, _STATE,                                                           \
-				ivm_function_object_getScope(                                                \
-					IVM_AS(_TMP_OBJ1, ivm_function_object_t)                                 \
-				), _BLOCK_STACK, _FRAME_STACK, _RUNTIME                                      \
+				ivm_function_object_getScope(_TMP_OBJ1),                                     \
+				_BLOCK_STACK, _FRAME_STACK, _RUNTIME                                         \
 			);                                                                               \
                                                                                              \
 			INVOKE_STACK();                                                                  \
 			STACK_INC_C(_TMP_ARGC);                                                          \
 			IVM_RUNTIME_SET(_RUNTIME, DUMP, 1);                                              \
                                                                                              \
-			_INVOKE_NONNATIVE(_INSTR, 0);                                                    \
+			_INVOKE_NONNATIVE(_INSTR, IVM_FALSE);                                            \
  		}                                                                                    \
                                                                                              \
 		_INVOKE_NATIVE(IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV));                        \
 	} else {                                                                                 \
 		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));                          \
 		if (_TMP_OBJ2) {                                                                     \
-			STACK_INC_C(_TMP_ARGC + 1);                                                      \
+			STACK_PUSH(_TMP_OBJ2);                                                           \
+			STACK_INC_C(_TMP_ARGC);                                                          \
 			STACK_ENSURE(1);                                                                 \
 			STACK_MOVE_N(1, _TMP_ARGC + 1);                                                  \
-			STACK_SET_BEFORE(_TMP_ARGC + 1, _TMP_OBJ2);                                      \
+			STACK_SET_BEFORE(_TMP_ARGC + 1, _TMP_OBJ1);                                      \
 			GOTO_INSTR(INVOKE_BASE);                                                         \
 		} else {                                                                             \
 			RTM_FATAL(IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ1, TYPE_NAME))); \
@@ -115,15 +115,15 @@
                                                                                                          \
 		_INSTR = ivm_function_invokeBase(                                                                \
 			_TMP_FUNC, _STATE,                                                                           \
-			ivm_function_object_getScope(                                                                \
-				IVM_AS(_TMP_OBJ1, ivm_function_object_t)                                                 \
-			), _TMP_OBJ2, _BLOCK_STACK, _FRAME_STACK, _RUNTIME                                           \
+			ivm_function_object_getScope(_TMP_OBJ1),                                                     \
+			_TMP_OBJ2, _BLOCK_STACK, _FRAME_STACK, _RUNTIME                                              \
 		);                                                                                               \
                                                                                                          \
 		INVOKE_STACK();                                                                                  \
-		_INVOKE_NONNATIVE(_INSTR, 1);                                                                    \
+		_INVOKE_NONNATIVE(_INSTR, IVM_TRUE);                                                             \
 	} else {                                                                                             \
-		STACK_INC_C(2);                                                                                  \
+		STACK_PUSH(_TMP_OBJ2);                                                                           \
+		STACK_PUSH(_TMP_OBJ1);                                                                           \
                                                                                                          \
 		SAVE_RUNTIME(_INSTR + 1);                                                                        \
                                                                                                          \
@@ -137,7 +137,7 @@
 		INVOKE_STACK();                                                                                  \
 		STACK_INC_C(_TMP_ARGC);                                                                          \
 		IVM_RUNTIME_SET(_RUNTIME, DUMP, 2);                                                              \
-		_INVOKE_NONNATIVE(_INSTR, 0);                                                                    \
+		_INVOKE_NONNATIVE(_INSTR, IVM_FALSE);                                                            \
 	}                                                                                                    \
                                                                                                          \
 	_INVOKE_NATIVE(IVM_FUNCTION_SET_ARG_3(_TMP_OBJ2, _TMP_ARGC, _TMP_ARGV));

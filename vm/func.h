@@ -74,6 +74,7 @@ typedef struct ivm_function_t_tag {
 
 	ivm_uint_t ref;
 	ivm_bool_t is_native;
+	ivm_bool_t has_param;
 } ivm_function_t;
 
 ivm_function_t *
@@ -102,7 +103,8 @@ IVM_INLINE
 ivm_bool_t
 ivm_function_hasParam(ivm_function_t *func)
 {
-	return !func->is_native && !ivm_param_list_isNoMatch(ivm_exec_getParam(&func->u.body));
+	// return !func->is_native && !ivm_param_list_isLegacy(ivm_exec_getParam(&func->u.body));
+	return func->has_param;
 }
 
 IVM_INLINE

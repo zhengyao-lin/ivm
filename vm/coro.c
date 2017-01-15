@@ -328,7 +328,7 @@ ivm_coro_execute_c(ivm_coro_t *coro,
 
 		if (arg) {
 			if (coro->param) {
-				if (!ivm_param_list_isNoMatch(coro->param)) {
+				if (!ivm_param_list_isLegacy(coro->param)) {
 					ivm_param_list_match(coro->param, state, IVM_RUNTIME_GET(tmp_runtime, CONTEXT), 1, &arg);
 				}
 				coro->param = IVM_NULL;

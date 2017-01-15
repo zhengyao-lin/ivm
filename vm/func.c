@@ -28,6 +28,7 @@ _ivm_function_init(ivm_function_t *func,
 
 	func->ref = 0;
 	func->is_native = IVM_FALSE;
+	func->has_param = !ivm_param_list_isLegacy(ivm_exec_getParam(&func->u.body));
 
 	return;
 }
@@ -41,6 +42,7 @@ _ivm_function_initNative(ivm_function_t *func,
 	func->u.native = native;
 	func->ref = 0;
 	func->is_native = IVM_TRUE;
+	func->has_param = IVM_FALSE;
 
 	return;
 }

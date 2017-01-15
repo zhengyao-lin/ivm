@@ -50,12 +50,15 @@ typedef struct {
 	ivm_param_t *param;
 	ivm_size_t count;
 	ivm_bool_t has_varg;
-	ivm_bool_t no_match;
+	ivm_bool_t legacy; // don't match the argument but directly push them to the stack
 } ivm_param_list_t;
 
 void
 ivm_param_list_init(ivm_param_list_t *plist,
 					ivm_size_t count);
+
+void
+ivm_param_list_initLegacy(ivm_param_list_t *plist);
 
 void
 ivm_param_list_dump(ivm_param_list_t *plist);
@@ -67,7 +70,7 @@ ivm_param_list_setParam(ivm_param_list_t *plist,
 
 #define ivm_param_list_getParam(list, i) ((list)->param + (i))
 
-#define ivm_param_list_isNoMatch(list) ((list)->no_match)
+#define ivm_param_list_isLegacy(list) ((list)->legacy)
 #define ivm_param_list_count(list) ((list)->count)
 
 typedef struct ivm_exec_t_tag {
