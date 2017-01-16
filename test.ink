@@ -20,6 +20,40 @@ print(col)
 ret
 */
 
+import test.ulist
+
+loc tree = fn
+	obj, log = [], indent = "",
+	pslot = (
+		fn k, v:
+			indent + "   " +
+			k + ": " +
+			"<" + typename(v) + "> " +
+			tree(v, log, indent + "   ") + "\n"
+	): {
+
+	if log.has(obj): ret "<reached>"
+	log.push(obj)
+
+	loc r = "{\n"
+
+	if obj.proto: {
+		r += pslot("proto", obj.proto)
+	}
+
+	for [ k, v ] in obj.slots(): {
+		r += pslot(k, v)
+	}
+
+	r + indent + "}"
+}
+
+// object.proto.== = object.proto.==
+
+print(tree({}))
+
+ret
+
 import test.std
 
 import time

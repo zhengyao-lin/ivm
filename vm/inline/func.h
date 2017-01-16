@@ -70,7 +70,7 @@ ivm_param_list_match(ivm_param_list_t *plist,
 			rest = IVM_PTR_DIFF(end, param, ivm_param_t) - 1;
 			n = argc - i;
 			if (rest > n) {
-				ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state, 0));
+				ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state));
 			} else {
 				n -= rest;
 				ivm_context_setSlot(loc, state, param->name, ivm_list_object_new_c(state, argv + i, n));
@@ -81,7 +81,7 @@ ivm_param_list_match(ivm_param_list_t *plist,
 
 	for (; param != end; param++) {
 		if (param->is_varg) {
-			ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state, 0));
+			ivm_context_setSlot(loc, state, param->name, ivm_list_object_new(state));
 		} else {
 			ivm_context_setSlot(loc, state, param->name, IVM_NONE(state));
 		}

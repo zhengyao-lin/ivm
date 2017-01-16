@@ -87,7 +87,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 #define _STATE ret
 	
 	ivm_type_t static_type_list[] = {
-	#define TYPE_GEN(t, n, s, c, proto_init, ...) \
+	#define TYPE_GEN(t, n, s, c, proto_init, slots_init, ...) \
 		((ivm_type_t) {                          \
 			.tag = (t),                          \
 			.name = #n,                          \
@@ -110,7 +110,12 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	for (tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++) {
-		ivm_proto_initType(tmp_type, ret);
+		ivm_proto_initProto(tmp_type, ret);
+	}
+
+	for (tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
+		 tmp_type != end; tmp_type++) {
+		ivm_proto_initSlots(tmp_type, ret);
 	}
 
 	ivm_oprt_initType(ret);

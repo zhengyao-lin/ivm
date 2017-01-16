@@ -81,7 +81,7 @@ OPCODE_GEN(NEW_LIST_ALL_R, "new_list_all_r", I, -1, {
 		ivm_list_object_reverse(IVM_AS(_TMP_OBJ1, ivm_list_object_t));
 		STACK_PUSH(_TMP_OBJ1);
 	} else {
-		STACK_PUSH(ivm_list_object_new(_STATE, 0));
+		STACK_PUSH(ivm_list_object_new(_STATE));
 	}
 
 	NEXT_INSTR();

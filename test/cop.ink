@@ -61,6 +61,14 @@ loc <= {
 
 print(another)
 
+function.proto.& = fn op: {
+	assert op is function
+	loc b = base
+	fn *arg: b(op(*arg))
+}
+
+print([ 1, 2, 3, 4 ].map((fn a: a / 2) & (fn a: a + 1) & (fn a: a * 4)))
+
 ret
 
 // -> "str: point to \\[ 1, 2, 3 \\]"
@@ -78,3 +86,5 @@ ret
 
 // -> "str: yeah"
 // -> "str: woho"
+
+// -> "list: \\[ 2\\.5, 4\\.5, 6\\.5, 8\\.5 \\]"

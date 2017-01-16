@@ -5,7 +5,11 @@ struct ivm_type_t_tag;
 struct ivm_vmstate_t_tag;
 
 void
-ivm_proto_initType(struct ivm_type_t_tag *type,
-				   struct ivm_vmstate_t_tag *state);
+ivm_proto_initProto(struct ivm_type_t_tag *type,
+					struct ivm_vmstate_t_tag *state);
+
+void
+ivm_proto_initSlots(struct ivm_type_t_tag *type,
+					struct ivm_vmstate_t_tag *state);
 
 #endif

@@ -163,7 +163,7 @@
 		CHECK_OVERFLOW(times);
 
 		if (times <= 0) {
-			return ivm_list_object_new(_STATE, 0);
+			return ivm_list_object_new(_STATE);
 		}
 
 		ret = IVM_AS(ivm_object_clone(_OP1, _STATE), ivm_list_object_t);

@@ -12,6 +12,7 @@ IVM_NATIVE_FUNC(_object_merge);
 IVM_NATIVE_FUNC(_object_clone);
 IVM_NATIVE_FUNC(_object_call);
 IVM_NATIVE_FUNC(_object_to_s);
+IVM_NATIVE_FUNC(_object_slots);
 // IVM_NATIVE_FUNC(_object_type);
 
 IVM_COM_END

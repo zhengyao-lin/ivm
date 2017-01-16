@@ -28,6 +28,8 @@ IVM_NATIVE_FUNC(_string_cons)
 		ivm_char_t buf[25];
 		ivm_conv_dtoa(ivm_numeric_getValue(arg), buf);
 		return ivm_string_object_new(NAT_STATE(), ivm_vmstate_constantize_r(NAT_STATE(), buf));
+	} else if (IVM_IS_NONE(NAT_STATE(), arg)) {
+		return ivm_string_object_new(NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_NONE));
 	} else {
 		to_s = ivm_object_getSlot(arg, NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_TO_S));
 		

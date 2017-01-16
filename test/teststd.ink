@@ -1,11 +1,12 @@
 import std
+import ulist
 
-print({})
+print([ 1, 2, 3 ])
 print("hi")
 print(123)
 
 ret
 
-// -> "<object>"
+// -> "list: \\[ 1, 2, 3 \\]"
 // -> "str: hi"
 // -> "num: 123"

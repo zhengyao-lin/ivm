@@ -71,6 +71,33 @@ IVM_NATIVE_FUNC(_object_to_s)
 	return ivm_string_object_new_r(NAT_STATE(), buf);
 }
 
+IVM_NATIVE_FUNC(_object_slots)
+{
+	ivm_object_t *obj;
+	ivm_slot_table_t *slots;
+	ivm_slot_table_iterator_t siter;
+	ivm_object_t *buf[2];
+	ivm_list_object_t *ret;
+
+	CHECK_BASE_EXIST();
+
+	obj = NAT_BASE();
+	slots = IVM_OBJECT_GET(obj, SLOTS);
+
+	ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
+
+	if (!slots) return IVM_AS_OBJ(ret);
+
+	IVM_SLOT_TABLE_EACHPTR(slots, siter) {
+		buf[0] = ivm_string_object_new(NAT_STATE(), IVM_SLOT_TABLE_ITER_GET_KEY(siter));
+		buf[1] = IVM_SLOT_TABLE_ITER_GET_VAL(siter);
+
+		ivm_list_object_push(ret, NAT_STATE(), ivm_list_object_new_c(NAT_STATE(), buf, 2));
+	}
+
+	return IVM_AS_OBJ(ret);
+}
+
 /*
 IVM_NATIVE_FUNC(_object_type)
 {

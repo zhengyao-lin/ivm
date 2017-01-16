@@ -1,5 +1,4 @@
-TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {
-}, .const_bool = IVM_FALSE)
+TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {}, {}, .const_bool = IVM_FALSE)
 
 TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t),
 	IVM_NATIVE_WRAP_C(_STATE, _object_cons), {
@@ -7,9 +6,14 @@ TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t),
 	ivm_object_t *tmp = ivm_object_new_c(_STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 	ivm_type_setProto(_TYPE, tmp);
 
+}, {
+
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot_r(tmp, _STATE, "merge", IVM_NATIVE_WRAP(_STATE, _object_merge));
 	ivm_object_setSlot_r(tmp, _STATE, "clone", IVM_NATIVE_WRAP(_STATE, _object_clone));
 	ivm_object_setSlot_r(tmp, _STATE, "call", IVM_NATIVE_WRAP(_STATE, _object_call));
+	ivm_object_setSlot_r(tmp, _STATE, "slots", IVM_NATIVE_WRAP(_STATE, _object_slots));
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _object_to_s));
 	// ivm_object_setSlot_r(tmp, _STATE, "type", IVM_NATIVE_WRAP(_STATE, _object_type));
@@ -23,6 +27,10 @@ TYPE_GEN(IVM_TYPE_OBJECT_T, type, sizeof(ivm_type_object_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+}, {
+
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _type_to_s));
 
 }, .trav = ivm_type_object_traverser,
@@ -35,6 +43,10 @@ TYPE_GEN(IVM_NUMERIC_T, numeric, sizeof(ivm_numeric_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 	ivm_object_initSlots(tmp, _STATE, 8);
+
+}, {
+
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot_r(tmp, _STATE, "ceil", IVM_NATIVE_WRAP(_STATE, _numeric_ceil));
 	ivm_object_setSlot_r(tmp, _STATE, "floor", IVM_NATIVE_WRAP(_STATE, _numeric_floor));
@@ -59,6 +71,10 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
 
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot_r(tmp, _STATE, "len", IVM_NATIVE_WRAP(_STATE, _string_len));
 	ivm_object_setSlot_r(tmp, _STATE, "ord", IVM_NATIVE_WRAP(_STATE, _string_ord));
 	ivm_object_setSlot_r(tmp, _STATE, "chars", IVM_NATIVE_WRAP(_STATE, _string_chars));
@@ -71,10 +87,14 @@ TYPE_GEN(IVM_STRING_OBJECT_T, string, sizeof(ivm_string_object_t),
 TYPE_GEN(IVM_LIST_OBJECT_T, list, sizeof(ivm_list_object_t),
 	IVM_BUILTIN_WRAP_C(_STATE, _list_cons), {
 	
-	ivm_object_t *tmp = ivm_list_object_new(_STATE, 0);
+	ivm_object_t *tmp = ivm_list_object_new(_STATE);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _list_size));
 	ivm_object_setSlot_r(tmp, _STATE, "push", IVM_NATIVE_WRAP(_STATE, _list_push));
@@ -95,6 +115,10 @@ TYPE_GEN(IVM_BUFFER_OBJECT_T, buffer, sizeof(ivm_buffer_object_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_SIZE), IVM_NATIVE_WRAP(_STATE, _buffer_size));
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _buffer_to_s));
 	ivm_object_setSlot_r(tmp, _STATE, "init", IVM_NATIVE_WRAP(_STATE, _buffer_init));
@@ -110,6 +134,10 @@ TYPE_GEN(IVM_FUNCTION_OBJECT_T, function, sizeof(ivm_function_object_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+}, {
+	
+	// ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 }, .des = ivm_function_object_destructor,
    .clone = ivm_function_object_cloner,
    .trav = ivm_function_object_traverser,
@@ -121,6 +149,10 @@ TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
 	ivm_object_t *tmp = ivm_coro_object_new(_STATE, IVM_NULL);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot_r(tmp, _STATE, "alive", IVM_NATIVE_WRAP(_STATE, _coro_alive));
 
@@ -136,6 +168,10 @@ TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_ITER), IVM_NATIVE_WRAP(_STATE, _range_iter));
 	// ivm_object_setOop(tmp, _STATE, IVM_OOP_ID(CALL), IVM_NATIVE_WRAP(_STATE, _range_call));
 
@@ -147,6 +183,10 @@ TYPE_GEN(IVM_EXCEPTION_T, exception, sizeof(ivm_exception_t),
 	ivm_object_t *tmp = ivm_exception_new(_STATE, IVM_NULL, IVM_NULL, 0);
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
+
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_TO_S), IVM_NATIVE_WRAP(_STATE, _exception_to_s));
 	// ivm_object_setOop(tmp, _STATE, IVM_OOP_ID(CALL), IVM_NATIVE_WRAP(_STATE, _range_call));
@@ -160,6 +200,10 @@ TYPE_GEN(IVM_RANGE_ITER_T, range_iter, sizeof(ivm_range_iter_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
+
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), IVM_NATIVE_WRAP(_STATE, _range_iter_next));
 
 }, .const_bool = IVM_TRUE)
@@ -171,6 +215,10 @@ TYPE_GEN(IVM_LIST_OBJECT_ITER_T, list_iter, sizeof(ivm_list_object_iter_t),
 	ivm_type_setProto(_TYPE, tmp);
 	ivm_object_setProto(tmp, _STATE, ivm_vmstate_getTypeProto(_STATE, IVM_OBJECT_T));
 	// ivm_object_initSlots(tmp, _STATE, IVM_DEFAULT_SLOT_TABLE_TO_HASH_THRESHOLD);
+
+}, {
+	
+	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot(tmp, _STATE, IVM_VMSTATE_CONST(_STATE, C_NEXT), IVM_NATIVE_WRAP(_STATE, _list_iter_next));
 

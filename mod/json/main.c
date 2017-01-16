@@ -448,7 +448,7 @@ RULE(array)
 		ERR_RET(i, JSON_ERROR_MSG_UNEXPECTED_ENDING);
 	}
 
-	ret = IVM_AS(ivm_list_object_new(state, 0), ivm_list_object_t);
+	ret = IVM_AS(ivm_list_object_new(state), ivm_list_object_t);
 
 	while (1) {
 		elem = CALL_RULE(value, &i);

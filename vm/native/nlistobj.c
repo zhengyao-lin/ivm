@@ -124,17 +124,17 @@ IVM_NATIVE_FUNC(_list_slice)
 	if (startl > size) startl = size;
 	if (endl > size) endl = size;
 
-	if (startl == endl) ret = ivm_list_object_new(NAT_STATE(), 0);
+	if (startl == endl) ret = ivm_list_object_new(NAT_STATE());
 	else if (startl < endl) {
 		if (step < 0) {
-			ret = ivm_list_object_new(NAT_STATE(), 0);
+			ret = ivm_list_object_new(NAT_STATE());
 		} else {
 			ret = ivm_list_object_new_c(NAT_STATE(), lst + (ivm_size_t)startl, endl - startl);
 			ivm_list_object_step(IVM_AS(ret, ivm_list_object_t), step);
 		}
 	} else {
 		if (step > 0) {
-			ret = ivm_list_object_new(NAT_STATE(), 0);
+			ret = ivm_list_object_new(NAT_STATE());
 		} else {
 			ret = ivm_list_object_new_c(NAT_STATE(), lst + (ivm_size_t)endl + 1, startl - endl);
 			ivm_list_object_reverse(IVM_AS(ret, ivm_list_object_t));

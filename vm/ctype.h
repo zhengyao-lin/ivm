@@ -55,7 +55,7 @@ typedef ivm_size_t				ivm_function_id_t;
 
 enum {
 	IVM_TYPE_FIRST = -1,
-#define TYPE_GEN(tag, name, size, cons, proto_init, ...) tag,
+#define TYPE_GEN(tag, name, size, cons, proto_init, slots_init, ...) tag,
 	#include "type.def.h"
 #undef TYPE_GEN
 	IVM_TYPE_COUNT

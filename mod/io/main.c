@@ -318,7 +318,7 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	cont = ivm_file_readAll(fobj->fp);
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
-	ret = IVM_AS(ivm_list_object_new(NAT_STATE(), 0), ivm_list_object_t);
+	ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
 	len = IVM_STRLEN(cont);
 
 	for (head = i = cont, end = i + len;

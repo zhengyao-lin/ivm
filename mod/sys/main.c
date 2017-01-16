@@ -39,7 +39,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_setSlot_r(mod, state, "exit", IVM_NATIVE_WRAP(state, _sys_exit));
 	ivm_object_setSlot_r(mod, state, "abort", IVM_NATIVE_WRAP(state, _sys_abort));
 
-	argv_obj = IVM_AS(ivm_list_object_new(state, 0), ivm_list_object_t);
+	argv_obj = IVM_AS(ivm_list_object_new(state), ivm_list_object_t);
 	ivm_object_setSlot_r(mod, state, "argv", IVM_AS_OBJ(argv_obj));
 
 	// IVM_TRACE("arg: %d %s\n", argc, argc ? argv[0] : "nop");
