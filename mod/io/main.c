@@ -470,10 +470,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* io.file */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_io_file_type, {
-		file_proto = ivm_file_object_new(state, IVM_NULL, IVM_FALSE);
-		ivm_type_setProto(_TYPE, file_proto);
-		ivm_object_setProto(file_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_io_file_type, ivm_file_object_new(state, IVM_NULL, IVM_FALSE), {
+		file_proto = _PROTO;
 
 		ivm_object_setSlot_r(file_proto, state, "close", IVM_NATIVE_WRAP(state, _io_file_close));
 		

@@ -122,14 +122,21 @@ typedef struct ivm_vmstate_t_tag {
 
 #define IVM_TPTYPE(state, key) ivm_type_pool_get(&(state)->type_pool, (key))
 
-#define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, init, ...) \
+#define IVM_VMSTATE_REGISTER_TPTYPE(state, coro, init, proto, ...) \
 	{                                                                                       \
 		ivm_type_t *_TYPE =                                                                 \
 		ivm_type_pool_register(&(state)->type_pool, ivm_type_getUID(init), (init));         \
+		ivm_object_t *_PROTO;                                                               \
+                                                                                            \
 		RTM_ASSERT_C(                                                                       \
 			(coro), (state), _TYPE,                                                         \
 			IVM_ERROR_MSG_REDEF_TP_TYPE(ivm_type_getName(init))                             \
 		);                                                                                  \
+		                                                                                    \
+		_PROTO = (proto);                                                                   \
+		ivm_type_setProto(_TYPE, _PROTO);                                                   \
+		ivm_object_setProto(_PROTO, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));  \
+		                                                                                    \
 		__VA_ARGS__;                                                                        \
 	}
 

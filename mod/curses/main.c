@@ -486,7 +486,6 @@ ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_context_t *context)
 {
 	ivm_object_t *mod = ivm_object_new(state);
-	ivm_object_t *win_proto;
 	ivm_object_t *keys, *attrs;
 	ivm_type_t _window_type = IVM_TPTYPE_BUILD(
 		"curses.window", sizeof(ivm_curses_window_t),
@@ -507,14 +506,10 @@ ivm_mod_main(ivm_vmstate_t *state,
 	ivm_object_setSlot_r(mod, state, #name, (val))
 
 #define SET_WIN_METHOD(name) \
-	ivm_object_setSlot_r(win_proto, state, #name, IVM_NATIVE_WRAP(state, _curses_window_##name))
+	ivm_object_setSlot_r(_PROTO, state, #name, IVM_NATIVE_WRAP(state, _curses_window_##name))
 
 	/* curses.window */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_window_type, {
-		win_proto = ivm_curses_window_new(state, IVM_NULL);
-		ivm_type_setProto(_TYPE, win_proto);
-		ivm_object_setProto(win_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
-
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_window_type, ivm_curses_window_new(state, IVM_NULL), {
 		SET_WIN_METHOD(size);
 		SET_WIN_METHOD(pos);
 		SET_WIN_METHOD(keypad);

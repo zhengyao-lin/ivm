@@ -477,10 +477,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* struct.struct */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_struct_type, {
-		struct_proto = ivm_struct_object_new(state, 0, 0, IVM_NULL);
-		ivm_type_setProto(_TYPE, struct_proto);
-		ivm_object_setProto(struct_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_struct_type, ivm_struct_object_new(state, 0, 0, IVM_NULL), {
+		struct_proto = _PROTO;
 
 		ivm_object_setSlot_r(struct_proto, state, "size", IVM_NATIVE_WRAP(state, _struct_struct_size));
 		ivm_object_setSlot_r(struct_proto, state, "pack", IVM_NATIVE_WRAP(state, _struct_struct_pack));

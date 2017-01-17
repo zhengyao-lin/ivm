@@ -115,7 +115,6 @@ ivm_mod_main(ivm_vmstate_t *state,
 			 ivm_context_t *context)
 {
 	ivm_object_t *mod = ivm_object_new(state);
-	ivm_object_t *image_proto;
 	ivm_object_t *bmp_mod;
 
 	ivm_type_t _image_type = IVM_TPTYPE_BUILD(
@@ -129,13 +128,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 	);
 
 	/* image.image */
-	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_image_type, {
-		image_proto = ivm_image_object_new(state, IVM_NULL);
-		ivm_type_setProto(_TYPE, image_proto);
-		ivm_object_setProto(image_proto, state, ivm_vmstate_getTypeProto(state, IVM_OBJECT_T));
-
-		ivm_object_setSlot_r(image_proto, state, "width", IVM_NATIVE_WRAP(state, _image_image_width));
-		ivm_object_setSlot_r(image_proto, state, "height", IVM_NATIVE_WRAP(state, _image_image_height));
+	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_image_type, ivm_image_object_new(state, IVM_NULL), {
+		ivm_object_setSlot_r(_PROTO, state, "width", IVM_NATIVE_WRAP(state, _image_image_width));
+		ivm_object_setSlot_r(_PROTO, state, "height", IVM_NATIVE_WRAP(state, _image_image_height));
 	});
 
 	bmp_mod = ivm_object_new(state);

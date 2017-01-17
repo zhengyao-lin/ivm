@@ -37,7 +37,7 @@
 		ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                               \
 		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                          \
 						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                            \
-						 	"<native op>",                                                                    \
+						 	#op,                                                                              \
 						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                 \
 		return is_cmp                                                                                         \
 			   ? ivm_numeric_new(NAT_STATE(), (ivm_ptr_t)proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2))      \
@@ -54,7 +54,7 @@
 		proc = (ivm_triop_proc_t)IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                                             \
 		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                                         \
 						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                                           \
-						 	"<native op>",                                                                                   \
+						 	#op,                                                                                             \
 						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                                \
 		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));                                                \
 	}

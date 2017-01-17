@@ -20,6 +20,12 @@ print(col)
 ret
 */
 
+import io
+
+io.file.proto["write"]
+
+ret
+
 import test.ulist
 
 loc tree = fn
