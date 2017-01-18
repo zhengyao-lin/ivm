@@ -1,25 +1,3 @@
-/*
-import time
-import curses
-import io
-
-try: {
-	
-	curses.initscr()
-	curses.clear()
-	curses.refresh()
-	time.msleep(1000)
-
-} final: curses.endwin()
-
-[ line, col ] = curses.stdscr().size()
-
-print(line)
-print(col)
-
-ret
-*/
-
 import curses
 import io
 import test.ulist
