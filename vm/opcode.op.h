@@ -1,4 +1,4 @@
-#define UNIOP_HANDLER(op, op_name, e) \
+#define UNIOP_HANDLER(op, op_name, e, def) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
@@ -9,7 +9,7 @@
 	                                                                                           \
 			_TMP_UNI_PROC = IVM_OBJECT_GET_UNIOP_PROC(_TMP_OBJ1, op);                          \
 	                                                                                           \
-			if (_TMP_UNI_PROC) {                                                               \
+			if (_TMP_UNI_PROC || (_TMP_UNI_PROC = (def)) != IVM_NULL) {                        \
 		        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                           \
 		        if (_TMP_OBJ1) {                                                               \
 		        	STACK_PUSH(_TMP_OBJ1);                                                     \
@@ -29,7 +29,7 @@
 		}                                                                                      \
 	}
 
-#define BINOP_HANDLER(op, op_name, e) \
+#define BINOP_HANDLER(op, op_name, e, def) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -41,7 +41,7 @@
 			                                                                                   \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
-			if (_TMP_BIN_PROC) {                                                               \
+			if (_TMP_BIN_PROC || (_TMP_BIN_PROC = (def)) != IVM_NULL) {                        \
 		        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                \
 		        if (_TMP_OBJ1) {                                                               \
 		        	STACK_PUSH(_TMP_OBJ1);                                                     \
@@ -63,7 +63,7 @@
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, op_name, e) \
+#define TRIOP_HANDLER(op, op_name, e, def) \
 	{                                                                                          \
 		CHECK_STACK(3);                                                                        \
                                                                                                \
@@ -76,7 +76,7 @@
 			                                                                                   \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
-	        if (_TMP_BIN_PROC) {                                                               \
+	        if (_TMP_BIN_PROC || (_TMP_BIN_PROC = (def)) != IVM_NULL) {                        \
 		        _TMP_OBJ1 = ((ivm_triop_proc_t)_TMP_BIN_PROC)                                  \
 		        			(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                  \
 		        if (_TMP_OBJ1) {                                                               \
@@ -101,7 +101,7 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER(op, op_name, e, has_exc) \
+#define CMP_HANDLER(op, op_name, e, has_exc, def) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -112,7 +112,7 @@
 			e;                                                                                 \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
-			if (_TMP_BIN_PROC) {                                                               \
+			if (_TMP_BIN_PROC || (_TMP_BIN_PROC = (def)) != IVM_NULL) {                        \
 				_TMP_CMP_REG                                                                   \
 				= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);               \
 				if (!(has_exc) || !ivm_vmstate_getException(_STATE)) {                         \
@@ -135,7 +135,7 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER_R(op, op_name, e, has_exc) \
+#define CMP_HANDLER_R(op, op_name, e, has_exc, def) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
@@ -147,7 +147,7 @@
 			e;                                                                                 \
 			_TMP_BIN_PROC = IVM_OBJECT_GET_BINOP_PROC(_TMP_OBJ1, op, _TMP_OBJ2);               \
 	                                                                                           \
-			if (_TMP_BIN_PROC) {                                                               \
+			if (_TMP_BIN_PROC || (_TMP_BIN_PROC = (def)) != IVM_NULL) {                        \
 		        _TMP_CMP_REG                                                                   \
 		        = (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);               \
 		        if (!(has_exc) || !ivm_vmstate_getException(_STATE)) {                         \

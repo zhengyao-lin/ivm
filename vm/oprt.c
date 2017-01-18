@@ -59,23 +59,9 @@
 		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));                                                \
 	}
 
-#define UNIOP_PROC_DEF(name) \
-	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
-								   ivm_coro_t *__coro__,       \
-								   ivm_object_t *__op1__)
-
-#define BINOP_PROC_DEF(name) \
-	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
-								   ivm_coro_t *__coro__,       \
-								   ivm_object_t *__op1__,      \
-								   ivm_object_t *__op2__)
-
-#define TRIOP_PROC_DEF(name) \
-	IVM_PRIVATE ivm_object_t *name(ivm_vmstate_t *__state__,   \
-								   ivm_coro_t *__coro__,       \
-								   ivm_object_t *__op1__,      \
-								   ivm_object_t *__op2__,      \
-								   ivm_object_t *__op3__)
+#define UNIOP_PROC_DEF(name) IVM_UNIOP_PROC_DEF(name)
+#define BINOP_PROC_DEF(name) IVM_BINOP_PROC_DEF(name)
+#define TRIOP_PROC_DEF(name) IVM_TRIOP_PROC_DEF(name)
 
 #define UNIOP_GEN(op, t, ...) \
 	DEF_OOP_UNIOP_PROC(t, op)                \
@@ -106,11 +92,28 @@
 
 	TRIOP_PROC_DEF(ivm_binop_setStringIndex)
 	{
+		OPRT_CHECK_OP2(IVM_STRING_OBJECT_T);
 		ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _OP3);
 		return _OP3 ? _OP3 : IVM_NONE(_STATE);
 	}
 
 	BINOP_PROC_DEF(ivm_binop_getStringIndex)
+	{
+		ivm_object_t *tmp_obj;
+
+		OPRT_CHECK_OP2(IVM_STRING_OBJECT_T);
+		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));
+	
+		return tmp_obj ? tmp_obj : IVM_NONE(_STATE);
+	}
+
+	TRIOP_PROC_DEF(ivm_binop_setStringIndex_c)
+	{
+		ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _OP3);
+		return _OP3 ? _OP3 : IVM_NONE(_STATE);
+	}
+
+	BINOP_PROC_DEF(ivm_binop_getStringIndex_c)
 	{
 		ivm_object_t *tmp_obj;
 		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));

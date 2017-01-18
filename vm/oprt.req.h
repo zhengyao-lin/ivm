@@ -21,6 +21,15 @@
 #define OPRT_ASSERT(cond, ...) \
 	IVM_CORO_NATIVE_ASSERT(_CORO, _STATE, (cond), __VA_ARGS__)
 
+#define OPRT_CHECK_OP2(type) \
+	OPRT_ASSERT(                                                                           \
+		IVM_IS_BTTYPE(_OP2, _STATE, (type)),                                               \
+		IVM_ERROR_MSG_WRONG_OPERAND(                                                       \
+			2, ivm_vmstate_getTypeName(_STATE, (type)),                                    \
+			IVM_OBJECT_GET(_OP2, TYPE_NAME)                                                \
+		)                                                                                  \
+	)
+
 #define LINK_STRING_NUM(op1, op2, e) \
 	const ivm_string_t *str1 = ivm_string_object_getValue(op1);                \
 	ivm_size_t len1 = ivm_string_length(str1), len2;                           \

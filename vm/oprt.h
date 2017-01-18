@@ -30,6 +30,29 @@ typedef struct ivm_object_t_tag *(*ivm_triop_proc_t)(struct ivm_vmstate_t_tag *s
 													 struct ivm_object_t_tag *op2,
 													 struct ivm_object_t_tag *op3);
 
+#define IVM_UNIOP_PROC_DEF(name) \
+	struct ivm_object_t_tag *name(struct ivm_vmstate_t_tag *__state__,   \
+								  struct ivm_coro_t_tag *__coro__,       \
+								  struct ivm_object_t_tag *__op1__)
+
+#define IVM_BINOP_PROC_DEF(name) \
+	struct ivm_object_t_tag *name(struct ivm_vmstate_t_tag *__state__,   \
+								  struct ivm_coro_t_tag *__coro__,       \
+								  struct ivm_object_t_tag *__op1__,      \
+								  struct ivm_object_t_tag *__op2__)
+
+#define IVM_TRIOP_PROC_DEF(name) \
+	struct ivm_object_t_tag *name(struct ivm_vmstate_t_tag *__state__,   \
+								  struct ivm_coro_t_tag *__coro__,       \
+								  struct ivm_object_t_tag *__op1__,      \
+								  struct ivm_object_t_tag *__op2__,      \
+								  struct ivm_object_t_tag *__op3__)
+
+IVM_TRIOP_PROC_DEF(ivm_binop_setStringIndex);
+IVM_BINOP_PROC_DEF(ivm_binop_getStringIndex);
+IVM_BINOP_PROC_DEF(ivm_binop_eq);
+IVM_BINOP_PROC_DEF(ivm_binop_ne);
+
 #define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
 

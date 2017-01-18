@@ -20,12 +20,8 @@ print(col)
 ret
 */
 
+import curses
 import io
-
-io.file.proto["write"]
-
-ret
-
 import test.ulist
 
 loc tree = fn
@@ -33,30 +29,34 @@ loc tree = fn
 	pslot = (
 		fn k, v:
 			indent + "   " +
-			k + ": " +
-			"<" + typename(v) + "> " +
-			tree(v, log, indent + "   ") + "\n"
+			k + ": " + string(v) + " " +
+			tree(v, log, indent + "   ")
 	): {
 
-	if log.has(obj): ret "<reached>"
+	if log.has(obj): ret "{ ... }"
 	log.push(obj)
 
 	loc r = "{\n"
+	loc has_slot = false
 
 	if obj.proto: {
+		has_slot = true
 		r += pslot("proto", obj.proto)
 	}
 
 	for [ k, v ] in obj.slots(): {
+		if has_slot: r += ",\n"
+		has_slot = true
 		r += pslot(k, v)
 	}
 
-	r + indent + "}"
+	!has_slot ? "{}" : r + "\n" + indent + "}"
 }
 
 // object.proto.== = object.proto.==
 
-print(tree({}))
+print(tree(curses))
+print(tree(io))
 
 ret
 
