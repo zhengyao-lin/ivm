@@ -7,7 +7,7 @@
 #include "std/mem.h"
 #include "std/string.h"
 
-#include "gc/gc.h"
+#include "gc.h"
 #include "obj.h"
 #include "instr.h"
 #include "slot.h"

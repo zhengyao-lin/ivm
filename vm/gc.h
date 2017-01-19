@@ -7,8 +7,8 @@
 #include "std/list.h"
 #include "std/heap.h"
 
-#include "vm/obj.h"
-#include "vm/context.h"
+#include "obj.h"
+#include "context.h"
 
 IVM_COM_HEADER
 

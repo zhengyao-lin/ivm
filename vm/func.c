@@ -5,8 +5,7 @@
 
 #include "std/mem.h"
 
-#include "gc/gc.h"
-
+#include "gc.h"
 #include "func.h"
 #include "context.h"
 #include "runtime.h"

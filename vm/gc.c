@@ -8,12 +8,12 @@
 
 #include "util/perf.h"
 
-#include "../slot.h"
-#include "../obj.h"
-#include "../vmstack.h"
-#include "../coro.h"
-#include "../call.h"
-#include "../context.h"
+#include "slot.h"
+#include "obj.h"
+#include "vmstack.h"
+#include "coro.h"
+#include "call.h"
+#include "context.h"
 
 #include "gc.h"
 

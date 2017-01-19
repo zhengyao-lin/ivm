@@ -143,8 +143,8 @@ foreach(dir ${app_list})
 endforeach(dir ${app_list})
 
 # test exe
-add_executable(testbed test.c)
-target_link_libraries(testbed ivm-vm ivm-util)
+# add_executable(testbed test.c)
+# target_link_libraries(testbed ivm-vm ivm-util)
 
 # add_library(testmod SHARED testmod.c)
 # target_link_libraries(testmod ivm-vm)

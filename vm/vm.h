@@ -15,7 +15,7 @@
 #include "std/thread.h"
 #include "std/time.h"
 
-#include "gc/gc.h"
+#include "gc.h"
 #include "coro.h"
 #include "context.h"
 

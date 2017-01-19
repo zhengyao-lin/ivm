@@ -9,8 +9,7 @@
 #include "std/time.h"
 #include "std/thread.h"
 
-#include "gc/gc.h"
-
+#include "gc.h"
 #include "vm.h"
 #include "obj.h"
 #include "coro.h"

@@ -187,7 +187,7 @@ int main(int argc, const char **argv)
 #define ERROR IVM_CONSOLE_ARG_DIRECT_ERROR
 #define ILLEGAL_ARG IVM_CONSOLE_ARG_DIRECT_ILLEGAL_ARG
 
-	IVM_CONSOLE_ARG_DIRECT("ilang", "0.1", argc, argv,
+	IVM_CONSOLE_ARG_DIRECT("ink", "0.1", argc, argv,
 		OPTION("p", "-profile", "[enable|disable]", "enable(as default)/disable performance profile", {
 			if (!(tmp_str = ARG()->value)) {
 				cfg_prof = !cfg_prof;
