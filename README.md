@@ -92,4 +92,4 @@ ink is a dynamically-typed language with...
 
 	print(fib(30))
 
-more tests or examples can be found in test and test/examples folder
+more tests and examples can be found in test and test/examples folders
