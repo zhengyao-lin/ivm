@@ -91,8 +91,3 @@ ink is a dynamically-typed language with...
 			1 : fib(n - 1) + fib(n - 2)
 
 	print(fib(30))
-
-<br>
-### Contact me?
-Just use the email on the profile page(im.rod@outlook.com)
-Or QQ 1172490637
