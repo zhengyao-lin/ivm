@@ -91,3 +91,5 @@ ink is a dynamically-typed language with...
 			1 : fib(n - 1) + fib(n - 2)
 
 	print(fib(30))
+
+more tests or examples can be found in test and test/examples folder
