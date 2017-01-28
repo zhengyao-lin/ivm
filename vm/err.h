@@ -137,7 +137,7 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_NOT_CHAR									"not a character"
 #define IVM_ERROR_MSG_DISABLED_THREAD							"thread is disabled"
 #define IVM_ERROR_MSG_DUP_THREAD_CORO							"duplicated coroutine as thread root"
-#define IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro)					"unable to resume coroutine %p", (void *)(coro)
+#define IVM_ERROR_MSG_CORO_UNABLE_RESUME(coro)					"unable to resume coroutine %p(check if it is active or has been spawned in another thread already)", (void *)(coro)
 #define IVM_ERROR_MSG_UNINIT_CORO								"operating uninitialized coroutine"
 #define IVM_ERROR_MSG_ASSERT_FAILED								"assertion failed"
 #define IVM_ERROR_MSG_WRONG_ARG(n, expect, given)				"wrong %dth argument(expecting <%s>, <%s> given)", (n), (expect), (given)

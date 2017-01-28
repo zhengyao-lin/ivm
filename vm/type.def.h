@@ -155,10 +155,11 @@ TYPE_GEN(IVM_CORO_OBJECT_T, coro, sizeof(ivm_coro_object_t),
 	ivm_object_t *tmp = ivm_type_getProto(_TYPE);
 
 	ivm_object_setSlot_r(tmp, _STATE, "alive", IVM_NATIVE_WRAP(_STATE, _coro_alive));
+	ivm_object_setSlot_r(tmp, _STATE, "exitv", IVM_NATIVE_WRAP(_STATE, _coro_exitv));
 
 }, .des = ivm_coro_object_destructor,
    .clone = ivm_coro_object_cloner,
-   // .trav = ivm_coro_object_traverser,
+   .trav = ivm_coro_object_traverser,
    .const_bool = IVM_TRUE)
 
 TYPE_GEN(IVM_RANGE_T, range, sizeof(ivm_range_t),

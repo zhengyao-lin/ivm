@@ -30,3 +30,16 @@ IVM_NATIVE_FUNC(_coro_alive)
 
 	return ivm_bool_new(NAT_STATE(), ivm_coro_isAlive(coro));
 }
+
+IVM_NATIVE_FUNC(_coro_exitv)
+{
+	ivm_coro_t *coro;
+	ivm_object_t *val;
+
+	CHECK_BASE(IVM_CORO_OBJECT_T);
+
+	coro = ivm_coro_object_getCoro(NAT_BASE());
+	val = ivm_coro_getExitValue(coro);
+
+	return val ? val : IVM_NONE(NAT_STATE());
+}

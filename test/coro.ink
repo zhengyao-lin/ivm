@@ -97,6 +97,8 @@ c = fork: print("right")
 a = c.clone()
 resume a
 
+print(a == c)
+
 try: fork $import
 catch: print("ok")
 
@@ -157,4 +159,5 @@ ret
 // -> "num: 400"
 
 // -> "str: right"
+// -> "num: 1"
 // -> "str: ok"

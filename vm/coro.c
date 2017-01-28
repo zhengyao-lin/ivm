@@ -29,6 +29,7 @@ ivm_coro_new(ivm_vmstate_t *state)
 	ivm_vmstate_addCoroSet(state, ret);
 	
 	ret->param = IVM_NULL;
+	ret->exitv = IVM_NULL;
 
 	ret->ref = 0;
 	ret->cid = 0;
@@ -457,6 +458,7 @@ ACTION_YIELD:
 END:
 
 	coro->active = IVM_FALSE;
+	coro->exitv = _TMP_OBJ1;
 
 	return _TMP_OBJ1;
 }
@@ -467,13 +469,8 @@ ivm_coro_resume(ivm_coro_t *coro,
 				ivm_object_t *arg)
 {
 	ivm_object_t *ret;
-	// ivm_coro_t *orig = ivm_vmstate_curCoro(state);
-
-	// ivm_vmstate_setCurCoro(state, coro);
 
 	ret = ivm_coro_execute_c(coro, state, arg, IVM_FALSE);
-
-	// ivm_vmstate_setCurCoro(state, orig);
 
 	if (!ret) {
 		// ret = ivm_vmstate_popException(state);
@@ -652,11 +649,14 @@ ivm_coro_object_cloner(ivm_object_t *obj,
 
 void
 ivm_coro_object_traverser(ivm_object_t *obj,
-							ivm_traverser_arg_t *arg)
+						  ivm_traverser_arg_t *arg)
 {
-	// ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
+	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
 	// if (coro) arg->trav_coro(coro, arg);
 	
+	if (coro)
+		coro->exitv = ivm_collector_copyObject(coro->exitv, arg);
+
 	return;
 }
 

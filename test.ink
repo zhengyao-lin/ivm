@@ -1,3 +1,24 @@
+import mthread
+
+loc i = 0
+
+loc c = mthread.spawn(fork: {
+	for loc j in range(1000000):
+		i += 1
+
+	ret "yeah"
+})
+
+for loc k in range(1000000): i += 1
+
+mthread.join()
+
+print(c.exitv())
+
+print(i)
+
+ret
+
 import curses
 import io
 import test.ulist

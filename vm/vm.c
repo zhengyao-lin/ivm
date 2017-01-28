@@ -381,7 +381,7 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 	ivm_coro_setSpawned(coro);
 	ivm_thread_init(tid, _spawn_sub, (void *)arg);
 
-	return IVM_NONE(state);
+	return ivm_coro_object_new(state, coro);
 
 #else
 
