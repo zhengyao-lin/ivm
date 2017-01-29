@@ -584,12 +584,12 @@ RULE(trans_unit)
 
 	FAILED({
 		_RETVAL.env = ias_gen_env_new(IVM_NULL);
-		POP_ERR();
+		POP_ERR(IVM_TRUE);
 	});
 
 	MATCHED({
 		if (HAS_NEXT_TOKEN()) {
-			POP_ERR();
+			POP_ERR(IVM_TRUE);
 		}
 		_RETVAL.env = ias_gen_env_new(RULE_RET_AT(0).u.block_list);
 	});

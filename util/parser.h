@@ -89,14 +89,15 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 struct err_msg_t {
 	ivm_size_t line;
 	ivm_size_t pos;
+	ivm_size_t toki; // token pos
 
 	const ivm_char_t *expect;
 	const ivm_char_t *given;
 	const ivm_char_t *rule_name;
 };
 
-#define ERR_MSG(l, p, e, g) ((struct err_msg_t) { (l), (p), (e), (g), IVM_NULL })
-#define ERR_MSG_R(l, p, e, g, r) ((struct err_msg_t) { (l), (p), (e), (g), (r) })
+#define ERR_MSG(l, p, t, e, g) ((struct err_msg_t) { (l), (p), (t), (e), (g), IVM_NULL })
+#define ERR_MSG_R(l, p, t, e, g, r) ((struct err_msg_t) { (l), (p), (t), (e), (g), (r) })
 
 struct token_t {
 	ivm_int_t id;
@@ -143,9 +144,9 @@ struct trans_entry_t {
 
 IVM_INLINE
 void
-PARSER_ERR_EM(struct err_msg_t *err)
+PARSER_ERR_EM(struct err_msg_t *err, ivm_bool_t pexpect)
 {
-	if (err->expect) {
+	if (pexpect && err->expect) {
 		IVM_TRACE(IVM_COMMON_PARSER_NAME " parser: at line %ld pos %ld: unexpected %s, expecting %s \n",
 				  (err)->line, (err)->pos, (err)->given, (err)->expect);
 	} else {
@@ -352,15 +353,15 @@ FAILED_END:
 #define IS_FAILED(call) (!IS_SUC(call))
 
 #define SET_ERR(msg) (*__last_err__ = (msg))
-#define POP_ERR() \
+#define POP_ERR(pexp) \
 	if (!__last_err__->line && HAS_NEXT_TOKEN()) { \
 		__tmp_token__ = CUR_TOKEN(); \
 		SET_ERR(ERR_MSG( \
-			__tmp_token__->line, __tmp_token__->pos, \
+			__tmp_token__->line, __tmp_token__->pos, *__i__, \
 			IVM_NULL, TOKEN_NAME(__tmp_token__->id) \
 		)); \
 	} \
-	PARSER_ERR_EM(__last_err__);
+	PARSER_ERR_EM(__last_err__, (pexp));
 
 #define CLEAR_ERR() *__last_err__ = (struct err_msg_t) { 0 };
 
@@ -375,10 +376,10 @@ FAILED_END:
 		__has_matched__ = IVM_TRUE; \
 		NEXT_TOKEN(); \
 	} else { \
-		if (HAS_NEXT_TOKEN() && !__last_err__->line && __has_matched__ /* has matched token(s) */) { \
+		if (HAS_NEXT_TOKEN() && *__i__ >= __last_err__->toki) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__= ERR_MSG( \
-				__tmp_token__->line, __tmp_token__->pos, \
+				__tmp_token__->line, __tmp_token__->pos, *__i__, \
 				TOKEN_NAME(tid), TOKEN_NAME(__tmp_token__->id) \
 			); \
 			SET_ERR(__tmp_err__); \
@@ -394,10 +395,10 @@ FAILED_END:
 		__has_matched__ = IVM_TRUE; \
 		NEXT_TOKEN(); \
 	} else { \
-		if (HAS_NEXT_TOKEN() && !__last_err__->line && __has_matched__ /* has matched token(s) */) { \
+		if (HAS_NEXT_TOKEN() && *__i__ >= __last_err__->toki) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__= ERR_MSG( \
-				__tmp_token__->line, __tmp_token__->pos, \
+				__tmp_token__->line, __tmp_token__->pos, *__i__, \
 				TOKEN_NAME(tid), TOKEN_NAME(__tmp_token__->id) \
 			); \
 			SET_ERR(__tmp_err__); \
@@ -416,10 +417,10 @@ FAILED_END:
 
 #define EXPECT_RULE(name) \
 	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __esc__, __depth__ + 1))) { \
-		if (!__last_err__->line && __has_matched__ /* has matched token(s) */) { \
+		if (*__i__ >= __last_err__->toki) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__ = ERR_MSG_R( \
-				__tmp_token__->line, __tmp_token__->pos, \
+				__tmp_token__->line, __tmp_token__->pos, *__i__, \
 				#name, TOKEN_NAME(__tmp_token__->id), \
 				#name \
 			); \

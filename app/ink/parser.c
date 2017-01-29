@@ -3589,12 +3589,12 @@ RULE(trans_unit)
 	);
 
 	FAILED({
-		POP_ERR();
+		POP_ERR(_ENV->debug);
 	});
 
 	MATCHED({
 		if (HAS_NEXT_TOKEN()) {
-			POP_ERR();
+			POP_ERR(_ENV->debug);
 		}
 	});
 }
