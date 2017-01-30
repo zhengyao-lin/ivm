@@ -153,20 +153,66 @@ ivm_object_getProto(ivm_object_t *obj)
 #define IVM_IS_NONE(state, obj) ((obj) == ivm_vmstate_getNone(state))
 
 IVM_INLINE
-ivm_object_t *
-ivm_object_getOop(ivm_object_t *obj,
-				  ivm_int_t op)
+ivm_binop_proc_t /* null for finding oop */
+ivm_object_getBinOp(ivm_object_t *obj,
+					ivm_int_t op, ivm_int_t oop_id,
+					ivm_object_t *op2,
+					ivm_object_t **oop)
 {
 	register ivm_object_t *tmp;
-
-	/* HACK: costs too much time */
+	register ivm_type_t *otype = obj->type;
+	register ivm_binop_proc_t tmp_proc;
+	
 	do {
-		if (IVM_UNLIKELY(ivm_object_hasOop(obj))) {
-			tmp = ivm_slot_table_getOop(obj->slots, op);
-			if (tmp) return tmp;
+		if (ivm_object_hasOop(obj)) {
+			tmp = ivm_slot_table_getOop(obj->slots, oop_id);
+			if (tmp) {
+				*oop = tmp;
+				return IVM_NULL;
+			}
 		}
+
+		if (obj->type == otype && ivm_type_getProto(obj->type) == obj) {
+			tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op, op2);
+			if (tmp_proc) return tmp_proc;
+		}
+
 		obj = obj->proto;
 	} while (obj);
+
+	*oop = IVM_NULL;
+
+	return IVM_NULL;
+}
+
+IVM_INLINE
+ivm_uniop_proc_t /* null for finding oop */
+ivm_object_getUniOp(ivm_object_t *obj,
+					ivm_int_t op, ivm_int_t oop_id,
+					ivm_object_t **oop)
+{
+	register ivm_object_t *tmp;
+	register ivm_type_t *otype = obj->type;
+	register ivm_uniop_proc_t tmp_proc;
+	
+	do {
+		if (ivm_object_hasOop(obj)) {
+			tmp = ivm_slot_table_getOop(obj->slots, oop_id);
+			if (tmp) {
+				*oop = tmp;
+				return IVM_NULL;
+			}
+		}
+
+		if (obj->type == otype && ivm_type_getProto(obj->type) == obj) {
+			tmp_proc = IVM_OBJECT_GET_UNIOP_PROC_R(obj, op);
+			if (tmp_proc) return tmp_proc;
+		}
+
+		obj = obj->proto;
+	} while (obj);
+
+	*oop = IVM_NULL;
 
 	return IVM_NULL;
 }
@@ -219,7 +265,7 @@ ivm_object_callable(ivm_object_t *obj,
 
 	do {
 		bas = obj;
-		obj = ivm_object_getOop(obj, IVM_OOP_ID(CALL));
+		obj = ivm_object_getOop(obj, state, IVM_OOP_ID(CALL));
 		if (!obj) {
 			*base_p = IVM_NULL;
 			return IVM_AS(obj, ivm_function_object_t);

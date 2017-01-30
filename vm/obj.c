@@ -12,6 +12,8 @@
 #include "instr.h"
 #include "slot.h"
 
+#include "func.h"
+
 ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
 				  ivm_vmstate_t *state)
@@ -270,4 +272,37 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 	}
 
 	return ret;
+}
+
+ivm_object_t *
+ivm_object_getOop(ivm_object_t *obj,
+				  ivm_vmstate_t *state,
+				  ivm_int_t oop)
+{
+	register ivm_object_t *tmp;
+	register ivm_type_t *otype = obj->type;
+	register ivm_function_t *tmp_func;
+	
+	if (oop == IVM_OOP_ID(CALL) &&
+		IVM_IS_BTTYPE(obj, state, IVM_FUNCTION_OBJECT_T)) {
+		return obj;
+	}
+
+	do {
+		if (ivm_object_hasOop(obj)) {
+			tmp = ivm_slot_table_getOop(obj->slots, oop);
+			if (tmp) return tmp;
+		}
+
+		if (obj->type == otype && ivm_type_getProto(obj->type) == obj) {
+			tmp_func = ivm_type_getDefaultOop(obj->type, oop);
+			if (tmp_func) {
+				return ivm_function_object_new(state, IVM_NULL, tmp_func);
+			}
+		}
+
+		obj = obj->proto;
+	} while (obj);
+
+	return IVM_NULL;
 }

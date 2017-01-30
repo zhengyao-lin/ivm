@@ -1,5 +1,12 @@
 import std
 
+object.proto.! = fn: print("no!!!")
+
+print(!0)
+print((0).!())
+
+print("hello".+ == "hi".+)
+
 a = 10
 a.+ = fn b: base - b
 a.* = "hi"
@@ -109,6 +116,10 @@ a.f.()()
 		print("wow")
 	}
 }
+
+// -> "num: 1"
+// -> "num: 1"
+// -> "num: 1"
 
 // -> "num: 5"
 // -> "str: failed"

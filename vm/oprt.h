@@ -53,6 +53,8 @@ IVM_BINOP_PROC_DEF(ivm_binop_getStringIndex);
 IVM_BINOP_PROC_DEF(ivm_binop_eq);
 IVM_BINOP_PROC_DEF(ivm_binop_ne);
 
+IVM_UNIOP_PROC_DEF(ivm_uniop_not);
+
 #define IVM_UNIOP_ID(op) IVM_UNIOP_##op
 #define IVM_BINOP_ID(op) IVM_BINOP_##op
 
@@ -114,12 +116,60 @@ enum {
 enum {
 	IVM_OOP_ID(FIRST) = -1,
 
-#define OOP_DEF(name) IVM_OOP_ID(name),
-	#include "oop.def.h"
-#undef OOP_DEF
+	IVM_OOP_ID(NOT),
+	IVM_OOP_ID(NEG),
+	IVM_OOP_ID(POS),
+	IVM_OOP_ID(BNOT),
+
+	IVM_OOP_ID(ADD),
+	IVM_OOP_ID(SUB),
+	IVM_OOP_ID(MUL),
+	IVM_OOP_ID(DIV),
+	IVM_OOP_ID(MOD),
+
+	IVM_OOP_ID(NE),
+	IVM_OOP_ID(EQ),
+	IVM_OOP_ID(GT),
+	IVM_OOP_ID(GE),
+	IVM_OOP_ID(LT),
+	IVM_OOP_ID(LE),
+
+	IVM_OOP_ID(AND),
+	IVM_OOP_ID(IOR),
+	IVM_OOP_ID(EOR),
+	IVM_OOP_ID(IDX),
+	IVM_OOP_ID(IDXA),
+
+	IVM_OOP_ID(SHL),
+	IVM_OOP_ID(SHLR),
+	IVM_OOP_ID(SHAR),
+
+	IVM_OOP_ID(INADD),
+	IVM_OOP_ID(INSUB),
+	IVM_OOP_ID(INMUL),
+	IVM_OOP_ID(INDIV),
+	IVM_OOP_ID(INMOD),
+
+	IVM_OOP_ID(INAND),
+	IVM_OOP_ID(INIOR),
+	IVM_OOP_ID(INEOR),
+
+	IVM_OOP_ID(INSHL),
+	IVM_OOP_ID(INSHAR),
+	IVM_OOP_ID(INSHLR),
+
+	IVM_OOP_ID(CALL),
 
 	IVM_OOP_COUNT
 };
+
+IVM_INLINE
+ivm_bool_t
+ivm_oop_isbin(ivm_int_t oop)
+{
+	/* REMEMBER to change this after adding/removing oop(s) */
+	return oop <= IVM_OOP_ID(INSHLR) && oop > IVM_OOP_ID(ADD);
+}
 
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 

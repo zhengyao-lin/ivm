@@ -1,5 +1,9 @@
 /******************* uniop *******************/
 
+UNIOP_GEN(NOT, IVM_NONE_T, {
+	return ivm_numeric_new(_STATE, IVM_TRUE);
+})
+
 UNIOP_GEN(NOT, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
 })
@@ -257,3 +261,12 @@ BINOP_GEN(IVM_LIST_OBJECT_T, INADD, IVM_LIST_OBJECT_T, IVM_FALSE, {
 })
 
 BINOP_GEN_C(IVM_LIST_OBJECT_T, INMUL, IVM_NUMERIC_T, IVM_FALSE, ivm_binop_mulList)
+
+/******************* function *******************/
+BINOP_GEN(IVM_FUNCTION_OBJECT_T, EQ, IVM_FUNCTION_OBJECT_T, IVM_TRUE, {
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_function_object_getFunc(_OP1) == ivm_function_object_getFunc(_OP2));
+})
+
+BINOP_GEN(IVM_FUNCTION_OBJECT_T, NE, IVM_FUNCTION_OBJECT_T, IVM_TRUE, {
+	return (ivm_object_t *)(ivm_ptr_t)(ivm_function_object_getFunc(_OP1) != ivm_function_object_getFunc(_OP2));
+})

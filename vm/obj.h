@@ -92,10 +92,6 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
 
-#define IVM_OBJECT_DO_BINOP_PROC(op1, op, op2) \
-	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
-						 IVM_OBJECT_GET((op2), TYPE_TAG)))
-
 #define IVM_OBJECT_GET_BINOP_PROC_R(op1, i, op2) \
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
@@ -105,45 +101,6 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
-
-IVM_INLINE
-ivm_object_t *
-ivm_object_doBinOp_c(struct ivm_vmstate_t_tag *state,
-					 struct ivm_coro_t_tag *coro,
-					 ivm_object_t *op1,
-					 ivm_int_t op,
-					 ivm_object_t *op2)
-{
-	ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC_R(op1, op, op2);
-	
-	if (proc) {
-		return proc(state, coro, op1, op2);
-	}
-
-	return IVM_NULL;
-}
-
-IVM_INLINE
-ivm_object_t *
-ivm_object_doUniOp_c(struct ivm_vmstate_t_tag *state,
-					 struct ivm_coro_t_tag *coro,
-					 ivm_object_t *op1,
-					 ivm_int_t op)
-{
-	ivm_uniop_proc_t proc = IVM_OBJECT_GET_UNIOP_PROC_R(op1, op);
-	
-	if (proc) {
-		return proc(state, coro, op1);
-	}
-
-	return IVM_NULL;
-}
-
-#define ivm_object_doBinOp(state, coro, op1, op, op2) \
-	(ivm_object_doBinOp_c((state), (coro), (op1), IVM_BINOP_ID(op), (op2)))
-
-#define ivm_object_doUniOp(state, coro, op1, op, op2) \
-	(ivm_object_doUniOp_c((state), (coro), (op1), IVM_UNIOP_ID(op), (op2)))
 
 #define ivm_object_markOop(obj) ((obj)->mark.sub.oop = IVM_TRUE)
 #define ivm_object_hasOop(obj) ((obj)->mark.sub.oop)
@@ -230,6 +187,11 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 					  struct ivm_vmstate_t_tag *state,
 					  const ivm_string_t *key,
 					  ivm_instr_t *instr);
+
+ivm_object_t *
+ivm_object_getOop(ivm_object_t *obj,
+				  struct ivm_vmstate_t_tag *state,
+				  ivm_int_t oop);
 
 #define IVM_AS(obj, type) ((type *)(obj))
 #define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))

@@ -121,7 +121,7 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	ret->loaded_mod = ivm_object_new(ret);
 	// ret->tp_type = ivm_object_new(ret);
-	ret->obj_none = ivm_none_new(ret);
+	ret->obj_none = ivm_vmstate_getTypeProto(ret, IVM_NONE_T); // ivm_none_new(ret);
 
 	ivm_vmstate_unlockGCFlag(ret);
 

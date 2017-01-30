@@ -1,4 +1,8 @@
-TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {}, {}, .const_bool = IVM_FALSE)
+TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {
+
+	ivm_type_setProto(_TYPE, ivm_none_new(_STATE));
+
+}, {}, .const_bool = IVM_FALSE)
 
 TYPE_GEN(IVM_OBJECT_T, object, sizeof(ivm_object_t),
 	IVM_NATIVE_WRAP_C(_STATE, _object_cons), {

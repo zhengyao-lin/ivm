@@ -62,7 +62,6 @@ enum token_id_t {
 	T_COLON,	// :
 	T_ELLIP,	// ...
 	T_DOT,		// .
-	T_AT,		// @
 	T_QM,		// ?
 
 	T_LBRAC,	// {
@@ -173,7 +172,6 @@ token_name_table[] = {
 	"colon",
 	"ellipsis",
 	"dot",
-	"at",
 	"question mark",
 
 	"left brace",
@@ -565,7 +563,6 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 	OP("&&", T_CAND)
 	OP("||", T_COR)
 
-	OP("@", T_AT)
 	OP("?", T_QM)
 	OP("==", T_CEQ)
 	OP("=", T_ASSIGN)

@@ -90,6 +90,11 @@
 	#include "oprt.req.h"
 	#include "oprt.def.h"
 
+	UNIOP_PROC_DEF(ivm_uniop_not)
+	{
+		return ivm_numeric_new(_STATE, !ivm_object_toBool(_OP1, _STATE));
+	}
+
 	TRIOP_PROC_DEF(ivm_binop_setStringIndex)
 	{
 		OPRT_CHECK_OP2(IVM_STRING_OBJECT_T);

@@ -75,7 +75,7 @@
                                                                                              \
 		_INVOKE_NATIVE(IVM_FUNCTION_SET_ARG_2(_TMP_ARGC, _TMP_ARGV));                        \
 	} else {                                                                                 \
-		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));                          \
+		_TMP_OBJ2 = ivm_object_getOop(_TMP_OBJ1, _STATE, IVM_OOP_ID(CALL));                  \
 		if (_TMP_OBJ2) {                                                                     \
 			STACK_PUSH(_TMP_OBJ2);                                                           \
 			STACK_INC_C(_TMP_ARGC);                                                          \
@@ -103,7 +103,7 @@
 		do {                                                                                             \
 			/* _TMP_OBJ2 is the base */                                                                  \
 			_TMP_OBJ2 = _TMP_OBJ1;                                                                       \
-			_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, IVM_OOP_ID(CALL));                                  \
+			_TMP_OBJ1 = ivm_object_getOop(_TMP_OBJ1, _STATE, IVM_OOP_ID(CALL));                          \
 			RTM_ASSERT(_TMP_OBJ1, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(_TMP_OBJ2, TYPE_NAME))); \
 		} while (!IVM_IS_BTTYPE(_TMP_OBJ1, _STATE, IVM_FUNCTION_OBJECT_T));                              \
 	}                                                                                                    \
