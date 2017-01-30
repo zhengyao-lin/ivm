@@ -159,6 +159,10 @@ ivm_collector_triggerDestructor(ivm_collector_t *collector,
 	return;
 }
 
+#define COPYOBJ ivm_collector_copyObject
+#define COPYOBJ_C ivm_collector_copyObject_c
+#define COPYOBJ_NG ivm_collector_copyObject_ng
+
 IVM_PRIVATE
 ivm_slot_table_t *
 ivm_collector_copySlotTable(ivm_slot_table_t *table,
@@ -199,7 +203,7 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 
 	IVM_SLOT_TABLE_EACHPTR(ret, siter) {
 		// IVM_TRACE("  copied slot: %s\n", ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)));
-		IVM_SLOT_TABLE_ITER_SET_VAL(siter, ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter, COPYOBJ(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
 	}
 
 	oops = ivm_slot_table_getOops(ret);
@@ -207,7 +211,7 @@ ivm_collector_copySlotTable(ivm_slot_table_t *table,
 		count = ivm_slot_table_getOopCount(ret);
 		for (end = oops + count;
 			 oops != end; oops++, count--) {
-			*oops = ivm_collector_copyObject(*oops, arg);
+			*oops = COPYOBJ(*oops, arg);
 		}
 	}
 
@@ -237,7 +241,7 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 		// IVM_TRACE("  copied slot: %s: %p -> ",
 		// 	  ivm_string_trimHead(IVM_SLOT_TABLE_ITER_GET_KEY(siter)),
 		// 	  IVM_SLOT_TABLE_ITER_GET_VAL(siter));
-		IVM_SLOT_TABLE_ITER_SET_VAL(siter, ivm_collector_copyObject(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
+		IVM_SLOT_TABLE_ITER_SET_VAL(siter, COPYOBJ(IVM_SLOT_TABLE_ITER_GET_VAL(siter), arg));
 		// IVM_TRACE("%p\n", tmp);
 	}
 
@@ -246,7 +250,7 @@ ivm_collector_copySlotTable_ng(ivm_slot_table_t *table,
 		count = ivm_slot_table_getOopCount(table);
 		for (end = oops + count;
 			 oops != end; oops++) {
-			*oops = ivm_collector_copyObject(*oops, arg);
+			*oops = COPYOBJ(*oops, arg);
 		}
 	}
 
@@ -279,10 +283,7 @@ ivm_collector_copyObject_c(ivm_object_t *obj,
 	// IVM_TRACE("copy!!\n");
 	// ivm_object_t *tmp = ivm_collector_copyObject(ivm_object_getProto(ret), arg);
 	// IVM_TRACE("copied: %p -> %p\n", ivm_object_getProto(ret), tmp);
-	ivm_object_setProto(
-		ret, arg->state,
-		ivm_collector_copyObject(ivm_object_getProto(ret), arg)
-	);
+	ivm_object_setProto(ret, arg->state, COPYOBJ(ivm_object_getProto(ret), arg));
 
 	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
 	if (trav) {
@@ -308,10 +309,7 @@ ivm_collector_copyObject_ng(ivm_object_t *obj,
 		ivm_collector_copySlotTable(IVM_OBJECT_GET(obj, SLOTS), arg)
 	);
 
-	ivm_object_setProto(
-		obj, arg->state,
-		ivm_collector_copyObject(ivm_object_getProto(obj), arg)
-	);
+	ivm_object_setProto(obj, arg->state, COPYOBJ(ivm_object_getProto(obj), arg));
 
 	trav = IVM_OBJECT_GET(obj, TYPE_TRAV);
 	if (trav) {
@@ -326,7 +324,7 @@ void
 ivm_collector_updateObject(ivm_object_t **obj,
 						   ivm_traverser_arg_t *arg)
 {
-	*obj = ivm_collector_copyObject(*obj, arg);
+	*obj = COPYOBJ(*obj, arg);
 	return;
 }
 
@@ -347,11 +345,7 @@ ivm_collector_travSingleContext(ivm_context_t *ctx,
 	ivm_context_setWB(ctx, 0);
 	ivm_context_setCID(ctx, arg->cid);
 
-	_ivm_context_updateObject_c(
-		ctx, ivm_collector_copyObject(
-			ivm_context_getObject_c(ctx), arg
-		)
-	);
+	_ivm_context_updateObject_c(ctx, COPYOBJ(ivm_context_getObject_c(ctx), arg));
 
 	_ivm_context_updateSlots_c(
 		ctx, ivm_collector_copySlotTable(
@@ -432,6 +426,8 @@ ivm_collector_travCoro(ivm_coro_t *coro,
 	ivm_coro_setWB(coro, IVM_FALSE);
 	ivm_coro_setCID(coro, arg->cid);
 
+	_ivm_coro_setExitValue(coro, COPYOBJ(ivm_coro_getExitValue(coro), arg));
+
 	if (runtime) {
 		for (i = ivm_vmstack_bottom(stack),
 			 sp = IVM_RUNTIME_GET(runtime, SP);
@@ -454,7 +450,7 @@ void
 ivm_collector_travType(ivm_type_t *type,
 					   ivm_traverser_arg_t *arg)
 {
-	ivm_type_setProto(type, ivm_collector_copyObject(ivm_type_getProto(type), arg));
+	ivm_type_setProto(type, COPYOBJ(ivm_type_getProto(type), arg));
 	return;
 }
 
@@ -467,14 +463,6 @@ ivm_collector_travState(ivm_vmstate_t *state,
 	ivm_type_pool_iterator_t titer;
 	ivm_coro_t *tmp_coro;
 	ivm_coro_set_iterator_t iter;
-
-	// ivm_vmstate_travAndCompactCGroup(state, arg);
-
-	// tmp_coro = ivm_vmstate_curCoro(state);
-	// ivm_collector_travCoro(tmp_coro, arg);
-
-	// tmp_coro = ivm_vmstate_mainCoro(state);
-	// ivm_collector_travCoro(tmp_coro, arg);
 
 	IVM_CORO_SET_EACHPTR(&state->coro_set, iter) {
 		tmp_coro = IVM_CORO_SET_ITER_GET(iter);
@@ -507,17 +495,9 @@ ivm_collector_travState(ivm_vmstate_t *state,
 		ivm_collector_travType(IVM_TYPE_POOL_ITER_GET(titer), arg);
 	}
 
-	ivm_vmstate_setException(state,
-		ivm_collector_copyObject(ivm_vmstate_getException(state), arg)
-	);
-
-	ivm_vmstate_setLoadedMod(state,
-		ivm_collector_copyObject(ivm_vmstate_getLoadedMod(state), arg)
-	);
-
-	ivm_vmstate_setNone(state,
-		ivm_collector_copyObject(ivm_vmstate_getNone(state), arg)
-	);
+	ivm_vmstate_setException(state, COPYOBJ(ivm_vmstate_getException(state), arg));
+	_ivm_vmstate_setLoadedMod(state, COPYOBJ(ivm_vmstate_getLoadedMod(state), arg));
+	_ivm_vmstate_setNone(state, COPYOBJ(ivm_vmstate_getNone(state), arg));
 
 	return;
 }
@@ -535,7 +515,7 @@ ivm_collector_checkWriteBarrier(ivm_collector_t *collector,
 
 	if (!arg->gen) {
 		IVM_WBOBJ_LIST_EACHPTR(&collector->wb_obj, oiter) {
-			ivm_collector_copyObject_ng(IVM_WBOBJ_LIST_ITER_GET(oiter), arg);
+			COPYOBJ_NG(IVM_WBOBJ_LIST_ITER_GET(oiter), arg);
 		}
 	}
 

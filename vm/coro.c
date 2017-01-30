@@ -206,7 +206,7 @@ _ivm_coro_otherInt(ivm_vmstate_t *state,
 		case IVM_CORO_INT_THREAD_YIELD:
 			// IVM_TRACE("################ thread switch\n");
 
-			ivm_vmstate_threadJoint(state);
+			ivm_vmstate_threadYield(state);
 
 			return IVM_TRUE;
 
@@ -651,12 +651,6 @@ void
 ivm_coro_object_traverser(ivm_object_t *obj,
 						  ivm_traverser_arg_t *arg)
 {
-	ivm_coro_t *coro = ivm_coro_object_getCoro(obj);
-	// if (coro) arg->trav_coro(coro, arg);
-	
-	if (coro)
-		coro->exitv = ivm_collector_copyObject(coro->exitv, arg);
-
 	return;
 }
 

@@ -9,6 +9,8 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
+#define MTHREAD_ERROR_MSG_DOUBLE_JOIN "double join"
+
 IVM_NATIVE_FUNC(_mthread_spawn)
 {
 	ivm_object_t *arg = IVM_NULL;
@@ -24,7 +26,7 @@ IVM_NATIVE_FUNC(_mthread_spawn)
 
 IVM_NATIVE_FUNC(_mthread_join)
 {
-	ivm_vmstate_joinAllThread(NAT_STATE(), IVM_FALSE);
+	RTM_ASSERT(ivm_vmstate_joinAllThread(NAT_STATE(), IVM_FALSE), MTHREAD_ERROR_MSG_DOUBLE_JOIN);
 	return IVM_NONE(NAT_STATE());
 }
 

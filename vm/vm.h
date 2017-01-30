@@ -100,6 +100,8 @@ typedef struct ivm_vmstate_t_tag {
 
 	ivm_uid_gen_t st_uid_gen; // slot table uid generator
 
+	ivm_bool_t join_start;
+
 	ivm_type_t type_list[IVM_TYPE_COUNT];
 } ivm_vmstate_t;
 
@@ -375,7 +377,7 @@ ivm_vmstate_threadEnd(ivm_vmstate_t *state)
 #define ivm_vmstate_dumpCThread(state, thread) ivm_cthread_pool_dump(&(state)->thread_pool, (thread))
 
 void
-ivm_vmstate_threadJoint(ivm_vmstate_t *state);
+ivm_vmstate_threadYield(ivm_vmstate_t *state);
 
 #endif
 
@@ -951,12 +953,12 @@ ivm_vmstate_popException(ivm_vmstate_t *state)
 }
 
 #define ivm_vmstate_getLoadedMod(state) ((state)->loaded_mod)
-#define ivm_vmstate_setLoadedMod(state, obj) ((state)->loaded_mod = (obj))
+#define _ivm_vmstate_setLoadedMod(state, obj) ((state)->loaded_mod = (obj))
 
 #define ivm_vmstate_getTypePool(state) (&(state)->type_pool)
 
 #define ivm_vmstate_getNone(state) ((state)->obj_none)
-#define ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))
+#define _ivm_vmstate_setNone(state, obj) ((state)->obj_none = (obj))
 
 IVM_INLINE
 void
@@ -1024,7 +1026,7 @@ ivm_vmstate_resumeMainCoro(ivm_vmstate_t *state,
 	return IVM_NULL;
 }
 
-void
+ivm_bool_t
 ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
 						  ivm_bool_t stop_clock);
 

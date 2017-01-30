@@ -127,6 +127,8 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	ret->cur_path = IVM_VMSTATE_CONST(ret, C_EMPTY);
 	// ret->coro_list_uid = ivm_uid_gen_nextPtr(ret->uid_gen);
+	
+	ret->join_start = IVM_FALSE;
 
 	return ret;
 }
@@ -198,7 +200,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 #if IVM_USE_MULTITHREAD
 
 void
-ivm_vmstate_threadJoint(ivm_vmstate_t *state)
+ivm_vmstate_threadYield(ivm_vmstate_t *state)
 {
 	const ivm_string_t *cur_path = ivm_vmstate_getCurPath(state);
 
@@ -227,11 +229,12 @@ _clock_round(ivm_vmstate_t *state)
 	// IVM_TRACE("########signal! %d\n", ivm_cthread_set_size(&state->thread_set));
 	ivm_vmstate_setInt(state, IVM_CORO_INT_THREAD_YIELD);
 
+	// IVM_TRACE("wait for csl\n");
 	while (!ivm_vmstate_getCSL(state)) {
-		// IVM_TRACE("wait for csl\n");
 		ivm_thread_cancelPoint();
 		// ivm_time_msleep(10);
 	}
+	// IVM_TRACE("wait for csl\n");
 
 	ivm_vmstate_unsetCSL(state);
 
@@ -392,7 +395,7 @@ ivm_vmstate_spawnThread(ivm_vmstate_t *state,
 #endif
 }
 
-void
+ivm_bool_t
 ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
 						  ivm_bool_t stop_clock)
 {
@@ -401,6 +404,12 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
 	ivm_cthread_set_t *tset = &state->thread_set;
 
 	// IVM_TRACE("join!\n");
+	if (state->join_start) {
+		// there has already one thread on join
+		return IVM_FALSE;
+	}
+
+	state->join_start = IVM_TRUE;
 
 	if (ivm_vmstate_hasThread(state)) {
 		ivm_vmstate_threadEnd(state);
@@ -417,9 +426,11 @@ ivm_vmstate_joinAllThread(ivm_vmstate_t *state,
 		}
 	}
 
+	state->join_start = IVM_FALSE;
+
 #endif
 
-	return;
+	return IVM_TRUE;
 }
 
 void

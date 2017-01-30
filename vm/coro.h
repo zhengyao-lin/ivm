@@ -154,6 +154,7 @@ ivm_coro_setRoot(ivm_coro_t *coro,
 #define ivm_coro_setParam(coro, p) ((coro)->param = (p))
 
 #define ivm_coro_getExitValue(coro) ((coro)->exitv)
+#define _ivm_coro_setExitValue(coro, obj) ((coro)->exitv = (obj))
 
 IVM_INLINE
 ivm_bool_t
