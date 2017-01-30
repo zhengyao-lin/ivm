@@ -177,6 +177,13 @@ typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 #define ivm_uniop_table_get(table, i) ((table)[i])
 #define ivm_uniop_table_set(table, i, proc) ((table)[i] = (proc))
 
+typedef ivm_binop_proc_t ivm_binop_table_t[IVM_BINOP_COUNT];
+
+#define ivm_binop_table_init(table) (STD_INIT((table), sizeof(ivm_binop_table_t)))
+#define ivm_binop_table_get(table, i) ((table)[i])
+#define ivm_binop_table_set(table, i, proc) ((table)[i] = (proc))
+
+#if 0
 typedef struct {
 	ivm_size_t size;
 	ivm_binop_proc_t *lst;
@@ -233,6 +240,8 @@ ivm_binop_table_set(ivm_binop_table_t *table,
 
 	return;
 }
+
+#endif
 
 void
 ivm_oprt_initType(struct ivm_vmstate_t_tag *state);

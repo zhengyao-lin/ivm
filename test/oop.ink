@@ -7,6 +7,11 @@ print((0).!())
 
 print("hello".+ == "hi".+)
 
+object.proto.+ = fn: print("hi")
+
+try "hello, " + {} catch print("failed")
+try "hello, ".+({}) catch print("failed")
+
 a = 10
 a.+ = fn b: base - b
 a.* = "hi"
@@ -120,6 +125,9 @@ a.f.()()
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
+
+// -> "str: failed"
+// -> "str: failed"
 
 // -> "num: 5"
 // -> "str: failed"

@@ -30,8 +30,8 @@
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op),                       \
+											IVM_OOP_ID(op), &_TMP_OBJ3);                       \
 		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
 	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                    \
 	        if (_TMP_OBJ1) {                                                                   \
@@ -60,8 +60,8 @@
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ4);                            \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op),                       \
+											IVM_OOP_ID(op), &_TMP_OBJ4);                       \
 		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ4 && (_TMP_BIN_PROC = (def)))) {               \
 	        _TMP_OBJ1 = ((ivm_triop_proc_t)_TMP_BIN_PROC)                                      \
 	        			(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                      \
@@ -92,8 +92,8 @@
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op),                       \
+											IVM_OOP_ID(op), &_TMP_OBJ3);                       \
 		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
 			_TMP_CMP_REG                                                                       \
 			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                   \
@@ -122,8 +122,8 @@
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op),                       \
+											IVM_OOP_ID(op), &_TMP_OBJ3);                       \
 		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
 			_USE_REG = IVM_TRUE;                                                               \
 			_TMP_CMP_REG                                                                       \

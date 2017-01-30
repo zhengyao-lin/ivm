@@ -20,6 +20,7 @@ ivm_type_new(ivm_type_t type)
 void
 ivm_type_free(ivm_type_t *type)
 {
+/*
 	ivm_int_t i;
 
 	if (type) {
@@ -29,6 +30,7 @@ ivm_type_free(ivm_type_t *type)
 
 		STD_FREE(type);
 	}
+*/
 
 	return;
 }
@@ -36,7 +38,7 @@ ivm_type_free(ivm_type_t *type)
 void
 ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 {
-	ivm_binop_table_t *i, *end;
+	// ivm_binop_table_t *i, *end;
 
 	STD_MEMCPY(type, src, sizeof(*type));
 
@@ -47,11 +49,7 @@ ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 
 	STD_INIT(type->def_oops, sizeof(type->def_oops));
 
-	for (i = type->binops, end = i + IVM_ARRLEN(type->binops);
-		 i != end; i++) {
-		ivm_binop_table_init(i);
-	}
-
+	ivm_binop_table_init(type->uniops);
 	ivm_uniop_table_init(type->uniops);
 
 	return;
@@ -60,13 +58,13 @@ ivm_type_init(ivm_type_t *type, ivm_type_t *src)
 void
 ivm_type_dump(ivm_type_t *type)
 {
+/*
 	ivm_int_t i;
-
 	if (type) {
 		for (i = 0; i < IVM_BINOP_COUNT; i++) {
 			ivm_binop_table_dump(type->binops + i);
 		}
 	}
-
+*/
 	return;
 }

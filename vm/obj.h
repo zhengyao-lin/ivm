@@ -79,28 +79,25 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))
 
-#define IVM_OBJECT_GET_BINOP(obj, op) (ivm_type_getBinopTable((obj)->type, op))
-#define IVM_OBJECT_GET_BINOP_R(obj, i) (ivm_type_getBinopTable_r((obj)->type, (i)))
-#define IVM_OBJECT_GET_UNIOP(obj) (ivm_type_getUniopTable((obj)->type))
+#define IVM_OBJECT_GET_BINOP(obj) ivm_type_getBinopTable((obj)->type)
+#define IVM_OBJECT_GET_UNIOP(obj) ivm_type_getUniopTable((obj)->type)
 
 #define IVM_TYPE_OF(obj) ((obj)->type)
 #define IVM_TYPE_TAG_OF IVM_OBJECT_GET_TYPE_TAG
 #define IVM_IS_TYPE(obj, type) (IVM_TYPE_OF(obj) == (type))
 
 /* call the operation proc when obj [op] obj(of type) e.g. obj + num */
-#define IVM_OBJECT_GET_BINOP_PROC(op1, op, op2) \
-	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP((op1), op), \
-						 IVM_OBJECT_GET((op2), TYPE_TAG)))
+#define IVM_OBJECT_GET_BINOP_PROC(op1, op) \
+	ivm_binop_table_get(IVM_OBJECT_GET_BINOP(op1), IVM_BINOP_ID(op))
 
-#define IVM_OBJECT_GET_BINOP_PROC_R(op1, i, op2) \
-	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), \
-						 IVM_OBJECT_GET((op2), TYPE_TAG)))
+#define IVM_OBJECT_GET_BINOP_PROC_R(op1, op) \
+	ivm_binop_table_get(IVM_OBJECT_GET_BINOP(op1), op)
 
 #define IVM_OBJECT_GET_UNIOP_PROC(op1, op) \
-	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), IVM_UNIOP_ID(op)))
+	ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), IVM_UNIOP_ID(op))
 
 #define IVM_OBJECT_GET_UNIOP_PROC_R(op1, op) \
-	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op)))
+	ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), (op))
 
 #define ivm_object_markOop(obj) ((obj)->mark.sub.oop = IVM_TRUE)
 #define ivm_object_hasOop(obj) ((obj)->mark.sub.oop)

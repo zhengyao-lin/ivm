@@ -156,7 +156,6 @@ IVM_INLINE
 ivm_binop_proc_t /* null for finding oop */
 ivm_object_getBinOp(ivm_object_t *obj,
 					ivm_int_t op, ivm_int_t oop_id,
-					ivm_object_t *op2,
 					ivm_object_t **oop)
 {
 	register ivm_object_t *tmp;
@@ -173,7 +172,7 @@ ivm_object_getBinOp(ivm_object_t *obj,
 		}
 
 		if (obj->type == otype && ivm_type_getProto(obj->type) == obj) {
-			tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op, op2);
+			tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op);
 			if (tmp_proc) return tmp_proc;
 		}
 
