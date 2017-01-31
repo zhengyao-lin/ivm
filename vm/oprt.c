@@ -273,6 +273,19 @@ ivm_binop_table_dump(ivm_binop_table_t *table)
 	return;
 }
 
+const ivm_char_t *
+_oop_name_tab[] = {
+#define OOP_DEF(name, symb) (symb),
+	#include "oprt.oop.def.h"
+#undef OOP_DEF
+};
+
+const ivm_char_t *
+ivm_oop_rawName(ivm_int_t oop)
+{
+	return _oop_name_tab[oop];
+}
+
 void
 ivm_oprt_initType(ivm_vmstate_t *state)
 {

@@ -351,8 +351,10 @@ ivm_object_doBinOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 		return ivm_coro_callBase_1(coro, state, func, base, op2);
 	}
 
-	SET_EXC(coro, state, IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
-													"<native op>", IVM_OBJECT_GET(op2, TYPE_NAME)));
+	SET_EXC(coro, state,
+			IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
+									   ivm_oop_rawName(oop_id),
+									   IVM_OBJECT_GET(op2, TYPE_NAME)));
 
 	return IVM_NULL;
 }
@@ -382,8 +384,10 @@ ivm_object_doTriOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 		return ivm_coro_callBase_2(coro, state, func, base, op2, op3);
 	}
 
-	SET_EXC(coro, state, IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
-													"<native op>", IVM_OBJECT_GET(op2, TYPE_NAME)));
+	SET_EXC(coro, state,
+			IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
+									   ivm_oop_rawName(oop_id),
+									   IVM_OBJECT_GET(op2, TYPE_NAME)));
 
 	return IVM_NULL;
 }

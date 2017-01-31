@@ -61,10 +61,10 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ivm_ref_inc(const_pool);
 
 #define CONST_GEN(name, str) \
-	ret->const_str_##name = (const ivm_string_t *)ivm_string_pool_registerRaw(const_pool, (str));
+	ret->const_str_##name = ivm_string_pool_registerRaw(const_pool, (str));
 	#include "vm.const.h"
 #undef CONST_GEN
-
+	
 	ret->wild_size = 0;
 
 	ret->gc_flag = IVM_FALSE;
@@ -190,7 +190,6 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 
 		// STD_FREE(state->cur_path);
-
 		STD_FREE(state);
 	}
 
