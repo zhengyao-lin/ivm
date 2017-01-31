@@ -16,6 +16,7 @@
 #define UNIOP_PROC_NAME(op, t) ivm_uniop_##op##_##t
 #define BINOP_PROC_NAME(t1, op, t2) ivm_binop_##t1##_##op##_##t2
 
+// def/DEF for default
 #define DEF_OOP_UNIOP_NAME(op, t) ivm_def_oop_uniop_##op##_##t
 #define DEF_OOP_BINOP_NAME(t1, op, t2) ivm_def_oop_binop_##t1##_##op##_##t2
 #define DEF_OOP_TRIOP_NAME(t1, op, t2) ivm_def_oop_triop_##t1##_##op##_##t2
@@ -23,40 +24,37 @@
 #define DEF_OOP_UNIOP_PROC(type, op) \
 	IVM_NATIVE_FUNC_C(DEF_OOP_UNIOP_NAME(op, type)) {                                                         \
 		CHECK_BASE(type);                                                                                     \
-		ivm_uniop_proc_t proc = IVM_OBJECT_GET_UNIOP_PROC(NAT_BASE(), op);                                    \
-		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_UNIOP_FOR("<native op>", IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME)));   \
-		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE());                                                     \
+		return UNIOP_PROC_NAME(op, type)(NAT_STATE(), NAT_CORO(), NAT_BASE());                                \
 	}
 
 #define DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp) \
 	IVM_NATIVE_FUNC_C(DEF_OOP_BINOP_NAME(t1, op, t2)) {                                                       \
+		ivm_binop_proc_t proc;                                                                                \
 		ivm_object_t *op2;                                                                                    \
 		CHECK_BASE(t1);                                                                                       \
 		CHECK_ARG_COUNT(1);                                                                                   \
 		op2 = NAT_ARG_AT(1);                                                                                  \
-		ivm_binop_proc_t proc = IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                               \
-		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                          \
-						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                            \
-						 	#op,                                                                              \
-						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                 \
-		return is_cmp                                                                                         \
-			   ? ivm_numeric_new(NAT_STATE(), (ivm_ptr_t)proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2))      \
-			   : proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2);                                              \
+		if (IVM_IS_BTTYPE(op2, NAT_STATE(), t2)) {                                                            \
+			proc = BINOP_PROC_NAME(t1, op, t2);                                                               \
+			return is_cmp                                                                                     \
+				   ? ivm_numeric_new(NAT_STATE(), (ivm_ptr_t)proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2))  \
+				   : proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2);                                          \
+		}                                                                                                     \
+		return ivm_object_doBinOpFallBack(NAT_BASE(), NAT_STATE(), NAT_CORO(),                                \
+										  IVM_BINOP_ID(op), IVM_OOP_ID(op), is_cmp, op2);                     \
 	}
 
 #define DEF_OOP_TRIOP_PROC(t1, op, t2) \
-	IVM_NATIVE_FUNC_C(DEF_OOP_TRIOP_NAME(t1, op, t2)) {                                                                      \
-		ivm_triop_proc_t proc;                                                                                               \
-		ivm_object_t *op2;                                                                                                   \
-		CHECK_BASE(t1);                                                                                                      \
-		CHECK_ARG_COUNT(2);                                                                                                  \
-		op2 = NAT_ARG_AT(1);                                                                                                 \
-		proc = (ivm_triop_proc_t)IVM_OBJECT_GET_BINOP_PROC(NAT_BASE(), op, op2);                                             \
-		RTM_ASSERT(proc, IVM_ERROR_MSG_NO_BINOP_FOR(                                                                         \
-						 	IVM_OBJECT_GET(NAT_BASE(), TYPE_NAME),                                                           \
-						 	#op,                                                                                             \
-						 	IVM_OBJECT_GET(op2, TYPE_NAME)));                                                                \
-		return proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));                                                \
+	IVM_NATIVE_FUNC_C(DEF_OOP_TRIOP_NAME(t1, op, t2)) {                                                       \
+		ivm_object_t *op2;                                                                                    \
+		CHECK_BASE(t1);                                                                                       \
+		CHECK_ARG_COUNT(2);                                                                                   \
+		op2 = NAT_ARG_AT(1);                                                                                  \
+		if (IVM_IS_BTTYPE(op2, NAT_STATE(), t2)) {                                                            \
+			return BINOP_PROC_NAME(t1, op, t2)(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));      \
+		}                                                                                                     \
+		return ivm_object_doTriOpFallBack(NAT_BASE(), NAT_STATE(), NAT_CORO(),                                \
+										  IVM_BINOP_ID(op), IVM_OOP_ID(op), op2, NAT_ARG_AT(2));              \
 	}
 
 #define UNIOP_PROC_DEF(name) IVM_UNIOP_PROC_DEF(name)
@@ -64,22 +62,27 @@
 #define TRIOP_PROC_DEF(name) IVM_TRIOP_PROC_DEF(name)
 
 #define UNIOP_GEN(op, t, ...) \
-	DEF_OOP_UNIOP_PROC(t, op)                \
 	UNIOP_PROC_DEF(UNIOP_PROC_NAME(op, t))   \
-	__VA_ARGS__
+	__VA_ARGS__                              \
+	DEF_OOP_UNIOP_PROC(t, op)
 
 #define BINOP_GEN(t1, op, t2, is_cmp, ...) \
-	DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)        \
 	BINOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
-	__VA_ARGS__
+	__VA_ARGS__                                   \
+	DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)
 
 #define TRIOP_GEN(t1, op, t2, ...) \
-	DEF_OOP_TRIOP_PROC(t1, op, t2)                \
 	TRIOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
-	__VA_ARGS__
+	__VA_ARGS__                                   \
+	DEF_OOP_TRIOP_PROC(t1, op, t2)
 
-#define BINOP_GEN_C(t1, op, t2, is_cmp, func) DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)
-#define TRIOP_GEN_C(t1, op, t2, func) DEF_OOP_TRIOP_PROC(t1, op, t2)
+#define BINOP_GEN_C(t1, op, t2, is_cmp, func) \
+	ivm_binop_proc_t BINOP_PROC_NAME(t1, op, t2) = (func); \
+	DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)
+
+#define TRIOP_GEN_C(t1, op, t2, func) \
+	ivm_triop_proc_t BINOP_PROC_NAME(t1, op, t2) = (func); \
+	DEF_OOP_TRIOP_PROC(t1, op, t2)
 
 #define _STATE (__state__)
 #define _CORO (__coro__)
@@ -88,12 +91,6 @@
 #define _OP3 (__op3__)
 
 	#include "oprt.req.h"
-	#include "oprt.def.h"
-
-	UNIOP_PROC_DEF(ivm_uniop_not)
-	{
-		return ivm_numeric_new(_STATE, !ivm_object_toBool(_OP1, _STATE));
-	}
 
 	TRIOP_PROC_DEF(ivm_binop_setStringIndex)
 	{
@@ -220,6 +217,8 @@
 	{
 		return (ivm_object_t *)(ivm_ptr_t)IVM_TRUE;
 	}
+
+	#include "oprt.def.h"
 
 #undef _STATE
 #undef _OP1

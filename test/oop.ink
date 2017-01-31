@@ -1,4 +1,11 @@
 import std
+import io
+
+print(io.file.proto == 1) // -> "num: 0"
+print(none == 1) // -> "num: 0"
+print(none != 1) // -> "num: 1"
+print("s" == 1) // -> "num: 0"
+print("s" != 1) // -> "num: 1"
 
 object.proto.! = fn: print("no!!!")
 
@@ -6,6 +13,11 @@ print(!0)
 print((0).!())
 
 print("hello".+ == "hi".+)
+
+object.proto.+ = fn: print("hi")
+
+"hello, " + {}
+"hello, ".+({})
 
 a = 10
 a.+ = fn b: base - b
@@ -117,9 +129,25 @@ a.f.()()
 	}
 }
 
+object.proto.proto = {
+	proto: none,
+	[=]: fn k, v: {
+		print(k)
+		print(v)
+	}
+}
+
+{}[1] = "hi"
+{}.[=](2, "hi")
+
+
+
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
+
+// -> "str: hi"
+// -> "str: hi"
 
 // -> "num: 5"
 // -> "str: failed"
@@ -159,3 +187,8 @@ a.f.()()
 // -> "str: called! base: yeah"
 // 
 // -> "str: wow"
+
+// -> "num: 1"
+// -> "str: hi"
+// -> "num: 2"
+// -> "str: hi"

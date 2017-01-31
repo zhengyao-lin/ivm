@@ -191,6 +191,13 @@ ivm_coro_callBase_1(ivm_coro_t *coro,
 					ivm_object_t *base,
 					ivm_object_t *arg);
 
+ivm_object_t *
+ivm_coro_callBase_2(ivm_coro_t *coro,
+					struct ivm_vmstate_t_tag *state,
+					ivm_function_object_t *func,
+					ivm_object_t *base,
+					ivm_object_t *arg1, ivm_object_t *arg2);
+
 IVM_INLINE
 ivm_object_t **
 ivm_coro_pushBlock(ivm_block_stack_t *bstack,

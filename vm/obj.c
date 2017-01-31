@@ -13,6 +13,7 @@
 #include "slot.h"
 
 #include "func.h"
+#include "coro.h"
 
 ivm_bool_t
 ivm_object_toBool(ivm_object_t *obj,
@@ -303,6 +304,95 @@ ivm_object_getOop(ivm_object_t *obj,
 
 		obj = obj->proto;
 	} while (obj);
+
+	return IVM_NULL;
+}
+
+#define SET_EXC IVM_CORO_NATIVE_FATAL_C
+
+/**
+ * NOTE: Op fallback
+ *
+ * Op fallback will occur when a builtin op finds that the types of operands do not
+ * match what it has expected. It will try to find another operator handler in the prototypes
+ * and call it instead.
+ *
+ * e.g.
+ *
+ * object.proto.proto = { proto: none, [=]: fn k, v: { print("here!") } }
+ * 
+ * {}[1] = "hi"
+ * {}.[=](2, "hi")
+ * 
+ * These two expressions will have the same output("here!").
+ * Because the the original index op of object which has the form of <object> [=] <string>
+ * does not match the operands(<object>, <numeric>).
+ * So it will fall back to find another op which finally falls the "here" function.
+ *
+ * NOTE that even though the finally executed function is the "here" function, {}.[=] has the same value as
+ * the default index op of object.
+ *
+ * And also NOTE that op fallback is not a default action taken by the vm but rather by the op handlers themselves.
+ */
+ivm_object_t *
+ivm_object_doBinOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
+						   ivm_coro_t *coro, ivm_int_t op, ivm_int_t oop_id,
+						   ivm_bool_t is_cmp, ivm_object_t *op2)
+{
+	ivm_object_t *proto = ivm_type_getProto(obj->type);
+	ivm_object_t *oop, *base;
+	ivm_binop_proc_t proc = ivm_object_getBinOp(proto, state, op, oop_id, op2, &oop);
+	ivm_function_object_t *func;
+
+	if (proc) {
+		return is_cmp ? ivm_numeric_new(state, (ivm_ptr_t)proc(state, coro, obj, op2))
+					  : proc(state, coro, obj, op2);
+	} else if (oop) {
+		func = ivm_object_callable(oop, state, &base);
+		
+		if (!func) {
+			SET_EXC(coro, state, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(obj, TYPE_NAME)));
+			return IVM_NULL;
+		}
+
+		base = base ? base : obj;
+
+		return ivm_coro_callBase_1(coro, state, func, base, op2);
+	}
+
+	SET_EXC(coro, state, IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
+													"<native op>", IVM_OBJECT_GET(op2, TYPE_NAME)));
+
+	return IVM_NULL;
+}
+
+ivm_object_t *
+ivm_object_doTriOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
+						   ivm_coro_t *coro, ivm_int_t op, ivm_int_t oop_id,
+						   ivm_object_t *op2, ivm_object_t *op3)
+{
+	ivm_object_t *proto = ivm_type_getProto(obj->type);
+	ivm_object_t *oop, *base;
+	ivm_triop_proc_t proc = (ivm_triop_proc_t)ivm_object_getBinOp(proto, state, op, oop_id, op2, &oop);
+	ivm_function_object_t *func;
+
+	if (proc) {
+		return  proc(state, coro, obj, op2, op3);
+	} else if (oop) {
+		func = ivm_object_callable(oop, state, &base);
+		
+		if (!func) {
+			SET_EXC(coro, state, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(obj, TYPE_NAME)));
+			return IVM_NULL;
+		}
+
+		base = base ? base : obj;
+
+		return ivm_coro_callBase_2(coro, state, func, base, op2, op3);
+	}
+
+	SET_EXC(coro, state, IVM_ERROR_MSG_NO_BINOP_FOR(IVM_OBJECT_GET(obj, TYPE_NAME),
+													"<native op>", IVM_OBJECT_GET(op2, TYPE_NAME)));
 
 	return IVM_NULL;
 }

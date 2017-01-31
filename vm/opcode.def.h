@@ -218,23 +218,23 @@ OPCODE_GEN(UNPACK_LIST_ALL_R, "unpack_list_all_r", N, 1, {
 })
 
 /* unary operations */
-OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!", ivm_uniop_not))
-OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-", IVM_NULL))
-OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+", IVM_NULL))
-OPCODE_GEN(BNOT, "bnot", N, 0, UNIOP_HANDLER(BNOT, "~", IVM_NULL))
+OPCODE_GEN(NOT, "not", N, 0, UNIOP_HANDLER(NOT, "!"))
+OPCODE_GEN(NEG, "neg", N, 0, UNIOP_HANDLER(NEG, "-"))
+OPCODE_GEN(POS, "pos", N, 0, UNIOP_HANDLER(POS, "+"))
+OPCODE_GEN(BNOT, "bnot", N, 0, UNIOP_HANDLER(BNOT, "~"))
 
 /* binary operations */
-OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+", IVM_NULL))
-OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-", IVM_NULL))
-OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*", IVM_NULL))
-OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/", IVM_NULL))
-OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%", IVM_NULL))
+OPCODE_GEN(ADD, "add", N, -1, BINOP_HANDLER(ADD, "+"))
+OPCODE_GEN(SUB, "sub", N, -1, BINOP_HANDLER(SUB, "-"))
+OPCODE_GEN(MUL, "mul", N, -1, BINOP_HANDLER(MUL, "*"))
+OPCODE_GEN(DIV, "div", N, -1, BINOP_HANDLER(DIV, "/"))
+OPCODE_GEN(MOD, "mod", N, -1, BINOP_HANDLER(MOD, "%"))
 
-OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&", IVM_NULL))
-OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^", IVM_NULL))
-OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|", IVM_NULL))
+OPCODE_GEN(AND, "and", N, -1, BINOP_HANDLER(AND, "&"))
+OPCODE_GEN(EOR, "eor", N, -1, BINOP_HANDLER(EOR, "^"))
+OPCODE_GEN(IOR, "ior", N, -1, BINOP_HANDLER(IOR, "|"))
 
-OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", ivm_binop_getStringIndex))
+OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]"))
 
 /*
 	top
@@ -242,44 +242,44 @@ OPCODE_GEN(IDX, "idx", N, -1, BINOP_HANDLER(IDX, "[]", ivm_binop_getStringIndex)
 	|   id   |   obj   |  assign  |
 	-------------------------------
  */
-OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, "[=]", ivm_binop_setStringIndex))
+OPCODE_GEN(IDXA, "idxa", N, -2, TRIOP_HANDLER(IDXA, "[=]"))
 
-OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<", IVM_NULL))
-OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>", IVM_NULL))
-OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>", IVM_NULL))
+OPCODE_GEN(SHL, "shl", N, -1, BINOP_HANDLER(SHL, "<<"))
+OPCODE_GEN(SHAR, "shar", N, -1, BINOP_HANDLER(SHAR, ">>"))
+OPCODE_GEN(SHLR, "shlr", N, -1, BINOP_HANDLER(SHLR, ">>>"))
 
 /* inplace op */
 
-OPCODE_GEN(INADD, "inadd", N, -1, BINOP_HANDLER(INADD, "+=", IVM_NULL))
-OPCODE_GEN(INSUB, "insub", N, -1, BINOP_HANDLER(INSUB, "-=", IVM_NULL))
-OPCODE_GEN(INMUL, "inmul", N, -1, BINOP_HANDLER(INMUL, "*=", IVM_NULL))
-OPCODE_GEN(INDIV, "indiv", N, -1, BINOP_HANDLER(INDIV, "/=", IVM_NULL))
-OPCODE_GEN(INMOD, "inmod", N, -1, BINOP_HANDLER(INMOD, "%=", IVM_NULL))
+OPCODE_GEN(INADD, "inadd", N, -1, BINOP_HANDLER(INADD, "+="))
+OPCODE_GEN(INSUB, "insub", N, -1, BINOP_HANDLER(INSUB, "-="))
+OPCODE_GEN(INMUL, "inmul", N, -1, BINOP_HANDLER(INMUL, "*="))
+OPCODE_GEN(INDIV, "indiv", N, -1, BINOP_HANDLER(INDIV, "/="))
+OPCODE_GEN(INMOD, "inmod", N, -1, BINOP_HANDLER(INMOD, "%="))
 
-OPCODE_GEN(INAND, "inand", N, -1, BINOP_HANDLER(INAND, "&=", IVM_NULL))
-OPCODE_GEN(INEOR, "ineor", N, -1, BINOP_HANDLER(INEOR, "^=", IVM_NULL))
-OPCODE_GEN(INIOR, "inior", N, -1, BINOP_HANDLER(INIOR, "|=", IVM_NULL))
+OPCODE_GEN(INAND, "inand", N, -1, BINOP_HANDLER(INAND, "&="))
+OPCODE_GEN(INEOR, "ineor", N, -1, BINOP_HANDLER(INEOR, "^="))
+OPCODE_GEN(INIOR, "inior", N, -1, BINOP_HANDLER(INIOR, "|="))
 
-OPCODE_GEN(INSHL, "inshl", N, -1, BINOP_HANDLER(INSHL, "<<=", IVM_NULL))
-OPCODE_GEN(INSHAR, "inshar", N, -1, BINOP_HANDLER(INSHAR, ">>=", IVM_NULL))
-OPCODE_GEN(INSHLR, "inshlr", N, -1, BINOP_HANDLER(INSHLR, ">>>=", IVM_NULL))
+OPCODE_GEN(INSHL, "inshl", N, -1, BINOP_HANDLER(INSHL, "<<="))
+OPCODE_GEN(INSHAR, "inshar", N, -1, BINOP_HANDLER(INSHAR, ">>="))
+OPCODE_GEN(INSHLR, "inshlr", N, -1, BINOP_HANDLER(INSHLR, ">>>="))
 
-OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=", IVM_FALSE, ivm_binop_ne))
-OPCODE_GEN(EQ, "eq", N, -1, CMP_HANDLER(EQ, "==", IVM_FALSE, ivm_binop_eq))
+OPCODE_GEN(NE, "ne", N, -1, CMP_HANDLER(NE, "!=", IVM_FALSE))
+OPCODE_GEN(EQ, "eq", N, -1, CMP_HANDLER(EQ, "==", IVM_FALSE))
 
-OPCODE_GEN(GT, "gt", N, -1, CMP_HANDLER(GT, ">", IVM_FALSE, IVM_NULL))
-OPCODE_GEN(GE, "ge", N, -1, CMP_HANDLER(GE, ">=", IVM_FALSE, IVM_NULL))
-OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(LT, "<", IVM_FALSE, IVM_NULL))
-OPCODE_GEN(LE, "le", N, -1, CMP_HANDLER(LE, "<=", IVM_FALSE, IVM_NULL))
+OPCODE_GEN(GT, "gt", N, -1, CMP_HANDLER(GT, ">", IVM_FALSE))
+OPCODE_GEN(GE, "ge", N, -1, CMP_HANDLER(GE, ">=", IVM_FALSE))
+OPCODE_GEN(LT, "lt", N, -1, CMP_HANDLER(LT, "<", IVM_FALSE))
+OPCODE_GEN(LE, "le", N, -1, CMP_HANDLER(LE, "<=", IVM_FALSE))
 
-OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(NE, "!=", IVM_FALSE, ivm_binop_ne))
-OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(EQ, "==", IVM_FALSE, ivm_binop_eq))
+OPCODE_GEN(NE_R, "ne_r", N, -2, CMP_HANDLER_R(NE, "!=", IVM_FALSE))
+OPCODE_GEN(EQ_R, "eq_r", N, -2, CMP_HANDLER_R(EQ, "==", IVM_FALSE))
 
-OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(GT, ">", IVM_FALSE, IVM_NULL))
-OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", IVM_FALSE, IVM_NULL))
+OPCODE_GEN(GT_R, "gt_r", N, -2, CMP_HANDLER_R(GT, ">", IVM_FALSE))
+OPCODE_GEN(GE_R, "ge_r", N, -2, CMP_HANDLER_R(GE, ">=", IVM_FALSE))
 
-OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", IVM_FALSE, IVM_NULL))
-OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", IVM_FALSE, IVM_NULL))
+OPCODE_GEN(LT_R, "lt_r", N, -2, CMP_HANDLER_R(LT, "<", IVM_FALSE))
+OPCODE_GEN(LE_R, "le_r", N, -2, CMP_HANDLER_R(LE, "<=", IVM_FALSE))
 
 OPCODE_GEN(REMOVE_LOC, "remove_loc", N, 0, {
 	_CONTEXT = ivm_runtime_removeContextNode(_RUNTIME, _STATE);

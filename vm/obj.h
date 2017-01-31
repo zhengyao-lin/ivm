@@ -19,6 +19,7 @@ IVM_COM_HEADER
 struct ivm_object_t_tag;
 struct ivm_vmstate_t_tag;
 struct ivm_function_t_tag;
+struct ivm_coro_t_tag;
 
 typedef struct ivm_object_t_tag {
 	IVM_OBJECT_HEADER
@@ -95,6 +96,10 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 #define IVM_OBJECT_GET_BINOP_PROC_R(op1, i, op2) \
 	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), \
 						 IVM_OBJECT_GET((op2), TYPE_TAG)))
+
+// raw and use type
+#define IVM_OBJECT_GET_BINOP_PROC_RT(op1, i, t2) \
+	(ivm_binop_table_get(IVM_OBJECT_GET_BINOP_R((op1), (i)), (t2)))
 
 #define IVM_OBJECT_GET_UNIOP_PROC(op1, op) \
 	(ivm_uniop_table_get(IVM_OBJECT_GET_UNIOP(op1), IVM_UNIOP_ID(op)))
@@ -192,6 +197,16 @@ ivm_object_t *
 ivm_object_getOop(ivm_object_t *obj,
 				  struct ivm_vmstate_t_tag *state,
 				  ivm_int_t oop);
+
+ivm_object_t *
+ivm_object_doBinOpFallBack(ivm_object_t *obj, struct ivm_vmstate_t_tag *state,
+						   struct ivm_coro_t_tag *coro, ivm_int_t op, ivm_int_t oop_id,
+						   ivm_bool_t is_cmp, ivm_object_t *op2);
+
+ivm_object_t *
+ivm_object_doTriOpFallBack(ivm_object_t *obj, struct ivm_vmstate_t_tag *state,
+						   struct ivm_coro_t_tag *coro, ivm_int_t op, ivm_int_t oop_id,
+						   ivm_object_t *op2, ivm_object_t *op3);
 
 #define IVM_AS(obj, type) ((type *)(obj))
 #define IVM_AS_OBJ(obj) ((ivm_object_t *)(obj))

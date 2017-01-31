@@ -4,6 +4,10 @@ UNIOP_GEN(NOT, IVM_NONE_T, {
 	return ivm_numeric_new(_STATE, IVM_TRUE);
 })
 
+UNIOP_GEN(NOT, IVM_OBJECT_T, {
+	return ivm_numeric_new(_STATE, !ivm_object_toBool(_OP1, _STATE));
+})
+
 UNIOP_GEN(NOT, IVM_NUMERIC_T, {
 	return ivm_numeric_new(_STATE, !ivm_numeric_getValue(_OP1));
 })
@@ -21,6 +25,19 @@ UNIOP_GEN(BNOT, IVM_NUMERIC_T, {
 })
 
 /******************* binop *******************/
+
+/******************* none/object *******************/
+BINOP_GEN_C(IVM_NONE_T, EQ, IVM_NONE_T, IVM_TRUE, ivm_binop_constTrue)
+BINOP_GEN_C(IVM_NONE_T, NE, IVM_NONE_T, IVM_TRUE, ivm_binop_constFalse)
+
+BINOP_GEN_C(IVM_NONE_T, EQ, IVM_OBJECT_T, IVM_TRUE, ivm_binop_eq)
+BINOP_GEN_C(IVM_NONE_T, NE, IVM_OBJECT_T, IVM_TRUE, ivm_binop_ne)
+
+BINOP_GEN_C(IVM_OBJECT_T, EQ, IVM_OBJECT_T, IVM_TRUE, ivm_binop_eq)
+BINOP_GEN_C(IVM_OBJECT_T, NE, IVM_OBJECT_T, IVM_TRUE, ivm_binop_ne)
+
+BINOP_GEN_C(IVM_OBJECT_T, IDX, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_getStringIndex_c)
+TRIOP_GEN_C(IVM_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex_c)
 
 /******************* numeric *******************/
 BINOP_GEN(IVM_NUMERIC_T, ADD, IVM_NUMERIC_T, IVM_FALSE, {
@@ -154,16 +171,6 @@ BINOP_GEN(IVM_NUMERIC_T, INSHLR, IVM_NUMERIC_T, IVM_FALSE, {
 
 BINOP_GEN_C(IVM_NUMERIC_T, ADD, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_linkStringNum_r)
 BINOP_GEN_C(IVM_NUMERIC_T, INADD, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_linkStringNum_r)
-
-/******************* none/object *******************/
-BINOP_GEN_C(IVM_NONE_T, EQ, IVM_NONE_T, IVM_TRUE, ivm_binop_constTrue)
-BINOP_GEN_C(IVM_NONE_T, NE, IVM_NONE_T, IVM_TRUE, ivm_binop_constFalse)
-
-BINOP_GEN_C(IVM_OBJECT_T, EQ, IVM_OBJECT_T, IVM_TRUE, ivm_binop_eq)
-BINOP_GEN_C(IVM_OBJECT_T, NE, IVM_OBJECT_T, IVM_TRUE, ivm_binop_ne)
-
-BINOP_GEN_C(IVM_OBJECT_T, IDX, IVM_STRING_OBJECT_T, IVM_FALSE, ivm_binop_getStringIndex_c)
-TRIOP_GEN_C(IVM_OBJECT_T, IDXA, IVM_STRING_OBJECT_T, ivm_binop_setStringIndex_c)
 
 /******************* type *******************/
 BINOP_GEN(IVM_TYPE_OBJECT_T, EQ, IVM_TYPE_OBJECT_T, IVM_TRUE, {

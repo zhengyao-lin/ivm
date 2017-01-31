@@ -1,11 +1,11 @@
-#define UNIOP_HANDLER(op, op_name, def) \
+#define UNIOP_HANDLER(op, op_name) \
 	{                                                                                          \
 		CHECK_STACK(1);                                                                        \
                                                                                                \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_UNI_PROC = ivm_object_getUniOp(_TMP_OBJ1, IVM_UNIOP_ID(op),                       \
+		_TMP_UNI_PROC = ivm_object_getUniOp(_TMP_OBJ1, _STATE, IVM_UNIOP_ID(op),               \
 											IVM_OOP_ID(op), &_TMP_OBJ2);                       \
-		if (_TMP_UNI_PROC || ((def) && !_TMP_OBJ2 && (_TMP_UNI_PROC = (def)))) {               \
+		if (_TMP_UNI_PROC) {                                                                   \
 	        _TMP_OBJ1 = _TMP_UNI_PROC(_STATE, _CORO, _TMP_OBJ1);                               \
 	        if (_TMP_OBJ1) {                                                                   \
 	        	STACK_PUSH(_TMP_OBJ1);                                                         \
@@ -24,15 +24,15 @@
 		}                                                                                      \
 	}
 
-#define BINOP_HANDLER(op, op_name, def) \
+#define BINOP_HANDLER(op, op_name) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
-		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, _STATE, IVM_BINOP_ID(op),               \
+											IVM_OOP_ID(op), _TMP_OBJ2, &_TMP_OBJ3);            \
+		if (_TMP_BIN_PROC) {                                                                   \
 	        _TMP_OBJ1 = _TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                    \
 	        if (_TMP_OBJ1) {                                                                   \
 	        	STACK_PUSH(_TMP_OBJ1);                                                         \
@@ -53,16 +53,16 @@
 		}                                                                                      \
 	}
 
-#define TRIOP_HANDLER(op, op_name, def) \
+#define TRIOP_HANDLER(op, op_name) \
 	{                                                                                          \
 		CHECK_STACK(3);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
 		_TMP_OBJ3 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ4);                            \
-		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ4 && (_TMP_BIN_PROC = (def)))) {               \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, _STATE, IVM_BINOP_ID(op),               \
+											IVM_OOP_ID(op), _TMP_OBJ2, &_TMP_OBJ4);            \
+		if (_TMP_BIN_PROC) {                                                                   \
 	        _TMP_OBJ1 = ((ivm_triop_proc_t)_TMP_BIN_PROC)                                      \
 	        			(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2, _TMP_OBJ3);                      \
 	        if (_TMP_OBJ1) {                                                                   \
@@ -86,15 +86,15 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER(op, op_name, has_exc, def) \
+#define CMP_HANDLER(op, op_name, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
-		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, _STATE, IVM_BINOP_ID(op),               \
+											IVM_OOP_ID(op), _TMP_OBJ2, &_TMP_OBJ3);            \
+		if (_TMP_BIN_PROC) {                                                                   \
 			_TMP_CMP_REG                                                                       \
 			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                   \
 			if (!(has_exc) || !ivm_vmstate_getException(_STATE)) {                             \
@@ -116,15 +116,15 @@
 		}                                                                                      \
 	}
 
-#define CMP_HANDLER_R(op, op_name, has_exc, def) \
+#define CMP_HANDLER_R(op, op_name, has_exc) \
 	{                                                                                          \
 		CHECK_STACK(2);                                                                        \
                                                                                                \
 		_TMP_OBJ2 = STACK_POP();                                                               \
 		_TMP_OBJ1 = STACK_POP();                                                               \
-		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, IVM_BINOP_ID(op), IVM_OOP_ID(op),       \
-											_TMP_OBJ2, &_TMP_OBJ3);                            \
-		if (_TMP_BIN_PROC || ((def) && !_TMP_OBJ3 && (_TMP_BIN_PROC = (def)))) {               \
+		_TMP_BIN_PROC = ivm_object_getBinOp(_TMP_OBJ1, _STATE, IVM_BINOP_ID(op),               \
+											IVM_OOP_ID(op), _TMP_OBJ2, &_TMP_OBJ3);            \
+		if (_TMP_BIN_PROC) {                                                                   \
 			_USE_REG = IVM_TRUE;                                                               \
 			_TMP_CMP_REG                                                                       \
 			= (ivm_ptr_t)_TMP_BIN_PROC(_STATE, _CORO, _TMP_OBJ1, _TMP_OBJ2);                   \
