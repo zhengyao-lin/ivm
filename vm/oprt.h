@@ -171,6 +171,8 @@ ivm_oop_isbin(ivm_int_t oop)
 	return oop <= IVM_OOP_ID(INSHLR) && oop > IVM_OOP_ID(ADD);
 }
 
+#define IVM_OOP_BLOCK ((ivm_object_t *)(ivm_ptr_t)1)
+
 typedef ivm_uniop_proc_t ivm_uniop_table_t[IVM_UNIOP_COUNT];
 
 #define ivm_uniop_table_init(table) (STD_INIT((table), sizeof(ivm_uniop_table_t)))

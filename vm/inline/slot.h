@@ -427,7 +427,12 @@ ivm_slot_table_setOop(ivm_slot_table_t *table,
 		_ivm_slot_table_expandOopTo(table, state, op + 1);
 	}
 
-	IVM_WBSLOT(state, table, func);
+	if (func) {
+		IVM_WBSLOT(state, table, func);
+	} else if (!table->oops[op]) {
+		table->block_oop |= (ivm_uint64_t)1 << op; // to block the builtin oop
+	}
+
 	table->oops[op] = func;
 
 	return;
@@ -438,11 +443,19 @@ ivm_object_t *
 ivm_slot_table_getOop(ivm_slot_table_t *table,
 					  ivm_int_t op)
 {
+	register ivm_object_t *ret;
+
 	if (!table || op >= table->mark.sub.oop_count) {
 		return IVM_NULL;
 	}
 
-	return table->oops[op];
+	ret = table->oops[op];
+
+	if (!ret && table->block_oop & ((ivm_uint64_t)1 << op)) {
+		return IVM_OOP_BLOCK;
+	}
+
+	return ret;
 }
 
 #endif

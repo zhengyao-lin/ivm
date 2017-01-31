@@ -42,6 +42,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 									  * init,
 									  gen);
 	table->oops = IVM_NULL;
+	table->block_oop = 0;
 	// table->mark.sub.oop_count = 0;
 	STD_INIT(table->tabl,
 			 sizeof(*table->tabl)
@@ -152,6 +153,8 @@ ivm_slot_table_copy_state(ivm_slot_table_t *table,
 			sizeof(*ret->oops) * ret->mark.sub.oop_count
 		);
 	}
+
+	ret->block_oop = table->block_oop;
 
 	STD_MEMCPY(ret->tabl,
 			   table->tabl,
@@ -328,8 +331,8 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 		}
 	}
 
+#if 1
 	count = tb->mark.sub.oop_count;
-
 	_ivm_slot_table_expandOopTo(ta, state, count);
 
 	for (i = ta->oops, j = tb->oops,
@@ -339,6 +342,7 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 			*i = *j;
 		}
 	}
+#endif
 
 	return;
 }

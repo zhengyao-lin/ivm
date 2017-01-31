@@ -152,6 +152,31 @@ ivm_object_getProto(ivm_object_t *obj)
 #define IVM_NONE(state) ivm_vmstate_getNone(state)
 #define IVM_IS_NONE(state, obj) ((obj) == ivm_vmstate_getNone(state))
 
+#define _IVM_OBJECT_OPSEARCH(obj, find_oop, search_bt, failed) \
+	register ivm_object_t *tmp;                                               \
+	register ivm_type_t *otype = obj->type;                                   \
+	register ivm_type_t *objt = IVM_BTTYPE(state, IVM_OBJECT_T);              \
+	                                                                          \
+	for (; obj; obj = obj->proto) {                                           \
+		if (!ivm_object_hasOop(obj)) {                                        \
+BACK:                                                                         \
+			if ((obj->type == otype || obj->type == objt) &&                  \
+				ivm_type_getProto(obj->type) == obj) {                        \
+				search_bt;                                                    \
+			}                                                                 \
+		} else {                                                              \
+			tmp = ivm_slot_table_getOop(obj->slots, oop_id);                  \
+			if (tmp) {                                                        \
+				if (tmp == IVM_OOP_BLOCK) continue;                           \
+				/* don't search built-in ops */                               \
+				find_oop;                                                     \
+			}                                                                 \
+			goto BACK;                                                        \
+		}                                                                     \
+                                                                              \
+	}                                                                         \
+	failed;
+
 IVM_INLINE
 ivm_binop_proc_t /* null for finding oop */
 ivm_object_getBinOp(ivm_object_t *obj, ivm_vmstate_t *state,
@@ -159,37 +184,21 @@ ivm_object_getBinOp(ivm_object_t *obj, ivm_vmstate_t *state,
 					ivm_object_t *op2,
 					ivm_object_t **oop)
 {
-	register ivm_object_t *tmp;
-	register ivm_type_t *otype = obj->type;
 	register ivm_binop_proc_t tmp_proc;
-	register ivm_type_t *objt = IVM_BTTYPE(state, IVM_OBJECT_T);
-	
-	do {
-		if (ivm_object_hasOop(obj)) {
-			tmp = ivm_slot_table_getOop(obj->slots, oop_id);
-			if (tmp) {
-				*oop = tmp;
-				return IVM_NULL;
-			}
-		}
 
-		if ((obj->type == otype || obj->type == objt) &&
-			ivm_type_getProto(obj->type) == obj) {
-			
-			tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op, op2);
-			if (tmp_proc) return tmp_proc;
+	_IVM_OBJECT_OPSEARCH(obj, {
+		*oop = tmp;
+		return IVM_NULL;
+	}, {
+		tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op, op2);
+		if (tmp_proc) return tmp_proc;
 
-			tmp_proc = IVM_OBJECT_GET_BINOP_PROC_RT(obj, op, IVM_OBJECT_T);
-			if (tmp_proc) return tmp_proc;
-		
-		}
-
-		obj = obj->proto;
-	} while (obj);
-
-	*oop = IVM_NULL;
-
-	return IVM_NULL;
+		tmp_proc = IVM_OBJECT_GET_BINOP_PROC_RT(obj, op, IVM_OBJECT_T);
+		if (tmp_proc) return tmp_proc;
+	}, {
+		*oop = IVM_NULL;
+		return IVM_NULL;
+	});
 }
 
 IVM_INLINE
@@ -198,32 +207,18 @@ ivm_object_getUniOp(ivm_object_t *obj, ivm_vmstate_t *state,
 					ivm_int_t op, ivm_int_t oop_id,
 					ivm_object_t **oop)
 {
-	register ivm_object_t *tmp;
-	register ivm_type_t *otype = obj->type;
 	register ivm_uniop_proc_t tmp_proc;
-	register ivm_type_t *objt = IVM_BTTYPE(state, IVM_OBJECT_T);
-	
-	do {
-		if (ivm_object_hasOop(obj)) {
-			tmp = ivm_slot_table_getOop(obj->slots, oop_id);
-			if (tmp) {
-				*oop = tmp;
-				return IVM_NULL;
-			}
-		}
 
-		if ((obj->type == otype || obj->type == objt) &&
-			ivm_type_getProto(obj->type) == obj) {
-			tmp_proc = IVM_OBJECT_GET_UNIOP_PROC_R(obj, op);
-			if (tmp_proc) return tmp_proc;
-		}
-
-		obj = obj->proto;
-	} while (obj);
-
-	*oop = IVM_NULL;
-
-	return IVM_NULL;
+	_IVM_OBJECT_OPSEARCH(obj, {
+		*oop = tmp;
+		return IVM_NULL;
+	}, {
+		tmp_proc = IVM_OBJECT_GET_UNIOP_PROC_R(obj, op);
+		if (tmp_proc) return tmp_proc;
+	}, {
+		*oop = IVM_NULL;
+		return IVM_NULL;
+	});
 }
 
 IVM_INLINE

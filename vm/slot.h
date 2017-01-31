@@ -61,6 +61,7 @@ typedef struct ivm_slot_table_t_tag {
 		struct ivm_slot_table_t_tag *copy;
 	} mark;
 	ivm_uid_t uid;
+	ivm_uint64_t block_oop; // number of bits of it should be GE the max count of oop(64)
 	// ivm_int_t cid; // collect id
 } ivm_slot_table_t;
 

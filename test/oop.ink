@@ -140,7 +140,14 @@ object.proto.proto = {
 {}[1] = "hi"
 {}.[=](2, "hi")
 
+del string.proto.*
 
+try "hi" * 2 catch print("failed")
+
+string.proto.* = fn print("no!")
+del string.proto.*
+
+try "hi" * 2 catch print("failed")
 
 // -> "num: 1"
 // -> "num: 1"
@@ -192,3 +199,6 @@ object.proto.proto = {
 // -> "str: hi"
 // -> "num: 2"
 // -> "str: hi"
+
+// -> "str: failed"
+// -> "str: failed"
