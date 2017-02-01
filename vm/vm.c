@@ -65,6 +65,13 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	#include "vm.const.h"
 #undef CONST_GEN
 	
+	ret->const_oop_symb = STD_ALLOC(sizeof(*ret->const_oop_symb) * IVM_OOP_COUNT);
+	IVM_MEMCHECK(ret->const_oop_symb);
+
+#define OOP_DEF(name, symb) ret->const_oop_symb[IVM_OOP_ID(name)] = ivm_string_pool_registerRaw(const_pool, (symb));
+	#include "oprt.oop.def.h"
+#undef OOP_DEF
+
 	ret->wild_size = 0;
 
 	ret->gc_flag = IVM_FALSE;
@@ -190,6 +197,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 
 		// STD_FREE(state->cur_path);
+		STD_FREE(state->const_oop_symb);
 		STD_FREE(state);
 	}
 

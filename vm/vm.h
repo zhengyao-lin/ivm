@@ -88,6 +88,8 @@ typedef struct ivm_vmstate_t_tag {
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
+	const ivm_string_t **const_oop_symb;
+
 	const ivm_string_t *cur_path;
 
 	ivm_size_t wild_size;
@@ -188,6 +190,8 @@ ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
 	state->cur_path = path;
 	return;
 }
+
+#define ivm_vmstate_getConstOopSymbol(state, oop) ((state)->const_oop_symb[oop])
 
 /*****************************************************************************/
 /*****************************************************************************/

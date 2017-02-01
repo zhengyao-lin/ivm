@@ -62,11 +62,7 @@ IVM_NATIVE_FUNC(_object_to_s)
 
 	obj = NAT_BASE();
 
-	if (IVM_IS_BTTYPE(obj, NAT_STATE(), IVM_OBJECT_T)) {
-		IVM_SNPRINTF(buf, IVM_ARRLEN(buf), "<object at %p>", (void *)obj);
-	} else {
-		IVM_SNPRINTF(buf, IVM_ARRLEN(buf), "<%s object at %p>", IVM_OBJECT_GET(obj, TYPE_NAME), (void *)obj);
-	}
+	IVM_SNPRINTF(buf, IVM_ARRLEN(buf), "<%s at %p>", IVM_OBJECT_GET(obj, TYPE_NAME), (void *)obj);
 
 	return ivm_string_object_new_r(NAT_STATE(), buf);
 }
@@ -78,6 +74,8 @@ IVM_NATIVE_FUNC(_object_slots)
 	ivm_slot_table_iterator_t siter;
 	ivm_object_t *buf[2];
 	ivm_list_object_t *ret;
+	ivm_int_t oop;
+	ivm_object_t *tmp;
 
 	CHECK_BASE_EXIST();
 
@@ -93,6 +91,17 @@ IVM_NATIVE_FUNC(_object_slots)
 		buf[1] = IVM_SLOT_TABLE_ITER_GET_VAL(siter);
 
 		ivm_list_object_push(ret, NAT_STATE(), ivm_list_object_new_c(NAT_STATE(), buf, 2));
+	}
+
+	for (oop = IVM_OOP_ID(FIRST) + 1;
+		 oop < IVM_OOP_COUNT; oop++) {
+		tmp = ivm_object_getOop_np(obj, NAT_STATE(), oop);
+		if (tmp) {
+			buf[0] = ivm_string_object_new(NAT_STATE(), ivm_vmstate_getConstOopSymbol(NAT_STATE(), oop));
+			buf[1] = tmp;
+
+			ivm_list_object_push(ret, NAT_STATE(), ivm_list_object_new_c(NAT_STATE(), buf, 2));
+		}
 	}
 
 	return IVM_AS_OBJ(ret);

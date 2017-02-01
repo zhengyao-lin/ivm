@@ -1,38 +1,4 @@
 
-"hi".+({})
-
-ret
-
-fib = fn n: {
-	if n < 2: ret 1
-	ret fib(n - 1) + fib(n - 2)
-}
-
-print(fib(30))
-
-ret
-
-import mthread
-
-loc i = 0
-
-loc c = mthread.spawn(fork: {
-	for loc j in range(1000000):
-		i += 1
-
-	ret "yeah"
-})
-
-for loc k in range(1000000): i += 1
-
-mthread.join()
-
-print(c.exitv())
-
-print(i)
-
-ret
-
 import curses
 import io
 import test.ulist

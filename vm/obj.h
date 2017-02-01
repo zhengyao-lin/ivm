@@ -199,6 +199,11 @@ ivm_object_getOop(ivm_object_t *obj,
 				  ivm_int_t oop);
 
 ivm_object_t *
+ivm_object_getOop_np(ivm_object_t *obj,
+					 struct ivm_vmstate_t_tag *state,
+					 ivm_int_t oop);
+
+ivm_object_t *
 ivm_object_doBinOpFallBack(ivm_object_t *obj, struct ivm_vmstate_t_tag *state,
 						   struct ivm_coro_t_tag *coro, ivm_int_t op, ivm_int_t oop_id,
 						   ivm_bool_t is_cmp, ivm_object_t *op2);
