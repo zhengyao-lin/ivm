@@ -233,6 +233,13 @@ _ivm_string_pool_expand(ivm_string_pool_t *pool)
 		return i->v;                                                \
 	}
 
+#define FIND(cmp) \
+	if (!i->k) {                                                    \
+		return -1;                                                  \
+	} else if (cmp) {                                               \
+		return i->v;                                                \
+	}
+
 #define SET_RAW(val, id) \
 	if (!i->k) {                                                    \
 		CHECK_CONFLICT();                                           \
@@ -358,6 +365,12 @@ ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
 HASH(RAW_HASH_N(str, len),
 	 CHECK(!ivm_string_compareToRaw_n(i->k, str, len),
 		   _ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
+
+ivm_string_id_t
+ivm_string_pool_find(ivm_string_pool_t *pool,
+					 const ivm_string_t *str)
+HASH(RAW_HASH(ivm_string_trimHead(str)),
+	 FIND(ivm_string_compare(i->k, str)));
 
 IVM_PRIVATE
 const ivm_string_t *

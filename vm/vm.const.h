@@ -3,6 +3,7 @@ CONST_GEN(C_BASE, "base")
 CONST_GEN(C_SIZE, "size")
 CONST_GEN(C_TO_S, "to_s")
 CONST_GEN(C_NONE, "none")
+CONST_GEN(C_PROTO, "proto")
 
 CONST_GEN(C_MSG, "msg")
 CONST_GEN(C_FILE, "file")

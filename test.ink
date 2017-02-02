@@ -1,3 +1,6 @@
+print(typename(object.proto.merge.proto.proto))
+
+ret
 
 import curses
 import io
@@ -17,11 +20,6 @@ loc tree = fn
 
 	loc r = "{\n"
 	loc has_slot = false
-
-	if obj.proto: {
-		has_slot = true
-		r += pslot("proto", obj.proto)
-	}
 
 	for [ k, v ] in obj.slots(): {
 		if has_slot: r += ",\n"

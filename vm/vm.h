@@ -88,7 +88,8 @@ typedef struct ivm_vmstate_t_tag {
 	#include "vm.const.h"						// 8
 #undef CONST_GEN
 
-	const ivm_string_t **const_oop_symb;
+	// const ivm_string_t **const_oop_symb;
+	ivm_string_pool_t *oop_map;
 
 	const ivm_string_t *cur_path;
 
@@ -191,7 +192,8 @@ ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
 	return;
 }
 
-#define ivm_vmstate_getOopSymbol(state, oop) ((state)->const_oop_symb[oop])
+#define ivm_vmstate_getOopSymbol(state, oop) ivm_string_pool_get((state)->oop_map, (oop))
+#define ivm_vmstate_isOopSymbol(state, str) ivm_string_pool_find((state)->oop_map, (str))
 
 /*****************************************************************************/
 /*****************************************************************************/

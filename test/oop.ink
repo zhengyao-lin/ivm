@@ -154,6 +154,10 @@ del numeric.proto.%
 
 try print(1 % 2) catch print("yeah")
 
+numeric.proto["%"] = fn: print("yoho!")
+
+1 % 2
+
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
@@ -209,3 +213,4 @@ try print(1 % 2) catch print("yeah")
 // -> "str: failed"
 
 // -> "str: yeah"
+// -> "str: yoho!"

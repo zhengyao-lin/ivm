@@ -86,6 +86,15 @@ IVM_NATIVE_FUNC(_object_slots)
 
 	if (!slots) return IVM_AS_OBJ(ret);
 
+	tmp = ivm_object_getProto(obj);
+
+	if (tmp) {
+		buf[0] = ivm_string_object_new(NAT_STATE(), IVM_VMSTATE_CONST(NAT_STATE(), C_PROTO));
+		buf[1] = tmp;
+
+		ivm_list_object_push(ret, NAT_STATE(), ivm_list_object_new_c(NAT_STATE(), buf, 2));
+	}
+
 	IVM_SLOT_TABLE_EACHPTR(slots, siter) {
 		buf[0] = ivm_string_object_new(NAT_STATE(), IVM_SLOT_TABLE_ITER_GET_KEY(siter));
 		buf[1] = IVM_SLOT_TABLE_ITER_GET_VAL(siter);

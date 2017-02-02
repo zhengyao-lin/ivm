@@ -62,16 +62,19 @@
 #define TRIOP_PROC_DEF(name) IVM_TRIOP_PROC_DEF(name)
 
 #define UNIOP_GEN(op, t, ...) \
+	IVM_INLINE                               \
 	UNIOP_PROC_DEF(UNIOP_PROC_NAME(op, t))   \
 	__VA_ARGS__                              \
 	DEF_OOP_UNIOP_PROC(t, op)
 
 #define BINOP_GEN(t1, op, t2, is_cmp, ...) \
+	IVM_INLINE                                    \
 	BINOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
 	__VA_ARGS__                                   \
 	DEF_OOP_BINOP_PROC(t1, op, t2, is_cmp)
 
 #define TRIOP_GEN(t1, op, t2, ...) \
+	IVM_INLINE                                    \
 	TRIOP_PROC_DEF(BINOP_PROC_NAME(t1, op, t2))   \
 	__VA_ARGS__                                   \
 	DEF_OOP_TRIOP_PROC(t1, op, t2)
@@ -92,33 +95,18 @@
 
 	#include "oprt.req.h"
 
-	TRIOP_PROC_DEF(ivm_binop_setStringIndex)
-	{
-		OPRT_CHECK_OP2(IVM_STRING_OBJECT_T);
-		ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _OP3);
-		return _OP3 ? _OP3 : IVM_NONE(_STATE);
-	}
-
-	BINOP_PROC_DEF(ivm_binop_getStringIndex)
-	{
-		ivm_object_t *tmp_obj;
-
-		OPRT_CHECK_OP2(IVM_STRING_OBJECT_T);
-		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));
-	
-		return tmp_obj ? tmp_obj : IVM_NONE(_STATE);
-	}
-
 	TRIOP_PROC_DEF(ivm_binop_setStringIndex_c)
 	{
-		ivm_object_setSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2), _OP3);
+		OPRT_ASSERT(ivm_object_setSlot_d(_OP1, _STATE, ivm_string_object_getValue(_OP2), _OP3),
+					IVM_ERROR_MSG_CIRCULAR_PROTO_REF);
+
 		return _OP3 ? _OP3 : IVM_NONE(_STATE);
 	}
 
 	BINOP_PROC_DEF(ivm_binop_getStringIndex_c)
 	{
 		ivm_object_t *tmp_obj;
-		tmp_obj = ivm_object_getSlot(_OP1, _STATE, ivm_string_object_getValue(_OP2));
+		tmp_obj = ivm_object_getSlot_d(_OP1, _STATE, ivm_string_object_getValue(_OP2));
 		return tmp_obj ? tmp_obj : IVM_NONE(_STATE);
 	}
 

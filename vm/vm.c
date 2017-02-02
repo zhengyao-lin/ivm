@@ -32,10 +32,6 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	IVM_MEMCHECK(ret);
 
-	for (i = 0; i < IVM_ARRLEN(ret->heaps); i++) {
-		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);
-	}
-
 	// ret->cur_cgroup = 0;
 	// ivm_cgroup_list_init(&ret->coro_groups);
 	// ivm_cgroup_list_prepush(&ret->coro_groups, &tmp_group);
@@ -64,11 +60,13 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 	ret->const_str_##name = ivm_string_pool_registerRaw(const_pool, (str));
 	#include "vm.const.h"
 #undef CONST_GEN
-	
-	ret->const_oop_symb = STD_ALLOC(sizeof(*ret->const_oop_symb) * IVM_OOP_COUNT);
-	IVM_MEMCHECK(ret->const_oop_symb);
 
-#define OOP_DEF(name, symb) ret->const_oop_symb[IVM_OOP_ID(name)] = ivm_string_pool_registerRaw(const_pool, (symb));
+	ret->oop_map = ivm_string_pool_new();
+	ivm_ref_inc(ret->oop_map);
+
+	IVM_IMPORTANT(IVM_OOP_ID(FIRST) + 1 == 0, "first oop id must be zero");
+
+#define OOP_DEF(name, symb) ivm_string_pool_registerRaw(ret->oop_map, (symb));
 	#include "oprt.oop.def.h"
 #undef OOP_DEF
 
@@ -108,6 +106,10 @@ ivm_vmstate_new(ivm_string_pool_t *const_pool)
 
 	#undef TYPE_GEN
 	};
+
+	for (i = 0; i < IVM_ARRLEN(ret->heaps); i++) {
+		ivm_heap_init(ret->heaps + i, IVM_DEFAULT_INIT_HEAP_SIZE);
+	}
 
 	for (i = 0, tmp_type = ret->type_list, end = tmp_type + IVM_TYPE_COUNT;
 		 tmp_type != end; tmp_type++, i++) {
@@ -190,6 +192,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		ivm_coro_pool_destruct(&state->cr_pool);
 
 		ivm_string_pool_free(state->const_pool);
+		ivm_string_pool_free(state->oop_map);
 
 		for (i = state->type_list, end = i + IVM_TYPE_COUNT;
 			 i != end; i++) {
@@ -197,7 +200,7 @@ ivm_vmstate_free(ivm_vmstate_t *state)
 		}
 
 		// STD_FREE(state->cur_path);
-		STD_FREE(state->const_oop_symb);
+		// STD_FREE(state->const_oop_symb);
 		STD_FREE(state);
 	}
 

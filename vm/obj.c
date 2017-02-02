@@ -400,3 +400,55 @@ ivm_object_doTriOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 
 	return IVM_NULL;
 }
+
+/* d for dynamic */
+
+#define IS_PROTO(rkey) ( \
+	(rkey)[0] == 'p' &&    \
+	(rkey)[1] == 'r' &&    \
+	(rkey)[2] == 'o' &&    \
+	(rkey)[3] == 't' &&    \
+	(rkey)[4] == 'o' &&    \
+	(rkey)[5] == '\0'      \
+)
+
+ivm_bool_t /* true for success, false for circular prototype chain */
+ivm_object_setSlot_d(ivm_object_t *obj,
+					 ivm_vmstate_t *state,
+					 const ivm_string_t *key,
+					 ivm_object_t *value)
+{
+	ivm_int_t oop = ivm_vmstate_isOopSymbol(state, key);
+	const ivm_char_t *rkey = ivm_string_trimHead(key);
+
+	if (IS_PROTO(rkey)) {
+		if (!ivm_object_hasProto(obj, value)) {
+			ivm_object_setProto(obj, state, value);
+		} else {
+			return IVM_FALSE;
+		}
+	} else if (oop != -1) {
+		ivm_object_setOop(obj, state, oop, value);
+	} else {
+		ivm_object_setSlot(obj, state, key, value);
+	}
+
+	return IVM_TRUE;
+}
+
+ivm_object_t *
+ivm_object_getSlot_d(ivm_object_t *obj,
+					 ivm_vmstate_t *state,
+					 const ivm_string_t *key)
+{
+	ivm_int_t oop = ivm_vmstate_isOopSymbol(state, key);
+	const ivm_char_t *rkey = ivm_string_trimHead(key);
+
+	if (IS_PROTO(rkey)) {
+		return ivm_object_getProto(obj);
+	} else if (oop != -1) {
+		return ivm_object_getOop(obj, state, oop);
+	}
+
+	return ivm_object_getSlot(obj, state, key);
+}

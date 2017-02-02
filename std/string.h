@@ -214,6 +214,10 @@ ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
 							  const ivm_char_t *str,
 							  ivm_size_t len);
 
+ivm_string_id_t
+ivm_string_pool_find(ivm_string_pool_t *pool,
+					 const ivm_string_t *str);
+
 typedef ivm_ptlist_t ivm_string_pool_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ivm_string_pool_t *) ivm_string_pool_list_iterator_t;
 
