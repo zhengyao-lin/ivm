@@ -85,7 +85,7 @@ ivm_object_new_t(ivm_vmstate_t *state,
 	ret->slots = slots;
 
 	if (slots) {
-		ret->mark.sub.oop = IVM_TRUE; // ivm_slot_table_hasOop(slots);
+		ret->mark.sub.oop = IVM_TRUE;
 	}
 
 	return ret;
@@ -161,11 +161,11 @@ ivm_object_getProto(ivm_object_t *obj)
 		if (!ivm_object_hasOop(obj)) {                                        \
 BACK:                                                                         \
 			if ((obj->type == otype || obj->type == objt) &&                  \
-				ivm_type_getProto(obj->type) == obj) {                        \
+				ivm_object_isBTProto(obj)) {                                  \
 				search_bt;                                                    \
 			}                                                                 \
 		} else {                                                              \
-			tmp = ivm_slot_table_getOop(obj->slots, oop_id);                  \
+			tmp = ivm_slot_table_getOop(obj->slots, state, oop_id);           \
 			if (tmp) {                                                        \
 				if (tmp == IVM_OOP_BLOCK) continue;                           \
 				/* don't search built-in ops */                               \

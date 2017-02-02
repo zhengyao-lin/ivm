@@ -41,7 +41,7 @@ _ivm_slot_table_init(ivm_slot_table_t *table,
 									  sizeof(*table->tabl)
 									  * init,
 									  gen);
-	table->oops = IVM_NULL;
+	// table->oops = IVM_NULL;
 	table->block_oop = 0;
 	// table->mark.sub.oop_count = 0;
 	STD_INIT(table->tabl,
@@ -112,12 +112,14 @@ ivm_slot_table_copy(ivm_slot_table_t *table,
 	ret->tabl = ivm_heap_alloc(heap,
 							   sizeof(*ret->tabl)
 							   * ret->size);
+	/*
 	if (ret->oops) {
 		ret->oops = ivm_heap_addCopy(
 			heap, ret->oops,
 			sizeof(*ret->oops) * ret->mark.sub.oop_count
 		);
 	}
+	*/
 
 	STD_MEMCPY(ret->tabl,
 			   table->tabl,
@@ -147,12 +149,15 @@ ivm_slot_table_copy_state(ivm_slot_table_t *table,
 	ret->tabl = ivm_vmstate_alloc(state,
 								  sizeof(*ret->tabl)
 								  * ret->size);
+
+	/*
 	if (ret->oops) {
 		ret->oops = ivm_vmstate_addCopy(
 			state, ret->oops,
 			sizeof(*ret->oops) * ret->mark.sub.oop_count
 		);
 	}
+	*/
 
 	ret->block_oop = table->block_oop;
 
@@ -253,6 +258,8 @@ ivm_slot_table_expandTo(ivm_slot_table_t *table,
 	return;
 }
 
+#if 0
+
 void
 _ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
 							struct ivm_vmstate_t_tag *state,
@@ -277,6 +284,8 @@ _ivm_slot_table_expandOopTo(ivm_slot_table_t *table,
 
 	return;
 }
+
+#endif
 
 void
 ivm_slot_table_setSlot_r(ivm_slot_table_t *table,
@@ -315,8 +324,8 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 					 ivm_bool_t overw)
 {
 	ivm_slot_t *slot, *end;
-	ivm_object_t **i, **j, **oop_end;
-	ivm_size_t count;
+	// ivm_object_t **i, **j, **oop_end;
+	// ivm_size_t count;
 
 	ivm_slot_table_expandTo(ta, state, ta->size + tb->size);
 
@@ -331,7 +340,7 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 		}
 	}
 
-#if 1
+#if 0
 	count = tb->mark.sub.oop_count;
 	_ivm_slot_table_expandOopTo(ta, state, count);
 
@@ -345,4 +354,35 @@ ivm_slot_table_merge(ivm_slot_table_t *ta,
 #endif
 
 	return;
+}
+
+void
+ivm_slot_table_setOop(ivm_slot_table_t *table,
+					  ivm_vmstate_t *state,
+					  ivm_int_t op,
+					  ivm_object_t *func)
+{
+	const ivm_string_t *k = ivm_vmstate_getOopSymbol(state, op);
+
+	ivm_slot_table_setSlot(table, state, k, func);
+	table->block_oop |= (ivm_uint64_t)1 << op; // to block the builtin oop
+
+	return;
+}
+
+ivm_object_t *
+ivm_slot_table_getOop(ivm_slot_table_t *table,
+					  ivm_vmstate_t *state,
+					  ivm_int_t op)
+{
+	const ivm_string_t *k = ivm_vmstate_getOopSymbol(state, op);
+	ivm_slot_t *res = ivm_slot_table_getSlot(table, state, k);
+
+	if (res) return ivm_slot_getValue(res);
+
+	if (table->block_oop & ((ivm_uint64_t)1 << op)) {
+		return IVM_OOP_BLOCK;
+	}
+
+	return IVM_NULL;
 }

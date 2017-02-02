@@ -35,23 +35,22 @@ _ivm_slot_setValue(ivm_slot_t *slot,
 
 IVM_INLINE
 struct ivm_object_t_tag *
-ivm_slot_getValue(ivm_slot_t *slot,
-				  struct ivm_vmstate_t_tag *state)
+ivm_slot_getValue(ivm_slot_t *slot)
 {
 	return slot ? slot->v : IVM_NULL;
 }
 
-#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 11
+#define _IVM_SLOT_TABLE_MARK_HEADER_BITS 5
 
 typedef struct ivm_slot_table_t_tag {
 	ivm_size_t size;
 	ivm_slot_t *tabl;
-	struct ivm_object_t_tag **oops;
+	// struct ivm_object_t_tag **oops;
+	ivm_uint64_t block_oop; // number of bits of it should be GE the max count of oop(64)
 	union {
 		struct {
 			ivm_int_t dummy1;
 			ivm_int_t dummy2: 32 - _IVM_SLOT_TABLE_MARK_HEADER_BITS;
-			ivm_uint_t oop_count: 6; // max 64
 			ivm_uint_t is_hash: 1;
 			ivm_uint_t is_shared: 1; // shared by multiple objects, need to copy on write
 			ivm_uint_t no_cow: 1;
@@ -61,7 +60,6 @@ typedef struct ivm_slot_table_t_tag {
 		struct ivm_slot_table_t_tag *copy;
 	} mark;
 	ivm_uid_t uid;
-	ivm_uint64_t block_oop; // number of bits of it should be GE the max count of oop(64)
 	// ivm_int_t cid; // collect id
 } ivm_slot_table_t;
 
@@ -215,8 +213,21 @@ ivm_slot_table_checkCacheValid(ivm_slot_table_t *table,
 #define ivm_slot_table_setCacheSlot(state, instr, value) \
 	(_ivm_slot_setValue((ivm_slot_t *)ivm_instr_cacheData(instr), (value)))
 
-#define ivm_slot_table_getOops(table) ((table)->oops)
-#define ivm_slot_table_getOopCount(table) ((table)->mark.sub.oop_count)
+// #define ivm_slot_table_getOops(table) ((table)->oops)
+// #define ivm_slot_table_getOopCount(table) ((table)->mark.sub.oop_count)
+
+void
+ivm_slot_table_setOop(ivm_slot_table_t *table,
+					  struct ivm_vmstate_t_tag *state,
+					  ivm_int_t op,
+					  struct ivm_object_t_tag *func);
+
+struct ivm_object_t_tag *
+ivm_slot_table_getOop(ivm_slot_table_t *table,
+					  struct ivm_vmstate_t_tag *state,
+					  ivm_int_t op);
+
+#define ivm_slot_table_hasBlockedOop(table, op) (((table)->block_oop & (1 << (op))) != 0)
 
 IVM_COM_END
 

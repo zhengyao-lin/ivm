@@ -1,6 +1,6 @@
 OOP_DEF(NOT, "!")
-OOP_DEF(NEG, "-")
-OOP_DEF(POS, "+")
+OOP_DEF(NEG, "-@")
+OOP_DEF(POS, "+@")
 OOP_DEF(BNOT, "~")
 
 OOP_DEF(ADD, "+")

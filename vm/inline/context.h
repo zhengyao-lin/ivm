@@ -97,7 +97,7 @@ ivm_context_getSlot(ivm_context_t *ctx,
 					ivm_vmstate_t *state,
 					const ivm_string_t *key)
 {
-	return ctx->slots ? ivm_slot_getValue(ivm_slot_table_getSlot(ctx->slots, state, key), state) : IVM_NULL;
+	return ctx->slots ? ivm_slot_getValue(ivm_slot_table_getSlot(ctx->slots, state, key)) : IVM_NULL;
 }
 
 IVM_INLINE
@@ -109,7 +109,7 @@ ivm_context_getSlot_cc(ivm_context_t *ctx,
 {
 	if (!ctx->slots) return IVM_NULL;
 
-	return ivm_slot_getValue(ivm_slot_table_getSlot_cc(ctx->slots, state, key, instr), state);
+	return ivm_slot_getValue(ivm_slot_table_getSlot_cc(ctx->slots, state, key, instr));
 }
 
 IVM_INLINE

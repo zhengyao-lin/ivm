@@ -95,9 +95,9 @@ IVM_NATIVE_FUNC(_object_slots)
 
 	for (oop = IVM_OOP_ID(FIRST) + 1;
 		 oop < IVM_OOP_COUNT; oop++) {
-		tmp = ivm_object_getOop_np(obj, NAT_STATE(), oop);
+		tmp = ivm_object_getDefaultOop(obj, NAT_STATE(), oop);
 		if (tmp) {
-			buf[0] = ivm_string_object_new(NAT_STATE(), ivm_vmstate_getConstOopSymbol(NAT_STATE(), oop));
+			buf[0] = ivm_string_object_new(NAT_STATE(), ivm_vmstate_getOopSymbol(NAT_STATE(), oop));
 			buf[1] = tmp;
 
 			ivm_list_object_push(ret, NAT_STATE(), ivm_list_object_new_c(NAT_STATE(), buf, 2));

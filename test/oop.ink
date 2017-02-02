@@ -149,6 +149,11 @@ del string.proto.*
 
 try "hi" * 2 catch print("failed")
 
+numeric.proto.% = 2
+del numeric.proto.%
+
+try print(1 % 2) catch print("yeah")
+
 // -> "num: 1"
 // -> "num: 1"
 // -> "num: 1"
@@ -202,3 +207,5 @@ try "hi" * 2 catch print("failed")
 
 // -> "str: failed"
 // -> "str: failed"
+
+// -> "str: yeah"

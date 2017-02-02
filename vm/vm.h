@@ -191,7 +191,7 @@ ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
 	return;
 }
 
-#define ivm_vmstate_getConstOopSymbol(state, oop) ((state)->const_oop_symb[oop])
+#define ivm_vmstate_getOopSymbol(state, oop) ((state)->const_oop_symb[oop])
 
 /*****************************************************************************/
 /*****************************************************************************/

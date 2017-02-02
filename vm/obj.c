@@ -172,7 +172,7 @@ _ivm_object_searchProtoSlot(ivm_object_t *obj,
 	/* no loop is allowed when setting proto */
 	while (i) {
 		if (i->slots) {
-			ret = ivm_slot_getValue(ivm_slot_table_getSlot(i->slots, state, key), state);
+			ret = ivm_slot_getValue(ivm_slot_table_getSlot(i->slots, state, key));
 		}
 
 		if (ret) break;
@@ -198,7 +198,7 @@ _ivm_object_searchProtoSlot_cc(ivm_object_t *obj,
 	/* no loop is allowed when setting proto */
 	while (i) {
 		if (i->slots) {
-			ret = ivm_slot_getValue(ivm_slot_table_getSlot_cc(i->slots, state, key, instr), state);
+			ret = ivm_slot_getValue(ivm_slot_table_getSlot_cc(i->slots, state, key, instr));
 		}
 		if (ret) break;
 		i = ivm_object_getProto(i);
@@ -216,10 +216,7 @@ ivm_object_getSlot(ivm_object_t *obj,
 	ivm_slot_table_t *slots = obj->slots;
 
 	if (slots) {
-		ret = ivm_slot_getValue(
-			ivm_slot_table_getSlot(slots, state, key),
-			state
-		);
+		ret = ivm_slot_getValue(ivm_slot_table_getSlot(slots, state, key));
 	}
 
 	if (!ret) {
@@ -239,10 +236,7 @@ ivm_object_getSlot_r(ivm_object_t *obj,
 	ivm_slot_table_t *slots = obj->slots;
 
 	if (slots) {
-		ret = ivm_slot_getValue(
-			ivm_slot_table_getSlot(slots, state, key),
-			state
-		);
+		ret = ivm_slot_getValue(ivm_slot_table_getSlot(slots, state, key));
 	}
 
 	if (!ret) {
@@ -262,10 +256,7 @@ ivm_object_getSlot_cc(ivm_object_t *obj,
 	ivm_slot_table_t *slots = obj->slots;
 
 	if (slots) {
-		ret = ivm_slot_getValue(
-			ivm_slot_table_getSlot_cc(slots, state, key, instr),
-			state
-		);
+		ret = ivm_slot_getValue(ivm_slot_table_getSlot_cc(slots, state, key, instr));
 	}
 
 	if (!ret) {
@@ -300,20 +291,14 @@ ivm_object_getOop(ivm_object_t *obj,
 }
 
 ivm_object_t *
-ivm_object_getOop_np(ivm_object_t *obj,
-					 ivm_vmstate_t *state,
-					 ivm_int_t oop)
+ivm_object_getDefaultOop(ivm_object_t *obj,
+						 ivm_vmstate_t *state,
+						 ivm_int_t oop)
 {
-	register ivm_object_t *tmp;
 	register ivm_function_t *tmp_func;
 
-	if (ivm_object_hasOop(obj)) {
-		tmp = ivm_slot_table_getOop(obj->slots, oop);
-		if (tmp) {
-			if (tmp == IVM_OOP_BLOCK) return IVM_NULL; /* don't search built-in ops */
-			return tmp;
-		}
-	} else if (ivm_type_getProto(obj->type) == obj) {
+	if (ivm_object_isBTProto(obj) &&
+		!ivm_slot_table_hasBlockedOop(obj->slots, oop)) {
 		tmp_func = ivm_type_getDefaultOop(obj->type, oop);
 		if (tmp_func) {
 			return ivm_function_object_new(state, IVM_NULL, tmp_func);
