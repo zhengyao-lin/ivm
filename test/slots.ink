@@ -27,6 +27,7 @@
  *     GET/SET/DELETE: directly on the uppermost object.
  *
  *     NOTE: circular reference will trigger an exception on SET
+ *
  */
 
 import std

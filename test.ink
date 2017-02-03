@@ -1,7 +1,3 @@
-print(typename(object.proto.merge.proto.proto))
-
-ret
-
 import curses
 import io
 import test.ulist

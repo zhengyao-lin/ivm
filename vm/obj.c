@@ -273,11 +273,6 @@ ivm_object_getOop(ivm_object_t *obj,
 {
 	register ivm_function_t *tmp_func;
 
-	if (oop_id == IVM_OOP_ID(CALL) &&
-		IVM_IS_BTTYPE(obj, state, IVM_FUNCTION_OBJECT_T)) {
-		return obj;
-	}
-
 	_IVM_OBJECT_OPSEARCH(obj, {
 		return tmp;
 	}, {

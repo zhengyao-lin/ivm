@@ -117,11 +117,14 @@ print((3).&(10))
 print((3).%(10))
 print([ 1 ].+([ 2 ]).to_str())
 
-f = (fn: print("called! base: " + base.val))
-f.val = "yeah"
+f = {
+	(): fn: print("called! base: " + base.val),
+	val: "yeah"
+}
+
 a = { f: f, val: "no!" }
 
-a.f.()()
+a.f()
 
 ~{
 	~: fn: {
@@ -154,7 +157,7 @@ del numeric.proto.%
 
 try print(1 % 2) catch print("yeah")
 
-numeric.proto["%"] = fn: print("yoho!")
+numeric.proto["%"] = fn print("yoho!")
 
 1 % 2
 
