@@ -1,38 +1,3 @@
-import curses
-import io
-import test.ulist
-
-loc tree = fn
-	obj, log = [], indent = "",
-	pslot = (
-		fn k, v:
-			indent + "   " +
-			k + ": " + string(v) + " " +
-			tree(v, log, indent + "   ")
-	): {
-
-	if log.has(obj): ret "{ ... }"
-	log.push(obj)
-
-	loc r = "{\n"
-	loc has_slot = false
-
-	for [ k, v ] in obj.slots(): {
-		if has_slot: r += ",\n"
-		has_slot = true
-		r += pslot(k, v)
-	}
-
-	!has_slot ? "{}" : r + "\n" + indent + "}"
-}
-
-// object.proto.== = object.proto.==
-
-print(tree(curses))
-print(tree(io))
-
-ret
-
 import test.std
 
 import time
