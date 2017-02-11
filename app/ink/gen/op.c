@@ -200,12 +200,10 @@ ilang_gen_cop_expr_eval(ilang_gen_expr_t *expr,
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "custom operator expression", flag);
 
-	tmp_str = ivm_parser_parseStr_heap(
-		env->heap,
-		cop_expr->op.val,
-		cop_expr->op.len,
-		&err
-	);
+	// no parse string
+	tmp_str = ivm_heap_alloc(env->heap, cop_expr->op.len + 1);
+	STD_MEMCPY(tmp_str, cop_expr->op.val, cop_expr->op.len);
+	tmp_str[cop_expr->op.len] = '\0';
 
 	if (!tmp_str) {
 		GEN_ERR_FAILED_PARSE_STRING(expr, err);

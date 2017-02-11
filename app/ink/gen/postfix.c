@@ -147,12 +147,18 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ilang_gen_value_t tmp_ret;
 	const ivm_char_t *err;
 
-	tmp_str = ivm_parser_parseStr_heap(
-		env->heap,
-		slot_expr->slot.val,
-		slot_expr->slot.len,
-		&err
-	);
+	if (slot_expr->parse) {
+		tmp_str = ivm_parser_parseStr_heap(
+			env->heap,
+			slot_expr->slot.val,
+			slot_expr->slot.len,
+			&err
+		);
+	} else {
+		tmp_str = ivm_heap_alloc(env->heap, slot_expr->slot.len + 1);
+		STD_MEMCPY(tmp_str, slot_expr->slot.val, slot_expr->slot.len);
+		tmp_str[slot_expr->slot.len] = '\0';
+	}
 
 	if (!tmp_str) {
 		GEN_ERR_FAILED_PARSE_STRING(expr, err);

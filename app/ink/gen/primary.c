@@ -194,12 +194,18 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 				ilang_gen_index_expr_genArg(expr, tmp_entry.index, env);
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
 			} else {
-				tmp_str = ivm_parser_parseStr_heap(
-					env->heap,
-					tmp_entry.name.val,
-					tmp_entry.name.len,
-					&err
-				);
+				if (!tmp_entry.no_parse) {
+					tmp_str = ivm_parser_parseStr_heap(
+						env->heap,
+						tmp_entry.name.val,
+						tmp_entry.name.len,
+						&err
+					);
+				} else {
+					tmp_str = ivm_heap_alloc(env->heap, tmp_entry.name.len + 1);
+					STD_MEMCPY(tmp_str, tmp_entry.name.val, tmp_entry.name.len);
+					tmp_str[tmp_entry.name.len] = '\0';
+				}
 
 				if (!tmp_str) {
 					GEN_ERR_FAILED_PARSE_STRING(expr, err);
@@ -239,12 +245,18 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDXA);
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 			} else {
-				tmp_str = ivm_parser_parseStr_heap(
-					env->heap,
-					tmp_entry.name.val,
-					tmp_entry.name.len,
-					&err
-				);
+				if (!tmp_entry.no_parse) {
+					tmp_str = ivm_parser_parseStr_heap(
+						env->heap,
+						tmp_entry.name.val,
+						tmp_entry.name.len,
+						&err
+					);
+				} else {
+					tmp_str = ivm_heap_alloc(env->heap, tmp_entry.name.len + 1);
+					STD_MEMCPY(tmp_str, tmp_entry.name.val, tmp_entry.name.len);
+					tmp_str[tmp_entry.name.len] = '\0';
+				}
 
 				if (!tmp_str) {
 					GEN_ERR_FAILED_PARSE_STRING(expr, err);

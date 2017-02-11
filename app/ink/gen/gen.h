@@ -361,10 +361,14 @@ typedef struct {
 	ivm_int_t oop; // -1 for not oop
 	ilang_gen_expr_list_t *index;
 	ilang_gen_expr_t *expr;
+	ivm_bool_t no_parse;
 } ilang_gen_table_entry_t;
 
 #define ilang_gen_table_entry_build(pos, name, expr) \
 	((ilang_gen_table_entry_t) { (pos), (name), -1, IVM_NULL, (expr) })
+
+#define ilang_gen_table_entry_build_np(pos, name, expr) \
+	((ilang_gen_table_entry_t) { (pos), (name), -1, IVM_NULL, (expr), IVM_TRUE })
 
 #define ilang_gen_table_entry_build_oop(pos, oop, expr) \
 	((ilang_gen_table_entry_t) { (pos), ilang_gen_token_value_build(IVM_NULL, 0), (oop), IVM_NULL, (expr) })
@@ -454,13 +458,16 @@ typedef struct {
 	ILANG_GEN_EXPR_HEADER
 	ilang_gen_expr_t *obj;
 	ilang_gen_token_value_t slot;
+	ivm_bool_t parse; // parse the ID string or not
 } ilang_gen_slot_expr_t;
 
 COMMON_EXPR(slot_expr, "slot expression", {
 	ret->obj = obj;
 	ret->slot = slot;
+	ret->parse = parse;
 }, ilang_gen_expr_t *obj,
-   ilang_gen_token_value_t slot);
+   ilang_gen_token_value_t slot,
+   ivm_bool_t parse);
 
 /* oop expr */
 typedef struct {

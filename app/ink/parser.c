@@ -245,6 +245,8 @@ enum state_t {
 	ST_UNEXP,
 
 	ST_TRY_NEWL,
+	ST_TRY_CONTCH,
+	ST_TRY_CONTCH2,
 
 	ST_TRY_DOT,
 	ST_TRY_ELLIP,
@@ -281,15 +283,16 @@ ivm_list_t *
 _ilang_parser_getTokens(const ivm_char_t *src,
 						ivm_bool_t debug)
 {
-	// include:
+	// cop characters include:
 	// +, -, *, \, %, &, |, ^, >, <, !, ~, @, ?, =
 	// 
 	// except:
 	// +, -, *, %, &, |, ^, >, <, !, @, ?, =
 	// <<, >>, >>>, ->, +=, -=, *=, /=, %=
 	// &=, |=, ^=, <<=, >>=, >>>=
-	// >=, <=, !=, &&, ||
+	// >=, <=, !=, &&, \, ||
 	// 
+	// associativity(initial character):
 	// 1. ! ~
 	// 2. * \ %
 	// 3. + -
@@ -325,7 +328,8 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			{ "=[", ST_INIT, T_LBRAKT },
 			{ "=]", ST_INIT, T_RBRAKT },
 
-			{ "&+-*\\%&|^><!~@?=", ST_TRY_COP },
+			{ "=\\", ST_TRY_CONTCH /* continuation char */ },
+			{ "&+-*%&|^><!~@?=", ST_TRY_COP },
 			
 			{ "=\n", ST_INIT, T_NEWL },
 			{ "=\r", ST_TRY_NEWL },
@@ -350,6 +354,20 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 			/* check \r\n */
 			{ "=\n", ST_INIT, T_NEWL, .ext = IVM_TRUE, .exc = IVM_TRUE },
 			{ ".", ST_INIT, T_NEWL },
+		},
+
+		/* TRY_CONTCH */
+		{
+			{ "=\n", ST_INIT, .ign = IVM_TRUE },
+			{ "=\r", ST_TRY_CONTCH2 },
+			{ "&+-*\\%&|^><!~@?=", ST_TRY_COP },
+			{ ".", ST_INIT, T_COP }
+		},
+
+		/* TRY_CONTCH2 */
+		{
+			{ "=\n", ST_INIT, .ign = IVM_TRUE },
+			{ ".", ST_INIT, .exc = IVM_TRUE, .ign = IVM_TRUE },
 		},
 
 		/* TRY_DOT */
@@ -772,7 +790,7 @@ RULE(slot)
 		{
 			tmp_token = TOKEN_AT(0);
 
-			_RETVAL.slot = ilang_gen_table_entry_build(
+			_RETVAL.slot = ilang_gen_table_entry_build_np(
 				TOKEN_POS(tmp_token),
 				TOKEN_VAL(tmp_token),
 				RULE_RET_AT(2).u.expr
@@ -805,7 +823,7 @@ RULE(slot)
 		{
 			tmp_token = TOKEN_AT(1);
 
-			_RETVAL.slot = ilang_gen_table_entry_build(
+			_RETVAL.slot = ilang_gen_table_entry_build_np(
 				TOKEN_POS(tmp_token),
 				TOKEN_VAL(tmp_token),
 				RULE_RET_AT(3).u.expr
@@ -1782,12 +1800,12 @@ RULE(postfix_expr_sub)
 
 				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
 				));
 			} else {
 				_RETVAL.expr = ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
 				);
 			}
 		})
@@ -1806,12 +1824,12 @@ RULE(postfix_expr_sub)
 
 				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
 				));
 			} else {
 				_RETVAL.expr = ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
 				);
 			}
 		})
@@ -1853,12 +1871,12 @@ RULE(postfix_expr_sub)
 
 				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
 				));
 			} else {
 				_RETVAL.expr = ilang_gen_slot_expr_new(
 					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id)
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
 				);
 			}
 		})

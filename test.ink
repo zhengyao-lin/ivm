@@ -1,3 +1,6 @@
+
+ret
+
 import test.std
 
 import time
