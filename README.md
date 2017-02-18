@@ -4,19 +4,19 @@ ivm is a simple vm built for a prototype-based language [ink](https://github.com
 ### Prerequisites
     cmake >= 2.8
 	gcc >= 4.8.4 or clang >= 3.0
-<br>
+
 ### Build
 Build using cmake
 
 	cmake -DVERSION=release
 	make
-<br>
+
 ### After Building
-run tests or your own piece
+run tests or anything you write
 
 	make test
 	build/bin/ink hello.ink
-<br>
+
 ### Examples(of ink)
 ink is a dynamically-typed language with...
 
