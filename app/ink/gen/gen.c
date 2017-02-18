@@ -9,7 +9,8 @@ ilang_gen_env_init(ilang_gen_env_t *env,
 				   const ivm_char_t *file,
 				   ivm_string_pool_t *str_pool,
 				   ivm_exec_unit_t *unit,
-				   ivm_exec_t *cur_exec)
+				   ivm_exec_t *cur_exec,
+				   struct ilang_gen_trans_unit_t_tag *tunit)
 {
 	*env = (ilang_gen_env_t) {
 		.file = file,
@@ -22,7 +23,9 @@ ilang_gen_env_init(ilang_gen_env_t *env,
 		.sp = 0,
 
 		.list_log = ivm_ptlist_new(),
-		.heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE)
+		.heap = ivm_heap_new(IVM_DEFAULT_INIT_HEAP_SIZE),
+
+		.tunit = tunit
 	};
 
 	if (setjmp(env->err_handle)) {
@@ -95,7 +98,7 @@ ilang_gen_generateExecUnit_c(ilang_gen_trans_unit_t *unit,
 
 	ivm_exec_unit_registerExec(ret, top_level);
 
-	ilang_gen_env_init(&env, unit->file, str_pool, ret, top_level);
+	ilang_gen_env_init(&env, unit->file, str_pool, ret, top_level, unit);
 
 	if (setjmp(env.err_handle)) {
 		ilang_gen_env_dump(&env);

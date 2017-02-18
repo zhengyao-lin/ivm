@@ -46,6 +46,7 @@ typedef struct{
 #define ilang_gen_addr_set_init() \
 	((ilang_gen_addr_set_t) { .continue_addr = -1, .nl_block = 0 })
 
+struct ilang_gen_trans_unit_t_tag;
 typedef struct {
 	const ivm_char_t *file;
 
@@ -59,6 +60,8 @@ typedef struct {
 
 	ivm_ptlist_t *list_log;
 	ivm_heap_t *heap;
+
+	struct ilang_gen_trans_unit_t_tag *tunit;
 } ilang_gen_env_t;
 
 void
@@ -66,7 +69,8 @@ ilang_gen_env_init(ilang_gen_env_t *env,
 				   const ivm_char_t *file,
 				   ivm_string_pool_t *str_pool,
 				   ivm_exec_unit_t *unit,
-				   ivm_exec_t *cur_exec);
+				   ivm_exec_t *cur_exec,
+				   struct ilang_gen_trans_unit_t_tag *tunit);
 
 IVM_INLINE
 void
@@ -182,7 +186,7 @@ ilang_gen_expr_init(ilang_gen_expr_t *expr,
 typedef ivm_ptlist_t ilang_gen_expr_list_t;
 typedef IVM_PTLIST_ITER_TYPE(ilang_gen_expr_t *) ilang_gen_expr_list_iterator_t;
 
-typedef struct {
+typedef struct ilang_gen_trans_unit_t_tag {
 	ivm_heap_t *heap;
 	ivm_char_t *file;
 

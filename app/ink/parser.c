@@ -3614,6 +3614,26 @@ RULE(trans_unit)
 	});
 }
 
+RULE(expr_unit)
+{
+	SUB_RULE_SET(
+		SUB_RULE(R(nllo) R(expr) R(nllo) R(eof_opt)
+		{
+			_RETVAL.expr = RULE_RET_AT(1).u.expr;
+		})
+	);
+
+	FAILED({
+		POP_ERR(_ENV->debug);
+	});
+
+	MATCHED({
+		if (HAS_NEXT_TOKEN()) {
+			POP_ERR(_ENV->debug);
+		}
+	});
+}
+
 /*
 ilang_gen_trans_unit_t *
 _ivm_parser_parseToken(ivm_list_t *tokens,
@@ -3653,6 +3673,33 @@ ilang_parser_parseSource(const ivm_char_t *file,
 	if (!suc) {
 		ilang_gen_trans_unit_free(ret);
 		ret = IVM_NULL;
+	}
+
+	ivm_list_free(tokens);
+
+	return ret;
+}
+
+ilang_gen_expr_t *
+ilang_parser_parseExpr(ilang_gen_trans_unit_t *unit,
+					   const ivm_char_t *src)
+{
+	ivm_list_t *tokens;
+	struct rule_val_t rule_ret;
+	struct env_t env;
+	ivm_bool_t suc;
+	ilang_gen_expr_t *ret = IVM_NULL;
+
+	tokens = _ilang_parser_getTokens(src ,IVM_FALSE);
+
+	if (!tokens) return IVM_NULL;
+
+	env = (struct env_t) { unit };
+
+	RULE_START(expr_unit, &env, &rule_ret, tokens, suc);
+
+	if (suc) {
+		ret = rule_ret.u.expr;
 	}
 
 	ivm_list_free(tokens);

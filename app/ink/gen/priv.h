@@ -51,6 +51,8 @@
 #define GEN_ERR_MSG_NOT_IN_LIST(name)								"%s outside a list", (name)
 #define GEN_ERR_MSG_ILLEGAL_VARG									"varg expression used in illegal context"
 #define GEN_ERR_MSG_CANNOT_DEL(name)								"cannot delete %s", (name)
+#define GEN_ERR_MSG_UNCLOSED_STRING_INT								"unclosed string interpolator"
+#define GEN_ERR_MSG_FAILED_PARSE_STRING_INT							"failed to parse the interpolated expression"
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -109,6 +111,12 @@
 
 #define GEN_ERR_TOO_LONG_MOD_NAME(expr, len) \
 	GEN_ERR((expr)->pos, GEN_ERR_MSG_TOO_LONG_MOD_NAME(len));
+
+#define GEN_ERR_UNCLOSED_STRING_INT(expr) \
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_UNCLOSED_STRING_INT);
+
+#define GEN_ERR_FAILED_PARSE_STRING_INT(expr) \
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING_INT);
 
 void
 ilang_gen_index_expr_genArg(ilang_gen_expr_t *expr, /* not necessarily an index expr */

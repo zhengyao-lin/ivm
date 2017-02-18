@@ -16,6 +16,10 @@ ilang_parser_parseSource(const ivm_char_t *file,
 						 const ivm_char_t *str,
 						 ivm_bool_t debug);
 
+ilang_gen_expr_t *
+ilang_parser_parseExpr(ilang_gen_trans_unit_t *unit,
+					   const ivm_char_t *src);
+
 IVM_COM_END
 
 #endif
