@@ -267,6 +267,7 @@ enum state_t {
 	
 	ST_IN_STR,
 	ST_IN_STR_ESC,
+	ST_IN_STR_ESC_NL,
 	
 	ST_IN_NUM_INT,
 	ST_IN_NUM_FLOAT,
@@ -411,7 +412,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		/* IN_COMMENT2 */
 		{
 			{ "=\n", ST_INIT, T_NEWL },
-			{ "=\r", ST_INIT, T_NEWL },
+			{ "=\r", ST_TRY_NEWL },
 			{ ".", ST_IN_COMMENT2 }
 		},
 
@@ -442,12 +443,21 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		{
 			{ "=\"", ST_INIT, T_STR, .exc = IVM_TRUE },
 			{ "=\\", ST_IN_STR_ESC },
+			{ "=\n", ST_INIT, .msg = "illegal line feed in string literal" },
+			{ "=\r", ST_INIT, .msg = "illegal carriage return in string literal" },
 			{ ".", ST_IN_STR }
 		},
 
 		/* IN_STR_ESC */
 		{
+			{ "=\r", ST_IN_STR_ESC_NL },
 			{ ".", ST_IN_STR }
+		},
+
+		/* IN_STR_ESC_NL */
+		{
+			{ "=\n", ST_IN_STR },
+			{ ".", ST_IN_STR, .exc = IVM_TRUE }
 		},
 
 		/* IN_NUM_INT */

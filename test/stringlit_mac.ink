@@ -1,0 +1,1 @@
+import std\""print("now, \\"it's a new line\"")ret// -> "str: now, \r\"it's a new line\""

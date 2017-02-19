@@ -251,6 +251,12 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 				if (cur_c == '\n') {
 					line++;
 					col = (ivm_ptr_t)c;
+				} else if (cur_c == '\r') {
+					if (*(c + 1) == '\n') {
+						has_exc = IVM_TRUE; // avoid the recount of new line
+					}
+					line++;
+					col = (ivm_ptr_t)c;
 				}
 			} else {
 				has_exc = IVM_FALSE;
@@ -269,6 +275,9 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 					}
 
 					if (tmp_entry->ign) {
+						if (tmp_entry->exc) {
+							c--;
+						}
 						tmp_token = ((struct token_t) { .len = 0, .val = c + 1, .line = line, .pos = (ivm_ptr_t)c - col + 1 });
 					} else if (tmp_entry->save != IVM_COMMON_PARSER_TOKEN_NONE) { // save to token stack
 						if (tmp_entry->ext || tmp_entry->to_state == state)
@@ -285,7 +294,9 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 							tmp_token = ((struct token_t) { .len = 0, .val = c + 1, .line = line, .pos = (ivm_ptr_t)c - col + 2 });
 						}
 					} else {
-						tmp_token.len++;
+						if (tmp_entry->exc) {
+							c--;
+						} else tmp_token.len++;
 					}
 
 					// c += tmp_entry->c_ofs;
