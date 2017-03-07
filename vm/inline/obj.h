@@ -149,10 +149,17 @@ ivm_object_getProto(ivm_object_t *obj)
 	return obj->proto;
 }
 
+IVM_INLINE
+ivm_bool_t
+ivm_object_isBTProto(ivm_object_t *obj)
+{
+	return ivm_type_getProto(obj->type) == obj && ivm_type_isBuiltin(obj->type);
+}
+
 #define IVM_NONE(state) ivm_vmstate_getNone(state)
 #define IVM_IS_NONE(state, obj) ((obj) == ivm_vmstate_getNone(state))
 
-#define _IVM_OBJECT_OPSEARCH(obj, find_oop, search_bt, failed) \
+#define _IVM_OBJECT_OPSEARCH(obj, found_oop, search_bt, failed) \
 	register ivm_object_t *tmp;                                               \
 	register ivm_type_t *otype = obj->type;                                   \
 	register ivm_type_t *objt = IVM_BTTYPE(state, IVM_OBJECT_T);              \
@@ -168,8 +175,8 @@ BACK:                                                                         \
 			tmp = ivm_slot_table_getOop(obj->slots, state, oop_id);           \
 			if (tmp) {                                                        \
 				if (tmp == IVM_OOP_BLOCK) continue;                           \
-				/* don't search built-in ops */                               \
-				find_oop;                                                     \
+				/* don't search built-in ops(explicitly deleted) */           \
+				found_oop;                                                    \
 			}                                                                 \
 			goto BACK;                                                        \
 		}                                                                     \
@@ -187,6 +194,33 @@ ivm_object_getBinOp(ivm_object_t *obj, ivm_vmstate_t *state,
 	register ivm_binop_proc_t tmp_proc;
 
 	_IVM_OBJECT_OPSEARCH(obj, {
+		*oop = tmp;
+		return IVM_NULL;
+	}, {
+		tmp_proc = IVM_OBJECT_GET_BINOP_PROC_R(obj, op, op2);
+		if (tmp_proc) return tmp_proc;
+
+		tmp_proc = IVM_OBJECT_GET_BINOP_PROC_RT(obj, op, IVM_OBJECT_T);
+		if (tmp_proc) return tmp_proc;
+	}, {
+		*oop = IVM_NULL;
+		return IVM_NULL;
+	});
+}
+
+IVM_INLINE
+ivm_binop_proc_t /* native handlers */
+ivm_object_getBinOp_n(ivm_object_t *obj, ivm_vmstate_t *state,
+					  ivm_int_t op, ivm_int_t oop_id,
+					  ivm_object_t *op2,
+					  ivm_object_t **oop,
+					  ivm_native_function_t self)
+{
+	register ivm_binop_proc_t tmp_proc;
+
+	_IVM_OBJECT_OPSEARCH(obj, {
+		if (IVM_IS_BTTYPE(tmp, state, IVM_FUNCTION_OBJECT_T) &&
+			ivm_function_object_checkNative_c(tmp, self)) goto BACK;
 		*oop = tmp;
 		return IVM_NULL;
 	}, {

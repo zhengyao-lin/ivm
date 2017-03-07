@@ -1,8 +1,3 @@
-print(" \
-\"")
-
-ret
-
 import test.std
 
 import time
@@ -76,9 +71,10 @@ __test = fn {
 	a = 1
 	a.proto = string.proto
 
-	print(a.+(1))
+	// string.proto.+ = "".+
 
-	string.proto.+ = "".+
+	print(a.+)
+ret
 
 	try print(a.+(1))
 	catch none

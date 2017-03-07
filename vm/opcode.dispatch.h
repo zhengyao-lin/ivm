@@ -12,26 +12,32 @@
 #define _BP (tmp_bp)
 
 #define _DBG_RUNTIME_DEFAULT \
-	.ip = tmp_ip,                                         \
-	.bp = ivm_vmstack_offset(_STACK, tmp_bp),             \
-	.sp = ivm_vmstack_offset(_STACK, tmp_sp),             \
-	.cmp_reg = _TMP_CMP_REG,                              \
-	.state = _STATE,                                      \
-	.coro = _CORO,                                        \
-	.stack = _STACK                                       \
+	.ip = tmp_ip,                                  \
+	.bp = ivm_vmstack_offset(_STACK, tmp_bp),      \
+	.sp = ivm_vmstack_offset(_STACK, tmp_sp),      \
+	.cmp_reg = _TMP_CMP_REG,                       \
+	.state = _STATE,                               \
+	.coro = _CORO,                                 \
+	.stack = _STACK                                \
 
 #if IVM_STACK_CACHE_N_TOS == 0
+	
 	#define _DBG_RUNTIME_CACHE \
 		.cst = 0
+
 #elif IVM_STACK_CACHE_N_TOS == 1
+	
 	#define _DBG_RUNTIME_CACHE \
-		.stc0 = stc0,               \
+		.stc0 = stc0,          \
 		.cst = cst
+
 #elif IVM_STACK_CACHE_N_TOS == 2
+	
 	#define _DBG_RUNTIME_CACHE \
-		.stc0 = stc0,               \
-		.stc1 = stc1,               \
+		.stc0 = stc0,          \
+		.stc1 = stc1,          \
 		.cst = cst
+
 #endif
 
 #define DBG_RUNTIME() \
@@ -61,22 +67,22 @@
 
 #define INC_INSTR() (++tmp_ip)
 #define GOTO_CUR_INSTR() \
-	if (!IVM_GC_DBG &&                                  \
-		!ivm_vmstate_hasInt(_STATE)) {                  \
-		goto *(ivm_instr_entry(tmp_ip));                \
-	} else {                                            \
-		SAVE_STACK();                                   \
-		GOTO_INSTR(INTR);                               \
-	}                                                   \
+	if (!IVM_GC_DBG &&                            \
+		!ivm_vmstate_hasInt(_STATE)) {            \
+		goto *(ivm_instr_entry(tmp_ip));          \
+	} else {                                      \
+		SAVE_STACK();                             \
+		GOTO_INSTR(INTR);                         \
+	}                                             \
 
 #define NEXT_INSTR() \
-	if (!IVM_GC_DBG &&                                  \
-		!ivm_vmstate_hasInt(_STATE)) {                  \
-		goto *(ivm_instr_entry(++tmp_ip));              \
-	} else {                                            \
-		SAVE_STACK();                                   \
-		++tmp_ip;                                       \
-		GOTO_INSTR(INTR);                               \
+	if (!IVM_GC_DBG &&                            \
+		!ivm_vmstate_hasInt(_STATE)) {            \
+		goto *(ivm_instr_entry(++tmp_ip));        \
+	} else {                                      \
+		SAVE_STACK();                             \
+		++tmp_ip;                                 \
+		GOTO_INSTR(INTR);                         \
 	}
 
 #define NEXT_INSTR_NINT() goto *(ivm_instr_entry(++tmp_ip));
@@ -94,16 +100,16 @@
 	goto OPCODE_##opc;
 
 #define RTM_FATAL(...) \
-	ivm_char_t __rtm_assert_buf__[            \
-		IVM_DEFAULT_EXCEPTION_BUFFER_SIZE     \
-	];                                        \
-	IVM_SNPRINTF(                             \
-		__rtm_assert_buf__,                   \
-		IVM_ARRLEN(__rtm_assert_buf__),       \
-		__VA_ARGS__                           \
-	);                                        \
-	RAISE(ivm_coro_newStringException(        \
-		_CORO, _STATE, __rtm_assert_buf__     \
+	ivm_char_t __rtm_assert_buf__[                \
+		IVM_DEFAULT_EXCEPTION_BUFFER_SIZE         \
+	];                                            \
+	IVM_SNPRINTF(                                 \
+		__rtm_assert_buf__,                       \
+		IVM_ARRLEN(__rtm_assert_buf__),           \
+		__VA_ARGS__                               \
+	);                                            \
+	RAISE(ivm_coro_newStringException(            \
+		_CORO, _STATE, __rtm_assert_buf__         \
 	))
 
 #define RTM_ASSERT(cond, ...) \
@@ -304,16 +310,16 @@
 
 	/* stack cache */
 	#define STC_PUSHBACK() \
-		_if (cst) _then                       \
-			_if (cst == 2) _then              \
-				STACK_PUSH_NOCACHE(stc0),     \
-				STACK_PUSH_NOCACHE(stc1)      \
-			_else                             \
-				STACK_PUSH_NOCACHE(stc0)      \
-			_end,                             \
-			(cst = 0)                         \
-		_else                                 \
-			0                                 \
+		_if (cst) _then                      \
+			_if (cst == 2) _then             \
+				STACK_PUSH_NOCACHE(stc0),    \
+				STACK_PUSH_NOCACHE(stc1)     \
+			_else                            \
+				STACK_PUSH_NOCACHE(stc0)     \
+			_end,                            \
+			(cst = 0)                        \
+		_else                                \
+			0                                \
 		_end
 
 	#define STACK_TOP() \
@@ -341,18 +347,18 @@
 		_end
 
 	#define STACK_PUSH(obj) \
-		_if (cst == 2) _then                \
-			STACK_PUSH_NOCACHE(stc0),       \
-			stc0 = stc1,                    \
-			stc1 = (obj)                    \
-		_else                               \
-		  	_if (cst) _then                 \
-		  		(cst = 2),                  \
-		  		(stc1 = (obj))              \
-		  	_else                           \
-		  		(cst = 1),                  \
-		  		(stc0 = (obj))              \
-		  	_end                            \
+		_if (cst == 2) _then                 \
+			STACK_PUSH_NOCACHE(stc0),        \
+			stc0 = stc1,                     \
+			stc1 = (obj)                     \
+		_else                                \
+		  	_if (cst) _then                  \
+		  		(cst = 2),                   \
+		  		(stc1 = (obj))               \
+		  	_else                            \
+		  		(cst = 1),                   \
+		  		(stc0 = (obj))               \
+		  	_end                             \
 		_end
 
 	#define STACK_BEFORE(i) \

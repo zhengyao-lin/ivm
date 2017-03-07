@@ -41,7 +41,8 @@
 				   : proc(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2);                                          \
 		}                                                                                                     \
 		return ivm_object_doBinOpFallBack(NAT_BASE(), NAT_STATE(), NAT_CORO(),                                \
-										  IVM_BINOP_ID(op), IVM_OOP_ID(op), is_cmp, op2);                     \
+										  IVM_BINOP_ID(op), IVM_OOP_ID(op), is_cmp, op2,                      \
+										  DEF_OOP_BINOP_NAME(t1, op, t2));                                    \
 	}
 
 #define DEF_OOP_TRIOP_PROC(t1, op, t2) \
@@ -54,7 +55,8 @@
 			return BINOP_PROC_NAME(t1, op, t2)(NAT_STATE(), NAT_CORO(), NAT_BASE(), op2, NAT_ARG_AT(2));      \
 		}                                                                                                     \
 		return ivm_object_doTriOpFallBack(NAT_BASE(), NAT_STATE(), NAT_CORO(),                                \
-										  IVM_BINOP_ID(op), IVM_OOP_ID(op), op2, NAT_ARG_AT(2));              \
+										  IVM_BINOP_ID(op), IVM_OOP_ID(op), op2, NAT_ARG_AT(2),               \
+										  DEF_OOP_TRIOP_NAME(t1, op, t2));                                    \
 	}
 
 #define UNIOP_PROC_DEF(name) IVM_UNIOP_PROC_DEF(name)

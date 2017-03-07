@@ -308,12 +308,12 @@ ivm_object_getDefaultOop(ivm_object_t *obj,
 /**
  * NOTE: Op fallback
  *
- * Op fallback will occur when a builtin op finds that the types of operands do not
- * match what it has expected. It will try to find another operator handler in the prototypes
- * and call it instead.
+ * Op fallback occurs when a builtin op finds that the types of operands do not
+ * match what it has expected. It will try to find another operator handler in the prototypes to call.
  *
  * e.g.
  *
+ * // note: it's the prototype of prototype of object
  * object.proto.proto = { proto: none, [=]: fn k, v: { print("here!") } }
  * 
  * {}[1] = "hi"
@@ -322,21 +322,27 @@ ivm_object_getDefaultOop(ivm_object_t *obj,
  * These two expressions will have the same output("here!").
  * Because the the original index op of object which has the form of <object> [=] <string>
  * does not match the operands(<object>, <numeric>).
- * So it will fall back to find another op which finally falls the "here" function.
+ * So it will fall back to find another op which is the "here" function.
  *
  * NOTE that even though the finally executed function is the "here" function, {}.[=] has the same value as
- * the default index op of object.
+ * the default index op of object({}.[=] != <the 'here' function>).
  *
- * And also NOTE that op fallback is not a default action taken by the vm but rather by the op handlers themselves.
+ * And also NOTE that op fallback is not a default action taken by the vm but by the op handlers.
  */
+
+/**
+ * The following fallback functions are used for overloaded native op handlers(e.g. string.proto.+ = "".+) to mimic the fallback process.
+ */
+
 ivm_object_t *
 ivm_object_doBinOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 						   ivm_coro_t *coro, ivm_int_t op, ivm_int_t oop_id,
-						   ivm_bool_t is_cmp, ivm_object_t *op2)
+						   ivm_bool_t is_cmp, ivm_object_t *op2,
+						   ivm_native_function_t self /* avoid inf recursion */)
 {
 	ivm_object_t *proto = ivm_type_getProto(obj->type);
 	ivm_object_t *oop, *base;
-	ivm_binop_proc_t proc = ivm_object_getBinOp(proto, state, op, oop_id, op2, &oop);
+	ivm_binop_proc_t proc = ivm_object_getBinOp_n(proto, state, op, oop_id, op2, &oop, self);
 	ivm_function_object_t *func;
 
 	if (proc) {
@@ -344,7 +350,7 @@ ivm_object_doBinOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 					  : proc(state, coro, obj, op2);
 	} else if (oop) {
 		func = ivm_object_callable(oop, state, &base);
-		
+
 		if (!func) {
 			SET_EXC(coro, state, IVM_ERROR_MSG_UNABLE_TO_INVOKE(IVM_OBJECT_GET(obj, TYPE_NAME)));
 			return IVM_NULL;
@@ -366,11 +372,12 @@ ivm_object_doBinOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 ivm_object_t *
 ivm_object_doTriOpFallBack(ivm_object_t *obj, ivm_vmstate_t *state,
 						   ivm_coro_t *coro, ivm_int_t op, ivm_int_t oop_id,
-						   ivm_object_t *op2, ivm_object_t *op3)
+						   ivm_object_t *op2, ivm_object_t *op3,
+						   ivm_native_function_t self /* avoid inf recursion */)
 {
 	ivm_object_t *proto = ivm_type_getProto(obj->type);
 	ivm_object_t *oop, *base;
-	ivm_triop_proc_t proc = (ivm_triop_proc_t)ivm_object_getBinOp(proto, state, op, oop_id, op2, &oop);
+	ivm_triop_proc_t proc = (ivm_triop_proc_t)ivm_object_getBinOp_n(proto, state, op, oop_id, op2, &oop, self);
 	ivm_function_object_t *func;
 
 	if (proc) {

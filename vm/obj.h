@@ -111,13 +111,6 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 #define ivm_object_hasOop(obj) ((obj)->mark.sub.oop)
 
 IVM_INLINE
-ivm_bool_t
-ivm_object_isBTProto(ivm_object_t *obj)
-{
-	return ivm_type_getProto(obj->type) == obj;
-}
-
-IVM_INLINE
 void
 ivm_object_destruct(ivm_object_t *obj,
 					struct ivm_vmstate_t_tag *state)
@@ -213,12 +206,14 @@ ivm_object_getDefaultOop(ivm_object_t *obj,
 ivm_object_t *
 ivm_object_doBinOpFallBack(ivm_object_t *obj, struct ivm_vmstate_t_tag *state,
 						   struct ivm_coro_t_tag *coro, ivm_int_t op, ivm_int_t oop_id,
-						   ivm_bool_t is_cmp, ivm_object_t *op2);
+						   ivm_bool_t is_cmp, ivm_object_t *op2,
+						   ivm_native_function_t self);
 
 ivm_object_t *
 ivm_object_doTriOpFallBack(ivm_object_t *obj, struct ivm_vmstate_t_tag *state,
 						   struct ivm_coro_t_tag *coro, ivm_int_t op, ivm_int_t oop_id,
-						   ivm_object_t *op2, ivm_object_t *op3);
+						   ivm_object_t *op2, ivm_object_t *op3,
+						   ivm_native_function_t self);
 
 ivm_bool_t
 ivm_object_setSlot_d(ivm_object_t *obj,
