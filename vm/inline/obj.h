@@ -153,7 +153,7 @@ IVM_INLINE
 ivm_bool_t
 ivm_object_isBTProto(ivm_object_t *obj)
 {
-	return ivm_type_getProto(obj->type) == obj && ivm_type_isBuiltin(obj->type);
+	return IVM_OBJECT_GET(obj, BTPROTO); // ivm_type_getProto(obj->type) == obj; // && ivm_type_isBuiltin(obj->type);
 }
 
 #define IVM_NONE(state) ivm_vmstate_getNone(state)

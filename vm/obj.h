@@ -49,6 +49,7 @@ IVM_OBJECT_GET_COPY(ivm_object_t *obj)
 #define IVM_OBJECT_GET_GEN(obj) ((obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_INC_GEN(obj) (++(obj)->mark.sub.gen)
 #define IVM_OBJECT_GET_TRAV_PROTECT(obj) ((obj)->mark.sub.travp)
+#define IVM_OBJECT_GET_BTPROTO(obj) ((obj)->mark.sub.btproto)
 
 #define IVM_OBJECT_SET_SLOTS(obj, val) ((obj)->slots = (val))
 // #define IVM_OBJECT_SET_COPY(obj, val) ((obj)->mark.copy = (val))
@@ -75,7 +76,8 @@ IVM_OBJECT_SET_COPY(ivm_object_t *obj,
 
 #define IVM_OBJECT_SET_WB(obj, val) ((obj)->mark.sub.wb = (val))
 #define IVM_OBJECT_SET_GEN(obj, val) ((obj)->mark.sub.gen = (val))
-#define IVM_OBJECT_SET_TRAV_PROTECT(obj, val) ((obj)->mark.sub.travp)
+#define IVM_OBJECT_SET_TRAV_PROTECT(obj, val) ((obj)->mark.sub.travp = (val))
+#define IVM_OBJECT_SET_BTPROTO(obj, val) ((obj)->mark.sub.btproto = (val))
 
 #define IVM_OBJECT_GET(obj, member) IVM_GET((obj), IVM_OBJECT, member)
 #define IVM_OBJECT_SET(obj, member, val) IVM_SET((obj), IVM_OBJECT, member, (val))

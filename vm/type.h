@@ -13,7 +13,7 @@
 
 IVM_COM_HEADER
 
-#define _IVM_MARK_HEADER_BITS 4 // (2 + IVM_OOP_COUNT)
+#define _IVM_MARK_HEADER_BITS 5 // (2 + IVM_OOP_COUNT)
 
 #define IVM_OBJECT_HEADER \
 	struct ivm_type_t_tag *type;                               \
@@ -27,6 +27,7 @@ IVM_COM_HEADER
 			/* need or not to check oop */                     \
 			ivm_uint_t oop: 1;                                 \
 			ivm_uint_t locked: 1;                              \
+			ivm_uint_t btproto: 1;                             \
 			ivm_uint_t wb: 1;                                  \
 			ivm_uint_t gen: 1;                                 \
 		} sub;                                                 \
