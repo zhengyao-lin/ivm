@@ -1796,59 +1796,59 @@ RULE(postfix_expr_sub)
 			}
 		})
 
-		SUB_RULE(T(T_DOT) R(nllo) T(T_ID) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
+		SUB_RULE(R(nllo) T(T_DOT) R(nllo) T(T_ID) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
 		{
 			tmp_token = TOKEN_AT(0);
 			id = TOKEN_AT(1);
-			tmp_expr = RULE_RET_AT(1).u.expr;
-
-			if (tmp_expr) {
-				_RETVAL.expr = tmp_expr;
-				// find the innermost expression
-				while (GET_OPERAND(tmp_expr, 1))
-					tmp_expr = GET_OPERAND(tmp_expr, 1);
-
-				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
-				));
-			} else {
-				_RETVAL.expr = ilang_gen_slot_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
-				);
-			}
-		})
-
-		SUB_RULE(T(T_DOT) R(nllo) T(T_COP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			id = TOKEN_AT(1);
-			tmp_expr = RULE_RET_AT(1).u.expr;
-
-			if (tmp_expr) {
-				_RETVAL.expr = tmp_expr;
-				// find the innermost expression
-				while (GET_OPERAND(tmp_expr, 1))
-					tmp_expr = GET_OPERAND(tmp_expr, 1);
-
-				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
-				));
-			} else {
-				_RETVAL.expr = ilang_gen_slot_expr_new(
-					_ENV->unit,
-					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
-				);
-			}
-		})
-
-		SUB_RULE(T(T_DOT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
-		{
-			tmp_token = TOKEN_AT(0);
-			oop = RULE_RET_AT(1).u.oop;
 			tmp_expr = RULE_RET_AT(2).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_TRUE
+				);
+			}
+		})
+
+		SUB_RULE(R(nllo) T(T_DOT) R(nllo) T(T_COP) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("slot expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			id = TOKEN_AT(1);
+			tmp_expr = RULE_RET_AT(2).u.expr;
+
+			if (tmp_expr) {
+				_RETVAL.expr = tmp_expr;
+				// find the innermost expression
+				while (GET_OPERAND(tmp_expr, 1))
+					tmp_expr = GET_OPERAND(tmp_expr, 1);
+
+				SET_OPERAND(tmp_expr, 1, ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
+				));
+			} else {
+				_RETVAL.expr = ilang_gen_slot_expr_new(
+					_ENV->unit,
+					TOKEN_POS(tmp_token), IVM_NULL, TOKEN_VAL(id), IVM_FALSE
+				);
+			}
+		})
+
+		SUB_RULE(R(nllo) T(T_DOT) R(nllo) R(oop) R(postfix_expr_sub) DBB(PRINT_MATCH_TOKEN("oop expr"))
+		{
+			tmp_token = TOKEN_AT(0);
+			oop = RULE_RET_AT(2).u.oop;
+			tmp_expr = RULE_RET_AT(3).u.expr;
 
 			if (tmp_expr) {
 				_RETVAL.expr = tmp_expr;

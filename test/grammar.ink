@@ -25,6 +25,13 @@ for i in gen(100000).reverse():
 	if !(i % 1000):
 		print(i)
 
+loc a = { b: { c: { d: fn print("hi") } } }
+
+a
+.b
+.c
+.d()
+
 ret
 
 // -> "str: 1 \\^ 2 = 1"
@@ -147,3 +154,4 @@ ret
 // -> "num: 3000"
 // -> "num: 2000"
 // -> "num: 1000"
+// -> "str: hi"
