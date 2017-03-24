@@ -1,6 +1,8 @@
 TYPE_GEN(IVM_NONE_T, none, sizeof(ivm_object_t), IVM_NULL, {
 
-	ivm_type_setProto(_TYPE, ivm_none_new(_STATE));
+	ivm_object_t *none = ivm_none_new(_STATE);
+	ivm_type_setProto(_TYPE, none);
+	IVM_OBJECT_SET_BTPROTO(none, IVM_TRUE);
 
 }, {}, .const_bool = IVM_FALSE)
 
