@@ -349,11 +349,9 @@ FAILED_END:
 #define _RETPOS (__ret__->pos)
 #define _TOKEN (__tokens__)
 
-#define PREV_TOKEN() ((struct token_t *)ivm_list_at(_TOKEN, *__i__ - 1))
 #define CUR_TOKEN() ((struct token_t *)ivm_list_at(_TOKEN, *__i__))
 #define NEXT_TOKEN() (++*__i__)
 #define HAS_NEXT_TOKEN() (*__i__ < ivm_list_size(_TOKEN))
-#define HAS_PREV_TOKEN() (*__i__ > 0)
 
 #define RULE_NAME(name) _ivm_parser_rule_##name
 
@@ -428,7 +426,7 @@ FAILED_END:
 
 #define EXPECT_RULE(name) \
 	if (IS_FAILED(RULE_NAME(name)(_ENV, __reti__++, _TOKEN, __i__, __last_err__, __esc__, __depth__ + 1))) { \
-		if (*__i__ >= __last_err__->toki) { \
+		if (HAS_NEXT_TOKEN() && *__i__ >= __last_err__->toki) { \
 			__tmp_token__ = CUR_TOKEN(); \
 			__tmp_err__ = ERR_MSG_R( \
 				__tmp_token__->line, __tmp_token__->pos, *__i__, \
