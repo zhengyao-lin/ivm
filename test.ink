@@ -1,4 +1,4 @@
-import test.std
+
 
 import time
 import io

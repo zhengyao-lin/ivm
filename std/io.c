@@ -164,3 +164,79 @@ ivm_file_read_n(ivm_file_t *file,
 
 	return ret;
 }
+
+void
+ivm_stream_init(ivm_stream_t *stream,
+				ivm_stream_writer_t writer,
+				ivm_stream_reader_t reader,
+				ivm_stream_destructor_t des)
+{
+	stream->write = writer;
+	stream->read = reader;
+	stream->des = des;
+	return;
+}
+
+ivm_stream_t *
+ivm_stream_new(ivm_stream_writer_t writer,
+			   ivm_stream_reader_t reader,
+			   ivm_stream_destructor_t des)
+{
+	ivm_stream_t *ret = STD_ALLOC(sizeof(*ret));
+	IVM_MEMCHECK(ret);
+
+	ivm_stream_init(ret, writer, reader, des);
+
+	return ret;
+}
+
+void
+ivm_stream_free(ivm_stream_t *stream)
+{
+	if (stream) {
+		if (stream->des) {
+			stream->des(stream);
+		}
+
+		STD_FREE(stream);
+	}
+
+	return;
+}
+
+void
+ivm_stream_dump(ivm_stream_t *stream)
+{
+	return;
+}
+
+IVM_PRIVATE
+ivm_size_t
+_ivm_file_stream_write(ivm_stream_t *stream,
+					   const void *data, ivm_size_t esize, ivm_size_t count)
+{
+	return ivm_file_write(((ivm_file_stream_t *)stream)->fp, data, esize, count);
+}
+
+IVM_PRIVATE
+ivm_size_t
+_ivm_file_stream_read(ivm_stream_t *stream,
+					  void *buf, ivm_size_t esize, ivm_size_t count)
+{
+	return ivm_file_read(((ivm_file_stream_t *)stream)->fp, buf, esize, count);
+}
+
+ivm_stream_t *
+ivm_file_stream_new(ivm_file_t *fp)
+{
+	ivm_file_stream_t *ret = STD_ALLOC(sizeof(*ret));
+	IVM_MEMCHECK(ret);
+
+	ivm_stream_init((ivm_stream_t *)ret,
+					_ivm_file_stream_write,
+					_ivm_file_stream_read, IVM_NULL);
+
+	ret->fp = fp;
+
+	return (ivm_stream_t *)ret;
+}

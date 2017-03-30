@@ -12,11 +12,11 @@
 IVM_COM_HEADER
 
 ivm_exec_unit_t *
-ivm_serial_decodeCache(ivm_file_t *file);
+ivm_serial_decodeCache(ivm_stream_t *stream);
 
-void
+ivm_size_t
 ivm_serial_encodeCache(ivm_exec_unit_t *unit,
-					   ivm_file_t *file);
+					   ivm_stream_t *stream);
 
 ivm_object_t *
 ivm_serial_mod_loadCache(const ivm_char_t *path,

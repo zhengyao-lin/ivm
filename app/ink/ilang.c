@@ -178,6 +178,8 @@ int main(int argc, const char **argv)
 
 	ivm_int_t end_idx = 0;
 
+	ivm_stream_t *stream;
+
 #define OPTION IVM_CONSOLE_ARG_DIRECT_MATCH_OPTION
 #define NORMAL IVM_CONSOLE_ARG_DIRECT_MATCH_STRING
 #define DEFAULT IVM_CONSOLE_ARG_DIRECT_DEFAULT
@@ -297,7 +299,9 @@ int main(int argc, const char **argv)
 	unit = IVM_NULL;
 
 	if (output_cache) {
-		ivm_serial_encodeCache(exec_unit, output_cache);
+		stream = ivm_file_stream_new(output_cache);
+		ivm_serial_encodeCache(exec_unit, stream);
+		ivm_stream_free(stream);
 		ivm_exec_unit_free(exec_unit);
 	} else {
 		state = ivm_exec_unit_generateVM(exec_unit);

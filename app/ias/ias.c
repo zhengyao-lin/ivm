@@ -43,6 +43,8 @@ int main(int argc, const char **argv)
 
 	ivm_context_t *ctx;
 
+	ivm_stream_t *stream;
+
 	ivm_bool_t cfg_prof = IVM_TRUE;
 
 #define OPTION IVM_CONSOLE_ARG_DIRECT_MATCH_OPTION
@@ -161,7 +163,9 @@ int main(int argc, const char **argv)
 		unit = ias_gen_env_generateExecUnit(env);
 
 		if (output_cache) {
-			ivm_serial_encodeCache(unit, output_cache);
+			stream = ivm_file_stream_new(output_cache);
+			ivm_serial_encodeCache(unit, stream);
+			ivm_stream_free(stream);
 			ivm_exec_unit_free(unit);
 			unit = IVM_NULL;
 		}
@@ -169,7 +173,9 @@ int main(int argc, const char **argv)
 		ias_gen_env_free(env);
 		STD_FREE(src);
 	} else if (cache_file) {
-		unit = ivm_serial_decodeCache(cache_file);
+		stream = ivm_file_stream_new(cache_file);
+		unit = ivm_serial_decodeCache(stream);
+		ivm_stream_free(stream);
 		if (!unit) {
 			IVM_ERROR("failed to decode cache file %s(wrong format)", cache_file_path);
 		}
