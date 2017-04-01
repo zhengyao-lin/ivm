@@ -74,7 +74,6 @@ struct _bmp_info_t {
 } IVM_NOALIGN;
 
 struct _bmp_header_t {
-	ivm_uint16_t type;			// 0x4d42
 	ivm_uint32_t size;			// size of the whole file
 	ivm_uint32_t reserv;		// == 0
 	ivm_uint32_t ofs;			// header offset
@@ -84,7 +83,7 @@ struct _bmp_header_t {
 
 ivm_bool_t
 ivm_image_bmp_format(ivm_image_t *image,
-					 ivm_file_t *output)
+					 ivm_stream_t *output)
 {
 	struct _bmp_header_t header;
 	ivm_size_t width = ivm_image_width(image);
@@ -94,9 +93,10 @@ ivm_image_bmp_format(ivm_image_t *image,
 	ivm_pixel_t *pixs = ivm_image_pixels(image), tmp;
 	ivm_byte_t *dat, *cur;
 	ivm_bool_t suc;
+
+	IVM_PRIVATE const ivm_uint16_t htype = 0x4d42;
 	
 	header = (struct _bmp_header_t) {
-		.type = 0x4d42,
 		.size = sizeof(header) + isize,
 		.reserv = 0,
 		.ofs = sizeof(header),
@@ -134,8 +134,9 @@ ivm_image_bmp_format(ivm_image_t *image,
 		cur[2] = tmp;
 	}
 
-	suc = ivm_file_write(output, &header, sizeof(header), 1) == 1 &&
-		  ivm_file_write(output, dat, 1, isize) == isize;
+	suc = ivm_stream_write(output, &htype, sizeof(htype), 1) == 1 &&
+		  ivm_stream_write(output, &header, sizeof(header), 1) == 1 &&
+		  ivm_stream_write(output, dat, 1, isize) == isize;
 
 	STD_FREE(dat);
 
@@ -143,43 +144,34 @@ ivm_image_bmp_format(ivm_image_t *image,
 }
 
 ivm_image_t *
-ivm_image_bmp_parse_c(ivm_byte_t *dat,
-					  ivm_size_t size,
-					  const ivm_char_t **err)
+ivm_image_bmp_parse(ivm_stream_t *dat,
+					const ivm_char_t **err)
 {
 	const ivm_char_t *tmp_err = IVM_NULL;
 	struct _bmp_header_t header;
 	ivm_size_t i, dsize = -1;
-	ivm_uchar_t tmp;
-	ivm_pixel_t *pixels, *cur;
+	ivm_uchar_t tmp, tmpbuf[3];
+	ivm_pixel_t *pixels = IVM_NULL, *cur;
 	ivm_image_t *ret = IVM_NULL;
+	ivm_uint16_t htype;
 
-	if (size < sizeof(header)) {
-		tmp_err = "too little data";
-		goto ERROR;
-	}
-
-	header = *(struct _bmp_header_t *)dat;
-
-	if (header.type != 0x4d42) {
+	if (ivm_stream_read(dat, &htype, sizeof(htype), 1) != 1 ||
+		htype != 0x4d42) {
 		tmp_err = "not a bmp file";
 		goto ERROR;
 	}
 
-	if (header.ofs != sizeof(header)) {
-		tmp_err = "do not support palette";
+	if (ivm_stream_read(dat, &header, sizeof(header), 1) != 1) {
+		tmp_err = "wrong header";
 		goto ERROR;
 	}
 
-	dsize = header.size - sizeof(header);
-
-	dat += sizeof(header);
-	size -= sizeof(header);
-
-	if (size < dsize) {
-		tmp_err = "unexpected file ending";
+	if (header.ofs != sizeof(htype) + sizeof(header)) {
+		tmp_err = "unsupported palette";
 		goto ERROR;
 	}
+
+	dsize = header.size - sizeof(htype) - sizeof(header);
 
 	switch (header.info.bpp) {
 		case 1:
@@ -190,7 +182,12 @@ ivm_image_bmp_parse_c(ivm_byte_t *dat,
 
 #define BIT_AT(n) (cur[(n) - 1] = !!(tmp & (1 << (8 - (n)))))
 
-				tmp = dat[i]; // unsigned
+				// tmp = dat[i]; // unsigned
+
+				if (ivm_stream_read(dat, &tmp, sizeof(tmp), 1) != 1) {
+					tmp_err = "unexpected ending";
+					goto ERROR;
+				}
 
 				BIT_AT(1);
 				BIT_AT(2);
@@ -214,7 +211,12 @@ ivm_image_bmp_parse_c(ivm_byte_t *dat,
 
 			for (i = 0, cur = pixels;
 				 i < dsize; i += 3, cur++) {
-				*cur = (dat[i] << 16) + (dat[i + 1] << 8) + dat[i + 2];
+				if (ivm_stream_read(dat, tmpbuf, sizeof(*tmpbuf), 3) != 3) {
+					tmp_err = "unexpected ending";
+					goto ERROR;
+				}
+
+				*cur = (tmpbuf[0] << 16) + (tmpbuf[1] << 8) + tmpbuf[2];
 			}
 
 			ret = ivm_image_new(header.info.width, header.info.height, pixels);
@@ -222,7 +224,15 @@ ivm_image_bmp_parse_c(ivm_byte_t *dat,
 			break;
 
 		case 32:
+			pixels = STD_ALLOC(sizeof(*pixels) * dsize);
+			
+			if (ivm_stream_read(dat, pixels, sizeof(*pixels), dsize) != dsize) {
+				tmp_err = "unexpected ending";
+				goto ERROR;
+			}
+
 			ret = ivm_image_new(header.info.width, header.info.height, (ivm_pixel_t *)dat);
+			
 			break;
 
 		default:
@@ -237,22 +247,13 @@ ERROR:;
 		*err = tmp_err;
 	}
 
+	if (pixels) {
+		STD_FREE(pixels);
+	}
+
 	return IVM_NULL;
 
 ERROR_END:
 	
-	return ret;
-}
-
-ivm_image_t *
-ivm_image_bmp_parse(ivm_file_t *fp,
-					const ivm_char_t **err)
-{
-	ivm_size_t size = ivm_file_length(fp);
-	ivm_byte_t *dat = (ivm_byte_t *)ivm_file_readAll(fp);
-	ivm_image_t *ret = ivm_image_bmp_parse_c(dat, size, err);
-
-	STD_FREE(dat);
-
 	return ret;
 }

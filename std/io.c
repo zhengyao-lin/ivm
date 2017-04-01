@@ -207,6 +207,12 @@ ivm_stream_free(ivm_stream_t *stream)
 void
 ivm_stream_dump(ivm_stream_t *stream)
 {
+	if (stream) {
+		if (stream->des) {
+			stream->des(stream);
+		}
+	}
+
 	return;
 }
 
@@ -237,6 +243,85 @@ ivm_file_stream_new(ivm_file_t *fp)
 					_ivm_file_stream_read, IVM_NULL);
 
 	ret->fp = fp;
+
+	return (ivm_stream_t *)ret;
+}
+
+IVM_PRIVATE
+ivm_size_t
+_ivm_buffer_stream_write(ivm_stream_t *stream,
+						 const void *data, ivm_size_t esize, ivm_size_t count)
+{
+	ivm_buffer_stream_t *bufs = (ivm_buffer_stream_t *)stream;
+	ivm_size_t wsize = esize * count;
+
+	if (wsize > bufs->alloc - bufs->wcur) {
+		bufs->alloc <<= 1;
+		bufs->buf = STD_REALLOC(bufs->buf, sizeof(*bufs->buf) * bufs->alloc);
+	}
+
+	STD_MEMCPY(bufs->buf + bufs->wcur, data, wsize);
+	bufs->wcur += wsize;
+
+	return count;
+}
+
+IVM_PRIVATE
+ivm_size_t
+_ivm_buffer_stream_read(ivm_stream_t *stream,
+						void *buf, ivm_size_t esize, ivm_size_t count)
+{
+	ivm_buffer_stream_t *bufs = (ivm_buffer_stream_t *)stream;
+	ivm_size_t rsize = esize * count;
+
+	if (rsize > bufs->wcur - bufs->rcur) {
+		return 0;
+	}
+
+	STD_MEMCPY(buf, bufs->buf + bufs->rcur, rsize);
+
+	bufs->rcur += rsize;
+
+	return count;
+}
+
+IVM_PRIVATE
+void
+_ivm_buffer_stream_destruct(ivm_stream_t *stream)
+{
+	ivm_buffer_stream_t *bufs = (ivm_buffer_stream_t *)stream;
+	STD_FREE(bufs->buf);
+	return;
+}
+
+ivm_stream_t *
+ivm_buffer_stream_new(ivm_byte_t *buf, ivm_size_t size)
+{
+	ivm_size_t alloc = size;
+	ivm_byte_t *nbuf;
+	ivm_buffer_stream_t *ret = STD_ALLOC(sizeof(*ret));
+	IVM_MEMCHECK(ret);
+
+	ivm_stream_init((ivm_stream_t *)ret,
+					_ivm_buffer_stream_write,
+					_ivm_buffer_stream_read,
+					_ivm_buffer_stream_destruct);
+
+	if (!buf) {
+		nbuf = STD_ALLOC(sizeof(*ret) * IVM_DEFAULT_STREAM_BUFFER_SIZE);
+		IVM_MEMCHECK(nbuf);
+		size = 0;
+		alloc = IVM_DEFAULT_STREAM_BUFFER_SIZE;
+	} else {
+		nbuf = STD_ALLOC(sizeof(*ret) * size);
+		IVM_MEMCHECK(nbuf);
+		STD_MEMCPY(nbuf, buf, size);
+	}
+
+	ret->buf = nbuf;
+	ret->alloc = alloc;
+	ret->wcur = size;
+	ret->rcur = 0;
 
 	return (ivm_stream_t *)ret;
 }

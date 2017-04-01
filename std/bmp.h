@@ -31,15 +31,10 @@ ivm_image_free(ivm_image_t *img);
 
 ivm_bool_t
 ivm_image_bmp_format(ivm_image_t *image,
-					 ivm_file_t *output);
+					 ivm_stream_t *output);
 
 ivm_image_t *
-ivm_image_bmp_parse_c(ivm_byte_t *dat,
-					  ivm_size_t size,
-					  const ivm_char_t **err);
-
-ivm_image_t *
-ivm_image_bmp_parse(ivm_file_t *fp,
+ivm_image_bmp_parse(ivm_stream_t *dat,
 					const ivm_char_t **err);
 
 #endif

@@ -1,3 +1,7 @@
+/**
+ * possible mem leak reported by Valgrind: see http://invisible-island.net/ncurses/ncurses.faq.html#config_leaks
+ */
+
 #include <stdio.h>
 #include <locale.h>
 #include <curses.h>

@@ -76,6 +76,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 	do {                                                                                     \
 		ivm_console_arg_list_t *__ca_arg_list__ = ivm_console_arg_parse((argc), (argv));     \
 		ivm_console_arg_list_iterator_t __ca_aiter__;                                        \
+		ivm_size_t __ca_argi__ = 0;                                                          \
 		ivm_list_t *__ca_opt_list__ = ivm_list_new(sizeof(ivm_console_option_t));            \
 		ivm_bool_t __ca_is_def__ = IVM_TRUE;                                                 \
 		ivm_console_option_t __ca_tmp_opt__;                                                 \
@@ -100,6 +101,7 @@ ivm_console_arg_parse(ivm_int_t argc,
 									  : __ca_cur_arg__->value);                              \
 			} while (0);                                                                     \
 			if (__ca_is_failed__) break;                                                     \
+			__ca_argi__++;                                                                   \
 		}                                                                                    \
 		goto __CA_END__;                                                                     \
 __CA_END__:                                                                                  \
@@ -134,7 +136,7 @@ __CA_END__:                                                                     
 		break;                                                                             \
 	}
 
-#define IVM_CONSOLE_ARG_DIRECT_INDEX() IVM_CONSOLE_ARG_LIST_INDEX(__ca_arg_list__, __ca_aiter__)
+#define IVM_CONSOLE_ARG_DIRECT_INDEX() __ca_argi__ // IVM_CONSOLE_ARG_LIST_INDEX(__ca_arg_list__, __ca_aiter__)
 
 #define IVM_CONSOLE_ARG_DIRECT_MATCH_STRING(...) \
 	if (!__ca_is_def__ && !__ca_cur_arg__->name) {   \

@@ -374,7 +374,7 @@ ivm_list_pop(ivm_list_t *list)
 #define IVM_LIST_EACHPTR(list, iter, type) \
 	type *__l_end_##iter##__; \
 	for ((iter) = (type *)((list)->lst), \
-		 __l_end_##iter##__ = ((type *)(iter)) + (list)->cur; \
+		 __l_end_##iter##__ = (type *)(iter) + (list)->cur; \
 		 (iter) != __l_end_##iter##__; \
 		 (iter)++)
 #define IVM_LIST_EACHPTR_R(list, iter, type) \

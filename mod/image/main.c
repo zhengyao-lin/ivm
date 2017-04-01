@@ -93,16 +93,26 @@ IVM_NATIVE_FUNC(_image_image_height)
 	return ivm_numeric_new(NAT_STATE(), ivm_image_height(img->dat));
 }
 
+IVM_NATIVE_FUNC(_image_image_encode)
+{
+	return IVM_NONE(NAT_STATE());
+}
+
 /* buffer -> img */
 IVM_NATIVE_FUNC(_image_bmp_parse)
 {
 	ivm_buffer_object_t *buf_obj;
 	const ivm_char_t *msg;
 	ivm_image_t *img;
+	ivm_stream_t *stream;
 
 	MATCH_ARG("b", &buf_obj);
 
-	img = ivm_image_bmp_parse_c(ivm_buffer_object_getRaw(buf_obj), ivm_buffer_object_getSize(buf_obj), &msg);
+	stream = ivm_buffer_stream_new(ivm_buffer_object_getRaw(buf_obj), ivm_buffer_object_getSize(buf_obj));
+
+	img = ivm_image_bmp_parse(stream, &msg);
+
+	ivm_stream_free(stream);
 
 	RTM_ASSERT(img, "%s", msg);
 
@@ -131,6 +141,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_image_type, ivm_image_object_new(state, IVM_NULL), {
 		ivm_object_setSlot_r(_PROTO, state, "width", IVM_NATIVE_WRAP(state, _image_image_width));
 		ivm_object_setSlot_r(_PROTO, state, "height", IVM_NATIVE_WRAP(state, _image_image_height));
+		ivm_object_setSlot_r(_PROTO, state, "encode", IVM_NATIVE_WRAP(state, _image_image_encode));
 	});
 
 	bmp_mod = ivm_object_new(state);

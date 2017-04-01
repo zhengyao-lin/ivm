@@ -250,6 +250,19 @@ typedef struct {
 ivm_stream_t *
 ivm_file_stream_new(ivm_file_t *fp);
 
+typedef struct {
+	IVM_STREAM_HEADER
+	ivm_byte_t *buf;
+	
+	ivm_size_t alloc;
+
+	ivm_size_t wcur;
+	ivm_size_t rcur;
+} ivm_buffer_stream_t;
+
+ivm_stream_t *
+ivm_buffer_stream_new(ivm_byte_t *buf, ivm_size_t size);
+
 IVM_COM_END
 
 #endif

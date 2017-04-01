@@ -196,7 +196,6 @@ ilang_gen_cop_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_cop_expr_t *cop_expr = IVM_AS(expr, ilang_gen_cop_expr_t);
 	ivm_char_t *tmp_str;
-	const ivm_char_t *err;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "custom operator expression", flag);
 
@@ -204,10 +203,6 @@ ilang_gen_cop_expr_eval(ilang_gen_expr_t *expr,
 	tmp_str = ivm_heap_alloc(env->heap, cop_expr->op.len + 1);
 	STD_MEMCPY(tmp_str, cop_expr->op.val, cop_expr->op.len);
 	tmp_str[cop_expr->op.len] = '\0';
-
-	if (!tmp_str) {
-		GEN_ERR_FAILED_PARSE_STRING(expr, err);
-	}
 
 	if (cop_expr->op2) {
 		// binary
