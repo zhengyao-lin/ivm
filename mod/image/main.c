@@ -22,6 +22,7 @@ ivm_int_t _type_uid;
 #define IMAGE_ERROR_MSG_CANNOT_OPEN_FILE(file)					"unable to open file \"%s\"", (file)
 #define IMAGE_ERROR_MSG_UNKNOWN_FORMAT(format)					"unknown format \"%s\"", (format)
 #define IMAGE_ERROR_MSG_FAIL_TO_FORMAT							"failed to format image"
+#define IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y)				"index (%ld, %ld) is out of boundary", (ivm_long_t)(x), (ivm_long_t)(y)
 
 typedef struct {
 	IVM_OBJECT_HEADER
@@ -150,6 +151,47 @@ IVM_NATIVE_FUNC(_image_image_encode)
 	return ret;
 }
 
+IVM_NATIVE_FUNC(_image_image_get)
+{
+	ivm_image_object_t *img;
+	ivm_pixel_t pix;
+	ivm_number_t x, y;
+
+	CHECK_BASE_TP(IMAGE_TYPE_UID);
+	MATCH_ARG("nn", &x, &y);
+
+	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
+
+	CHECK_OVERFLOW(x);
+	CHECK_OVERFLOW(y);
+
+	pix = ivm_image_getPixel(img->dat, x, y);
+
+	RTM_ASSERT(pix != IVM_PIXEL_ILLEGAL, IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y));
+
+	return ivm_numeric_new(NAT_STATE(), pix);
+}
+
+IVM_NATIVE_FUNC(_image_image_set)
+{
+	ivm_image_object_t *img;
+	ivm_number_t x, y, pix;
+
+	CHECK_BASE_TP(IMAGE_TYPE_UID);
+	MATCH_ARG("nnn", &x, &y, &pix);
+
+	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
+
+	CHECK_OVERFLOW(x);
+	CHECK_OVERFLOW(y);
+	CHECK_OVERFLOW(pix);
+
+	RTM_ASSERT(ivm_image_setPixel(img->dat, x, y, pix),
+			   IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y));
+
+	return IVM_NONE(NAT_STATE());
+}
+
 /* file -> img */
 IVM_NATIVE_FUNC(_image_bmp_parse)
 {
@@ -200,6 +242,9 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_object_setSlot_r(_PROTO, state, "width", IVM_NATIVE_WRAP(state, _image_image_width));
 		ivm_object_setSlot_r(_PROTO, state, "height", IVM_NATIVE_WRAP(state, _image_image_height));
 		ivm_object_setSlot_r(_PROTO, state, "encode", IVM_NATIVE_WRAP(state, _image_image_encode));
+
+		ivm_object_setSlot_r(_PROTO, state, "get", IVM_NATIVE_WRAP(state, _image_image_get));
+		ivm_object_setSlot_r(_PROTO, state, "set", IVM_NATIVE_WRAP(state, _image_image_set));
 	});
 
 	bmp_mod = ivm_object_new(state);

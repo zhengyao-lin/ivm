@@ -1,11 +1,3 @@
-
-import sys
-import test.ulist
-
-print(sys.argv)
-
-ret
-
 import time
 import io
 loc.merge(import curses)

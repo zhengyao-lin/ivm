@@ -22,6 +22,17 @@ ivm_image_new(ivm_size_t width,
 	return ret;
 }
 
+void
+ivm_image_free(ivm_image_t *img)
+{
+	if (img) {
+		STD_FREE(img->dat);
+		STD_FREE(img);
+	}
+
+	return;
+}
+
 ivm_image_t *
 ivm_image_clone(ivm_image_t *img)
 {
@@ -42,15 +53,35 @@ ivm_image_clone(ivm_image_t *img)
 	return ret;
 }
 
-void
-ivm_image_free(ivm_image_t *img)
+ivm_pixel_t
+ivm_image_getPixel(ivm_image_t *img,
+				   ivm_size_t x,
+				   ivm_size_t y)
 {
-	if (img) {
-		STD_FREE(img->dat);
-		STD_FREE(img);
+	ivm_size_t w = img->width, h = img->height;
+
+	if (x >= w || y >= h) {
+		return IVM_PIXEL_ILLEGAL;
+	}
+	
+	return img->dat[y * w + x];
+}
+
+ivm_bool_t
+ivm_image_setPixel(ivm_image_t *img,
+				   ivm_size_t x,
+				   ivm_size_t y,
+				   ivm_pixel_t pix)
+{
+	ivm_size_t w = img->width, h = img->height;
+
+	if (x >= w || y >= h) {
+		return IVM_FALSE;
 	}
 
-	return;
+	img->dat[y * w + x] = pix;
+
+	return IVM_TRUE;
 }
 
 struct _bmp_info_t {
