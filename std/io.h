@@ -54,6 +54,9 @@ typedef FILE *ivm_file_raw_t;
 #define IVM_FMODE_WRITE_BINARY "wb"
 #define IVM_FMODE_READ_BINARY "rb"
 
+void
+ivm_file_setRelativePath(const ivm_char_t *path);
+
 ivm_bool_t
 ivm_file_access(const ivm_char_t *path,
 				const ivm_char_t *mode);
@@ -67,6 +70,10 @@ typedef struct {
 ivm_file_t *
 ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode);
+
+ivm_file_t *
+ivm_file_newAbs(const ivm_char_t *path,
+				const ivm_char_t *mode);
 
 ivm_file_t *
 ivm_file_new_c(ivm_file_raw_t raw);
@@ -262,6 +269,9 @@ typedef struct {
 
 ivm_stream_t *
 ivm_buffer_stream_new(ivm_byte_t *buf, ivm_size_t size);
+
+#define ivm_buffer_stream_getBuffer(bstream) ((bstream)->buf)
+#define ivm_buffer_stream_getSize(bstream) ((bstream)->wcur)
 
 IVM_COM_END
 

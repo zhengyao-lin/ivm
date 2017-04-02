@@ -71,7 +71,7 @@ struct _bmp_info_t {
 
 	ivm_uint32_t clr_used;		// color used(in the palette)
 	ivm_uint32_t clr_imp;		// important color count
-} IVM_NOALIGN;
+};
 
 struct _bmp_header_t {
 	ivm_uint32_t size;			// size of the whole file
@@ -79,7 +79,7 @@ struct _bmp_header_t {
 	ivm_uint32_t ofs;			// header offset
 
 	struct _bmp_info_t info;
-} IVM_NOALIGN;
+};
 
 ivm_bool_t
 ivm_image_bmp_format(ivm_image_t *image,

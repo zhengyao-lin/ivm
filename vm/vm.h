@@ -14,6 +14,7 @@
 #include "std/uid.h"
 #include "std/thread.h"
 #include "std/time.h"
+#include "std/io.h"
 
 #include "gc.h"
 #include "coro.h"
@@ -179,6 +180,7 @@ void
 ivm_vmstate_setCurPath(ivm_vmstate_t *state,
 					   const ivm_char_t *path)
 {
+	ivm_file_setRelativePath(path);
 	state->cur_path = ivm_vmstate_constantize_r(state, path);
 	return;
 }
@@ -188,6 +190,7 @@ void
 ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
 						 const ivm_string_t *path)
 {
+	ivm_file_setRelativePath(ivm_string_trimHead(path));
 	state->cur_path = path;
 	return;
 }

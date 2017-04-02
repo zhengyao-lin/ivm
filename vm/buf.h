@@ -26,6 +26,11 @@ ivm_object_t *
 ivm_buffer_object_new_c(struct ivm_vmstate_t_tag *state,
 						ivm_size_t init, ivm_byte_t *buf);
 
+ivm_object_t *
+ivm_buffer_object_newCopy(struct ivm_vmstate_t_tag *state,
+						  ivm_size_t init,
+						  ivm_byte_t *buf);
+
 IVM_INLINE
 ivm_size_t
 ivm_buffer_object_getSize(ivm_buffer_object_t *buf)

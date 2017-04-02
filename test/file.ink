@@ -1,7 +1,7 @@
 import std
 import io
 
-fp = io.file("test/text1")
+fp = io.file("text1")
 loc str = fp.read()
 print(str)
 print(fp is io.file)
@@ -19,7 +19,7 @@ print(buf.to_s())
 
 fp.close()
 
-fp = io.file("test/text2")
+fp = io.file("text2")
 
 try: print(fp.read(1000)) catch: print("failed to read")
 print(fp.len())
@@ -50,7 +50,7 @@ catch: print("yes")
 
 fp.close()
 
-fp = io.file("test/text3", "wb+")
+fp = io.file("text3", "wb+")
 
 fp.write("hello, world")
 fp.seek()

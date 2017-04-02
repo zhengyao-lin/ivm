@@ -19,6 +19,9 @@ ivm_int_t _type_uid;
 #define IMAGE_TYPE_UID (&_type_uid)
 
 #define IMAGE_ERROR_MSG_UNINIT_IMAGE							"uninitialized image data"
+#define IMAGE_ERROR_MSG_CANNOT_OPEN_FILE(file)					"unable to open file \"%s\"", (file)
+#define IMAGE_ERROR_MSG_UNKNOWN_FORMAT(format)					"unknown format \"%s\"", (format)
+#define IMAGE_ERROR_MSG_FAIL_TO_FORMAT							"failed to format image"
 
 typedef struct {
 	IVM_OBJECT_HEADER
@@ -95,24 +98,79 @@ IVM_NATIVE_FUNC(_image_image_height)
 
 IVM_NATIVE_FUNC(_image_image_encode)
 {
-	return IVM_NONE(NAT_STATE());
+	ivm_image_object_t *img;
+	const ivm_string_t *enc, *file_s = IVM_NULL;
+	const ivm_char_t *file;
+	ivm_file_t *fp;
+	ivm_stream_t *stream;
+	ivm_bool_t suc;
+	ivm_byte_t *buf;
+	ivm_size_t buf_size;
+	ivm_object_t *ret;
+
+	CHECK_BASE_TP(IMAGE_TYPE_UID);
+	MATCH_ARG("s*s", &enc, &file_s);
+
+	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
+
+	if (!ivm_string_compareToRaw(enc, "bmp")) {
+		if (file_s) {
+			file = ivm_string_trimHead(file_s);
+			fp = ivm_file_new(file, IVM_FMODE_WRITE_BINARY);
+			RTM_ASSERT(fp, IMAGE_ERROR_MSG_CANNOT_OPEN_FILE(file));
+
+			stream = ivm_file_stream_new(fp);
+			suc = ivm_image_bmp_format(img->dat, stream);
+			ivm_stream_free(stream);
+
+			RTM_ASSERT(suc, IMAGE_ERROR_MSG_FAIL_TO_FORMAT);
+
+			ivm_file_free(fp);
+
+			ret = IVM_NONE(NAT_STATE());
+		} else {
+			stream = ivm_buffer_stream_new(IVM_NULL, 0);
+			suc = ivm_image_bmp_format(img->dat, stream);
+			
+			if (!suc) {
+				ivm_stream_free(stream);
+				RTM_FATAL(IMAGE_ERROR_MSG_FAIL_TO_FORMAT);
+			}
+
+			buf = ivm_buffer_stream_getBuffer((ivm_buffer_stream_t *)stream);
+			buf_size = ivm_buffer_stream_getSize((ivm_buffer_stream_t *)stream);
+			
+			ret = ivm_buffer_object_newCopy(NAT_STATE(), buf_size, buf);
+			ivm_stream_free(stream);
+		}
+	} else {
+		RTM_FATAL(IMAGE_ERROR_MSG_UNKNOWN_FORMAT(ivm_string_trimHead(enc)));
+	}
+
+	return ret;
 }
 
-/* buffer -> img */
+/* file -> img */
 IVM_NATIVE_FUNC(_image_bmp_parse)
 {
-	ivm_buffer_object_t *buf_obj;
-	const ivm_char_t *msg;
+	const ivm_string_t *file;
+	const ivm_char_t *msg, *path;
 	ivm_image_t *img;
 	ivm_stream_t *stream;
+	ivm_file_t *fp;
 
-	MATCH_ARG("b", &buf_obj);
+	MATCH_ARG("s", &file);
 
-	stream = ivm_buffer_stream_new(ivm_buffer_object_getRaw(buf_obj), ivm_buffer_object_getSize(buf_obj));
+	path = ivm_string_trimHead(file);
+	fp = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+	RTM_ASSERT(fp, IMAGE_ERROR_MSG_CANNOT_OPEN_FILE(path));
+
+	stream = ivm_file_stream_new(fp);
 
 	img = ivm_image_bmp_parse(stream, &msg);
 
 	ivm_stream_free(stream);
+	ivm_file_free(fp);
 
 	RTM_ASSERT(img, "%s", msg);
 

@@ -4,8 +4,40 @@
 #include "pub/const.h"
 #include "pub/err.h"
 
+#include "string.h"
 #include "mem.h"
 #include "io.h"
+
+ivm_char_t *_rel_path = IVM_NULL;
+ivm_size_t _rel_path_size = 0;
+
+void
+ivm_file_setRelativePath(const ivm_char_t *path)
+{
+	ivm_size_t len;
+
+	if (_rel_path) {
+		STD_FREE(_rel_path);
+	}
+
+	if (!path) {
+		_rel_path = IVM_NULL;
+		_rel_path_size = 0;
+		return;
+	}
+
+	len = IVM_STRLEN(path);
+
+	_rel_path = STD_ALLOC(sizeof(*_rel_path) * (len + 1));
+	IVM_MEMCHECK(_rel_path);
+
+	STD_MEMCPY(_rel_path, path, len);
+	_rel_path[len] = '\0';
+
+	_rel_path_size = len;
+
+	return;
+}
 
 ivm_bool_t
 ivm_file_access(const ivm_char_t *path,
@@ -26,7 +58,49 @@ ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode)
 {
 	ivm_file_t *ret;
-	ivm_file_raw_t fp = IVM_FOPEN(path, mode);
+	ivm_file_raw_t fp;
+	ivm_char_t *npath;
+	ivm_size_t len;
+
+	if (_rel_path) {
+		len = IVM_STRLEN(path);
+		npath = STD_ALLOC(sizeof(*npath) * (_rel_path_size + len + 2));
+		IVM_MEMCHECK(npath);
+
+		STD_MEMCPY(npath, _rel_path, _rel_path_size);
+		npath[_rel_path_size] = IVM_FILE_SEPARATOR;
+		STD_MEMCPY(npath + _rel_path_size + 1, path, len);
+		npath[_rel_path_size + len + 1] = '\0';
+	
+		// IVM_TRACE("%s\n", npath);
+
+		fp = IVM_FOPEN(npath, mode);
+
+		STD_FREE(npath);
+	} else {
+		fp = IVM_FOPEN(path, mode);
+	}
+
+	if (!fp) return IVM_NULL;
+
+	ret = STD_ALLOC(sizeof(*ret));
+
+	IVM_MEMCHECK(ret);
+
+	ret->fp = fp;
+
+	return ret;
+}
+
+// absolute
+ivm_file_t *
+ivm_file_newAbs(const ivm_char_t *path,
+				const ivm_char_t *mode)
+{
+	ivm_file_t *ret;
+	ivm_file_raw_t fp;
+
+	fp = IVM_FOPEN(path, mode);
 	if (!fp) return IVM_NULL;
 
 	ret = STD_ALLOC(sizeof(*ret));
@@ -257,6 +331,10 @@ _ivm_buffer_stream_write(ivm_stream_t *stream,
 
 	if (wsize > bufs->alloc - bufs->wcur) {
 		bufs->alloc <<= 1;
+		if (wsize > bufs->alloc - bufs->wcur) {
+			bufs->alloc += wsize;
+		}
+
 		bufs->buf = STD_REALLOC(bufs->buf, sizeof(*bufs->buf) * bufs->alloc);
 	}
 

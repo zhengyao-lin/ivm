@@ -42,6 +42,24 @@ ivm_buffer_object_new_c(ivm_vmstate_t *state,
 	return IVM_AS_OBJ(ret);
 }
 
+ivm_object_t *
+ivm_buffer_object_newCopy(ivm_vmstate_t *state,
+						  ivm_size_t init,
+						  ivm_byte_t *buf)
+{
+	ivm_buffer_object_t *ret = ivm_vmstate_alloc(state, sizeof(*ret));
+
+	ivm_object_init(IVM_AS_OBJ(ret), IVM_BTTYPE(state, IVM_BUFFER_OBJECT_T));
+
+	ret->alloc = ret->size = init;
+	ret->buf = ivm_vmstate_allocWild(state, sizeof(*buf) * init);
+	STD_MEMCPY(ret->buf, buf, sizeof(*buf) * init);
+
+	ivm_vmstate_addDesLog(state, IVM_AS_OBJ(ret));
+
+	return IVM_AS_OBJ(ret);
+}
+
 void
 ivm_buffer_object_destructor(ivm_object_t *obj,
 							 ivm_vmstate_t *state)

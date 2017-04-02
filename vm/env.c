@@ -8,6 +8,8 @@
 
 #include "mod/mod.h"
 
+#include "std/io.h"
+
 #include "env.h"
 
 ivm_int_t
@@ -28,6 +30,7 @@ void
 ivm_env_clean()
 {
 	ivm_mod_clean();
+	ivm_file_setRelativePath(IVM_NULL);
 	// ivm_thread_clean();
 
 	return;

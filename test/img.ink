@@ -2,12 +2,11 @@ import std
 import image
 import io
 
-fp = io.file("test/test_img.bmp")
-buf = fp.readBuffer()
-
-img = image.bmp.parse(buf)
+img = image.bmp.parse("test_img.bmp")
 print(img.width())
 print(img.height())
+
+// print(img.encode("bmp", "wow.bmp"))
 
 ret
 

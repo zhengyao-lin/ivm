@@ -80,7 +80,7 @@ _parse_source(ivm_vmstate_t *state,
 	ilang_gen_trans_unit_t *t_unit = IVM_NULL;
 	ivm_exec_unit_t *ret = IVM_NULL;
 
-	file = ivm_file_new(path, IVM_FMODE_READ_BINARY);
+	file = ivm_file_newAbs(path, IVM_FMODE_READ_BINARY);
 
 	if (!file) goto FAILED;
 	
