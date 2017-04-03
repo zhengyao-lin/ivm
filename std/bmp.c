@@ -350,6 +350,13 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 		}
 	}
 
+	if (usev4) {
+		rofs = _get_ofs(v4info.rmask);
+		gofs = _get_ofs(v4info.gmask);
+		bofs = _get_ofs(v4info.bmask);
+		aofs = _get_ofs(v4info.amask);
+	}
+
 	// IVM_TRACE("%d\n", header.info.clr_used);
 
 	if (header.ofs != sizeof(htype) + sizeof(header)) {
@@ -367,12 +374,6 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 		if (usev4) {
 			// re-mix rgba
 			// IVM_TRACE("rmask: %d\n", v4info.rmask);
-
-			rofs = _get_ofs(v4info.rmask);
-			gofs = _get_ofs(v4info.gmask);
-			bofs = _get_ofs(v4info.bmask);
-			aofs = _get_ofs(v4info.amask);
-
 			for (i = 0; i < header.info.clr_used; i++) {
 				pr = (clr_table[i] & v4info.rmask) >> rofs;
 				pg = (clr_table[i] & v4info.gmask) >> gofs;
@@ -531,6 +532,14 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 				 i < psize * 4; i += 4, cur++) {
 				tmpbuf = pdat + i;
 				*cur = (tmpbuf[0] << 24) | (tmpbuf[1] << 16) | (tmpbuf[2] << 8) | tmpbuf[3];
+
+				if (usev4) {
+					pr = (*cur & v4info.rmask) >> rofs;
+					pg = (*cur & v4info.gmask) >> gofs;
+					pb = (*cur & v4info.bmask) >> bofs;
+					pa = (*cur & v4info.amask) >> aofs;
+					*cur = _mix_rgba(pr, pg, pb, pa);
+				}
 			}
 
 			ret = ivm_image_new(header.info.width, header.info.height, pixels);
