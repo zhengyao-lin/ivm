@@ -326,7 +326,8 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 	ivm_uint16_t htype;
 
 	ivm_uint32_t pr, pg, pb, pa, // tmp value for rgba
-				 rofs, gofs, bofs, aofs; // offset of rgba(in their masks)
+				 rofs = 0, gofs = 0,
+				 bofs = 0, aofs = 0; // offset of rgba(in their masks)
 
 	ivm_byte_t *pdat = IVM_NULL, tmp, *tmpbuf;
 
