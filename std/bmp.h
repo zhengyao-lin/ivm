@@ -40,10 +40,11 @@ ivm_image_clone(ivm_image_t *img);
  *
  * in memory: abcdefghijklmnopqrstuvwxy
  */
-ivm_pixel_t /* return IVM_PIXEL_ILLEGAL if out of boundary */
+ivm_bool_t /* if out of boundary */
 ivm_image_getPixel(ivm_image_t *img,
 				   ivm_size_t x,
-				   ivm_size_t y);
+				   ivm_size_t y,
+				   ivm_pixel_t *ret);
 
 ivm_bool_t /* if out of boundary */
 ivm_image_setPixel(ivm_image_t *img,

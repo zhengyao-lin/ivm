@@ -12,12 +12,20 @@ ivm_image_new(ivm_size_t width,
 			  ivm_pixel_t *dat)
 {
 	ivm_image_t *ret = STD_ALLOC(sizeof(*ret));
+	ivm_size_t size;
 
 	IVM_MEMCHECK(ret);
 
 	ret->width = width;
 	ret->height = height;
-	ret->dat = dat;
+
+	if (dat) {
+		ret->dat = dat;
+	} else {
+		size = width * height;
+		ret->dat = STD_ALLOC_INIT(sizeof(*ret->dat) * size);
+		IVM_MEMCHECK(ret->dat);
+	}
 
 	return ret;
 }
@@ -53,18 +61,21 @@ ivm_image_clone(ivm_image_t *img)
 	return ret;
 }
 
-ivm_pixel_t
+ivm_bool_t
 ivm_image_getPixel(ivm_image_t *img,
 				   ivm_size_t x,
-				   ivm_size_t y)
+				   ivm_size_t y,
+				   ivm_pixel_t *ret)
 {
 	ivm_size_t w = img->width, h = img->height;
 
 	if (x >= w || y >= h) {
-		return IVM_PIXEL_ILLEGAL;
+		return IVM_FALSE;
 	}
 	
-	return img->dat[y * w + x];
+	*ret = img->dat[y * w + x];
+
+	return IVM_TRUE;
 }
 
 ivm_bool_t
@@ -120,17 +131,19 @@ ivm_image_bmp_format(ivm_image_t *image,
 	ivm_size_t width = ivm_image_width(image);
 	ivm_size_t height = ivm_image_height(image);
 	ivm_size_t pcount = width * height,
-			   isize = pcount * 3, i;
+			   isize = pcount * 4, i;
 	ivm_pixel_t *pixs = ivm_image_pixels(image), tmp;
 	ivm_byte_t *dat, *cur;
 	ivm_bool_t suc;
 
+	const ivm_size_t hsize = sizeof(header) + 2; // header size
+
 	IVM_PRIVATE const ivm_uint16_t htype = 0x4d42;
 	
 	header = (struct _bmp_header_t) {
-		.size = sizeof(header) + isize,
+		.size = hsize + isize,
 		.reserv = 0,
-		.ofs = sizeof(header),
+		.ofs = hsize,
 		.info = (struct _bmp_info_t) {
 			.size = sizeof(header.info),
 			
@@ -139,7 +152,7 @@ ivm_image_bmp_format(ivm_image_t *image,
 
 			.plane = 1,
 
-			.bpp = 24,
+			.bpp = 32,
 
 			.compr = 0,
 			.compr_size = isize,
@@ -157,22 +170,99 @@ ivm_image_bmp_format(ivm_image_t *image,
 	IVM_MEMCHECK(dat);
 
 	for (i = 0, cur = dat;
-		 i < pcount; i++, cur += 3) {
+		 i < pcount; i++, cur += 4) {
 		// IVM_TRACE("%ld\n", i);
 		tmp = pixs[i];
-		cur[0] = tmp >> 16;
-		cur[1] = tmp >> 8;
-		cur[2] = tmp;
+		// *cur = tmp;
+		cur[0] = tmp >> 24;
+		cur[1] = tmp >> 16;
+		cur[2] = tmp >> 8;
+		cur[3] = tmp;
+
+		// IVM_TRACE("final: %u\n", pixs[i]);
 	}
 
 	suc = ivm_stream_write(output, &htype, sizeof(htype), 1) == 1 &&
 		  ivm_stream_write(output, &header, sizeof(header), 1) == 1 &&
-		  ivm_stream_write(output, dat, 1, isize) == isize;
+		  ivm_stream_write(output, dat, sizeof(*dat), isize) == isize;
 
 	STD_FREE(dat);
 
 	return suc;
 }
+
+ivm_byte_t * /* decoded data */
+_bmp_rle8_decode(ivm_byte_t *cdat,
+				 ivm_size_t size,
+				 ivm_size_t *osize /* output size */,
+				 const ivm_char_t **err)
+{
+	ivm_stream_t *bufs = ivm_buffer_stream_new(IVM_NULL, 0);
+	ivm_buffer_stream_t *tmp_bufs;
+	ivm_byte_t *cur, *end, *ret, tmp;
+	ivm_int_t i;
+
+	const ivm_char_t *tmp_err = IVM_NULL;
+
+	if (size % 2) {
+		tmp_err = "RLE8: wrong alignment";
+		goto RERROR;
+	}
+
+	for (cur = cdat, end = cur + size;
+		 cur != end; cur += 2) {
+		if (*cur) {
+			tmp = cur[1];
+			ivm_byte_t buf[*cur]; // <= 256
+
+			// IVM_TRACE("size: %d\n", *cur);
+
+			for (i = 0; i < *cur; i++) {
+				buf[i] = tmp;
+			}
+
+			ivm_stream_write(bufs, buf, sizeof(*buf), *cur);
+		} else switch (*(cur + 1)) {
+			case 1: goto RERROR_END;
+			case 0:
+				// IVM_TRACE("%d\n", IVM_PTR_DIFF(cur, cdat, ivm_byte_t));
+				break;
+			default:
+				// IVM_TRACE("esc: %d\n", *(cur + 2));
+				tmp_err = "RLE8: unsupported escape instruction";
+				goto RERROR;
+		}
+	}
+
+goto RERROR_END;
+RERROR:;
+
+	if (tmp_err) {
+		*err = tmp_err;
+	}
+
+	ivm_stream_free(bufs);
+
+	return IVM_NULL;
+
+RERROR_END:;
+
+	tmp_bufs = (ivm_buffer_stream_t *)bufs;
+
+	*osize = ivm_buffer_stream_getSize(tmp_bufs);
+	
+	ret = STD_ALLOC(sizeof(*ret) * *osize);
+	IVM_MEMCHECK(ret);
+
+	STD_MEMCPY(ret, ivm_buffer_stream_getBuffer(tmp_bufs), sizeof(*ret) * *osize);
+
+	ivm_stream_free(bufs);
+
+	return ret;
+}
+
+#define _BMP_COMP_RLE8 1
+#define _BMP_COMP_RLE4 2
 
 ivm_image_t *
 ivm_image_bmp_parse(ivm_stream_t *dat,
@@ -180,45 +270,100 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 {
 	const ivm_char_t *tmp_err = IVM_NULL;
 	struct _bmp_header_t header;
-	ivm_size_t i, dsize = -1;
-	ivm_uchar_t tmp, tmpbuf[3];
-	ivm_pixel_t *pixels = IVM_NULL, *cur;
+	ivm_size_t i, dsize = -1, psize;
+	
+	ivm_pixel_t *pixels = IVM_NULL,
+				*clr_table = IVM_NULL, *cur;
+
 	ivm_image_t *ret = IVM_NULL;
 	ivm_uint16_t htype;
+
+	ivm_byte_t *pdat = IVM_NULL, tmp, *tmpbuf;
 
 	if (ivm_stream_read(dat, &htype, sizeof(htype), 1) != 1 ||
 		htype != 0x4d42) {
 		tmp_err = "not a bmp file";
-		goto ERROR;
+		goto RERROR;
 	}
 
 	if (ivm_stream_read(dat, &header, sizeof(header), 1) != 1) {
 		tmp_err = "wrong header";
-		goto ERROR;
+		goto RERROR;
 	}
+
+	// IVM_TRACE("%d\n", header.info.clr_used);
 
 	if (header.ofs != sizeof(htype) + sizeof(header)) {
-		tmp_err = "unsupported palette";
-		goto ERROR;
+		// read color table
+
+		clr_table = STD_ALLOC(sizeof(*clr_table) * header.info.clr_used);
+		IVM_MEMCHECK(clr_table);
+
+		ivm_stream_read(dat, clr_table, sizeof(*clr_table), header.info.clr_used);
+
+		// IVM_TRACE("clr: %d\n", sizeof(htype) + sizeof(header));
+
+		// tmp_err = "unsupported color table";
+		// goto RERROR;
 	}
 
-	dsize = header.size - sizeof(htype) - sizeof(header);
+	dsize = header.size - header.ofs; // data size
+	psize = header.info.width * header.info.height; // picture size
+
+	// read image data
+	pdat = STD_ALLOC(sizeof(*pdat) * dsize);
+	IVM_MEMCHECK(pdat);
+	if (ivm_stream_read(dat, pdat, sizeof(*pdat), dsize) != dsize) {
+		tmp_err = "unexpected ending";
+		goto RERROR;
+	}
+
+	// IVM_TRACE("dsize: %d\n", dsize);
+
+	// check compression
+	switch (header.info.compr) {
+		case _BMP_COMP_RLE8:
+			tmpbuf = _bmp_rle8_decode(pdat, dsize, &dsize, &tmp_err);
+			if (!tmpbuf) {
+				goto RERROR;
+			}
+
+			STD_FREE(pdat);
+			pdat = tmpbuf;
+
+			// IVM_TRACE("after compression: %d\n", dsize);
+
+			break;
+
+		case 0: break; // no compression
+		default:
+			tmp_err = "unsupported compression";
+			goto RERROR;
+	}
+
+	// check enough image data
+	if (!header.info.compr &&
+		dsize * 8 / header.info.bpp < psize) {
+		tmp_err = "no enough data";
+		goto RERROR;
+	}
 
 	switch (header.info.bpp) {
 		case 1:
-			pixels = STD_ALLOC(sizeof(*pixels) * dsize * 8);
+			if (!clr_table || header.info.clr_used < 2) {
+				tmp_err = "lack color table";
+				goto RERROR;
+			}
+
+			pixels = STD_ALLOC(sizeof(*pixels) * psize);
+			IVM_MEMCHECK(pixels);
 
 			for (i = 0, cur = pixels;
-				 i < dsize; i++, cur++) {
+				 i < dsize; i++, cur += 8) {
 
-#define BIT_AT(n) (cur[(n) - 1] = !!(tmp & (1 << (8 - (n)))))
+#define BIT_AT(n) (cur[(n) - 1] = clr_table[!!(tmp & (1 << (8 - (n))))])
 
-				// tmp = dat[i]; // unsigned
-
-				if (ivm_stream_read(dat, &tmp, sizeof(tmp), 1) != 1) {
-					tmp_err = "unexpected ending";
-					goto ERROR;
-				}
+				tmp = pdat[i]; // unsigned
 
 				BIT_AT(1);
 				BIT_AT(2);
@@ -237,17 +382,43 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 
 			break;
 
-		case 24:
-			pixels = STD_ALLOC(sizeof(*pixels) * (dsize / 3));
+		case 8:
+			if (!clr_table || header.info.clr_used < 256) {
+				tmp_err = "lack color table";
+				goto RERROR;
+			}
+
+			pixels = STD_ALLOC(sizeof(*pixels) * psize);
+			IVM_MEMCHECK(pixels);
 
 			for (i = 0, cur = pixels;
-				 i < dsize; i += 3, cur++) {
-				if (ivm_stream_read(dat, tmpbuf, sizeof(*tmpbuf), 3) != 3) {
-					tmp_err = "unexpected ending";
-					goto ERROR;
-				}
+				 i < psize; i++, cur++) {
+				tmp = pdat[i];
+				*cur = clr_table[tmp];
+			}
 
-				*cur = (tmpbuf[0] << 16) + (tmpbuf[1] << 8) + tmpbuf[2];
+			ret = ivm_image_new(header.info.width, header.info.height, pixels);
+
+			break;
+
+		case 24:
+			if (dsize % 3) {
+				tmp_err = "wrong alignment";
+				goto RERROR;
+			}
+
+			pixels = STD_ALLOC(sizeof(*pixels) * psize);
+			IVM_MEMCHECK(pixels);
+
+			// low  ->  high
+			// -------------
+			// | R | G | B |
+			// -------------
+			for (i = 0, cur = pixels;
+				 i < psize * 3; i += 3, cur++) {
+				tmpbuf = pdat + i;
+				*cur = (tmpbuf[0] << 24) | (tmpbuf[1] << 16) | (tmpbuf[2] << 8);
+				// IVM_TRACE("pix: %u\n", *cur);
 			}
 
 			ret = ivm_image_new(header.info.width, header.info.height, pixels);
@@ -255,24 +426,35 @@ ivm_image_bmp_parse(ivm_stream_t *dat,
 			break;
 
 		case 32:
-			pixels = STD_ALLOC(sizeof(*pixels) * dsize);
-			
-			if (ivm_stream_read(dat, pixels, sizeof(*pixels), dsize) != dsize) {
-				tmp_err = "unexpected ending";
-				goto ERROR;
+			if (dsize % 4) {
+				tmp_err = "wrong alignment";
+				goto RERROR;
 			}
 
-			ret = ivm_image_new(header.info.width, header.info.height, (ivm_pixel_t *)dat);
+			pixels = STD_ALLOC(sizeof(*pixels) * psize);
+			IVM_MEMCHECK(pixels);
+
+			// low    ->    high
+			// -----------------
+			// | R | G | B | A |
+			// -----------------
+			for (i = 0, cur = pixels;
+				 i < psize * 4; i += 4, cur++) {
+				tmpbuf = pdat + i;
+				*cur = (tmpbuf[0] << 24) | (tmpbuf[1] << 16) | (tmpbuf[2] << 8) | tmpbuf[3];
+			}
+
+			ret = ivm_image_new(header.info.width, header.info.height, pixels);
 			
 			break;
 
 		default:
 			tmp_err = "unsupported bit count per pixel";
-			goto ERROR;
+			goto RERROR;
 	}
 
-goto ERROR_END;
-ERROR:;
+goto RERROR_END;
+RERROR:;
 	
 	if (err) {
 		*err = tmp_err;
@@ -282,9 +464,25 @@ ERROR:;
 		STD_FREE(pixels);
 	}
 
+	if (clr_table) {
+		STD_FREE(clr_table);
+	}
+
+	if (pdat) {
+		STD_FREE(pdat);
+	}
+
 	return IVM_NULL;
 
-ERROR_END:
+RERROR_END:
+
+	if (clr_table) {
+		STD_FREE(clr_table);
+	}
+
+	if (pdat) {
+		STD_FREE(pdat);
+	}
 	
 	return ret;
 }

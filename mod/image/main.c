@@ -69,6 +69,18 @@ ivm_image_object_cloner(ivm_object_t *obj,
 
 IVM_NATIVE_FUNC(_image_image)
 {
+	ivm_image_t *img;
+	ivm_number_t width, height;
+
+	if (NAT_ARGC() >= 2) {
+		MATCH_ARG("nn", &width, &height);
+		CHECK_OVERFLOW(width);
+		CHECK_OVERFLOW(height);
+
+		img = ivm_image_new(width, height, IVM_NULL);
+		return ivm_image_object_new(NAT_STATE(), img);
+	}
+
 	CHECK_ARG_1_TP(IMAGE_TYPE_UID);
 	return ivm_object_clone(NAT_ARG_AT(1), NAT_STATE());
 }
@@ -165,9 +177,7 @@ IVM_NATIVE_FUNC(_image_image_get)
 	CHECK_OVERFLOW(x);
 	CHECK_OVERFLOW(y);
 
-	pix = ivm_image_getPixel(img->dat, x, y);
-
-	RTM_ASSERT(pix != IVM_PIXEL_ILLEGAL, IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y));
+	RTM_ASSERT(ivm_image_getPixel(img->dat, x, y, &pix), IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y));
 
 	return ivm_numeric_new(NAT_STATE(), pix);
 }
@@ -175,16 +185,16 @@ IVM_NATIVE_FUNC(_image_image_get)
 IVM_NATIVE_FUNC(_image_image_set)
 {
 	ivm_image_object_t *img;
-	ivm_number_t x, y, pix;
+	ivm_number_t x, y;
+	ivm_uint32_t pix;
 
 	CHECK_BASE_TP(IMAGE_TYPE_UID);
-	MATCH_ARG("nnn", &x, &y, &pix);
+	MATCH_ARG("nnu", &x, &y, &pix);
 
 	img = IVM_AS(NAT_BASE(), ivm_image_object_t);
 
 	CHECK_OVERFLOW(x);
 	CHECK_OVERFLOW(y);
-	CHECK_OVERFLOW(pix);
 
 	RTM_ASSERT(ivm_image_setPixel(img->dat, x, y, pix),
 			   IMAGE_ERROR_MSG_INDEX_OUT_OF_BOUNDARY(x, y));
@@ -226,6 +236,7 @@ ivm_mod_main(ivm_vmstate_t *state,
 {
 	ivm_object_t *mod = ivm_object_new(state);
 	ivm_object_t *bmp_mod;
+	ivm_object_t *img_proto;
 
 	ivm_type_t _image_type = IVM_TPTYPE_BUILD(
 		"image.image", sizeof(ivm_image_object_t),
@@ -239,6 +250,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 
 	/* image.image */
 	IVM_VMSTATE_REGISTER_TPTYPE(state, coro, &_image_type, ivm_image_object_new(state, IVM_NULL), {
+		img_proto = _PROTO;
+
 		ivm_object_setSlot_r(_PROTO, state, "width", IVM_NATIVE_WRAP(state, _image_image_width));
 		ivm_object_setSlot_r(_PROTO, state, "height", IVM_NATIVE_WRAP(state, _image_image_height));
 		ivm_object_setSlot_r(_PROTO, state, "encode", IVM_NATIVE_WRAP(state, _image_image_encode));
@@ -246,6 +259,8 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_object_setSlot_r(_PROTO, state, "get", IVM_NATIVE_WRAP(state, _image_image_get));
 		ivm_object_setSlot_r(_PROTO, state, "set", IVM_NATIVE_WRAP(state, _image_image_set));
 	});
+
+	ivm_object_setSlot_r(mod, state, "image", IVM_NATIVE_WRAP_CONS(state, img_proto, _image_image));
 
 	bmp_mod = ivm_object_new(state);
 	ivm_object_setSlot_r(mod, state, "bmp", bmp_mod);

@@ -24,6 +24,10 @@ ivm_numeric_isTrue(ivm_object_t *obj,
 #define ivm_numeric_getValue(obj) (IVM_AS((obj), ivm_numeric_t)->val)
 #define ivm_numeric_setValue(obj, v) (IVM_AS((obj), ivm_numeric_t)->val = (v))
 
+// double is casted into uint first to avoid overflow problem when uint32_max > x > int32_max
+#define ivm_numeric_getSInt32(obj) ((ivm_sint32_t)(ivm_uint32_t)IVM_AS((obj), ivm_numeric_t)->val)
+#define ivm_numeric_getUInt32(obj) ((ivm_uint32_t)IVM_AS((obj), ivm_numeric_t)->val)
+
 IVM_COM_END
 
 #endif

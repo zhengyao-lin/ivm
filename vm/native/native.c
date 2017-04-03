@@ -16,13 +16,15 @@
 /*
 	rules:                                                                      output type
 		1. 'n': check num type and get the value                             -- ivm_number_t *
-		2. 's': check string type and get the value                          -- const ivm_string_t **
-		3. 'l': check list type and convert to list object                   -- ivm_list_object_t **
-		4. 'f': check function type and convert to function object           -- ivm_function_object_t **
-		5. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
-		6. 'c': check coro type and get the value                            -- ivm_coro_t **
-		7. '.': no type check but accept the object                          -- ivm_object_t **
-		8. '*' prefix: reverse the optional mark                             -- \
+		2. 'u': check num type and cast the value to uint32                  -- ivm_uint32_t *
+		3. 'd': check num type and cast the value to sint32                  -- ivm_sint32_t *
+		4. 's': check string type and get the value                          -- const ivm_string_t **
+		5. 'l': check list type and convert to list object                   -- ivm_list_object_t **
+		6. 'f': check function type and convert to function object           -- ivm_function_object_t **
+		7. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
+		8. 'c': check coro type and get the value                            -- ivm_coro_t **
+		9. '.': no type check but accept the object                          -- ivm_object_t **
+	   10. '*' prefix: reverse the optional mark                             -- \
 
 		NOTE:
 			[1]. return address passed to an optional argument need to be initialized
@@ -92,6 +94,8 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 	for (i = 1; *rule; rule++) {
 		switch (*rule) {
 			SUB1('n', IVM_NUMERIC_T, ivm_number_t, ivm_numeric_getValue(tmp))
+			SUB1('u', IVM_NUMERIC_T, ivm_uint32_t, ivm_numeric_getUInt32(tmp))
+			SUB1('d', IVM_NUMERIC_T, ivm_sint32_t, ivm_numeric_getSInt32(tmp))
 			SUB1('s', IVM_STRING_OBJECT_T, const ivm_string_t *, ivm_string_object_getValue(tmp))
 			SUB1('l', IVM_LIST_OBJECT_T, ivm_list_object_t *, IVM_AS(tmp, ivm_list_object_t))
 			SUB1('f', IVM_FUNCTION_OBJECT_T, ivm_function_object_t *, IVM_AS(tmp, ivm_function_object_t))
