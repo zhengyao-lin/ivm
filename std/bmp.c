@@ -211,10 +211,10 @@ ivm_image_bmp_format(ivm_image_t *image,
 	return suc;
 }
 
-ivm_byte_t *		// decoded data
+ivm_byte_t * // decoded data
 _bmp_rle8_decode(ivm_byte_t *cdat,
 				 ivm_size_t size,
-				 ivm_size_t *osize,		// output size
+				 ivm_size_t *osize,	// output size
 				 const ivm_char_t **err)
 {
 	ivm_stream_t *bufs = ivm_buffer_stream_new(IVM_NULL, 0);
