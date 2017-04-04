@@ -281,8 +281,9 @@ enum state_t {
 };
 
 ivm_list_t *
-_ilang_parser_getTokens(const ivm_char_t *src,
-						ivm_bool_t debug)
+_ilang_parser_getTokens_c(const ivm_char_t *src,
+						  ivm_bool_t debug,
+						  ivm_size_t lineno)
 {
 	// cop characters include:
 	// +, -, *, \, %, &, |, ^, >, <, !, ~, @, ?, =
@@ -304,7 +305,7 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 	// 8. =
 	// 9. ?
 
-	ivm_list_t *ret = TOKENIZE(src,
+	ivm_list_t *ret = TOKENIZE_L(src, lineno,
 		/* INIT */
 		{
 			{ "-az", ST_IN_ID },
@@ -654,6 +655,14 @@ _ilang_parser_getTokens(const ivm_char_t *src,
 		_ivm_parser_dumpToken(ret);
 
 	return ret;
+}
+
+IVM_INLINE
+ivm_list_t *
+_ilang_parser_getTokens(const ivm_char_t *src,
+						ivm_bool_t debug)
+{
+	return _ilang_parser_getTokens_c(src, debug, 1);
 }
 
 struct rule_val_t {
@@ -3692,7 +3701,8 @@ ilang_parser_parseSource(const ivm_char_t *file,
 
 ilang_gen_expr_t *
 ilang_parser_parseExpr(ilang_gen_trans_unit_t *unit,
-					   const ivm_char_t *src)
+					   const ivm_char_t *src,
+					   ivm_size_t lineno)
 {
 	ivm_list_t *tokens;
 	struct rule_val_t rule_ret;
@@ -3700,7 +3710,7 @@ ilang_parser_parseExpr(ilang_gen_trans_unit_t *unit,
 	ivm_bool_t suc;
 	ilang_gen_expr_t *ret = IVM_NULL;
 
-	tokens = _ilang_parser_getTokens(src ,IVM_FALSE);
+	tokens = _ilang_parser_getTokens_c(src ,IVM_FALSE, lineno);
 
 	if (!tokens) return IVM_NULL;
 

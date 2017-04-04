@@ -92,7 +92,8 @@ ilang_gen_float_expr_eval(ilang_gen_expr_t *expr,
 
 ilang_gen_expr_t *
 ilang_parser_parseExpr(ilang_gen_trans_unit_t *unit,
-					   const ivm_char_t *src);
+					   const ivm_char_t *src,
+					   ivm_size_t lineno);
 
 ilang_gen_value_t
 ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
@@ -180,7 +181,7 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 
 					// IVM_TRACE("src: %s\n", tmp_str);
 
-					tmp_expr = ilang_parser_parseExpr(env->tunit, tmp_str);
+					tmp_expr = ilang_parser_parseExpr(env->tunit, tmp_str, GET_LINE(expr));
 
 					if (!tmp_expr) {
 						GEN_ERR_FAILED_PARSE_STRING_INT(expr);

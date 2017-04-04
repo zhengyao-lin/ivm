@@ -228,7 +228,8 @@ _ivm_parser_dumpToken_r(struct token_t *from, struct token_t *to) // [from, to)
 
 IVM_INLINE
 ivm_list_t *
-_ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IVM_COMMON_PARSER_MAX_TOKEN_RULE])
+_ivm_parser_tokenizer(const ivm_char_t *src, ivm_size_t lineno,
+					  struct trans_entry_t trans_map[][IVM_COMMON_PARSER_MAX_TOKEN_RULE])
 {
 	ivm_list_t *ret = ivm_list_new(sizeof(struct token_t));
 	ivm_int_t state = IVM_COMMON_PARSER_TOKEN_STATE_INIT;
@@ -236,7 +237,7 @@ _ivm_parser_tokenizer(const ivm_char_t *src, struct trans_entry_t trans_map[][IV
 	const ivm_char_t *c = src;
 	ivm_char_t cur_c;
 	struct trans_entry_t *tmp_entry;
-	ivm_size_t line = 1;
+	ivm_size_t line = lineno;
 	ivm_ptr_t col = (ivm_ptr_t)c;
 	ivm_bool_t has_exc = IVM_FALSE;
 	struct token_t tmp_token = (struct token_t) { .len = 0, .val = c, .line = line, .pos = (ivm_ptr_t)c - col + 1 };
@@ -333,7 +334,8 @@ FAILED_END:
 }
 
 /* tokenizer */
-#define TOKENIZE(src, ...) (_ivm_parser_tokenizer(src, (struct trans_entry_t [][IVM_COMMON_PARSER_MAX_TOKEN_RULE]){ __VA_ARGS__ }))
+#define TOKENIZE(src, ...) _ivm_parser_tokenizer(src, 1, (struct trans_entry_t [][IVM_COMMON_PARSER_MAX_TOKEN_RULE]){ __VA_ARGS__ })
+#define TOKENIZE_L(src, line, ...) _ivm_parser_tokenizer(src, (line), (struct trans_entry_t [][IVM_COMMON_PARSER_MAX_TOKEN_RULE]){ __VA_ARGS__ })
 
 /* syntax parser */
 #define RULE_ARG \
