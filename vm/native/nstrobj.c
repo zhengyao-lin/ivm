@@ -135,3 +135,54 @@ IVM_NATIVE_FUNC(_string_to_s)
 	CHECK_BASE(IVM_STRING_OBJECT_T);
 	return ivm_object_clone(NAT_BASE(), NAT_STATE());
 }
+
+IVM_NATIVE_FUNC(_string_split)
+{
+	const ivm_string_t *tok, *base;
+	const ivm_char_t *rtok, *rbase;
+	ivm_size_t tlen, blen, beg, i;
+	ivm_list_object_t *ret;
+	ivm_object_t *tmp;
+
+	CHECK_BASE(IVM_STRING_OBJECT_T);
+
+	base = ivm_string_object_getValue(NAT_BASE());
+	blen = ivm_string_length(base);
+	rbase = ivm_string_trimHead(base);
+
+	switch (NAT_ARGC()) {
+		case 0:
+			RTM_FATAL(IVM_ERROR_MSG_TODO_ERROR);
+
+		case 1:
+			MATCH_ARG("s", &tok);
+
+			tlen = ivm_string_length(tok);
+			rtok = ivm_string_trimHead(tok);
+
+			RTM_ASSERT(tlen, IVM_ERROR_MSG_EMPTY_SEPARATOR);
+
+			ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
+
+			for (beg = 0, i = 0;
+				 blen - i >= tlen;) {
+				if (!IVM_STRNCMP(rbase + i, tlen, rtok, tlen)) {
+					// IVM_TRACE("matched: %.*s\n", i - beg, rbase + beg);
+					tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, i - beg);
+					ivm_list_object_push(ret, NAT_STATE(), tmp);
+
+					beg = i + tlen;
+					i += tlen;
+				} else i++;
+			}
+
+			tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, blen - beg);
+			ivm_list_object_push(ret, NAT_STATE(), tmp);
+
+			return IVM_AS_OBJ(ret);
+	}
+
+	RTM_FATAL(IVM_ERROR_MSG_TODO_ERROR);
+
+	return IVM_NONE(NAT_STATE());
+}

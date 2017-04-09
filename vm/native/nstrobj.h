@@ -13,6 +13,7 @@ IVM_NATIVE_FUNC(_string_ord);
 IVM_NATIVE_FUNC(_string_ords);
 IVM_NATIVE_FUNC(_string_chars);
 IVM_NATIVE_FUNC(_string_to_s);
+IVM_NATIVE_FUNC(_string_split);
 
 IVM_COM_END
 

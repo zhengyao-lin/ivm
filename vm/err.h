@@ -145,6 +145,8 @@ IVM_COM_HEADER
 #define IVM_ERROR_MSG_MISSING_ARG(n, expect)					"missing the %dth argument, expecting <%s>", (n), (expect)
 #define IVM_ERROR_MSG_CANNOT_FORK_NATIVE						"cannot use native function as coroutine root"
 #define IVM_ERROR_MSG_WRONG_OPERAND(n, expect, given)			"unexpected %dth operand(expect %s, %s given)", (n), (expect), (given)
+#define IVM_ERROR_MSG_EMPTY_SEPARATOR							"empty separator"
+#define IVM_ERROR_MSG_TODO_ERROR								"toto error: the function is not implemented yet"
 
 IVM_COM_END
 

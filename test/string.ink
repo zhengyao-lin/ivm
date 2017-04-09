@@ -1,12 +1,13 @@
 import std
+import ulist
 
-try: "abcdefghi".ord(20)
-catch: print("exception")
+try "abcdefghi".ord(20)
+catch print("exception")
 
 print("abcdefghi".ord())
 
-try: print("".ord())
-catch: print("yes")
+try print("".ord())
+catch print("yes")
 
 print("".len())
 print("22".len())
@@ -20,8 +21,15 @@ print("y" * 2)
 print("y" * 0)
 print("y" * 1)
 print("y" * -100)
-try: print("y" * 10000000000000000)
-catch: print("yep")
+try print("y" * 10000000000000000)
+catch print("yep")
+
+print("a  b  c  d".split(" "))
+print("".split(" "))
+try print("".split(""))
+catch none
+
+print("abc".split("ab"))
 
 ret
 
@@ -41,3 +49,7 @@ ret
 // -> "str: y"
 // -> "str: "
 // -> "str: yep"
+
+// -> "list: \\[ a, , b, , c, , d \\]"
+// -> "list: \\[  \\]"
+// -> "list: \\[ , c \\]"
