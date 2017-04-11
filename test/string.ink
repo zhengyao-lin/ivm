@@ -31,6 +31,13 @@ catch none
 
 print("abc".split("ab"))
 
+/*
+print("a  b \t c \n d".split())
+print("a  b   ".split())
+print("".split())
+print(" ".split())
+*/
+
 ret
 
 // -> "str: exception"

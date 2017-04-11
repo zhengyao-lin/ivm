@@ -150,8 +150,56 @@ IVM_NATIVE_FUNC(_string_split)
 	blen = ivm_string_length(base);
 	rbase = ivm_string_trimHead(base);
 
+#define TOSPLIT(sth, tok_len) \
+	for (tlen = (tok_len), beg = 0, i = 0; \
+		 blen - i >= tlen;) { \
+		sth; i++; \
+	} \
+	tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, blen - beg); \
+	ivm_list_object_push(ret, NAT_STATE(), tmp);
+
+#define SPLIT() \
+	tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, i - beg); \
+	ivm_list_object_push(ret, NAT_STATE(), tmp); \
+	beg = i + tlen; \
+	i += tlen;
+
+#define SPLITIF(cond, dob) \
+	if (cond) { \
+		SPLIT(); \
+		dob; \
+		continue; \
+	}
+
 	switch (NAT_ARGC()) {
 		case 0:
+		/*
+			ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
+			
+			TOSPLIT(
+				SPLITIF(rbase[i] == ' ' ||
+						rbase[i] == '\t' ||
+						rbase[i] == '\r' ||
+						rbase[i] == '\n',
+					{
+						do {
+							i++;
+						} while (i < blen &&
+								 (rbase[i] == ' ' ||
+								  rbase[i] == '\t' ||
+								  rbase[i] == '\r' ||
+								  rbase[i] == '\n'));
+						if (i >= blen)
+							beg = i - 1;
+						else
+							beg = i;
+					}
+				),
+				1
+			);
+
+			return IVM_AS_OBJ(ret);
+		*/
 			RTM_FATAL(IVM_ERROR_MSG_TODO_ERROR);
 
 		case 1:
@@ -163,24 +211,18 @@ IVM_NATIVE_FUNC(_string_split)
 			RTM_ASSERT(tlen, IVM_ERROR_MSG_EMPTY_SEPARATOR);
 
 			ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
-
-			for (beg = 0, i = 0;
-				 blen - i >= tlen;) {
-				if (!IVM_STRNCMP(rbase + i, tlen, rtok, tlen)) {
-					// IVM_TRACE("matched: %.*s\n", i - beg, rbase + beg);
-					tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, i - beg);
-					ivm_list_object_push(ret, NAT_STATE(), tmp);
-
-					beg = i + tlen;
-					i += tlen;
-				} else i++;
-			}
-
-			tmp = ivm_string_object_new_rl(NAT_STATE(), rbase + beg, blen - beg);
-			ivm_list_object_push(ret, NAT_STATE(), tmp);
+			
+			TOSPLIT(
+				SPLITIF(!IVM_STRNCMP(rbase + i, tlen, rtok, tlen), 0),
+				tlen
+			);
 
 			return IVM_AS_OBJ(ret);
 	}
+
+#undef TOSPLIT
+#undef SPLIT
+#undef SPLITIF
 
 	RTM_FATAL(IVM_ERROR_MSG_TODO_ERROR);
 
