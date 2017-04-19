@@ -3,10 +3,8 @@
 loc fx = 0
 loc key = 0
 
-resume fork: {
-	fx = fn: {
-		loc a = key
-	}
+resume fork {
+	fx = fn loc a = key
 }
 
 fx()
