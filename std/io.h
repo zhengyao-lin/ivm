@@ -136,7 +136,7 @@ ivm_file_writeAt(ivm_file_t *file,
 	return ret;
 }
 
-ivm_long_t
+ivm_size_t
 ivm_file_length(ivm_file_t *file);
 
 #define ivm_file_isStatic(file) (ivm_file_length(file) != -1)

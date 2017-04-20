@@ -19,12 +19,13 @@
 		2. 'u': check num type and cast the value to uint32                  -- ivm_uint32_t *
 		3. 'd': check num type and cast the value to sint32                  -- ivm_sint32_t *
 		4. 's': check string type and get the value                          -- const ivm_string_t **
-		5. 'l': check list type and convert to list object                   -- ivm_list_object_t **
-		6. 'f': check function type and convert to function object           -- ivm_function_object_t **
-		7. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
-		8. 'c': check coro type and get the value                            -- ivm_coro_t **
-		9. '.': no type check but accept the object                          -- ivm_object_t **
-	   10. '*' prefix: reverse the optional mark                             -- \
+		5. 'r': check string type and get raw string                         -- const ivm_char_t *
+		6. 'l': check list type and convert to list object                   -- ivm_list_object_t **
+		7. 'f': check function type and convert to function object           -- ivm_function_object_t **
+		8. 'b': check buffer type and convert to buffer object               -- ivm_buffer_object_t **
+		9. 'c': check coro type and get the value                            -- ivm_coro_t **
+	   10. '.': no type check but accept the object                          -- ivm_object_t **
+	   11. '*' prefix: reverse the optional mark                             -- \
 
 		NOTE:
 			[1]. return address passed to an optional argument need to be initialized
@@ -97,6 +98,7 @@ ivm_native_matchArgument(ivm_function_arg_t arg,
 			SUB1('u', IVM_NUMERIC_T, ivm_uint32_t, ivm_numeric_getUInt32(tmp))
 			SUB1('d', IVM_NUMERIC_T, ivm_sint32_t, ivm_numeric_getSInt32(tmp))
 			SUB1('s', IVM_STRING_OBJECT_T, const ivm_string_t *, ivm_string_object_getValue(tmp))
+			SUB1('r', IVM_STRING_OBJECT_T, const ivm_char_t *, ivm_string_trimHead(ivm_string_object_getValue(tmp)))
 			SUB1('l', IVM_LIST_OBJECT_T, ivm_list_object_t *, IVM_AS(tmp, ivm_list_object_t))
 			SUB1('f', IVM_FUNCTION_OBJECT_T, ivm_function_object_t *, IVM_AS(tmp, ivm_function_object_t))
 			SUB1('b', IVM_BUFFER_OBJECT_T, ivm_buffer_object_t *, IVM_AS(tmp, ivm_buffer_object_t))

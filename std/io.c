@@ -62,7 +62,7 @@ ivm_file_new(const ivm_char_t *path,
 	ivm_char_t *npath;
 	ivm_size_t len;
 
-	if (_rel_path) {
+	if (_rel_path && mode[0] != IVM_FILE_SEPARATOR) {
 		len = IVM_STRLEN(path);
 		npath = STD_ALLOC(sizeof(*npath) * (_rel_path_size + len + 2));
 		IVM_MEMCHECK(npath);
@@ -150,7 +150,7 @@ ivm_file_free_n(ivm_file_t *file)
 
 #define FGOTO(fp, pos) (IVM_FSEEK((fp), IVM_FSEEK_##pos, 0))
 
-ivm_long_t
+ivm_size_t
 ivm_file_length(ivm_file_t *file)
 {
 	ivm_file_raw_t fp = file->fp;

@@ -1,3 +1,16 @@
+import mthread
+import aio
+import time
+
+mthread.spawn(fork: {
+	res = aio.read("test.ink")
+	print(res)
+})
+
+print("before everything")
+
+ret
+
 import time
 import io
 loc.merge(import curses)
