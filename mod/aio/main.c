@@ -21,8 +21,8 @@ void *_aio_read_th(void *rarg)
 	ivm_file_t *fp = ivm_file_new(arg[0], arg[1]);
 
 	if (!fp) {
-		arg[2] = (void *)(ivm_ptr_t)1;
-		return "failed to open file";
+		arg[2] = "failed to open file";
+		return IVM_NULL;
 	}
 
 	arg[2] = ivm_file_readAll(fp);
@@ -30,11 +30,11 @@ void *_aio_read_th(void *rarg)
 	ivm_file_free(fp);
 
 	if (!arg[2]) {
-		arg[2] = (void *)(ivm_ptr_t)1;
-		return "failed to read";
+		arg[2] = "failed to read";
+		return IVM_NULL;
 	}
 
-	return IVM_NULL; 
+	return (void *)arg[2]; 
 }
 
 IVM_NATIVE_FUNC(_aio_read)
@@ -56,8 +56,8 @@ IVM_NATIVE_FUNC(_aio_read)
 	}
 
 	thret = ivm_thread_wait(&th);
-	if (thret) {
-		RTM_FATAL("%s\n", (const ivm_char_t *)thret);
+	if (!thret) {
+		RTM_FATAL("%s", arg[2]);
 	}
 
 	ret = ivm_string_object_new_r(NAT_STATE(), arg[2]);

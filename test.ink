@@ -4,7 +4,7 @@ import time
 
 mthread.spawn(fork: {
 	res = aio.read("test.ink")
-	print(res)
+	print(res.len())
 })
 
 print("before everything")

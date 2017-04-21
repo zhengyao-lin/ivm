@@ -62,7 +62,7 @@ ivm_file_new(const ivm_char_t *path,
 	ivm_char_t *npath;
 	ivm_size_t len;
 
-	if (_rel_path && mode[0] != IVM_FILE_SEPARATOR) {
+	if (_rel_path && path[0] != IVM_FILE_SEPARATOR) {
 		len = IVM_STRLEN(path);
 		npath = STD_ALLOC(sizeof(*npath) * (_rel_path_size + len + 2));
 		IVM_MEMCHECK(npath);
@@ -71,8 +71,6 @@ ivm_file_new(const ivm_char_t *path,
 		npath[_rel_path_size] = IVM_FILE_SEPARATOR;
 		STD_MEMCPY(npath + _rel_path_size + 1, path, len);
 		npath[_rel_path_size + len + 1] = '\0';
-	
-		// IVM_TRACE("%s\n", npath);
 
 		fp = IVM_FOPEN(npath, mode);
 
