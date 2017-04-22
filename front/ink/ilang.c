@@ -80,11 +80,11 @@ _parse_source(ivm_vmstate_t *state,
 	ilang_gen_trans_unit_t *t_unit = IVM_NULL;
 	ivm_exec_unit_t *ret = IVM_NULL;
 
-	file = ivm_file_newAbs(path, IVM_FMODE_READ_BINARY);
+	file = ivm_file_new(path, IVM_FMODE_READ_BINARY);
 
 	if (!file) goto FAILED;
 	
-	src = ivm_file_readAll(file);
+	src = ivm_file_readAll(file, IVM_NULL);
 	ivm_file_free(file);
 
 	if (!src) goto FAILED;
@@ -267,7 +267,7 @@ int main(int argc, const char **argv)
 
 	ivm_env_setArg(argv + end_idx, argc - end_idx);
 
-	src = ivm_file_readAll(src_file);
+	src = ivm_file_readAll(src_file, IVM_NULL);
 
 #define PROF_START() \
 	if (cfg_prof) {                \

@@ -1,13 +1,13 @@
 import std
 import io
 
+/*
 fp = io.file("text1")
 loc str = fp.read()
 print(str)
 print(fp is io.file)
 
 fp.seek()
-print(fp.readBuffer().size() == str.len())
 
 loc buf = buffer(16)
 buf.init()
@@ -18,6 +18,7 @@ fp.readToBuffer(buf)
 print(buf.to_s())
 
 fp.close()
+*/
 
 fp = io.file("text2")
 
@@ -37,8 +38,6 @@ print(fp.cur())
 fp.seek()
 print(fp.cur())
 
-fp.read(20, true)
-print(fp.cur())
 fp.seek(10)
 print(fp.cur())
 
@@ -79,13 +78,6 @@ catch: print("of course")
 
 ret
 
-// <- "123456789"
-
-// -> "str: content!"
-// -> "num: 1"
-// -> "num: 1"
-// -> "str: 0x636f6e74656e74210000000000000000"
-
 // -> "str: failed to read"
 // -> "num: 619"
 // -> "num: 1"
@@ -93,7 +85,6 @@ ret
 
 // -> "str: Shall I co"
 // -> "num: 10"
-// -> "num: 0"
 // -> "num: 0"
 // -> "num: 10"
 // 

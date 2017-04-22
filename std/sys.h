@@ -17,6 +17,14 @@ ivm_sys_getBasePath(const ivm_char_t *file);
 
 #define ivm_sys_setDefaultLocal() setlocale(LC_ALL, "")
 
+#ifdef IVM_OS_WIN32
+	#include <direct.h>
+	#define ivm_sys_chdir(path) (_chdir(path) == 0)
+#else
+	#include <unistd.h>
+	#define ivm_sys_chdir(path) (chdir(path) == 0)
+#endif
+
 IVM_COM_END
 
 #endif

@@ -15,6 +15,8 @@
 #include "std/thread.h"
 #include "std/time.h"
 #include "std/io.h"
+#include "std/sys.h"
+#include "std/path.h"
 
 #include "gc.h"
 #include "coro.h"
@@ -176,23 +178,33 @@ ivm_vmstate_constantize_r(ivm_vmstate_t *state,
 #define ivm_vmstate_getCurPath_r(state) ivm_string_trimHead((state)->cur_path)
 
 IVM_INLINE
-void
+ivm_bool_t
 ivm_vmstate_setCurPath(ivm_vmstate_t *state,
 					   const ivm_char_t *path)
 {
-	ivm_file_setRelativePath(path);
-	state->cur_path = ivm_vmstate_constantize_r(state, path);
-	return;
+	ivm_char_t buf[IVM_PATH_MAX_LEN + 1];
+	if (!ivm_path_realpath(buf, path))
+		return IVM_FALSE;
+
+	ivm_sys_chdir(buf);
+	state->cur_path = ivm_vmstate_constantize_r(state, buf);
+
+	return IVM_TRUE;
 }
 
 IVM_INLINE
-void
+ivm_bool_t
 ivm_vmstate_setCurPath_c(ivm_vmstate_t *state,
 						 const ivm_string_t *path)
 {
-	ivm_file_setRelativePath(ivm_string_trimHead(path));
-	state->cur_path = path;
-	return;
+	ivm_char_t buf[IVM_PATH_MAX_LEN + 1];
+	if (!ivm_path_realpath(buf, ivm_string_trimHead(path)))
+		return IVM_FALSE;
+
+	ivm_sys_chdir(buf);
+	state->cur_path = ivm_vmstate_constantize_r(state, buf);
+
+	return IVM_TRUE;
 }
 
 #define ivm_vmstate_getOopSymbol(state, oop) ivm_string_pool_get((state)->oop_map, (oop))

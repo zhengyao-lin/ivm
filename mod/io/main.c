@@ -132,124 +132,32 @@ IVM_NATIVE_FUNC(_io_file_read)
 	ivm_char_t *cont;
 	ivm_file_object_t *fobj;
 	ivm_object_t *ret;
-	ivm_number_t arg = -1, save_pos = IVM_FALSE;
-	ivm_long_t flen, len;
+
+	ivm_long_t len;
+	ivm_size_t size;
+	ivm_bool_t has_arg = HAS_ARG(1);
 
 	CHECK_BASE_TP(IO_FILE_TYPE_UID);
-	MATCH_ARG("*nn", &arg, &save_pos);
+	MATCH_ARG("*d", &len);
 
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
 
-	flen = ivm_file_length(fobj->fp);
-
-	if (!HAS_ARG(1)) len = flen - ivm_file_curPos(fobj->fp);
-	else {
-		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
-		len = arg;
-	}
-
-	if (flen == -1) {
-		if (!HAS_ARG(1)) {
-			cont = ivm_file_readAll_c(fobj->fp, save_pos);
-		} else {
-			cont = ivm_file_read_n(fobj->fp, len, save_pos);
-		}
+	if (has_arg) {
+		RTM_ASSERT(len >= 0, IO_ERROR_MSG_NEG_SIZE);
+		cont = ivm_file_read_n(fobj->fp, len);
 	} else {
-		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
-		cont = ivm_file_read_n(fobj->fp, len, save_pos);
+		cont = ivm_file_readAll(fobj->fp, &size);
+		len = size;
 	}
 
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
-	ret = ivm_string_object_new_r(NAT_STATE(), cont);
+	ret = ivm_string_object_new_rl(NAT_STATE(), cont, len);
+
 	STD_FREE(cont);
 
 	return ret;
-}
-
-IVM_NATIVE_FUNC(_io_file_readBuffer)
-{
-	ivm_char_t *cont;
-	ivm_file_object_t *fobj;
-	ivm_number_t arg = -1, save_pos = IVM_FALSE;
-	ivm_long_t flen, len;
-
-	CHECK_BASE_TP(IO_FILE_TYPE_UID);
-	MATCH_ARG("*nn", &arg, &save_pos);
-
-	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
-	CHECK_INIT_FP(fobj);
-
-	flen = ivm_file_length(fobj->fp);
-
-	if (!HAS_ARG(1)) len = flen - ivm_file_curPos(fobj->fp);
-	else {
-		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
-		len = arg;
-	}
-
-	if (flen == -1) {
-		if (!HAS_ARG(1)) {
-			cont = ivm_file_readAll_c(fobj->fp, save_pos);
-		} else {
-			cont = ivm_file_read_n(fobj->fp, len, save_pos);
-		}
-	} else {
-		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
-		cont = ivm_file_read_n(fobj->fp, len, save_pos);
-	}
-
-	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
-
-	return ivm_buffer_object_new_c(NAT_STATE(), len, (ivm_byte_t *)cont);
-}
-
-IVM_NATIVE_FUNC(_io_file_readToBuffer)
-{
-	ivm_file_object_t *fobj;
-	ivm_buffer_object_t *buf_obj;
-	ivm_number_t arg = -1, save_pos = IVM_FALSE;
-	ivm_size_t bsize;
-	ivm_long_t flen, len;
-
-	CHECK_BASE_TP(IO_FILE_TYPE_UID);
-	MATCH_ARG("b*nn", &buf_obj, &arg, &save_pos);
-
-	// read length:
-	//     1. the length specified
-	//     2. file length
-	//     3. size the the buffer(is the file is non-static)
-
-	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
-	CHECK_INIT_FP(fobj);
-
-	flen = ivm_file_length(fobj->fp);
-	bsize = ivm_buffer_object_getSize(buf_obj);
-
-	if (!HAS_ARG(2)) {
-		if (flen == -1) {
-			len = bsize;
-		} else {
-			len = flen - ivm_file_curPos(fobj->fp);
-		}
-	} else {
-		RTM_ASSERT(arg >= 0, IO_ERROR_MSG_NEG_SIZE);
-		len = arg;
-	}
-
-	RTM_ASSERT(len <= bsize, IO_ERROR_MSG_TOO_SMALL_BUF(bsize, len));
-
-	if (flen != -1) {
-		RTM_ASSERT(len <= flen, IO_ERROR_MSG_TOO_LARGE_LENGTH(len, flen));
-	}
-
-	if (ivm_file_read_s(fobj->fp, ivm_buffer_object_getRaw(buf_obj), sizeof(ivm_char_t), len, save_pos)
-		!= len) {
-		RTM_ASSERT(ivm_file_isEnd(fobj->fp) && !HAS_ARG(2), IO_ERROR_MSG_FAILED_READ_FILE);
-	}
-
-	return IVM_NONE(NAT_STATE());
 }
 
 IVM_NATIVE_FUNC(_io_file_write)
@@ -266,25 +174,6 @@ IVM_NATIVE_FUNC(_io_file_write)
 
 	len = ivm_string_length(str);
 	RTM_ASSERT(ivm_file_write(fobj->fp, ivm_string_trimHead(str), sizeof(ivm_char_t), len)
-			   == len, IO_ERROR_MSG_FAILED_WRITE_FILE);
-
-	return IVM_NONE(NAT_STATE());
-}
-
-IVM_NATIVE_FUNC(_io_file_writeBuffer)
-{
-	ivm_file_object_t *fobj;
-	ivm_buffer_object_t *buf_obj;
-	ivm_size_t len;
-
-	CHECK_BASE_TP(IO_FILE_TYPE_UID);
-	MATCH_ARG("b", &buf_obj);
-
-	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
-	CHECK_INIT_FP(fobj);
-
-	len = ivm_buffer_object_getSize(buf_obj);
-	RTM_ASSERT(ivm_file_write(fobj->fp, ivm_buffer_object_getRaw(buf_obj), sizeof(ivm_byte_t), len)
 			   == len, IO_ERROR_MSG_FAILED_WRITE_FILE);
 
 	return IVM_NONE(NAT_STATE());
@@ -307,7 +196,7 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	ivm_char_t *cont;
 	ivm_file_object_t *fobj;
 	ivm_list_object_t *ret;
-	ivm_size_t len;
+	ivm_size_t len = 0;
 	const ivm_char_t *i, *end, *head;
 
 	CHECK_BASE_TP(IO_FILE_TYPE_UID);
@@ -315,11 +204,11 @@ IVM_NATIVE_FUNC(_io_file_lines)
 	fobj = IVM_AS(NAT_BASE(), ivm_file_object_t);
 	CHECK_INIT_FP(fobj);
 
-	cont = ivm_file_readAll(fobj->fp);
+	cont = ivm_file_readAll(fobj->fp, &len);
 	RTM_ASSERT(cont, IO_ERROR_MSG_FAILED_READ_FILE);
 
 	ret = IVM_AS(ivm_list_object_new(NAT_STATE()), ivm_list_object_t);
-	len = IVM_STRLEN(cont);
+	// len = IVM_STRLEN(cont);
 
 	for (head = i = cont, end = i + len;
 		 i != end; i++) {
@@ -476,11 +365,11 @@ ivm_mod_main(ivm_vmstate_t *state,
 		ivm_object_setSlot_r(file_proto, state, "close", IVM_NATIVE_WRAP(state, _io_file_close));
 		
 		ivm_object_setSlot_r(file_proto, state, "read", IVM_NATIVE_WRAP(state, _io_file_read));
-		ivm_object_setSlot_r(file_proto, state, "readBuffer", IVM_NATIVE_WRAP(state, _io_file_readBuffer));
-		ivm_object_setSlot_r(file_proto, state, "readToBuffer", IVM_NATIVE_WRAP(state, _io_file_readToBuffer));
+		// ivm_object_setSlot_r(file_proto, state, "readBuffer", IVM_NATIVE_WRAP(state, _io_file_readBuffer));
+		// ivm_object_setSlot_r(file_proto, state, "readToBuffer", IVM_NATIVE_WRAP(state, _io_file_readToBuffer));
 		
 		ivm_object_setSlot_r(file_proto, state, "write", IVM_NATIVE_WRAP(state, _io_file_write));
-		ivm_object_setSlot_r(file_proto, state, "writeBuffer", IVM_NATIVE_WRAP(state, _io_file_writeBuffer));
+		// ivm_object_setSlot_r(file_proto, state, "writeBuffer", IVM_NATIVE_WRAP(state, _io_file_writeBuffer));
 
 		ivm_object_setSlot_r(file_proto, state, "len", IVM_NATIVE_WRAP(state, _io_file_len));
 		ivm_object_setSlot_r(file_proto, state, "lines", IVM_NATIVE_WRAP(state, _io_file_lines));

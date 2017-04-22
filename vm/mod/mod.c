@@ -162,6 +162,7 @@ _ivm_mod_initModPath()
 #if IVM_DEBUG
 	ivm_mod_addModPath(IVM_LIB_PATH);
 #endif
+
 	ivm_mod_addModPath(IVM_MOD_DEFAULT_SEARCH_PATH);
 
 	if (paths) {
@@ -230,6 +231,62 @@ _get_max_buf_size(ivm_size_t mod_name_len)
 	return _mod_path_max_len + 1 + mod_name_len + 5 + _mod_suffix_max_len + 1;
 }
 
+IVM_PRIVATE
+struct {
+	const ivm_char_t *suf;
+	ivm_size_t len;
+} _sufs[] = {
+#define SUF(val) \
+{ (val), sizeof(val) - 1 },
+
+	SUF("")
+	SUF(IVM_FILE_SEPARATOR_S "init")
+
+#undef SUF
+};
+
+IVM_INLINE
+ivm_mod_loader_t
+_ivm_mod_searchPath(const ivm_char_t *path,
+					const ivm_char_t *mod_name,
+					ivm_size_t mod_len,
+					ivm_char_t *buf)
+{
+	ivm_char_t *brk;
+	ivm_int_t i;
+	ivm_mod_suffix_t tmp_suf;
+	ivm_mod_suffix_list_iteartor_t siter;
+
+	if (path) {
+		ivm_size_t len = IVM_STRLEN(path);
+
+		STD_MEMCPY(buf, path, len);
+
+		buf[len] = IVM_FILE_SEPARATOR;
+		STD_MEMCPY(buf + len + 1, mod_name, mod_len);
+		brk = buf + len + 1 + mod_len;
+	} else {
+		STD_MEMCPY(buf, mod_name, mod_len);
+		brk = buf + mod_len;
+	}
+
+	for (i = 0; i < IVM_ARRLEN(_sufs); i++) {
+		STD_MEMCPY(brk, _sufs[i].suf, _sufs[i].len);
+
+		IVM_MOD_SUFFIX_LIST_EACHPTR_R(&_mod_suffix_list, siter) {
+			tmp_suf = IVM_MOD_SUFFIX_LIST_ITER_GET(siter);
+			STD_MEMCPY(brk + _sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
+
+			// IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
+			if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
+				return tmp_suf.loader;
+			}
+		}
+	}
+
+	return IVM_NULL;
+}
+
 /* buffer guaranteed to have enough size */
 IVM_INLINE
 ivm_mod_loader_t
@@ -238,27 +295,8 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 				  ivm_char_t *buf)
 {
 	ivm_rawstr_list_iteartor_t iter;
-	ivm_mod_suffix_list_iteartor_t siter;
 	const ivm_char_t *tmp;
-	ivm_char_t *brk;
-	ivm_size_t len1, len2;
-	ivm_int_t i;
-	ivm_mod_suffix_t tmp_suf;
-
-	struct {
-		const ivm_char_t *suf;
-		ivm_size_t len;
-	} sufs[] = {
-#define SUF(val) \
-	{ (val), sizeof(val) - 1 },
-
-		SUF("")
-		SUF(IVM_FILE_SEPARATOR_S "init")
-
-#undef SUF
-	};
-
-	len2 = mod_len;
+	ivm_mod_loader_t ret;
 
 	/*
 		max situation:
@@ -268,31 +306,17 @@ _ivm_mod_search_c(const ivm_char_t *mod_name,
 	 */
 	// ivm_char_t buf[_get_max_buf_size(len2)];
 
+	// search in relative path
+	ret = _ivm_mod_searchPath(IVM_NULL, mod_name, mod_len, buf);
+	if (ret) return ret;
+
 	IVM_RAWSTR_LIST_EACHPTR_R(&_mod_path_list, iter) {
 		tmp = IVM_RAWSTR_LIST_ITER_GET(iter);
 
 		if (!tmp) continue;
 
-		len1 = IVM_STRLEN(tmp);
-
-		STD_MEMCPY(buf, tmp, len1);
-		buf[len1] = IVM_FILE_SEPARATOR;
-		STD_MEMCPY(buf + len1 + 1, mod_name, len2);
-		brk = buf + len1 + 1 + len2;
-
-		for (i = 0; i < IVM_ARRLEN(sufs); i++) {
-			STD_MEMCPY(brk, sufs[i].suf, sufs[i].len);
-
-			IVM_MOD_SUFFIX_LIST_EACHPTR_R(&_mod_suffix_list, siter) {
-				tmp_suf = IVM_MOD_SUFFIX_LIST_ITER_GET(siter);
-				STD_MEMCPY(brk + sufs[i].len, tmp_suf.suf, tmp_suf.len + 1);
-
-				// IVM_TRACE("mod search for %s %ld %s\n", buf, _mod_suffix_max_len, tmp_suf.suf);
-				if (ivm_file_access(buf, IVM_FMODE_READ_BINARY)) {
-					return tmp_suf.loader;
-				}
-			}
-		}
+		ret = _ivm_mod_searchPath(tmp, mod_name, mod_len, buf);
+		if (ret) return ret;
 	}
 
 	return IVM_NULL;
@@ -389,7 +413,7 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	const ivm_char_t *mod = ivm_string_trimHead(mod_name);
 	ivm_char_t *err = IVM_NULL;
 	ivm_char_t *path;
-	ivm_bool_t is_const;
+	ivm_bool_t is_const, res;
 
 	const ivm_string_t *path_backup, *rpath;
 
@@ -407,9 +431,9 @@ ivm_mod_load(const ivm_string_t *mod_name,
 
 	// IVM_TRACE("cur path: %s\n", path_backup);
 
-	_ivm_mod_addModPath_n((ivm_char_t *)ivm_string_trimHead(path_backup));
+	// _ivm_mod_addModPath_n((ivm_char_t *)ivm_string_trimHead(path_backup));
 	loader = _ivm_mod_search_c(mod, len, buf);
-	_ivm_mod_popModPath_n();
+	// _ivm_mod_popModPath_n();
 
 	IVM_CORO_NATIVE_ASSERT(coro, state, loader, IVM_ERROR_MSG_MOD_NOT_FOUND(mod));
 	
@@ -422,15 +446,19 @@ ivm_mod_load(const ivm_string_t *mod_name,
 	if (ret) return ret;
 
 	path = ivm_sys_getBasePath(buf);
-	ivm_vmstate_setCurPath(state, path);
+	res = ivm_vmstate_setCurPath(state, path);
 	STD_FREE(path);
+
+	if (!res) return IVM_NULL;
 
 	ivm_object_setSlot(ivm_vmstate_getLoadedMod(state), state, rpath, IVM_NONE(state));
 	
 	ret = loader(buf, &err, &is_const, state, coro, context);
 
 	ivm_object_setSlot(ivm_vmstate_getLoadedMod(state), state, rpath, ret);
-	ivm_vmstate_setCurPath_c(state, path_backup);
+	res = ivm_vmstate_setCurPath_c(state, path_backup);
+
+	if (!res) return IVM_NULL;
 
 	if (!ret) {
 		if (!ivm_vmstate_getException(state)) {

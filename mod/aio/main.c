@@ -14,54 +14,62 @@
 #include "vm/native/native.h"
 #include "vm/native/priv.h"
 
+struct _aio_read_arg {
+	const ivm_char_t *path;
+	const ivm_char_t *mode;
+
+	ivm_char_t *ret;
+	ivm_size_t len;
+};
+
 IVM_PRIVATE
 void *_aio_read_th(void *rarg)
 {
-	const ivm_char_t **arg = (const ivm_char_t **)rarg;
-	ivm_file_t *fp = ivm_file_new(arg[0], arg[1]);
+	struct _aio_read_arg *arg = (struct _aio_read_arg *)rarg;
+	ivm_file_t *fp = ivm_file_new(arg->path, arg->mode);
 
 	if (!fp) {
-		arg[2] = "failed to open file";
+		arg->ret = "failed to open file";
 		return IVM_NULL;
 	}
 
-	arg[2] = ivm_file_readAll(fp);
+	arg->ret = ivm_file_readAll(fp, &arg->len);
 
 	ivm_file_free(fp);
 
-	if (!arg[2]) {
-		arg[2] = "failed to read";
+	if (!arg->ret) {
+		arg->ret = "failed to read";
 		return IVM_NULL;
 	}
 
-	return (void *)arg[2]; 
+	return (void *)arg->ret; 
 }
 
 IVM_NATIVE_FUNC(_aio_read)
 {
 	ivm_thread_t th;
-	const ivm_char_t *arg[] = { IVM_NULL, IVM_FMODE_READ_BINARY, IVM_NULL /* return */ };
+	struct _aio_read_arg arg = { IVM_NULL, IVM_FMODE_READ_BINARY, IVM_NULL /* dat */, 0 /* size */ };
 	void *thret;
 	ivm_object_t *ret;
 
 	RTM_ASSERT(ivm_vmstate_hasThread(NAT_STATE()), "thread not enabled");
 
-	MATCH_ARG("r*r", &arg[0], &arg[1]);
+	MATCH_ARG("r*r", &arg.path, &arg.mode);
 
-	ivm_thread_init(&th, _aio_read_th, arg);
+	ivm_thread_init(&th, _aio_read_th, &arg);
 
-	while (!arg[2]) {
+	while (!arg.ret) {
 		// IVM_TRACE("here you go!");
 		ivm_vmstate_threadYield(NAT_STATE());
 	}
 
 	thret = ivm_thread_wait(&th);
 	if (!thret) {
-		RTM_FATAL("%s", arg[2]);
+		RTM_FATAL("%s", arg.ret);
 	}
 
-	ret = ivm_string_object_new_r(NAT_STATE(), arg[2]);
-	STD_FREE((ivm_char_t *)arg[2]);
+	ret = ivm_string_object_new_rl(NAT_STATE(), arg.ret, arg.len);
+	STD_FREE(arg.ret);
 
 	return ret;
 }

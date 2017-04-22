@@ -158,7 +158,7 @@ int main(int argc, const char **argv)
 	if (is_failed) return 1;
 
 	if (src_file) {
-		src = ivm_file_readAll(src_file);
+		src = ivm_file_readAll(src_file, IVM_NULL);
 		env = ias_parser_parseSource(src);
 		unit = ias_gen_env_generateExecUnit(env);
 

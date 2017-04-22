@@ -135,12 +135,12 @@ endforeach(dir ${mod_list})
 
 file(MAKE_DIRECTORY "${LIBRARY_OUTPUT_PATH}/ivm/mod")
 
-# search for apps
-file(GLOB app_list "app/*")
-foreach(dir ${app_list})
+# search for frontends
+file(GLOB front_list "front/*")
+foreach(dir ${front_list})
 	add_subdirectory(${dir})
-	message(STATUS "Find application ${dir}")
-endforeach(dir ${app_list})
+	message(STATUS "Find frontend ${dir}")
+endforeach(dir ${front_list})
 
 # test exe
 # add_executable(testbed test.c)

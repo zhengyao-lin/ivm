@@ -9,7 +9,7 @@
 
 ivm_bool_t
 ivm_path_realpath(ivm_char_t buffer[IVM_PATH_MAX_LEN + 1],
-				  ivm_char_t *rpath)
+				  const ivm_char_t *rpath)
 {
 	ivm_char_t tmp[IVM_PATH_MAX_LEN + 1];
 
@@ -23,11 +23,12 @@ ivm_path_realpath(ivm_char_t buffer[IVM_PATH_MAX_LEN + 1],
 
 #else
 
-char *realpath(const char *path, char *resolved_path);
+char *
+realpath(const char *path, char *resolved_path);
 
 ivm_bool_t
 ivm_path_realpath(ivm_char_t buffer[IVM_PATH_MAX_LEN + 1],
-				  ivm_char_t *rpath)
+				  const ivm_char_t *rpath)
 {
 	ivm_char_t tmp[IVM_PATH_MAX_LEN + 1];
 

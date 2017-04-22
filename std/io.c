@@ -8,37 +8,6 @@
 #include "mem.h"
 #include "io.h"
 
-ivm_char_t *_rel_path = IVM_NULL;
-ivm_size_t _rel_path_size = 0;
-
-void
-ivm_file_setRelativePath(const ivm_char_t *path)
-{
-	ivm_size_t len;
-
-	if (_rel_path) {
-		STD_FREE(_rel_path);
-	}
-
-	if (!path) {
-		_rel_path = IVM_NULL;
-		_rel_path_size = 0;
-		return;
-	}
-
-	len = IVM_STRLEN(path);
-
-	_rel_path = STD_ALLOC(sizeof(*_rel_path) * (len + 1));
-	IVM_MEMCHECK(_rel_path);
-
-	STD_MEMCPY(_rel_path, path, len);
-	_rel_path[len] = '\0';
-
-	_rel_path_size = len;
-
-	return;
-}
-
 ivm_bool_t
 ivm_file_access(const ivm_char_t *path,
 				const ivm_char_t *mode)
@@ -56,44 +25,6 @@ ivm_file_access(const ivm_char_t *path,
 ivm_file_t *
 ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode)
-{
-	ivm_file_t *ret;
-	ivm_file_raw_t fp;
-	ivm_char_t *npath;
-	ivm_size_t len;
-
-	if (_rel_path && path[0] != IVM_FILE_SEPARATOR) {
-		len = IVM_STRLEN(path);
-		npath = STD_ALLOC(sizeof(*npath) * (_rel_path_size + len + 2));
-		IVM_MEMCHECK(npath);
-
-		STD_MEMCPY(npath, _rel_path, _rel_path_size);
-		npath[_rel_path_size] = IVM_FILE_SEPARATOR;
-		STD_MEMCPY(npath + _rel_path_size + 1, path, len);
-		npath[_rel_path_size + len + 1] = '\0';
-
-		fp = IVM_FOPEN(npath, mode);
-
-		STD_FREE(npath);
-	} else {
-		fp = IVM_FOPEN(path, mode);
-	}
-
-	if (!fp) return IVM_NULL;
-
-	ret = STD_ALLOC(sizeof(*ret));
-
-	IVM_MEMCHECK(ret);
-
-	ret->fp = fp;
-
-	return ret;
-}
-
-// absolute
-ivm_file_t *
-ivm_file_newAbs(const ivm_char_t *path,
-				const ivm_char_t *mode)
 {
 	ivm_file_t *ret;
 	ivm_file_raw_t fp;
@@ -163,12 +94,12 @@ ivm_file_length(ivm_file_t *file)
 }
 
 ivm_char_t *
-ivm_file_readAll_c(ivm_file_t *file,
-				   ivm_bool_t save_pos)
+ivm_file_readAll(ivm_file_t *file,
+				 ivm_size_t *size)
 {
 	ivm_file_raw_t fp = file->fp;
-	ivm_size_t orig = IVM_FTELL(fp);
 	ivm_size_t len = ivm_file_length(file), tmp_len;
+	ivm_size_t orig = IVM_FTELL(fp);
 	ivm_char_t *ret, *cur;
 
 	if (len == -1) {
@@ -176,6 +107,7 @@ ivm_file_readAll_c(ivm_file_t *file,
 		len = IVM_DEFAULT_FILE_READ_BUFFER_SIZE;
 		cur = ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 
+		// read and check if the buffer is full
 		while ((tmp_len = IVM_FREAD(cur, sizeof(*cur), IVM_DEFAULT_FILE_READ_BUFFER_SIZE, fp))
 			   == IVM_DEFAULT_FILE_READ_BUFFER_SIZE) {
 			len += IVM_DEFAULT_FILE_READ_BUFFER_SIZE;
@@ -188,32 +120,31 @@ ivm_file_readAll_c(ivm_file_t *file,
 			return IVM_NULL;
 		}
 
+		// trim the empty buffer
 		len -= IVM_DEFAULT_FILE_READ_BUFFER_SIZE - tmp_len;
 		ret = STD_REALLOC(ret, sizeof(*ret) * (len + 1));
 	} else {
-		len -= orig;
+		len -= IVM_FTELL(fp); // remove the length we've already read
 		ret = STD_ALLOC(sizeof(*ret) * (len + 1));
 		// FGOTO(fp, HEAD);
 		if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
 			/* unexpected read len */
+			// unwind to the original position
+			IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
 			STD_FREE(ret);
 			return IVM_NULL;
 		}
 	}
 
-	if (orig != -1 && save_pos) {
-		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
-	}
-
 	ret[len] = '\0';
+	if (size) *size = len; // return size
 
 	return ret;
 }
 
 ivm_char_t *
 ivm_file_read_n(ivm_file_t *file,
-				ivm_size_t len,
-				ivm_bool_t save_pos)
+				ivm_size_t len)
 {
 	ivm_file_raw_t fp = file->fp;
 	ivm_size_t orig = IVM_FTELL(fp);
@@ -224,12 +155,9 @@ ivm_file_read_n(ivm_file_t *file,
 	
 	if (len != IVM_FREAD(ret, sizeof(*ret), len, fp)) {
 		/* unexpected read len */
+		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
 		STD_FREE(ret);
 		return IVM_NULL;
-	}
-	
-	if (orig != -1 && save_pos) {
-		IVM_FSEEK(fp, IVM_FSEEK_HEAD, orig);
 	}
 	
 	ret[len] = '\0';

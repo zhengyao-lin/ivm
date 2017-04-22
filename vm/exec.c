@@ -368,7 +368,8 @@ ivm_exec_unit_generateVM(ivm_exec_unit_t *unit)
 	root = ivm_exec_unit_mergeToVM(unit, state);
 
 	if (unit->pos) {
-		ivm_vmstate_setCurPath(state, str = ivm_sys_getBasePath(ivm_source_pos_getFile(unit->pos)));
+		str = ivm_sys_getBasePath(ivm_source_pos_getFile(unit->pos));
+		ivm_vmstate_setCurPath(state, str);
 		STD_FREE(str);
 	}
 

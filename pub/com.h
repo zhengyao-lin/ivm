@@ -55,6 +55,8 @@
 	#define IVM_OS_WIN32 1
 #elif (defined(__APPLE__) && defined(__GNUC__)) || defined(__MACOSX__) || defined(macintosh)
 	#define IVM_OS_MAC 1
+#else
+	#error unsupported os type(remove this line if necessary)
 #endif
 
 #ifndef IVM_LIB_PATH

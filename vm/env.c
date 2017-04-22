@@ -30,7 +30,6 @@ void
 ivm_env_clean()
 {
 	ivm_mod_clean();
-	ivm_file_setRelativePath(IVM_NULL);
 	// ivm_thread_clean();
 
 	return;

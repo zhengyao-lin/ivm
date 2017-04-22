@@ -23,7 +23,7 @@ IVM_COM_HEADER
 
 ivm_bool_t
 ivm_path_realpath(ivm_char_t buffer[IVM_PATH_MAX_LEN + 1],
-				  ivm_char_t *rpath /* relative path */);
+				  const ivm_char_t *rpath /* relative path */);
 
 IVM_COM_END
 

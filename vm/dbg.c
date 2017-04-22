@@ -193,7 +193,11 @@ IVM_PRIVATE
 const char
 stack_border[] = "--------------";
 
+#ifdef MIN
+	#undef MIN
+#endif
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 #define MAX_CELL_COUNT 10
 #define CELL_WIDTH_STR "-14"
 #define CONTENT_WIDTH_STR "-12"

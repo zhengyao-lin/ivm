@@ -54,9 +54,6 @@ typedef FILE *ivm_file_raw_t;
 #define IVM_FMODE_WRITE_BINARY "wb"
 #define IVM_FMODE_READ_BINARY "rb"
 
-void
-ivm_file_setRelativePath(const ivm_char_t *path);
-
 ivm_bool_t
 ivm_file_access(const ivm_char_t *path,
 				const ivm_char_t *mode);
@@ -72,10 +69,6 @@ ivm_file_new(const ivm_char_t *path,
 			 const ivm_char_t *mode);
 
 ivm_file_t *
-ivm_file_newAbs(const ivm_char_t *path,
-				const ivm_char_t *mode);
-
-ivm_file_t *
 ivm_file_new_c(ivm_file_raw_t raw);
 
 void
@@ -85,17 +78,14 @@ void
 ivm_file_free_n(ivm_file_t *file);
 
 ivm_char_t *
-ivm_file_readAll_c(ivm_file_t *file,
-				   ivm_bool_t save_pos);
-
-#define ivm_file_readAll(file) ivm_file_readAll_c((file), IVM_TRUE)
+ivm_file_readAll(ivm_file_t *file,
+				 ivm_size_t *size);
 
 #define ivm_file_flush(file) IVM_FFLUSH((file)->fp)
 
 ivm_char_t *
 ivm_file_read_n(ivm_file_t *file,
-				ivm_size_t len,
-				ivm_bool_t save_pos);
+				ivm_size_t len);
 
 IVM_INLINE
 ivm_size_t
