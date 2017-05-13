@@ -215,6 +215,11 @@ ivm_string_pool_registerRaw_n(ivm_string_pool_t *pool,
 							  ivm_size_t len);
 
 ivm_string_id_t
+ivm_string_pool_registerRaw_ni(ivm_string_pool_t *pool,
+							   const ivm_char_t *str,
+							   ivm_size_t len);
+
+ivm_string_id_t
 ivm_string_pool_find(ivm_string_pool_t *pool,
 					 const ivm_string_t *str);
 

@@ -146,25 +146,27 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 	ivm_bool_t is_proto;
 	ilang_gen_value_t tmp_ret;
 	const ivm_char_t *err;
+	ivm_size_t olen;
 
 	if (slot_expr->parse) {
-		tmp_str = ivm_parser_parseStr_heap(
+		tmp_str = ivm_parser_parseStr_heap_n(
 			env->heap,
 			slot_expr->slot.val,
 			slot_expr->slot.len,
-			&err
+			&err, &olen
 		);
 	} else {
 		tmp_str = ivm_heap_alloc(env->heap, slot_expr->slot.len + 1);
 		STD_MEMCPY(tmp_str, slot_expr->slot.val, slot_expr->slot.len);
 		tmp_str[slot_expr->slot.len] = '\0';
+		olen = slot_expr->slot.len;
 	}
 
 	if (!tmp_str) {
 		GEN_ERR_FAILED_PARSE_STRING(expr, err);
 	}
 
-	is_proto = !IVM_STRCMP(tmp_str, "proto");
+	is_proto = !IVM_STRNCMP(tmp_str, olen, "proto", 5);
 
 	if (flag.is_left_val) {
 		tmp_ret = slot_expr->obj->eval(
@@ -174,14 +176,14 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 		);
 		
 		if (tmp_ret.is_id_loc) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_LOCAL_SLOT, tmp_str);
+			ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), SET_LOCAL_SLOT, olen, tmp_str);
 		} else if (tmp_ret.is_id_top) {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_GLOBAL_SLOT, tmp_str);
+			ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), SET_GLOBAL_SLOT, olen, tmp_str);
 		} else if (is_proto) {
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PROTO);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		} else {
-			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT, tmp_str);
+			ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), SET_SLOT, olen, tmp_str);
 			ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 		}
 	} else {
@@ -196,31 +198,31 @@ ilang_gen_slot_expr_eval(ilang_gen_expr_t *expr,
 			// leave base object on the stack
 			if (tmp_ret.is_id_loc) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_CONTEXT);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT_N, olen, tmp_str);
 			} else if (tmp_ret.is_id_top) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_CONTEXT);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT_N, olen, tmp_str);
 			} else if (is_proto) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT_N, olen, tmp_str);
 			}
 
 			ret = RETVAL(.has_base = IVM_TRUE);
 		} else {
 			if (tmp_ret.is_id_loc) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_CONTEXT);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT, olen, tmp_str);
 				// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
 			} else if (tmp_ret.is_id_top) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_CONTEXT);
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT, olen, tmp_str);
 				// ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_SLOT, tmp_str);
 			} else if (is_proto) {
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 			} else {
-				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT, tmp_str);
+				ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT, olen, tmp_str);
 			}
 		}
 

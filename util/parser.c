@@ -165,3 +165,24 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 
 	return buf;
 }
+
+ivm_char_t *
+ivm_parser_parseStr_heap_n(ivm_heap_t *heap,
+						   const ivm_char_t *str,
+						   ivm_size_t len,
+						   const ivm_char_t **err,
+						   ivm_size_t *olen)
+{
+	ivm_char_t *buf = ivm_heap_alloc(heap, sizeof(*buf) * (len + 1));
+	ivm_size_t ret = ivm_parser_parseStr_c(buf, str, len, err);
+
+	if (ret == -1) {
+		STD_FREE(buf);
+		return IVM_NULL;
+	}
+
+	if (olen)
+		*olen = ret - 1;
+
+	return buf;
+}

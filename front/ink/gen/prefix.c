@@ -13,7 +13,7 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 {
 	ilang_gen_fn_expr_t *func = IVM_AS(expr, ilang_gen_fn_expr_t);
 	ivm_exec_t *exec, *exec_backup;
-	ivm_size_t exec_id;
+	ivm_size_t exec_id, olen;
 	ilang_gen_param_t *tmp_param1, *tmp_param2;
 	ilang_gen_param_list_t *params;
 	ilang_gen_param_list_iterator_t piter, chk_iter;
@@ -71,7 +71,8 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 				}
 			}
 
-			tmp_str = ivm_parser_parseStr_heap(env->heap, tmp_param1->name.val, tmp_param1->name.len, &err);
+			tmp_str = ivm_parser_parseStr_heap_n(env->heap, tmp_param1->name.val,
+												 tmp_param1->name.len, &err, &olen);
 			
 			if (!tmp_str) {
 				GEN_ERR_FAILED_PARSE_STRING(expr, err);
@@ -83,16 +84,16 @@ ilang_gen_fn_expr_eval(ilang_gen_expr_t *expr,
 
 			ivm_exec_setParam(
 				exec, cur_param,
-				ivm_exec_registerString_c(exec, tmp_str ? tmp_str : IVM_NATIVE_VARG_NAME),
+				ivm_exec_registerString_nc(exec, tmp_str ? tmp_str : IVM_NATIVE_VARG_NAME, olen),
 				tmp_param1->is_varg
 			);
 
 			if (tmp_param1->def) {
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), GET_LOCAL_SLOT, tmp_str);
+				ivm_exec_addInstr_nl(exec, GET_LINE(expr), GET_LOCAL_SLOT, olen, tmp_str);
 				tmp_addr = ivm_exec_addInstr_l(exec, GET_LINE(expr), CHECK_NONE, 0);
 				
 				tmp_param1->def->eval(tmp_param1->def, FLAG(0), env);
-				ivm_exec_addInstr_l(exec, GET_LINE(expr), SET_LOCAL_SLOT, tmp_str);
+				ivm_exec_addInstr_nl(exec, GET_LINE(expr), SET_LOCAL_SLOT, olen, tmp_str);
 				
 				ivm_exec_setArgAt(exec, tmp_addr, ivm_exec_cur(exec) - tmp_addr);
 			}

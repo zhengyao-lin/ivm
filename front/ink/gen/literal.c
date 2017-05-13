@@ -105,7 +105,7 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 	const ivm_char_t *err;
 	const ivm_char_t *i, *end, *beg, *lit;
 	ivm_char_t last = 0;
-	ivm_size_t brace_count, tmp_len, str_count = 0, j;
+	ivm_size_t brace_count, tmp_len, str_count = 0, j, olen;
 	ilang_gen_expr_t *tmp_expr;
 
 	GEN_ASSERT_NOT_LEFT_VALUE(expr, "string expression", flag);
@@ -159,27 +159,31 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 					}
 
 					tmp_len = IVM_PTR_DIFF(beg, lit, ivm_char_t) - 2 /* "#{" */;
-					tmp_str = ivm_parser_parseStr_heap(env->heap, lit, tmp_len, &err);
+					tmp_str = ivm_parser_parseStr_heap_n(env->heap, lit, tmp_len, &err, &olen);
 
 					if (!tmp_str) {
 						GEN_ERR_FAILED_PARSE_STRING(expr, err);
 					}
 
-					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, tmp_str);
+					ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), NEW_STR, olen, tmp_str);
 
 					tmp_len = IVM_PTR_DIFF(i, beg, ivm_char_t) /* last "}" */;
 
-					if (tmp_len) {
-						str_count++;
-
-						tmp_str = ivm_parser_parseStr_heap(env->heap, beg, tmp_len, &err);
-
-						if (!tmp_str) {
-							GEN_ERR_FAILED_PARSE_STRING(expr, err);
-						}
+					if (!tmp_len) {
+						GEN_ERR_EMPTY_STRING_INT(expr);
 					}
 
-					// IVM_TRACE("src: %s\n", tmp_str);
+					str_count++;
+
+					tmp_str = ivm_parser_parseStr_heap_n(env->heap, beg, tmp_len, &err, &olen);
+
+					if (!tmp_str) {
+						GEN_ERR_FAILED_PARSE_STRING(expr, err);
+					}
+
+					if (IVM_STRLEN(tmp_str) != olen) {
+						GEN_WARN_GENERAL(expr, GEN_ERR_MSG_EOS_CHAR_IN_STRING_INT);
+					}
 
 					tmp_expr = ilang_parser_parseExpr(env->tunit, tmp_str, GET_LINE(expr));
 
@@ -204,13 +208,13 @@ ilang_gen_string_expr_eval(ilang_gen_expr_t *expr,
 	if (lit != end || !str_count /* there has to be at least 1 string */) {
 		str_count++;
 		tmp_len = IVM_PTR_DIFF(end, lit, ivm_char_t);
-		tmp_str = ivm_parser_parseStr_heap(env->heap, lit, tmp_len, &err);
+		tmp_str = ivm_parser_parseStr_heap_n(env->heap, lit, tmp_len, &err, &olen);
 
 		if (!tmp_str) {
 			GEN_ERR_FAILED_PARSE_STRING(expr, err);
 		}
 
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), NEW_STR, tmp_str);
+		ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), NEW_STR, olen, tmp_str);
 	}
 
 	for (j = 0; j < str_count - 1; j++) {

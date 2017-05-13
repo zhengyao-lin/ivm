@@ -53,6 +53,8 @@
 #define GEN_ERR_MSG_CANNOT_DEL(name)								"cannot delete %s", (name)
 #define GEN_ERR_MSG_UNCLOSED_STRING_INT								"unclosed string interpolator"
 #define GEN_ERR_MSG_FAILED_PARSE_STRING_INT							"failed to parse the interpolated expression"
+#define GEN_ERR_MSG_EMPTY_STRING_INT								"empty interpolated expression"
+#define GEN_ERR_MSG_EOS_CHAR_IN_STRING_INT							"interpolated expression contains '\\0' character"
 
 #define GEN_ERR_GENERAL(expr, ...) \
 	GEN_ERR((expr)->pos, __VA_ARGS__)
@@ -101,22 +103,25 @@
 	}
 
 #define GEN_ERR_MULTIPLE_VARG(expr) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_MULTIPLE_VARG);
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_MULTIPLE_VARG)
 
 #define GEN_ERR_FAILED_PARSE_STRING(expr, msg) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING(msg));
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING(msg))
 
 #define GEN_ERR_DUP_PARAM_NAME(expr, name, len) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_DUP_PARAM_NAME((name), (len)));
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_DUP_PARAM_NAME((name), (len)))
 
 #define GEN_ERR_TOO_LONG_MOD_NAME(expr, len) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_TOO_LONG_MOD_NAME(len));
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_TOO_LONG_MOD_NAME(len))
 
 #define GEN_ERR_UNCLOSED_STRING_INT(expr) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_UNCLOSED_STRING_INT);
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_UNCLOSED_STRING_INT)
 
 #define GEN_ERR_FAILED_PARSE_STRING_INT(expr) \
-	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING_INT);
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_FAILED_PARSE_STRING_INT)
+
+#define GEN_ERR_EMPTY_STRING_INT(expr) \
+	GEN_ERR((expr)->pos, GEN_ERR_MSG_EMPTY_STRING_INT)
 
 void
 ilang_gen_index_expr_genArg(ilang_gen_expr_t *expr, /* not necessarily an index expr */

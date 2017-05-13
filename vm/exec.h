@@ -110,14 +110,22 @@ ivm_size_t
 ivm_exec_addInstr_c(ivm_exec_t *exec,
 					ivm_instr_t instr);
 
+// (exec, instr, arg)
 #define ivm_exec_addInstr(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN(__VA_ARGS__, (exec))))
 
+// (exec, lineno, instr, arg)
 #define ivm_exec_addInstr_l(exec, ...) \
 	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN_L(__VA_ARGS__, (exec))))
 
+// (exec, lineno, instr, strlen, str)
+#define ivm_exec_addInstr_nl(exec, ...) \
+	(ivm_exec_addInstr_c((exec), IVM_INSTR_GEN_NL(__VA_ARGS__, (exec))))
+
 #define ivm_exec_registerString(exec, str) ivm_string_pool_registerRaw_i((exec)->pool, (str))
 #define ivm_exec_registerString_c(exec, str) ivm_string_pool_registerRaw((exec)->pool, (str))
+#define ivm_exec_registerString_nc(exec, str, len) ivm_string_pool_registerRaw_n((exec)->pool, (str), (len))
+#define ivm_exec_registerString_n(exec, str, len) ivm_string_pool_registerRaw_ni((exec)->pool, (str), (len))
 #define ivm_exec_getString(exec, i) ivm_string_pool_get((exec)->pool, (i))
 
 #define ivm_exec_length(exec) ((exec)->next)

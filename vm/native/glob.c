@@ -129,6 +129,7 @@ IVM_NATIVE_FUNC(_global_print)
 {
 	ivm_object_t *obj, *to_s, *base, *ret;
 	ivm_function_object_t *func;
+	const ivm_string_t *tmp_str;
 
 	CHECK_ARG_COUNT(1);
 
@@ -146,7 +147,8 @@ IVM_NATIVE_FUNC(_global_print)
 		if (!ret) return IVM_NULL;
 
 		if (IVM_IS_BTTYPE(ret, NAT_STATE(), IVM_STRING_OBJECT_T)) {
-			IVM_TRACE("%s\n", ivm_string_trimHead(ivm_string_object_getValue(ret)));
+			tmp_str = ivm_string_object_getValue(ret);
+			IVM_TRACE("%.*s\n", (int)ivm_string_length(tmp_str), ivm_string_trimHead(tmp_str));
 			return IVM_NONE(NAT_STATE());
 		}
 	}

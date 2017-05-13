@@ -24,11 +24,12 @@
 	ivm_opcode_arg_fromFloat(arg)
 
 #define INSTR_TYPE_S_ARG_INIT(instr, exec) \
-	ivm_opcode_arg_fromPointer(ivm_exec_registerString((exec), str))
+	ivm_opcode_arg_fromPointer(len == -1 ? ivm_exec_registerString((exec), str) : ivm_exec_registerString_n((exec), str, len))
 
 #define OPCODE_GEN(o, name, param, st_inc, ...) \
 	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##param##_ARG    \
 								  ivm_exec_t *exec,               \
+								  ivm_size_t len,                 \
 								  ivm_uint_t line)                \
 	{                                                             \
 		return (ivm_instr_t) {                                    \

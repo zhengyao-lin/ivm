@@ -31,6 +31,13 @@ ivm_parser_parseStr_heap(ivm_heap_t *heap,
 						 ivm_size_t len,
 						 const ivm_char_t **err);
 
+ivm_char_t *
+ivm_parser_parseStr_heap_n(ivm_heap_t *heap,
+						   const ivm_char_t *str,
+						   ivm_size_t len,
+						   const ivm_char_t **err,
+						   ivm_size_t *olen);
+
 /*
  * common parser: define IVM_USE_COMMON_PARSER to use(it MUST NOT be used in header file)
  * 

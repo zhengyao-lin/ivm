@@ -11,12 +11,13 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 	ivm_char_t *tmp_str;
 	ilang_gen_value_t ret = NORET();
 	const ivm_char_t *err;
+	ivm_size_t olen;
 
-	tmp_str = ivm_parser_parseStr_heap(
+	tmp_str = ivm_parser_parseStr_heap_n(
 		env->heap,
 		id_expr->val.val,
 		id_expr->val.len,
-		&err
+		&err, &olen
 	);
 
 	if (!tmp_str) {
@@ -25,7 +26,7 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 
 #define ID_GEN(name, extra, set_instr, get_instr) \
 	if (sizeof(name) == sizeof("")                                     \
-		|| !IVM_STRCMP(tmp_str, (name))) {                             \
+		|| !IVM_STRNCMP(tmp_str, olen, (name), sizeof(name) - 1)) {    \
 		extra                                                          \
 		if (flag.is_left_val) {                                        \
 			set_instr;                                                 \
@@ -47,8 +48,8 @@ ilang_gen_id_expr_eval(ilang_gen_expr_t *expr,
 		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_GLOBAL_CONTEXT))
 	else
 	ID_GEN("", { },
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_CONTEXT_SLOT, tmp_str),
-		ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, tmp_str))
+		ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), SET_CONTEXT_SLOT, olen, tmp_str),
+		ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_CONTEXT_SLOT, olen, tmp_str))
 
 #undef ID_GEN
 
@@ -161,7 +162,7 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 						  ilang_gen_env_t *env)
 {
 	ilang_gen_table_expr_t *table_expr = IVM_AS(expr, ilang_gen_table_expr_t);
-	ivm_size_t size;
+	ivm_size_t size, olen;
 	ilang_gen_table_entry_t tmp_entry;
 	ilang_gen_table_entry_list_t *list;
 	ilang_gen_table_entry_list_iterator_t eiter;
@@ -195,27 +196,28 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), IDX);
 			} else {
 				if (!tmp_entry.no_parse) {
-					tmp_str = ivm_parser_parseStr_heap(
+					tmp_str = ivm_parser_parseStr_heap_n(
 						env->heap,
 						tmp_entry.name.val,
 						tmp_entry.name.len,
-						&err
+						&err, &olen
 					);
 				} else {
 					tmp_str = ivm_heap_alloc(env->heap, tmp_entry.name.len + 1);
 					STD_MEMCPY(tmp_str, tmp_entry.name.val, tmp_entry.name.len);
 					tmp_str[tmp_entry.name.len] = '\0';
+					olen = tmp_entry.name.len;
 				}
 
 				if (!tmp_str) {
 					GEN_ERR_FAILED_PARSE_STRING(expr, err);
 				}
 
-				if (!IVM_STRCMP(tmp_str, "proto")) {
+				if (!IVM_STRNCMP(tmp_str, olen, "proto", 5)) {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP);
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_PROTO);
 				} else {
-					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), GET_SLOT_N, tmp_str);
+					ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), GET_SLOT_N, olen, tmp_str);
 				}
 			}
 
@@ -246,28 +248,29 @@ ilang_gen_table_expr_eval(ilang_gen_expr_t *expr,
 				ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 			} else {
 				if (!tmp_entry.no_parse) {
-					tmp_str = ivm_parser_parseStr_heap(
+					tmp_str = ivm_parser_parseStr_heap_n(
 						env->heap,
 						tmp_entry.name.val,
 						tmp_entry.name.len,
-						&err
+						&err, &olen
 					);
 				} else {
 					tmp_str = ivm_heap_alloc(env->heap, tmp_entry.name.len + 1);
 					STD_MEMCPY(tmp_str, tmp_entry.name.val, tmp_entry.name.len);
 					tmp_str[tmp_entry.name.len] = '\0';
+					olen = tmp_entry.name.len;
 				}
 
 				if (!tmp_str) {
 					GEN_ERR_FAILED_PARSE_STRING(expr, err);
 				}
 
-				if (!IVM_STRCMP(tmp_str, "proto")) {
+				if (!IVM_STRNCMP(tmp_str, olen, "proto", 5)) {
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), DUP_N, 1);
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_PROTO);
 					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), POP);
 				} else {
-					ivm_exec_addInstr_l(env->cur_exec, GET_LINE(expr), SET_SLOT_B, tmp_str);
+					ivm_exec_addInstr_nl(env->cur_exec, GET_LINE(expr), SET_SLOT_B, olen, tmp_str);
 				}
 			}
 		}

@@ -85,14 +85,19 @@ ivm_instr_initCache(ivm_instr_t *instr)
 #define IVM_INSTR_TYPE_S_ARG const char *str,		/* string */
 
 #define IVM_INSTR_GEN(o, ...) \
-	(ivm_instr_gen_##o(__VA_ARGS__, 0))
+	(ivm_instr_gen_##o(__VA_ARGS__, -1, 0))
 
 #define IVM_INSTR_GEN_L(l, o, ...) \
-	(ivm_instr_gen_##o(__VA_ARGS__, (l)))
+	(ivm_instr_gen_##o(__VA_ARGS__, -1, (l)))
+
+// N: string len is given
+#define IVM_INSTR_GEN_NL(l, o, len, str, exec) \
+	(ivm_instr_gen_##o((str), (exec), (len), (l)))
 
 #define OPCODE_GEN(o, name, arg, st_inc, ...) \
 	ivm_instr_t ivm_instr_gen_##o(IVM_INSTR_TYPE_##arg##_ARG   \
 								  struct ivm_exec_t_tag *exec, \
+								  ivm_size_t len, \
 								  ivm_uint_t lineno);
 
 	#include "opcode.def.h"

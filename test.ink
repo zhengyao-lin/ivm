@@ -1,3 +1,7 @@
+print("\0 1")
+
+ret
+
 import mthread
 import aio
 import time

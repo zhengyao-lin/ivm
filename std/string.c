@@ -367,6 +367,14 @@ HASH(RAW_HASH_N(str, len),
 		   _ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
 
 ivm_string_id_t
+ivm_string_pool_registerRaw_ni(ivm_string_pool_t *pool,
+							   const ivm_char_t *str,
+							   ivm_size_t len)
+HASH(RAW_HASH_N(str, len),
+	 CHECK_I(!ivm_string_compareToRaw_n(i->k, str, len),
+			 _ivm_string_new_heap_n(IVM_TRUE, str, len, pool->heap)));
+
+ivm_string_id_t
 ivm_string_pool_find(ivm_string_pool_t *pool,
 					 const ivm_string_t *str)
 HASH(RAW_HASH(ivm_string_trimHead(str)),

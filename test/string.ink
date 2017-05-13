@@ -31,6 +31,8 @@ catch none
 
 print("abc".split("ab"))
 
+print("\0\0\0".len())
+
 /*
 print("a  b \t c \n d".split())
 print("a  b   ".split())
@@ -60,3 +62,5 @@ ret
 // -> "list: \\[ a, , b, , c, , d \\]"
 // -> "list: \\[  \\]"
 // -> "list: \\[ , c \\]"
+
+// -> "num: 3"
