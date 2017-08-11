@@ -20,7 +20,7 @@ run tests or anything you write
 ### Examples(of ink)
 ink is a dynamically-typed language with...
 
-#### Dynamic grammar
+#### Weird grammar
 	
 	// js-like prototype mechanism
 	list.proto.map = fn f:
@@ -43,7 +43,7 @@ ink is a dynamically-typed language with...
 		print(resume c)
 
 
-#### All sorts of overloading...
+#### All sorts of overloading(which is bad)...
 
 	// context overload
 	loc = loc.clone()
@@ -84,7 +84,7 @@ ink is a dynamically-typed language with...
 
 	print(~"hELLO, WORLD!")
 
-#### ... And tolerable performance! XD (close to the official implementations of Python2&3...)
+#### ... And tolerable performance
 	
 	loc fib = fn n:
 		n < 2 ?
